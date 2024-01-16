@@ -1,8 +1,6 @@
 name: linux_x86_64
 
-on:
-  schedule:
-    - cron: '0 12 * * 0'
+on: "push"
 
 jobs:
   build_linux_x86_64:
