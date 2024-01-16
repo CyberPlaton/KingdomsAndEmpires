@@ -4,7 +4,7 @@ function app()
 	add_target_app("app",
 					{},
 					{},
-					{"test"},
-					{"box2d"})
+					{},
+					{"box2d", "sokol"})
 end
 app()
