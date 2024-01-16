@@ -1,0 +1,23 @@
+name: macOS_x86_64
+
+on:
+  schedule:
+    - cron: '0 12 * * 0'
+
+jobs:
+  build_macos_x86_64:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Premake for macOS
+        uses: abel0b/setup-premake@v2.3
+        with:
+          version: "5.0.0-beta2"
+
+      - name: Build on macOS
+        run: |
+          premake5 gmake
+          make
+        working-directory: .
