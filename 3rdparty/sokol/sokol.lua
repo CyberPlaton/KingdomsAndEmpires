@@ -6,6 +6,7 @@ function sokol()
 					{},
 					{},
 					{},
-					true)
+					true,
+					"c")
 end
 sokol()

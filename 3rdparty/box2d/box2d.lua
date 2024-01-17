@@ -6,6 +6,7 @@ function box2d()
 					{},
 					{},
 					{},
-					false)
+					false,
+					"c++")
 end
 box2d()

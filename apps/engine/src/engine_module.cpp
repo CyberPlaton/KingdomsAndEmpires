@@ -46,32 +46,6 @@ static void frame(void) {
 	sg_commit();
 }
 
-// Called when the application is initializing.
-static void init(void) {
-	// Initialize Sokol GFX.
-	sg_desc sgdesc { 0 };
-	sgdesc.context = sapp_sgcontext();
-	sgdesc.logger.func = logging_function;
-
-	sg_setup(&sgdesc);
-	if (!sg_isvalid()) {
-	}
-
-	// Initialize Sokol GP, adjust the size of command buffers for your own use.
-	sgp_desc sgpdesc = { 0 };
-	sgp_setup(&sgpdesc);
-	if (!sgp_is_valid()) {
-	}
-}
-
-// Called when the application is shutting down.
-static void cleanup(void) {
-	// Cleanup Sokol GP and Sokol GFX resources.
-	sgp_shutdown();
-	sg_shutdown();
-}
-
-
 sapp_desc sokol_main(int argc, char* argv[])
 {
 	sapp_desc desc{ 0 };
@@ -87,9 +61,9 @@ sapp_desc sokol_main(int argc, char* argv[])
 	desc.max_dropped_files = 0;
 	desc.max_dropped_file_path_length = 0;
 
-	desc.init_cb = init;
+	desc.init_cb = sm::init;
 	desc.frame_cb = frame;
-	desc.cleanup_cb = cleanup;
+	desc.cleanup_cb = sm::shutdown;
 	desc.logger.func = logging_function;
 
 	return desc;
