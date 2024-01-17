@@ -1,4 +1,4 @@
-#include "sokol_module.h"
+#include "sokol_integration.h"
 
 #define SOKOL_IMPL
 #if defined (_WIN32) ||defined(_WIN64)
@@ -8,9 +8,8 @@
 #elif defined(__APPLE__)
 #define SOKOL_METAL
 #endif
-#ifdef sokol_EXPORTS
-#define SOKOL_DLL
-#endif
+
 #include <sokol/sokol_gfx.h>
 #include <sokol/sokol_gp.h>
-#include <sokol/sokol_log.h>
+#include <sokol/sokol_app.h>
+#include <sokol/sokol_glue.h>

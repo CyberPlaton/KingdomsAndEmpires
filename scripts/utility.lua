@@ -27,13 +27,18 @@ function set_libs_path()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function add_target_library(name, build_options, define_flags, plugin_deps, thirdparty_deps)
+function add_target_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, headeronly)
 	if VERBOSE == true then
 		print("\tshared library: " .. name)
 	end
 	project(name)
 		location (path.join(".project", name))
-		kind ("SharedLib")
+
+		if headeronly == true then
+			kind ("None")
+		else
+			kind ("SharedLib")
+		end
 
 		files{"src/**.h",
 			  "src/**.cpp",

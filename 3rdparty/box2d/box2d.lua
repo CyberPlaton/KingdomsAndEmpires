@@ -5,6 +5,7 @@ function box2d()
 					{},
 					{},
 					{},
-					{})
+					{},
+					false)
 end
 box2d()

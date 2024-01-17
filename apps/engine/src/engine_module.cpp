@@ -1,15 +1,13 @@
-#include "app_module.hpp"
+#include "engine_module.hpp"
+#include <iostream>
 
-#define SOKOL_IMPL
-#if defined (_WIN32) ||defined(_WIN64)
-#define SOKOL_D3D11
-#elif defined(__linux__)
-#define SOKOL_GLCORE33
-#elif defined(__APPLE__)
-#define SOKOL_METAL
-#endif
-#include <sokol/sokol_app.h>
-#include <sokol/sokol_glue.h>
+void logging_function(const char* tag, uint32_t level, uint32_t item_id, const char* message, uint32_t line, const char* filename, void* data)
+{
+	if (message)
+	{
+		std::cout << "[SOKOL] " << message << std::endl;
+	}
+}
 
 // Called on every frame of the application.
 static void frame(void) {
@@ -51,9 +49,9 @@ static void frame(void) {
 // Called when the application is initializing.
 static void init(void) {
 	// Initialize Sokol GFX.
-	sg_desc sgdesc;
+	sg_desc sgdesc { 0 };
 	sgdesc.context = sapp_sgcontext();
-	sgdesc.logger.func = slog_func;
+	sgdesc.logger.func = logging_function;
 
 	sg_setup(&sgdesc);
 	if (!sg_isvalid()) {
@@ -76,12 +74,23 @@ static void cleanup(void) {
 
 sapp_desc sokol_main(int argc, char* argv[])
 {
-	sapp_desc desc;
+	sapp_desc desc{ 0 };
+	desc.width = 720;
+	desc.height = 648;
+	desc.sample_count = 1;
+	desc.swap_interval = 1;
+	desc.high_dpi = false;
+	desc.fullscreen = false;
+	desc.alpha = true;
+	desc.window_title = "Rectangle (Sokol GP)";
+	desc.clipboard_size = 0;
+	desc.max_dropped_files = 0;
+	desc.max_dropped_file_path_length = 0;
+
 	desc.init_cb = init;
 	desc.frame_cb = frame;
 	desc.cleanup_cb = cleanup;
-	desc.window_title = "Rectangle (Sokol GP)";
-	desc.logger.func = slog_func;
+	desc.logger.func = logging_function;
 
 	return desc;
 }
