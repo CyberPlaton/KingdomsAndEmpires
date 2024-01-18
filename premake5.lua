@@ -7,13 +7,11 @@ WORKSPACE_DIR = "<undefined>"
 THIRDPARTY = {"box2d", "sokol"}
 PLUGINS = {"test", "test2"}
 EXES = {"engine_launcher"}
-CFG = "<undefined>"
-SYS = "<undefined>"
-ARCH = "<undefined>"
-OUTDIR = "<undefined>"
+PLATFORM = "<undefined>"
+OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"
 
 workspace("KingdomsAndEmpires")
-	startproject("KingdomsAndEmpires")
+	startproject("engine_launcher")
 	architecture "x86_64"
 	configurations{"debug", "release"}
 	language "C++"
@@ -23,24 +21,24 @@ workspace("KingdomsAndEmpires")
 	flags{"MultiProcessorCompile"}
 
 	-- determine available platforms
-	if PLATFORM == "windows" then
-		platforms{"windows"}
-	elseif PLATFORM == "linux" then
-		platforms{"linux"}
-	elseif PLATFORM == "macosx" then
-		platforms{"macosx"}
+	if os.host() == "linux" then
+		PLATFORM = "linux"
+		system "linux"
+	elseif os.host() == "windows" then
+		PLATFORM = "windows"
+		system "windows"
+	elseif os.host() == "macosx" then
+		PLATFORM = "macosx"
+		system "macosx"
 	else
 		print("Unrecognoized or unsupported platform: " .. os.host())
+		return
 	end
 
 	-- setup variables
 	WORKSPACE_DIR = os.getcwd()
 	VENDOR_DIR = path.join(WORKSPACE_DIR, "vendor")
 	SCRIPTS_DIR = path.join(WORKSPACE_DIR, "scripts")
-	CFG = "%{cfg.buildcfg}"
-	SYS = "%{cfg.system}"
-	ARCH = "%{cfg.architecture}"
-	OUTDIR = SYS .. "-" .. CFG .. "-" .. ARCH
 
 	-- create 3rdparty dependency projects
 	print("Loading 3rdparty projects...")
@@ -64,8 +62,8 @@ workspace("KingdomsAndEmpires")
 
 	-- create engine project
 	print("Loading engine project...")
-		load_project("engine", "engine")
 	group "engine"
+		load_project("engine", "engine")
 	group ""
 
 	-- create executable

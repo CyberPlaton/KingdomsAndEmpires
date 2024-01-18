@@ -1,4 +1,5 @@
 #include "enginelauncher_module.hpp"
+#undef SOKOL_NO_ENTRY
 #include <iostream>
 
 void logging_function(const char* tag, uint32_t level, uint32_t item_id, const char* message, uint32_t line, const char* filename, void* data)
@@ -46,7 +47,7 @@ static void frame(void) {
 	sg_commit();
 }
 
-sapp_desc sokol_main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	sapp_desc desc{ 0 };
 	desc.width = 720;
@@ -61,10 +62,12 @@ sapp_desc sokol_main(int argc, char* argv[])
 	desc.max_dropped_files = 0;
 	desc.max_dropped_file_path_length = 0;
 
-	desc.init_cb = sm::init;
+	desc.init_cb = NULL;
 	desc.frame_cb = frame;
-	desc.cleanup_cb = sm::shutdown;
+	desc.cleanup_cb = NULL;
 	desc.logger.func = logging_function;
 
-	return desc;
+	sapp_run(&desc);
+
+	return 0;
 }

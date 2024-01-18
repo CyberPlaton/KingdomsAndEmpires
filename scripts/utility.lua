@@ -34,8 +34,11 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
-end
 
+	if VERBOSE == true then
+		print("\t\tsetting libs path: " .. path.join(VENDOR_DIR, OUTDIR))
+	end
+end
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language, thirdparty_headeronly_deps, plugin_headeronly_deps)
 	if VERBOSE == true then
@@ -64,11 +67,13 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 			p = plugin_deps[ii]
 			links{p}
 			set_include_path(false, p)
+			print("add_target_static_library plugin_deps Links: " .. p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
 			set_include_path(true, p)
+			print("add_target_static_library thirdparty_deps Links: " .. p)
 		end
 
 		-- set includes only from other plugins and thirdparty
@@ -81,11 +86,11 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 			set_include_path(false, p)
 		end
 
-		filter{"debug"}
+		filter{"configurations:debug"}
 			symbols "On"
 			optimize "Off"
 
-		filter{"release"}
+		filter{"configurations:release"}
 			symbols "On"
 			optimize "Full"
 		filter{}
@@ -124,24 +129,26 @@ function add_target_library(name, build_options, define_flags, plugin_deps, thir
 			p = plugin_deps[ii]
 			links{p}
 			set_include_path(false, p)
+			print("add_target_library plugin_deps Links: " .. p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
 			set_include_path(true, p)
+			print("add_target_library thirdparty_deps Links: " .. p)
 		end
-
-		filter{"debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"release"}
-			symbols "On"
-			optimize "Full"
-		filter{}
 
 		-- set additional default defines
 		defines{name .. "_EXPORTS"}
+
+		filter{"configurations:debug"}
+			symbols "On"
+			optimize "Off"
+
+		filter{"configurations:release"}
+			symbols "On"
+			optimize "Full"
+		filter{}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -161,6 +168,7 @@ function add_target_app(name, build_options, define_flags, plugin_deps, thirdpar
 		buildoptions{build_options}
 		defines{define_flags}
 		includedirs{"include"}
+		links{"engine"}
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
@@ -171,18 +179,20 @@ function add_target_app(name, build_options, define_flags, plugin_deps, thirdpar
 			p = plugin_deps[ii]
 			links{p}
 			set_include_path(false, p)
+			print("add_target_app plugin_deps Links: " .. p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
 			set_include_path(true, p)
+			print("add_target_app thirdparty_deps Links: " .. p)
 		end
 
-		filter{"debug"}
+		filter{"configurations:debug"}
 			symbols "On"
 			optimize "Off"
 
-		filter{"release"}
+		filter{"configurations:release"}
 			symbols "On"
 			optimize "Full"
 		filter{}
