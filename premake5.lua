@@ -6,7 +6,7 @@ VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
 THIRDPARTY = {"box2d", "sokol"}
 PLUGINS = {"test", "test2"}
-EXES = {"engine"}
+EXES = {"engine_launcher"}
 CFG = "<undefined>"
 SYS = "<undefined>"
 ARCH = "<undefined>"
@@ -16,12 +16,22 @@ workspace("KingdomsAndEmpires")
 	startproject("KingdomsAndEmpires")
 	architecture "x86_64"
 	configurations{"debug", "release"}
-	platforms{"windows", "linux", "macosx"}
 	language "C++"
 	cppdialect "C++17"
 	systemversion "latest"
 	staticruntime "Off"
 	flags{"MultiProcessorCompile"}
+
+	-- determine available platforms
+	if PLATFORM == "windows" then
+		platforms{"windows"}
+	elseif PLATFORM == "linux" then
+		platforms{"linux"}
+	elseif PLATFORM == "macosx" then
+		platforms{"macosx"}
+	else
+		print("Unrecognoized or unsupported platform: " .. os.host())
+	end
 
 	-- setup variables
 	WORKSPACE_DIR = os.getcwd()
@@ -50,6 +60,12 @@ workspace("KingdomsAndEmpires")
 
 			load_project(p, path.join("plugins", p))
 		end
+	group ""
+
+	-- create engine project
+	print("Loading engine project...")
+		load_project("engine", "engine")
+	group "engine"
 	group ""
 
 	-- create executable
