@@ -1,5 +1,4 @@
 #include "enginelauncher_module.hpp"
-#undef SOKOL_NO_ENTRY
 #include <iostream>
 
 void logging_function(const char* tag, uint32_t level, uint32_t item_id, const char* message, uint32_t line, const char* filename, void* data)
@@ -45,8 +44,70 @@ static void frame(void) {
 	sg_end_pass();
 	// Commit Sokol render.
 	sg_commit();
+
+
+	important_test_function();
+	important_test2_function();
 }
 
+// Called when the application is initializing.
+void init(void) {
+	// Initialize Sokol GFX.
+	sg_desc sgdesc{ 0 }; 
+	sgdesc.context = sapp_sgcontext();
+	sgdesc.logger.func = logging_function;
+
+	sg_setup(&sgdesc);
+	if (!sg_isvalid()) {
+		fprintf(stderr, "Failed to create Sokol GFX context!\n");
+		exit(-1);
+	}
+
+	// Initialize Sokol GP, adjust the size of command buffers for your own use.
+	sgp_desc sgpdesc = { 0 };
+	sgp_setup(&sgpdesc);
+	if (!sgp_is_valid()) {
+		fprintf(stderr, "Failed to create Sokol GP context: %s\n", sgp_get_error_message(sgp_get_last_error()));
+		exit(-1);
+	}
+}
+
+// Called when the application is shutting down.
+void cleanup(void) {
+	// Cleanup Sokol GP and Sokol GFX resources.
+	sgp_shutdown();
+	sg_shutdown();
+}
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+{
+	AllocConsole();
+
+	sapp_desc desc{ 0 };
+	desc.width = 720;
+	desc.height = 648;
+	desc.sample_count = 1;
+	desc.swap_interval = 1;
+	desc.high_dpi = false;
+	desc.fullscreen = false;
+	desc.alpha = true;
+	desc.window_title = "Rectangle (Sokol GP)";
+	desc.clipboard_size = 0;
+	desc.max_dropped_files = 0;
+	desc.max_dropped_file_path_length = 0;
+
+	desc.init_cb = init;
+	desc.frame_cb = frame;
+	desc.cleanup_cb = cleanup;
+	desc.logger.func = logging_function;
+
+	sapp_run(&desc);
+
+	return 0;
+}
+#else
 int main(int argc, char* argv[])
 {
 	sapp_desc desc{ 0 };
@@ -71,3 +132,4 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+#endif

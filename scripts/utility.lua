@@ -13,6 +13,13 @@ function set_include_path_to_engine()
 	end
 end
 
+function set_include_path_to_self(name)
+	includedirs{"include"}
+	-- for some thirdparty libraries required, so we set just in case for all
+	includedirs{path.join("include", name)}
+end
+
+
 ------------------------------------------------------------------------------------------------------------------------
 function set_include_path(is_third_party, name)
 
@@ -34,10 +41,6 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
-
-	if VERBOSE == true then
-		print("\t\tsetting libs path: " .. path.join(VENDOR_DIR, OUTDIR))
-	end
 end
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language, thirdparty_headeronly_deps, plugin_headeronly_deps)
@@ -57,7 +60,8 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 
 		buildoptions{build_options}
 		defines{define_flags}
-		includedirs{"include"}
+		set_include_path_to_self()
+		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
@@ -118,7 +122,63 @@ function add_target_library(name, build_options, define_flags, plugin_deps, thir
 
 		buildoptions{build_options}
 		defines{define_flags}
-		includedirs{"include"}
+		set_include_path_to_self()
+		set_include_path_to_engine()
+		targetdir(path.join(VENDOR_DIR, OUTDIR))
+		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
+		set_libs_path()
+
+		-- include and link deps from other plugins and thirdparty
+		for ii = 1, #plugin_deps do
+			p = plugin_deps[ii]
+			links{p}
+			set_include_path(false, p)
+			print("add_target_library plugin_deps Links: " .. p)
+		end
+		for ii = 1, #thirdparty_deps do
+			p = thirdparty_deps[ii]
+			links{p}
+			set_include_path(true, p)
+			print("add_target_library thirdparty_deps Links: " .. p)
+		end
+
+		-- set additional default defines
+		defines{name .. "_EXPORTS"}
+
+		filter{"configurations:debug"}
+			symbols "On"
+			optimize "Off"
+
+		filter{"configurations:release"}
+			symbols "On"
+			optimize "Full"
+		filter{}
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function add_target_library_ex(name, build_options, define_flags, plugin_deps, thirdparty_deps, headeronly, target_language, additional_includes)
+	if VERBOSE == true then
+		print("\tshared library: " .. name)
+	end
+	project(name)
+		language (target_language)
+		location (path.join(".project", name))
+
+		if headeronly == true then
+			kind ("None")
+		else
+			kind ("SharedLib")
+		end
+
+		files{"src/**.h",
+			  "src/**.cpp",
+			  "src/**.hpp",
+			  "src/**.c"}
+
+		buildoptions{build_options}
+		defines{define_flags}
+		includedirs{additional_includes}
+		set_include_path_to_self()
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
