@@ -118,6 +118,23 @@ namespace algorithm
 
 namespace core
 {
+	namespace
+	{
+		inline static constexpr stringview_t C_EMPTY_STRING = "";
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_path_directory(stringview_t path)
+		{
+			return string_utils::find_substr(path.data(), ".") == MAX(size_t);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_path_file(stringview_t path)
+		{
+			return string_utils::find_substr(path.data(), ".") != MAX(size_t);
+		}
+
+	} //- unnamed
 
 	namespace string_utils
 	{
@@ -475,6 +492,430 @@ namespace core
 	{
 		pthread_mutex_t* handle = (pthread_mutex_t*)m_internal;
 		pthread_mutex_unlock(handle);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	scolor::scolor() :
+		m_r(0), m_g(0), m_b(0), m_a(0)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	scolor::scolor(common_color color) :
+		m_r(0), m_g(0), m_b(0), m_a(0)
+	{
+		static constexpr spair<common_color, array_t<uint8_t, 4>> C_COMMON_COLORS[] = {
+		{common_color_red400,		{134, 38, 51, 255}},
+		{common_color_red200,		{239, 83, 80, 255}},
+		{common_color_red50,		{255, 205, 210, 255}},
+
+		{common_color_orange400,	{245, 124, 0, 255}},
+		{common_color_orange200,	{255, 171, 64, 255}},
+		{common_color_orange50,		{255, 224, 178, 255}},
+
+		{common_color_yellow400,	{251, 192, 45, 255}},
+		{common_color_yellow200,	{255, 235, 59, 255}},
+		{common_color_yellow50,		{255, 245, 157, 255}},
+
+		{common_color_green400,		{52, 168, 83, 255}},
+		{common_color_green200,		{129, 199, 132, 255}},
+		{common_color_green50,		{200, 230, 201, 255}},
+
+		{common_color_cyan400,		{0, 188, 212, 255}},
+		{common_color_cyan200,		{77, 208, 225, 255}},
+		{common_color_cyan50,		{178, 235, 242, 255}},
+
+		{common_color_blue400,		{33, 150, 243, 255}},
+		{common_color_blue200,		{144, 202, 249, 255}},
+		{common_color_blue50,		{187, 222, 251, 255}},
+
+		{common_color_magenta400,	{156, 39, 176, 255}},
+		{common_color_magenta200,	{233, 30, 99, 255}},
+		{common_color_magenta50,	{248, 187, 208, 255}},
+
+		{common_color_pink400,		{233, 30, 99, 255}},
+		{common_color_pink200,		{240, 98, 146, 255}},
+		{common_color_pink50,		{248, 187, 208, 255}},
+
+		{common_color_transparent,	{255, 255, 255, 255}},
+		{common_color_neutral0,		{0, 0, 0, 255}},		//- black
+		{common_color_neutral100,	{33, 33, 33, 255}},
+		{common_color_neutral200,	{66, 66, 66, 255}},
+		{common_color_neutral300,	{117, 117, 117, 255}},
+		{common_color_neutral400,	{153, 153, 153, 255}},
+		{common_color_neutral500,	{189, 189, 189, 255}},
+		{common_color_neutral600,	{224, 224, 224, 255}},
+		{common_color_neutral800,	{238, 238, 238, 255}},
+		{common_color_neutral1000,	{255, 255, 255, 255}}, //- white
+		};
+
+		const auto& c = C_COMMON_COLORS[color].second;
+		m_r = c[0];
+		m_g = c[1];
+		m_b = c[2];
+		m_a = c[3];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	scolor::scolor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) :
+		m_r(r), m_g(g), m_b(b), m_a(a)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	scolor::scolor(vec4_t normalized) :
+		m_r(SCAST(uint8_t, glm::clamp(normalized.r, 0.0f, 1.0f) * 255.0f)),
+		m_g(SCAST(uint8_t, glm::clamp(normalized.g, 0.0f, 1.0f) * 255.0f)),
+		m_b(SCAST(uint8_t, glm::clamp(normalized.b, 0.0f, 1.0f) * 255.0f)),
+		m_a(SCAST(uint8_t, glm::clamp(normalized.a, 0.0f, 1.0f) * 255.0f))
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	srect::srect(const vec2_t& xy, const vec2_t& wh) :
+		m_x(xy.x), m_y(xy.y), m_w(wh.x), m_h(wh.y)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	srect::srect(float x /*= 0.0f*/, float y /*= 0.0f*/, float w /*= 0.0f*/, float h /*= 0.0f*/) :
+		m_x(x), m_y(y), m_w(w), m_h(h)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void srect::set(float x, float y, float w, float h)
+	{
+		m_x = x;
+		m_y = y;
+		m_w = w;
+		m_h = h;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void srect::set_position(float x, float y)
+	{
+		m_x = x;
+		m_y = y;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void srect::set_dimension(float w, float h)
+	{
+		m_w = w;
+		m_h = h;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpath::cpath(stringview_t path) :
+		m_path(path.data())
+	{
+		m_dir = std::filesystem::directory_entry(m_path);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpath::cpath(const std::filesystem::path& path) :
+		m_path(path)
+	{
+		m_dir = std::filesystem::directory_entry(m_path);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpath::cpath(const cpath& path) :
+		m_path(path.m_path)
+	{
+		m_dir = std::filesystem::directory_entry(m_path);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	std::filesystem::path cpath::path() const
+	{
+		return m_path;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	std::filesystem::directory_entry cpath::dir() const
+	{
+		return m_dir;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cpath::exists() const
+	{
+		return m_dir.exists();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cpath::has_extension() const
+	{
+		return m_path.has_extension();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cpath::has_parent() const
+	{
+		return m_path.has_parent_path();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cpath::is_dir() const
+	{
+		return m_dir.is_directory();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cpath::is_file() const
+	{
+		return m_dir.is_regular_file();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpath cpath::parent() const
+	{
+		return { m_path.parent_path() };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpath& cpath::append(stringview_t path)
+	{
+		this->operator/=(path);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cpath::operator==(const std::filesystem::path& path)
+	{
+		return m_path == path;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cpath::operator==(stringview_t path)
+	{
+		return view() == path;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpath& cpath::operator/=(stringview_t path)
+	{
+		m_path /= path.data();
+		m_dir = std::filesystem::directory_entry(m_path);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpath& cpath::operator=(const cpath& path)
+	{
+		m_path = path.m_path;
+		m_dir = path.m_dir;
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cfilesystem::cfilesystem(stringview_t path) :
+		m_current(path)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cpath cfilesystem::construct(stringview_t path, stringview_t addition)
+	{
+		return cpath(path).append(addition);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cpath cfilesystem::cwd()
+	{
+		try
+		{
+			return std::filesystem::current_path().c_str();
+		}
+		catch (...)
+		{
+		}
+		return cpath(C_EMPTY_STRING);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::create_dir(stringview_t path)
+	{
+		return std::filesystem::create_directory(path.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::create_dir_in(stringview_t path, stringview_t name)
+	{
+		return create_dir(cpath(path).append(name).view());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::create_dir_recursive(stringview_t path)
+	{
+		return std::filesystem::create_directories(path.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::create_file(stringview_t path)
+	{
+		std::ofstream out(path.data());
+
+		std::filesystem::permissions(path.data(),
+			std::filesystem::perms::owner_all | std::filesystem::perms::group_all,
+			std::filesystem::perm_options::add);
+
+		out.close();
+
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::create_file_in(stringview_t path, stringview_t stem, stringview_t ext)
+	{
+		return create_file(fmt::format("{}/{}.{}", path.data(), stem.data(), ext.data()).data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::find_file(stringview_t path, stringview_t name)
+	{
+		return find_at(path, name, filesystem_lookup_type_file);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::find_file_by_stem(stringview_t path, stringview_t name)
+	{
+		cpath p(path);
+		if (p.exists())
+		{
+			for (const auto& entry : std::filesystem::directory_iterator{ p.path() })
+			{
+				if (entry.is_regular_file() && entry.path().stem().generic_u8string().c_str() == name)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::find_file_by_extension(stringview_t path, stringview_t name)
+	{
+		cpath p(path);
+		if (p.exists())
+		{
+			for (const auto& entry : std::filesystem::directory_iterator{ p.path() })
+			{
+				if (entry.is_regular_file() &&
+					entry.path().has_extension() &&
+					entry.path().extension().generic_u8string().c_str() == name)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::find_dir(stringview_t path, stringview_t name)
+	{
+		return find_at(path, name, filesystem_lookup_type_directory);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::find_at(stringview_t path, stringview_t name, filesystem_lookup_type type)
+	{
+		cpath p(path);
+		if (p.exists())
+		{
+			p.append(name);
+
+			for (const auto& entry : std::filesystem::directory_iterator{ p.path() })
+			{
+				switch (type)
+				{
+				default:
+				case filesystem_lookup_type_any:
+				{
+					if (p == entry.path())
+					{
+						return true;
+					}
+					break;
+				}
+				case filesystem_lookup_type_directory:
+				{
+					if (entry.is_directory() && p == entry.path())
+					{
+						return true;
+					}
+					break;
+				}
+				case filesystem_lookup_type_file:
+				{
+					if (entry.is_regular_file() && p == entry.path())
+					{
+						return true;
+					}
+					break;
+				}
+				}
+			}
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cpath cfilesystem::construct_relative_to_cwd(stringview_t path)
+	{
+		auto absolute = std::filesystem::absolute(cfilesystem::cwd().path());
+
+		return std::filesystem::relative(path.data(), absolute);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::forwards(stringview_t path, bool forced /*= false*/)
+	{
+		//- create copy
+		cpath copy(m_current);
+
+		copy /= path;
+
+		if (copy.exists())
+		{
+			m_current = std::move(copy);
+			return true;
+		}
+		else if(forced)
+		{
+			return std::filesystem::create_directory(m_current.path());
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::backwards()
+	{
+		if (m_current.has_parent())
+		{
+			m_current = m_current.parent();
+			return true;
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+
+	void cfilesystem::append(stringview_t path)
+	{
+		m_current /= path;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cfilesystem& cfilesystem::operator/=(stringview_t path)
+	{
+		append(path);
+		return *this;
 	}
 
 } //- core

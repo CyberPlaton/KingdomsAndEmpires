@@ -4,8 +4,6 @@
 #include <eastl.h>
 namespace stl = eastl;
 #else
-#include <cstddef>
-#include <memory>
 #include <vector>
 #include <map>
 #include <unordered_map>
@@ -18,6 +16,11 @@ namespace stl = std;
 #include <rttr.h>
 #include <magic_enum.h>
 #include <taskflow.h>
+#include <spdlog.h>
+#include <cstddef>
+#include <memory>
+#include <filesystem>
+#include <random>
 #include <cassert>
 
 #define STRINGIFY(s) #s
@@ -76,6 +79,87 @@ namespace core
 {
 	//- forward declarations
 	class cuuid;
+
+
+	//- common enums etc.
+	//------------------------------------------------------------------------------------------------------------------------
+	enum file_io_status : uint8_t
+	{
+		file_io_status_none = 0,
+		file_io_status_pending,
+		file_io_status_success,
+		file_io_status_failed,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum filesystem_lookup_type : uint8_t
+	{
+		filesystem_lookup_type_none = 0,
+		filesystem_lookup_type_directory,
+		filesystem_lookup_type_file,
+		filesystem_lookup_type_any,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum file_read_write_mode : uint8_t
+	{
+		file_read_write_mode_none		= 0,
+		file_read_write_mode_read		= BIT(0),
+		file_read_write_mode_write		= BIT(1),
+		file_read_write_mode_override	= BIT(2),
+		file_read_write_mode_truncate	= BIT(3),
+		file_read_write_mode_append		= BIT(4),
+		file_read_write_mode_binary		= BIT(5),
+		file_read_write_mode_text		= BIT(6),
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum common_color
+	{
+		//- convention: 400 - dark, 200 - normal, 50 - light
+		common_color_red400,
+		common_color_red200,
+		common_color_red50,
+
+		common_color_orange400,
+		common_color_orange200,
+		common_color_orange50,
+
+		common_color_yellow400,
+		common_color_yellow200,
+		common_color_yellow50,
+
+		common_color_green400,
+		common_color_green200,
+		common_color_green50,
+
+		common_color_cyan400,
+		common_color_cyan200,
+		common_color_cyan50,
+
+		common_color_blue400,
+		common_color_blue200,
+		common_color_blue50,
+
+		common_color_magenta400,
+		common_color_magenta200,
+		common_color_magenta50,
+
+		common_color_pink400,
+		common_color_pink200,
+		common_color_pink50,
+
+		common_color_transparent,
+		common_color_neutral0,		//- black
+		common_color_neutral100,
+		common_color_neutral200,
+		common_color_neutral300,
+		common_color_neutral400,
+		common_color_neutral500,
+		common_color_neutral600,
+		common_color_neutral800,
+		common_color_neutral1000,	//- white
+	};
 
 } //- core
 
@@ -280,7 +364,7 @@ namespace core
 
 	//- random number generator
 	//------------------------------------------------------------------------------------------------------------------------
-	class crandom
+	class crandom final
 	{
 	public:
 		crandom() = default;
@@ -305,7 +389,7 @@ namespace core
 
 	//- crossplatform and minimal mutex class: basically from bx
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmutex
+	class cmutex final
 	{
 	public:
 		cmutex();
@@ -316,6 +400,148 @@ namespace core
 
 	private:
 		__declspec(align(16)) uint8_t m_internal[64];
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class  cscope_mutex final
+	{
+	public:
+		cscope_mutex(cmutex& m);
+
+		~cscope_mutex();
+		cscope_mutex& operator=(const cscope_mutex&) = delete;
+		cscope_mutex(const cscope_mutex&) = delete;
+
+	private:
+		cmutex& m_mutex;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct scolor final
+	{
+		scolor();
+		scolor(common_color color);
+		scolor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+		scolor(vec4_t normalized);
+
+		inline float r() const { return glm::clamp(SCAST(float, m_r), 0.0f, 1.0f); }
+		inline float g() const { return glm::clamp(SCAST(float, m_g), 0.0f, 1.0f); }
+		inline float b() const { return glm::clamp(SCAST(float, m_b), 0.0f, 1.0f); }
+		inline float a() const { return glm::clamp(SCAST(float, m_a), 0.0f, 1.0f); }
+
+		uint8_t m_r, m_g, m_b, m_a;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct srect final
+	{
+		srect(const vec2_t& xy, const vec2_t& wh);
+		srect(float x = 0.0f, float y = 0.0f, float w = 0.0f, float h = 0.0f);
+
+		inline float x() const { return m_x; };
+		inline float y() const { return m_y; };
+		inline float w() const { return m_w; };
+		inline float h() const { return m_h; };
+
+		inline vec2_t top_left() const { return {m_x, m_y}; }
+		inline vec2_t top_right() const { return { m_x + m_w, m_y }; }
+		inline vec2_t bottom_left() const { return { m_x, m_y + m_h }; }
+		inline vec2_t bottom_right() const { return { m_x + m_w, m_y + m_h }; }
+
+		void set(float x, float y, float w, float h);
+		void set_position(float x, float y);
+		void set_dimension(float w, float h);
+
+		float m_x, m_y, m_w, m_h;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cnon_copyable
+	{
+	public:
+		cnon_copyable() = default;
+		~cnon_copyable() = default;
+	private:
+		cnon_copyable& operator=(const cnon_copyable&) = delete;
+		cnon_copyable(const cnon_copyable&) = delete;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cpath final
+	{
+	public:
+		cpath(stringview_t path);
+		cpath(const std::filesystem::path& path);
+		cpath(const cpath& path);
+		cpath& operator=(const cpath& path);
+		~cpath() = default;
+
+		std::filesystem::path path() const;
+		std::filesystem::directory_entry dir() const;
+
+		inline stringview_t view() const { return m_path.generic_u8string().data(); }
+		inline stringview_t extension() const { return m_path.extension().generic_u8string().data(); }
+		inline stringview_t stem() const { return m_path.stem().generic_u8string().data(); }
+
+		inline bool exists() const;
+		explicit operator bool() const { return exists(); }
+
+		inline bool has_extension() const;
+		inline bool has_parent() const;
+		inline bool is_dir() const;
+		inline bool is_file() const;
+
+		cpath parent() const;
+		cpath& append(stringview_t path);
+		cpath& operator /=(stringview_t path);
+		bool operator==(stringview_t path);
+		bool operator==(const std::filesystem::path& path);
+
+	private:
+		std::filesystem::path m_path;
+		std::filesystem::directory_entry m_dir;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cfilesystem
+	{
+	public:
+		cfilesystem() = default;
+		~cfilesystem() = default;
+		cfilesystem(stringview_t path);
+
+		static cpath construct(stringview_t path, stringview_t addition);
+		static cpath cwd();
+
+		static bool create_dir(stringview_t path);
+		static bool create_dir_in(stringview_t path, stringview_t name);
+		static bool create_dir_recursive(stringview_t path);
+
+		static bool create_file(stringview_t path);
+		static bool create_file_in(stringview_t path, stringview_t stem, stringview_t ext);
+
+		static bool find_file(stringview_t path, stringview_t name);
+		static bool find_file_by_stem(stringview_t path, stringview_t name);
+		static bool find_file_by_extension(stringview_t path, stringview_t name);
+		static bool find_dir(stringview_t path, stringview_t name);
+		static bool find_at(stringview_t path, stringview_t name, filesystem_lookup_type type);
+
+		static cpath construct_relative_to_cwd(stringview_t path);
+
+		inline cpath current() const { return m_current; }
+
+		bool forwards(stringview_t path, bool forced = false);
+		bool backwards();
+
+		void append(stringview_t path);
+		cfilesystem& operator/=(stringview_t path);
+
+		inline bool exists() const { return m_current.exists(); };
+		inline bool is_file() const { return m_current.is_file(); };
+		inline bool is_dir() const { return m_current.is_dir(); };
+
+	private:
+		cpath m_current;
 	};
 
 } //- core
