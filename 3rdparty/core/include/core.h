@@ -24,6 +24,8 @@ namespace stl = std;
 #include <random>
 #include <cassert>
 #include <future>
+#include <chrono>
+#include <any>
 
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
@@ -506,7 +508,7 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cfilesystem
+	class cfilesystem final
 	{
 	public:
 		cfilesystem() = default;
@@ -551,7 +553,7 @@ namespace core
 	//- Data is automatically free when object goes out of scope.
 	//- Object wíll not go out of scope until async task is finished.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cfile
+	class cfile final
 	{
 	public:
 		cfile(const cpath& path, int mode = file_read_write_mode_read | file_read_write_mode_text);
@@ -576,6 +578,85 @@ namespace core
 		const stringview_t m_path;
 		int m_mode = file_read_write_mode_none;
 		file_io_status m_status;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class ctimer final
+	{
+	public:
+		ctimer(bool paused = true);
+		~ctimer() = default;
+
+		void start();
+
+		inline bool started() const;
+		inline size_t secs() const;
+		inline float millisecs() const;
+		inline size_t microsecs() const;
+
+	private:
+		std::chrono::time_point<std::chrono::high_resolution_clock> m_timepoint;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cany final
+	{
+	public:
+		cany() = default;
+		template<typename TType>
+		cany(TType&& data) :
+			m_data(data)
+		{
+		}
+		template<typename TType>
+		cany(const TType& data) :
+			m_data(data)
+		{
+		}
+		template<typename TType>
+		cany(TType data) :
+			m_data(data)
+		{
+		}
+		cany& operator=(const cany& other);
+		~cany();
+
+		inline decltype(auto) type() const { return m_data.type().hash_code(); }
+		inline stringview_t type_name() const { return m_data.type().name(); }
+		inline bool empty() const { return !m_data.has_value(); }
+
+		template<typename TType>
+		inline bool is() const
+		{
+			return typeid(TType).hash_code() == type();
+		}
+
+		template<typename TType>
+		TType cast() const noexcept
+		{
+			ASSERT(is<TType>(), "Casting to another data type is not allowed");
+
+			return std::any_cast<TType>(m_data);
+		}
+
+		template<typename TType>
+		TType& cast_ref() noexcept
+		{
+			ASSERT(is<TType>(), "Casting to another data type is not allowed");
+
+			return std::any_cast<TType&>(m_data);
+		}
+
+		template<typename TType>
+		const TType& cast_ref() const noexcept
+		{
+			ASSERT(is<TType>(), "Casting to another data type is not allowed");
+
+			return std::any_cast<TType&>(m_data);
+		}
+
+	private:
+		std::any m_data;
 	};
 
 } //- core

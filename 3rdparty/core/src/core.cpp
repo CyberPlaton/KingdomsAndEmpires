@@ -159,6 +159,8 @@ namespace core
 	namespace
 	{
 		inline static constexpr stringview_t C_EMPTY_STRING = "";
+		inline static constexpr size_t C_TO_SEC = 1 / (1000 * 1000);
+		inline static constexpr size_t C_TO_MILLISEC = 1 / (1000);
 
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static bool is_path_directory(stringview_t path)
@@ -1084,11 +1086,13 @@ namespace core
 		return *this;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	cfile::cfile(const cpath& path, int mode /*= file_read_write_mode_read | file_read_write_mode_text*/) :
 		m_data(nullptr), m_datasize(0), m_mode(mode), m_status(file_io_status_none), m_path(path.view())
 	{
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	cfile::~cfile()
 	{
 		if (m_task.valid())
@@ -1112,7 +1116,7 @@ namespace core
 		}
 	}
 
-
+	//------------------------------------------------------------------------------------------------------------------------
 	core::file_io_status cfile::read_sync()
 	{
 		ASSERT(!!(m_mode & file_read_write_mode_read), "cfile must be created with read mode");
@@ -1146,6 +1150,7 @@ namespace core
 		return m_status;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	core::file_io_status cfile::write_sync(void* data, unsigned data_size)
 	{
 		ASSERT(!!(m_mode & file_read_write_mode_write), "cfile must be created with write mode");
@@ -1174,6 +1179,7 @@ namespace core
 		return m_status;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	core::file_io_status cfile::read_async()
 	{
 		ASSERT(!!(m_mode & file_read_write_mode_read), "cfile must be created with read mode");
@@ -1215,6 +1221,7 @@ namespace core
 		return m_status;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	core::file_io_status cfile::write_async(void* data, unsigned data_size)
 	{
 		ASSERT(!!(m_mode & file_read_write_mode_write), "cfile must be created with write mode");
@@ -1245,6 +1252,72 @@ namespace core
 		}
 
 		return m_status;
+	}
+
+	using namespace std::chrono_literals;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctimer::ctimer(bool paused /*= true*/) :
+		m_timepoint(0s)
+	{
+		if (!paused)
+		{
+			start();
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ctimer::start()
+	{
+		m_timepoint = std::chrono::high_resolution_clock::now();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool ctimer::started() const
+	{
+		return m_timepoint.time_since_epoch().count() > 0;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	size_t ctimer::secs() const
+	{
+		auto e = microsecs();
+
+		return e * C_TO_SEC;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	float ctimer::millisecs() const
+	{
+		auto e = microsecs();
+
+		return SCAST(float, e * C_TO_MILLISEC);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	size_t ctimer::microsecs() const
+	{
+		ASSERT(started(), "Timer must be started before it can be used");
+
+		auto now = std::chrono::high_resolution_clock::now();
+
+		return SCAST(size_t, std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count() -
+			std::chrono::time_point_cast<std::chrono::microseconds>(m_timepoint).time_since_epoch().count());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cany::~cany()
+	{
+		if (!empty())
+		{
+			m_data.reset();
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cany& cany::operator=(const cany& other)
+	{
+		m_data = other.m_data;
 	}
 
 } //- core
