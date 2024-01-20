@@ -5,7 +5,7 @@ function core()
 					{},
 					{},
 					{},
-					{"rttr"},
+					{"rttr", "glm"},
 					"c++",
 					{},
 					{})

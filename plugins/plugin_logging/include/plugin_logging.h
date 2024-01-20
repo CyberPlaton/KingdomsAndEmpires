@@ -1,8 +1,9 @@
 #pragma once
 #include "config.hpp"
 #include <spdlog.h>
+#include <core.h>
 
-namespace plugin_logging
+namespace logging
 {
 	//------------------------------------------------------------------------------------------------------------------------
 	enum class logging_mode : uint8_t
@@ -14,13 +15,13 @@ namespace plugin_logging
 	//------------------------------------------------------------------------------------------------------------------------
 	enum class logging_verbosity : uint8_t
 	{
-		logging_verbosity_trace = SPDLOG_LEVEL_TRACE,		//- internal
-		logging_verbosity_debug = SPDLOG_LEVEL_DEBUG,		//- internal
-		logging_verbosity_info = SPDLOG_LEVEL_INFO,
-		logging_verbosity_warn = SPDLOG_LEVEL_WARN,
-		logging_verbosity_error = SPDLOG_LEVEL_ERROR,
-		logging_verbosity_critical = SPDLOG_LEVEL_CRITICAL,
-		logging_verbosity_off = SPDLOG_LEVEL_OFF + 1,
+		logging_verbosity_trace		= SPDLOG_LEVEL_TRACE,	//- internal
+		logging_verbosity_debug		= SPDLOG_LEVEL_DEBUG,	//- internal
+		logging_verbosity_info		= SPDLOG_LEVEL_INFO,
+		logging_verbosity_warn		= SPDLOG_LEVEL_WARN,
+		logging_verbosity_error		= SPDLOG_LEVEL_ERROR,
+		logging_verbosity_critical	= SPDLOG_LEVEL_CRITICAL,
+		logging_verbosity_off		= SPDLOG_LEVEL_OFF + 1,
 	};
 
 	LOG_API void log_app_time();
@@ -32,4 +33,4 @@ namespace plugin_logging
 	LOG_API void log_error();
 	LOG_API void log_critical();
 
-} //- plugin_logging
+} //- logging

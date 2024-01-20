@@ -4,8 +4,8 @@ function plugin_logging()
 	add_target_library("plugin_logging",
 					{},
 					{},
-					{},
-					{"spdlog"},
+					{"rttr"},
+					{"spdlog", "core"},
 					false,
 					"c++")
 end
