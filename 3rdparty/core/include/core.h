@@ -33,34 +33,42 @@
 static __class& instance() \
 { static __class __member; return __member;}
 
+#include <glm.h>
+#include <rttr.h>
+
+#if defined(CORE_USE_EASTL)
+#include <eastl.h>
+namespace stl = eastl;
+#else
 #include <cstddef>
 #include <memory>
-template<class T>
-using ref_t = std::shared_ptr<T>;
-template<class T>
-using ptr_t = std::unique_ptr<T>;
-#include <string>
-using string_t = std::string;
-using stringview_t = std::string_view;
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <queue>
-#include <glm.h>
-#include <rttr.h>
+#include <string>
+namespace stl = std;
+#endif
+
 template<class T>
-using queue_t = std::queue<T>;
+using ref_t = stl::shared_ptr<T>;
 template<class T>
-using vector_t = std::vector<T>;
+using ptr_t = stl::unique_ptr<T>;
+using string_t = stl::string;
+using stringview_t = stl::string_view;
+template<class T>
+using queue_t = stl::queue<T>;
+template<class T>
+using vector_t = stl::vector<T>;
 template<class K, class T>
-using umap_t = std::unordered_map<K, T>;
+using umap_t = stl::unordered_map<K, T>;
 template<class T>
-using uset_t = std::unordered_set<T>;
+using uset_t = stl::unordered_set<T>;
 template<class K, class T>
-using map_t = std::map<K, T>;
+using map_t = stl::map<K, T>;
 template<class T, unsigned S>
-using array_t = std::array<T, S>;
+using array_t = stl::array<T, S>;
 
 using handle_type_t = uint16_t;
 using technique_t = handle_type_t;

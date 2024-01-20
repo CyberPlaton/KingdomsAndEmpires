@@ -105,8 +105,8 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		void split(const string_t& string, char delimiter, std::vector< string_t >& storage)
 		{
-			std::stringstream ss(string);
-			string_t token;
+			std::stringstream ss(string.c_str());
+			std::string token;
 
 			while (std::getline(ss, token, delimiter))
 			{
