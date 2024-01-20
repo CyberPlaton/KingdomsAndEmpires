@@ -17,6 +17,12 @@ RTTR_REGISTRATION
 	registration::class_<spair<handle_type_t, handle_type_t>>("spair")
 		.property("first",		&spair<handle_type_t, handle_type_t>::first)
 		.property("second",		&spair<handle_type_t, handle_type_t>::second);
+
+	registration::class_<smaterial_pair>("smaterial_pair")
+		.property("first",		&smaterial_pair::first)
+		.property("second",		&smaterial_pair::second);
+
+
 };
 
 namespace algorithm
@@ -327,6 +333,148 @@ namespace core
 		string_t s;
 		write_string(m_data, s);
 		return s;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crandom::seed(unsigned value/* = 0*/)
+	{
+		if (value == 0)
+		{
+			C_RANDOM_ENGINE.seed(std::random_device()());
+		}
+		else
+		{
+			C_RANDOM_ENGINE.seed(value);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	float crandom::random_float()
+	{
+		return SCAST(float, m_distribution(C_RANDOM_ENGINE));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned crandom::random_int()
+	{
+		return m_distribution(C_RANDOM_ENGINE);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	float crandom::alternate_one_float()
+	{
+		return (m_distribution(C_RANDOM_ENGINE) % 2 == 0) ? -1.0f : 1.0f;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	int crandom::alternate_one_int()
+	{
+		return (m_distribution(C_RANDOM_ENGINE) % 2 == 0) ? -1 : 1;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	float crandom::normalized_float()
+	{
+		return SCAST(float, m_distribution(C_RANDOM_ENGINE) / MAX(unsigned));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	float crandom::in_range_float(float minimum, float maximum)
+	{
+		return minimum + normalized_float() * maximum;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned crandom::in_range_int(unsigned minimum, unsigned maximum)
+	{
+		std::uniform_int_distribution<std::mt19937::result_type> dist(minimum, maximum);
+
+		return dist(C_RANDOM_ENGINE);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t crandom::normalized_vec2()
+	{
+		return { normalized_float(), normalized_float() };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t crandom::in_range_vec2(float minimum, float maximum)
+	{
+		return { in_range_float(minimum, maximum), in_range_float(minimum, maximum) };
+	}
+
+#if CORE_PLATFORM_WINDOWS || CORE_PLATFORM_XBOXONE || CORE_PLATFORM_XBOXSERIES
+	#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <errno.h>
+	typedef CRITICAL_SECTION pthread_mutex_t;
+	typedef unsigned pthread_mutexattr_t;
+	inline int pthread_mutex_lock(pthread_mutex_t* _mutex)
+	{
+		EnterCriticalSection(_mutex);
+		return 0;
+	}
+
+	inline int pthread_mutex_unlock(pthread_mutex_t* _mutex)
+	{
+		LeaveCriticalSection(_mutex);
+		return 0;
+	}
+
+	inline int pthread_mutex_trylock(pthread_mutex_t* _mutex)
+	{
+		return TryEnterCriticalSection(_mutex) ? 0 : EBUSY;
+	}
+
+	inline int pthread_mutex_init(pthread_mutex_t* _mutex, pthread_mutexattr_t* /*_attr*/)
+	{
+		InitializeCriticalSection(_mutex);
+		return 0;
+	}
+
+	inline int pthread_mutex_destroy(pthread_mutex_t* _mutex)
+	{
+		DeleteCriticalSection(_mutex);
+		return 0;
+	}
+#endif
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmutex::cmutex()
+	{
+		static_assert(sizeof(pthread_mutex_t) <= sizeof(m_internal), "Critical");
+
+		pthread_mutexattr_t attr;
+
+#if CORE_PLATFORM_WINDOWS || CORE_PLATFORM_XBOXONE || CORE_PLATFORM_XBOXSERIES
+#else
+		pthread_mutexattr_init(&attr);
+		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+#endif
+		pthread_mutex_t* handle = (pthread_mutex_t*)m_internal;
+		pthread_mutex_init(handle, &attr);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmutex::~cmutex()
+	{
+		pthread_mutex_t* handle = (pthread_mutex_t*)m_internal;
+		pthread_mutex_destroy(handle);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmutex::lock()
+	{
+		pthread_mutex_t* handle = (pthread_mutex_t*)m_internal;
+		pthread_mutex_lock(handle);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmutex::unlock()
+	{
+		pthread_mutex_t* handle = (pthread_mutex_t*)m_internal;
+		pthread_mutex_unlock(handle);
 	}
 
 } //- core

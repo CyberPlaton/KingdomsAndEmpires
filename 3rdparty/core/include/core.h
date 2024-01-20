@@ -1,4 +1,5 @@
 #pragma once
+#include "detail/core_platform.hpp"
 #if defined(CORE_USE_EASTL)
 #include <eastl.h>
 namespace stl = eastl;
@@ -22,23 +23,6 @@ namespace stl = std;
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
 #define SSTRING(s) STRING(s)
-#define CORE_PLATFORM_WINDOWS 0
-#define CORE_PLATFORM_LINUX 0
-#define CORE_PLATFORM_OSX 0
-#define CORE_PLATFORM_ANDROID 0
-#define CORE_PLATFORM_IOS 0
-#define CORE_PLATFORM_NX 0
-#define CORE_PLATFORM_XBOXONE 0
-#define CORE_PLATFORM_PS4 0
-#define CORE_PLATFORM_PS5 0
-#define CORE_PLATFORM_DESKTOP 0
-#define CORE_PLATFORM_MOBILE 0
-#define CORE_PLATFORM_CONSOLE 0
-#define CORE_COMPILER_MSVC 0
-#define CORE_COMPILER_CLANG 0
-#define CORE_COMPILER_GCC 0
-#define CORE_ARCH_64BIT 0
-#define CORE_ARCH_32BIT 0
 
 #define MAX(type) std::numeric_limits<type>().max()
 #define MIN(type) std::numeric_limits<type>().min()
@@ -232,6 +216,10 @@ namespace core
 		TValue second;
 	};
 
+	//- define some common types of pairs
+	//------------------------------------------------------------------------------------------------------------------------
+	using smaterial_pair = spair<texture_t, material_t>;
+
 	//------------------------------------------------------------------------------------------------------------------------
 	class casync final
 	{
@@ -288,6 +276,46 @@ namespace core
 
 		RTTR_ENABLE();
 		RTTR_REGISTRATION_FRIEND;
+	};
+
+	//- random number generator
+	//------------------------------------------------------------------------------------------------------------------------
+	class crandom
+	{
+	public:
+		crandom() = default;
+		~crandom() = default;
+
+		static void seed(unsigned value = 0);
+
+		float random_float();
+		unsigned random_int();
+		float alternate_one_float();
+		int alternate_one_int();
+		float normalized_float();
+		float in_range_float(float minimum, float maximum);
+		unsigned in_range_int(unsigned minimum, unsigned maximum);
+		vec2_t normalized_vec2();
+		vec2_t in_range_vec2(float minimum, float maximum);
+
+	private:
+		static inline std::mt19937 C_RANDOM_ENGINE;
+		std::uniform_int_distribution<std::mt19937::result_type> m_distribution;
+	};
+
+	//- crossplatform and minimal mutex class: basically from bx
+	//------------------------------------------------------------------------------------------------------------------------
+	class cmutex
+	{
+	public:
+		cmutex();
+		~cmutex();
+
+		void lock();
+		void unlock();
+
+	private:
+		__declspec(align(16)) uint8_t m_internal[64];
 	};
 
 } //- core
