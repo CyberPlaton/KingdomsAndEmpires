@@ -66,7 +66,7 @@ namespace algorithm
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned hash(stringview_t string)
 	{
-		unsigned len = string.length();
+		auto len = static_cast<unsigned>(string.length());
 		const char* s = string.data();
 		unsigned h = len;
 		for (auto i = 0u; i < len; ++s, ++i)
@@ -85,7 +85,7 @@ namespace algorithm
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned percentage(float total_value, float part_value)
 	{
-		return (part_value / total_value) * 100;
+		return SCAST(unsigned, (part_value / total_value) * 100);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -241,7 +241,7 @@ namespace core
 		unsigned i, j, rnd;
 		for (i = 0; i < (16 / C_RANDOM_BYTES_COUNT); i++)
 		{
-			rnd = dist(random_engine);
+			rnd = SCAST(unsigned, dist(random_engine));
 			for (j = 0; j < C_RANDOM_BYTES_COUNT; j++)
 			{
 				m_data[i * C_RANDOM_BYTES_COUNT + j] = (0xff & rnd >> (8 * j));
