@@ -1,4 +1,23 @@
 #pragma once
+#if defined(CORE_USE_EASTL)
+#include <eastl.h>
+namespace stl = eastl;
+#else
+#include <cstddef>
+#include <memory>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <string>
+namespace stl = std;
+#endif
+#include <glm.h>
+#include <rttr.h>
+#include <magic_enum.h>
+#include <taskflow.h>
+#include <cassert>
 
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
@@ -24,32 +43,16 @@
 #define MAX(type) std::numeric_limits<type>().max()
 #define MIN(type) std::numeric_limits<type>().min()
 #define BIT(x) 1 << x
-#include <cassert>
 #define CORE_ASSERT(expression, message) assert((expression, message))
 #define ASSERT(expression, ...) CORE_ASSERT(expression, __VA_ARGS__)
 #define SCAST(type, value) static_cast<type>(value)
+#ifdef ARRAYSIZE
+#undef ARRAYSIZE
+#endif
 #define ARRAYSIZE(__array) ((u32)(sizeof(__array) / sizeof(*(__array))))
 #define STATIC_INSTANCE(__class, __member) \
 static __class& instance() \
 { static __class __member; return __member;}
-
-#include <glm.h>
-#include <rttr.h>
-
-#if defined(CORE_USE_EASTL)
-#include <eastl.h>
-namespace stl = eastl;
-#else
-#include <cstddef>
-#include <memory>
-#include <vector>
-#include <map>
-#include <unordered_map>
-#include <unordered_set>
-#include <queue>
-#include <string>
-namespace stl = std;
-#endif
 
 template<class T>
 using ref_t = stl::shared_ptr<T>;
@@ -92,6 +95,18 @@ namespace core
 
 } //- core
 
+namespace math
+{
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	bool almost_equal(TType x, TType y)
+	{
+		return glm::distance(glm::abs<TType>(x), glm::abs<TType>(y)) < glm::epsilon<TType>();
+	}
+
+} //- math
+
 namespace algorithm
 {
 	vec3_t decompose_rotation(const mat4_t& transform);
@@ -111,6 +126,81 @@ namespace algorithm
 	bool is_valid_handle(handle_type_t h);
 	handle_type_t invalid_handle();
 
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType, typename TIterator>
+	bool find(TIterator begin, TIterator end, const TType& value)
+	{
+		return stl::find(begin, end, value) != end;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TEnum>
+	stringview_t enum_to_string(TEnum value)
+	{
+		return magic_enum::enum_name(value);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TEnum>
+	TEnum string_to_enum(stringview_t value)
+	{
+		return magic_enum::enum_cast<TEnum>(value);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TStructure>
+	void erase_at_index(TStructure& structure, unsigned index)
+	{
+		structure.erase(structure.begin() + index);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TStructure, typename TType>
+	void erase_first(TStructure& structure, TType value)
+	{
+		structure.erase(value);
+	}
+
+	//- Iterate a data structure and call given function with the iterator as argument.
+	//- If the callable returns true then we erase the element and return true, if nothing is removed we return false.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TStructure, typename TCallable>
+	bool erase_if(TStructure& structure, TCallable&& function)
+	{
+		for (auto it = structure.begin(); it != structure.end(); ++it)
+		{
+			if (function(it))
+			{
+				structure.erase(it);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TStructure, typename TCallable>
+	void copy_if(const TStructure& from, TStructure& to, TCallable&& function)
+	{
+		stl::copy_if(from.begin(), from.end(), to, function);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TIterator>
+	void shuffle(TIterator begin, TIterator end, unsigned seed = time(NULL))
+	{
+		static const std::default_random_engine C_RANDOM_ENGINE(seed);
+
+		stl::shuffle(begin, end, C_RANDOM_ENGINE);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TIterator, typename TCallable>
+	void sort(TIterator begin, TIterator end, TCallable&& function)
+	{
+		stl::sort(begin, end, function);
+	}
+
 } //- algorithm
 
 namespace core
@@ -119,7 +209,7 @@ namespace core
 	namespace string_utils
 	{
 
-		void split(const string_t& string, char delimiter, std::vector< string_t >& storage);
+		void split(const string_t& string, char delimiter, stl::vector< string_t >& storage);
 		void insert(string_t& string, const string_t& to_insert_one, size_t index);
 		void push_front(string_t& string, const string_t& to_prepend_one);
 		void push_back(string_t& string, const string_t& to_append_one);
@@ -133,8 +223,37 @@ namespace core
 
 	} //- string_utils
 
+	//- RTTR aware replacement for std::pair<>
 	//------------------------------------------------------------------------------------------------------------------------
-	class cuuid
+	template<typename TKey, typename TValue>
+	struct spair
+	{
+		TKey first;
+		TValue second;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class casync final
+	{
+	public:
+		template<typename TCallable>
+		static void launch_silent(TCallable&& function)
+		{
+			C_EXECUTOR.silent_async(function);
+		}
+
+		template<typename TCallable>
+		static decltype(auto) launch_async(TCallable&& function)
+		{
+			return C_EXECUTOR.async(function);
+		}
+
+	private:
+		static inline tf::Executor C_EXECUTOR;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cuuid final
 	{
 	public:
 		cuuid();
@@ -145,6 +264,10 @@ namespace core
 
 		inline stringview_t view() const { return m_string.data(); }
 		inline const char* c_str() const { return m_string.c_str(); }
+		inline unsigned hash() const { return m_hash; }
+		inline bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
+		inline bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
+		inline bool is_higher_as(const cuuid& uuid) const { return compare(uuid) > 0; }
 
 	private:
 		inline static const auto C_RANDOM_BYTES_COUNT = 4;

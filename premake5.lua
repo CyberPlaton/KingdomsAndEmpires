@@ -4,7 +4,7 @@ VERBOSE = true
 SCRIPTS_DIR = "<undefined>"
 VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
-THIRDPARTY = {"box2d", "sokol", "spdlog", "core", "rttr", "glm", "EASTL"}
+THIRDPARTY = {"box2d", "sokol", "spdlog", "core", "rttr", "glm", "EASTL", "magic_enum", "taskflow"}
 PLUGINS = {"test", "test2", "plugin_logging"}
 EXES = {"engine_launcher"}
 PLATFORM = "<undefined>"
@@ -26,6 +26,7 @@ workspace("KingdomsAndEmpires")
 		system "linux"
 	elseif os.host() == "windows" then
 		PLATFORM = "windows"
+
 		system "windows"
 	elseif os.host() == "macosx" then
 		PLATFORM = "macosx"

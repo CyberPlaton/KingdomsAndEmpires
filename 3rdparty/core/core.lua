@@ -5,7 +5,7 @@ function core()
 					{},
 					{"CORE_USE_EASTL"},
 					{},
-					{"rttr", "glm", "EASTL"},
+					{"rttr", "glm", "EASTL", "magic_enum", "taskflow"},
 					"c++",
 					{},
 					{})
