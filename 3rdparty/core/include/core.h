@@ -22,6 +22,7 @@ namespace stl = std;
 #include <filesystem>
 #include <random>
 #include <cassert>
+#include <future>
 
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
@@ -542,6 +543,37 @@ namespace core
 
 	private:
 		cpath m_current;
+	};
+
+	//- Helper class for performing I/O operations both sync and async.
+	//- Data is automatically free when object goes out of scope.
+	//- Object wíll not go out of scope until async task is finished.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cfile
+	{
+	public:
+		cfile(const cpath& path, int mode = file_read_write_mode_read | file_read_write_mode_text);
+		~cfile();
+
+		inline file_io_status status() const { return m_status; }
+		inline spair<void*, unsigned> data() const { return { m_data, m_datasize }; }
+		template<typename TType>
+		inline spair<TType*, unsigned> data() const { { SCAST(TType*, m_data), m_datasize }; }
+
+		file_io_status read_sync();
+		file_io_status write_sync(void* data, unsigned data_size);
+
+		file_io_status read_async();
+		file_io_status write_async(void* data, unsigned data_size);
+
+	private:
+		void* m_data;
+		unsigned m_datasize;
+
+		std::future<void> m_task;
+		const stringview_t m_path;
+		int m_mode = file_read_write_mode_none;
+		file_io_status m_status;
 	};
 
 } //- core

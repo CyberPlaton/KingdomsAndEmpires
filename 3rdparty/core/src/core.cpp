@@ -134,6 +134,135 @@ namespace core
 			return string_utils::find_substr(path.data(), ".") != MAX(size_t);
 		}
 
+		//- @reference: raylib UnloadFileData.
+		//- unload data allocated by load_binary_file_data
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void unload_file_binary_data(uint8_t* data)
+		{
+			std::free(data);
+		}
+
+		//- @reference: raylib LoadFileData
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out)
+		{
+			uint8_t* data = nullptr;
+			*data_size_out = 0;
+
+			if (file_path.data() != nullptr)
+			{
+				FILE* file = fopen(file_path.data(), "rb");
+
+				if (file != nullptr)
+				{
+					fseek(file, 0, SEEK_END);
+					auto size = ftell(file);
+					fseek(file, 0, SEEK_SET);
+
+					if (size > 0)
+					{
+						data = (uint8_t*)std::malloc(sizeof(uint8_t) * size);
+
+						unsigned count = SCAST(unsigned, fread(data, sizeof(uint8_t), size, file));
+						*data_size_out = count;
+					}
+				}
+			}
+			return data;
+		}
+
+		//- @reference: raylib SaveFileData
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size)
+		{
+			if (file_path.data() != nullptr)
+			{
+				FILE* file = fopen(file_path.data(), "wb");
+
+				if (file != nullptr)
+				{
+					auto count = SCAST(unsigned, fwrite(data, sizeof(uint8_t), data_size, file));
+
+					fclose(file);
+
+					if (count == data_size)
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		//- @reference: raylib UnloadFileText.
+		//- unload data allocated by load_text_file_data
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void unload_file_text_data(char* text)
+		{
+			std::free(text);
+		}
+
+		//- @reference: raylib LoadFileText
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static char* load_text_file_data(stringview_t file_path)
+		{
+			char* text = nullptr;
+
+			if (file_path.data() != nullptr)
+			{
+				FILE* file = fopen(file_path.data(), "rt");
+
+				if (file != NULL)
+				{
+					fseek(file, 0, SEEK_END);
+					auto size = SCAST(unsigned, ftell(file));
+					fseek(file, 0, SEEK_SET);
+
+					if (size > 0)
+					{
+						text = SCAST(char*, std::malloc((size + 1) * sizeof(char)));
+
+						if (text != nullptr)
+						{
+							auto count = SCAST(unsigned, fread(text, sizeof(char), size, file));
+
+							if (count < size)
+							{
+								text = SCAST(char*, std::realloc(text, count + 1));
+							}
+
+							text[count] = '\0';
+						}
+					}
+					fclose(file);
+				}
+			}
+			return text;
+		}
+
+		//- @reference: raylib SaveFileText
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool save_text_file_data(stringview_t file_path, stringview_t text)
+		{
+			if (file_path.data() != nullptr)
+			{
+				FILE* file = fopen(file_path.data(), "wt");
+
+				if (file != nullptr)
+				{
+					auto count = fprintf(file, "%s", text.data());
+
+					fclose(file);
+
+					if (count > 0)
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
 	} //- unnamed
 
 	namespace string_utils
@@ -714,7 +843,6 @@ namespace core
 	cfilesystem::cfilesystem(stringview_t path) :
 		m_current(path)
 	{
-
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -916,6 +1044,169 @@ namespace core
 	{
 		append(path);
 		return *this;
+	}
+
+	cfile::cfile(const cpath& path, int mode /*= file_read_write_mode_read | file_read_write_mode_text*/) :
+		m_data(nullptr), m_datasize(0), m_mode(mode), m_status(file_io_status_none), m_path(path.view())
+	{
+	}
+
+	cfile::~cfile()
+	{
+		if (m_task.valid())
+		{
+			m_task.wait();
+		}
+		if (m_data && m_datasize > 0)
+		{
+			if (!!(m_mode & file_read_write_mode_text))
+			{
+				//- unload text file data
+				unload_file_text_data(SCAST(char*, m_data));
+			}
+			else if (!!(m_mode & file_read_write_mode_binary))
+			{
+				//- unload binary file data
+				unload_file_binary_data(SCAST(uint8_t*, m_data));
+			}
+			m_data = nullptr;
+			m_datasize = 0;
+		}
+	}
+
+
+	core::file_io_status cfile::read_sync()
+	{
+		ASSERT(!!(m_mode & file_read_write_mode_read), "cfile must be created with read mode");
+
+		if (!m_task.valid())
+		{
+			if (!!(m_mode & file_read_write_mode_text))
+			{
+				//- load text file
+				m_data = SCAST(void*, load_text_file_data(m_path));
+			}
+			else if (!!(m_mode & file_read_write_mode_binary))
+			{
+				//- load binary file
+				m_data = SCAST(void*, load_binary_file_data(m_path, &m_datasize));
+			}
+
+			if (m_data && m_datasize > 0)
+			{
+				m_status = file_io_status_success;
+			}
+			else
+			{
+				m_status = file_io_status_failed;
+			}
+		}
+		else
+		{
+			m_task.wait();
+		}
+		return m_status;
+	}
+
+	core::file_io_status cfile::write_sync(void* data, unsigned data_size)
+	{
+		ASSERT(!!(m_mode & file_read_write_mode_write), "cfile must be created with write mode");
+
+		if (!m_task.valid())
+		{
+			if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
+			{
+				//- write text file data
+				m_status = save_text_file_data(m_path.data(), SCAST(char*, m_data)) == true ? file_io_status_success : file_io_status_failed;
+			}
+			else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
+			{
+				//- write binary file date
+				m_status = save_binary_file_data(m_path.data(), SCAST(uint8_t*, m_data), m_datasize) == true ? file_io_status_success : file_io_status_failed;
+			}
+			else
+			{
+				m_status = file_io_status_failed;
+			}
+		}
+		else
+		{
+			m_task.wait();
+		}
+		return m_status;
+	}
+
+	core::file_io_status cfile::read_async()
+	{
+		ASSERT(!!(m_mode & file_read_write_mode_read), "cfile must be created with read mode");
+
+		if (!m_task.valid())
+		{
+			//- begin async load operation
+			m_task = casync::launch_async([&]() -> void
+				{
+					m_status = file_io_status_pending;
+
+					if (!!(m_mode & file_read_write_mode_text))
+					{
+						//- load text file
+						m_data = SCAST(void*, load_text_file_data(m_path));
+					}
+					else if (!!(m_mode & file_read_write_mode_binary))
+					{
+						//- load binary file
+						m_data = SCAST(void*, load_binary_file_data(m_path, &m_datasize));
+					}
+					else
+					{
+						m_status = file_io_status_failed;
+						return;
+					}
+
+					if (m_data && m_datasize > 0)
+					{
+						m_status = file_io_status_success;
+					}
+					else
+					{
+						m_status = file_io_status_failed;
+					}
+				});
+		}
+
+		return m_status;
+	}
+
+	core::file_io_status cfile::write_async(void* data, unsigned data_size)
+	{
+		ASSERT(!!(m_mode & file_read_write_mode_write), "cfile must be created with write mode");
+
+		if (!m_task.valid())
+		{
+			//- begin async save operation
+			m_task = casync::launch_async([&]() -> void
+				{
+					m_status = file_io_status_pending;
+
+					if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
+					{
+						//- write text file data
+						m_status = save_text_file_data(m_path.data(), SCAST(char*, m_data)) == true ? file_io_status_success : file_io_status_failed;
+					}
+					else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
+					{
+						//- write binary file data
+						m_status = save_binary_file_data(m_path.data(), SCAST(uint8_t*, m_data), m_datasize) == true ? file_io_status_success : file_io_status_failed;
+					}
+					else
+					{
+						m_status = file_io_status_failed;
+						return;
+					}
+				});
+		}
+
+		return m_status;
 	}
 
 } //- core
