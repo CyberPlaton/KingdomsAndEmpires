@@ -5,12 +5,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function set_include_path_to_engine()
-
 	includedirs{path.join(WORKSPACE_DIR, "engine", "include")}
-
-	if VERBOSE == true then
-		print("\t\tadding engine dependency: " .. path.join(WORKSPACE_DIR, "engine", "include"))
-	end
 end
 
 function set_include_path_to_self(name)
@@ -60,7 +55,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 
 		buildoptions{build_options}
 		defines{define_flags}
-		set_include_path_to_self()
+		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
@@ -71,13 +66,11 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 			p = plugin_deps[ii]
 			links{p}
 			set_include_path(false, p)
-			print("add_target_static_library plugin_deps Links: " .. p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
 			set_include_path(true, p)
-			print("add_target_static_library thirdparty_deps Links: " .. p)
 		end
 
 		-- set includes only from other plugins and thirdparty
@@ -122,7 +115,7 @@ function add_target_library(name, build_options, define_flags, plugin_deps, thir
 
 		buildoptions{build_options}
 		defines{define_flags}
-		set_include_path_to_self()
+		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
@@ -133,13 +126,11 @@ function add_target_library(name, build_options, define_flags, plugin_deps, thir
 			p = plugin_deps[ii]
 			links{p}
 			set_include_path(false, p)
-			print("add_target_library plugin_deps Links: " .. p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
 			set_include_path(true, p)
-			print("add_target_library thirdparty_deps Links: " .. p)
 		end
 
 		-- set additional default defines
@@ -178,7 +169,7 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 		buildoptions{build_options}
 		defines{define_flags}
 		includedirs{additional_includes}
-		set_include_path_to_self()
+		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
@@ -189,13 +180,11 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 			p = plugin_deps[ii]
 			links{p}
 			set_include_path(false, p)
-			print("add_target_library plugin_deps Links: " .. p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
 			set_include_path(true, p)
-			print("add_target_library thirdparty_deps Links: " .. p)
 		end
 
 		-- set additional default defines
@@ -239,13 +228,11 @@ function add_target_app(name, build_options, define_flags, plugin_deps, thirdpar
 			p = plugin_deps[ii]
 			links{p}
 			set_include_path(false, p)
-			print("add_target_app plugin_deps Links: " .. p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
 			set_include_path(true, p)
-			print("add_target_app thirdparty_deps Links: " .. p)
 		end
 
 		filter{"configurations:debug"}

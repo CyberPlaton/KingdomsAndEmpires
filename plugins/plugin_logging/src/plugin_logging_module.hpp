@@ -1,2 +1,2 @@
 #pragma once
-#include <plugin_logging.h>
+#include "logger.hpp"
