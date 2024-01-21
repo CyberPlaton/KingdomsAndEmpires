@@ -4,7 +4,7 @@ namespace logging
 {
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool clog::init(logging_verbosity verbosity /*= logging_verbosity::logging_verbosity_**/)
+	bool clog::init(logging_verbosity verbosity)
 	{
 		//- make sure we did not initialize already
 		ASSERT(m_logger.get() == nullptr, "Logger is already initialized");

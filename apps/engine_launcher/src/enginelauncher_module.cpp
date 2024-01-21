@@ -3,10 +3,7 @@
 
 void logging_function(const char* tag, uint32_t level, uint32_t item_id, const char* message, uint32_t line, const char* filename, void* data)
 {
-	if (message)
-	{
-		std::cout << "[SOKOL] " << message << std::endl;
-	}
+	logging::log_debug(fmt::format("[SOKOL] {}", message));
 }
 
 // Called on every frame of the application.
@@ -51,7 +48,10 @@ static void frame(void) {
 }
 
 // Called when the application is initializing.
-void init(void) {
+void init(void)
+{
+	logging::log_debug(fmt::format("Initializing SOKOL"));
+
 	// Initialize Sokol GFX.
 	sg_desc sgdesc{ 0 }; 
 	sgdesc.context = sapp_sgcontext();
@@ -73,7 +73,9 @@ void init(void) {
 }
 
 // Called when the application is shutting down.
-void cleanup(void) {
+void cleanup(void)
+{
+	logging::log_debug(fmt::format("Shutting down SOKOL"));
 	// Cleanup Sokol GP and Sokol GFX resources.
 	sgp_shutdown();
 	sg_shutdown();
@@ -84,6 +86,8 @@ void cleanup(void) {
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
 	AllocConsole();
+
+	logging::log_debug(fmt::format("Starting on WinMain()"));
 
 	sapp_desc desc{ 0 };
 	desc.width = 720;
@@ -110,6 +114,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 #else
 int main(int argc, char* argv[])
 {
+	logging::log_debug(fmt::format("Starting on main()"));
+
 	sapp_desc desc{ 0 };
 	desc.width = 720;
 	desc.height = 648;

@@ -24,13 +24,19 @@ namespace logging
 		logging_verbosity_off		= SPDLOG_LEVEL_OFF,
 	};
 
-	LOG_API void log_app_time();
-	LOG_API void log_app_time_ms();
-	LOG_API void log_trace();
-	LOG_API void log_debug();
-	LOG_API void log_info();
-	LOG_API void log_warn();
-	LOG_API void log_error();
-	LOG_API void log_critical();
+#if DEBUG
+	bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_debug);
+#else
+	bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_error);
+#endif
+	LOG_API void shutdown();
+	LOG_API float app_runtime();
+	LOG_API float app_runtime_ms();
+	LOG_API void log_trace(stringview_t message);
+	LOG_API void log_debug(stringview_t message);
+	LOG_API void log_info(stringview_t message);
+	LOG_API void log_warn(stringview_t message);
+	LOG_API void log_error(stringview_t message);
+	LOG_API void log_critical(stringview_t message);
 
 } //- logging
