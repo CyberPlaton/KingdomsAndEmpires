@@ -179,7 +179,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void unload_file_binary_data(uint8_t* data)
 		{
-			std::free(data);
+			mi_free(data);
 		}
 
 		//- @reference: raylib LoadFileData
@@ -201,7 +201,7 @@ namespace core
 
 					if (size > 0)
 					{
-						data = (uint8_t*)std::malloc(sizeof(uint8_t) * size);
+						data = (uint8_t*)mi_malloc(sizeof(uint8_t) * size);
 
 						unsigned count = SCAST(unsigned, fread(data, sizeof(uint8_t), size, file));
 						*data_size_out = count;
@@ -239,7 +239,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void unload_file_text_data(char* text)
 		{
-			std::free(text);
+			mi_free(text);
 		}
 
 		//- @reference: raylib LoadFileText
@@ -260,7 +260,7 @@ namespace core
 
 					if (size > 0)
 					{
-						text = SCAST(char*, std::malloc((size + 1) * sizeof(char)));
+						text = SCAST(char*, mi_malloc((size + 1) * sizeof(char)));
 
 						if (text != nullptr)
 						{
@@ -268,7 +268,7 @@ namespace core
 
 							if (count < size)
 							{
-								text = SCAST(char*, std::realloc(text, count + 1));
+								text = SCAST(char*, mi_realloc(text, count + 1));
 							}
 
 							text[count] = '\0';
