@@ -1,4 +1,13 @@
 ------------------------------------------------------------------------------------------------------------------------
+function set_basic_defines()
+	filter{"configurations:debug"}
+		defines{"DEBUG=1"}
+	filter{"configurations:release"}
+		defines{"NDEBUG", "RELEASE=1"}
+	filter{}
+end
+
+------------------------------------------------------------------------------------------------------------------------
 function load_project(project, dir)
 	include(path.join(dir, project) .. ".lua")
 end
@@ -54,6 +63,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 			  "src/**.c"}
 
 		buildoptions{build_options}
+		set_basic_defines()
 		defines{define_flags}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
@@ -114,6 +124,7 @@ function add_target_library(name, build_options, define_flags, plugin_deps, thir
 			  "src/**.c"}
 
 		buildoptions{build_options}
+		set_basic_defines()
 		defines{define_flags}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
@@ -167,6 +178,7 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 			  "src/**.c"}
 
 		buildoptions{build_options}
+		set_basic_defines()
 		defines{define_flags}
 		includedirs{additional_includes}
 		set_include_path_to_self(name)
@@ -201,7 +213,7 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function add_target_app(name, build_options, define_flags, plugin_deps, thirdparty_deps)
+function add_target_app(name, build_options, define_flags, thirdparty_deps, plugin_deps)
 	if VERBOSE == true then
 		print("\tapplication: " .. name)
 	end
@@ -215,6 +227,7 @@ function add_target_app(name, build_options, define_flags, plugin_deps, thirdpar
 			  "src/**.c"}
 
 		buildoptions{build_options}
+		set_basic_defines()
 		defines{define_flags}
 		includedirs{"include"}
 		links{"engine"}

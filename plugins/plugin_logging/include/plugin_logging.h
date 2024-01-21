@@ -8,8 +8,8 @@ namespace logging
 	//------------------------------------------------------------------------------------------------------------------------
 	enum class logging_mode : uint8_t
 	{
-		logging_mode_debug = 0,
-		logging_mode_release,
+		logging_mode_console = 0,
+		logging_mode_file,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ namespace logging
 		logging_verbosity_warn		= SPDLOG_LEVEL_WARN,
 		logging_verbosity_error		= SPDLOG_LEVEL_ERROR,
 		logging_verbosity_critical	= SPDLOG_LEVEL_CRITICAL,
-		logging_verbosity_off		= SPDLOG_LEVEL_OFF + 1,
+		logging_verbosity_off		= SPDLOG_LEVEL_OFF,
 	};
 
 	LOG_API void log_app_time();

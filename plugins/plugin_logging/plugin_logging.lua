@@ -5,7 +5,7 @@ function plugin_logging()
 					{},
 					{},
 					{},
-					{"spdlog", "core", "rttr", "glm", "EASTL"},
+					{"rttr", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "box2d", "spdlog", "core", "mimalloc"},
 					false,
 					"c++")
 end

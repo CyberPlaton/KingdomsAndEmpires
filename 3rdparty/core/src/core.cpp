@@ -1318,6 +1318,7 @@ namespace core
 	cany& cany::operator=(const cany& other)
 	{
 		m_data = other.m_data;
+		return *this;
 	}
 
 } //- core

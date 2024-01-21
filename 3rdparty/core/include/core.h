@@ -1,5 +1,4 @@
 #pragma once
-#include "detail/core_platform.hpp"
 #if defined(CORE_USE_EASTL)
 #include <eastl.h>
 namespace stl = eastl;
@@ -12,6 +11,7 @@ namespace stl = eastl;
 #include <string>
 namespace stl = std;
 #endif
+#include <mimalloc.h>
 #include <glm.h>
 #include <rttr.h>
 #include <magic_enum.h>
@@ -26,6 +26,7 @@ namespace stl = std;
 #include <future>
 #include <chrono>
 #include <any>
+#include <new>
 
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
@@ -78,6 +79,25 @@ using vec3_t = glm::vec3;
 using vec4_t = glm::vec4;
 using mat3_t = glm::mat3x3;
 using mat4_t = glm::mat4x4;
+
+#if defined(core_EXPORTS)
+//- implementation required for EASTL. The function will be available in any application or plugin
+//- linking to core, the implementation however is only exported to static library.
+//------------------------------------------------------------------------------------------------------------------------
+void* operator new[](size_t size, const char* pName, int flags, unsigned debugFlags, const char* file, int line)
+{
+	return mi_malloc(size);
+}
+
+//- implementation required for EASTL. The function will be available in any application or plugin
+//- linking to core, the implementation however is only exported to static library.
+//------------------------------------------------------------------------------------------------------------------------
+void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned debugFlags,
+	const char* file, int line)
+{
+	return mi_aligned_alloc(alignment, size);
+}
+#endif
 
 namespace core
 {
@@ -588,11 +608,10 @@ namespace core
 		~ctimer() = default;
 
 		void start();
-
-		inline bool started() const;
-		inline size_t secs() const;
-		inline float millisecs() const;
-		inline size_t microsecs() const;
+		bool started() const;
+		size_t secs() const;
+		float millisecs() const;
+		size_t microsecs() const;
 
 	private:
 		std::chrono::time_point<std::chrono::high_resolution_clock> m_timepoint;
