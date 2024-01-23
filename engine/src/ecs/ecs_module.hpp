@@ -6,10 +6,10 @@ namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
 	class imodule
-	{
-	public:
+    {
+    public:
 		imodule(flecs::world& world) {};
 		virtual ~imodule() = default;
 	};
-
+	
 } //- ecs
