@@ -4,40 +4,26 @@
 
 namespace ecs
 {
-
-	template<typename TCallable, class TComponent, class ... ARGS>
+	//- System interface.
+	//------------------------------------------------------------------------------------------------------------------------
 	class csystem
 	{
 	public:
-		csystem(flecs::world& world)
-		{
-			m_system = world.system<TComponent, ARGS...>();
-		}
+		using subsystem_registrator_t = std::function<void(flecs::world&)>;
+
+		csystem(flecs::world& w);
+		virtual ~csystem() = default;
+
+		//- argument function is responsible for registering subsystem(s)
+		//- to the world.
+		csystem& subsystem(subsystem_registrator_t function);
+
+	protected:
+		inline const flecs::world& world() const { return m_world; }
+		inline flecs::world& world() { return m_world; }
 
 	private:
-		flecs::system m_system;
-	};
-
-
-
-
-	//- System interface. Should not be used for inheritance.
-	//------------------------------------------------------------------------------------------------------------------------
-	class isystem
-	{
-	public:
-		isystem(flecs::system system);
-		virtual ~isystem() = default;
-
-		virtual bool register_system() = 0;
-
-		inline flecs::system& system() { return m_system; }
-		inline const flecs::system& system() const { return m_system; }
-
-	private:
-		flecs::system m_system;
-
-		RTTR_ENABLE();
+		flecs::world& m_world;
 	};
 
 

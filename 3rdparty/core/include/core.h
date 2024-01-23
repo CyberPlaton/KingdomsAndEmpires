@@ -353,6 +353,8 @@ namespace core
 	class cuuid final
 	{
 	public:
+		static const cuuid C_INVALID_UUID;
+
 		cuuid();
 		cuuid(const string_t& uuid);
 		cuuid(size_t seed);

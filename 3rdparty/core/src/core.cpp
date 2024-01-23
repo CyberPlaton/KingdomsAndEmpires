@@ -156,6 +156,9 @@ namespace algorithm
 
 namespace core
 {
+
+	const core::cuuid cuuid::C_INVALID_UUID;
+
 	namespace
 	{
 		inline static constexpr stringview_t C_EMPTY_STRING = "";

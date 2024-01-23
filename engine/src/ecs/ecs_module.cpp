@@ -22,34 +22,64 @@ namespace ecs::example
 		core::cuuid uuid;
 	};
 
-	//- This module introduces 3 new components to the world, flecs-hierarchical as "ecs.example.sreplicable_component" etc.
-	//- Also it registers a new system that is directly using those components. This structure is desirable and interdependecies
-	//- between system should not exist, if there are any, redesign or collaps those systems.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cexample_module : public imodule
+	class sexample_module_system : public csystem
 	{
-		cexample_module(flecs::world& world) :
-			imodule(world)
+	public:
+		sexample_module_system(flecs::world& w) :
+			csystem(w)
 		{
-			m_module = world.module<cexample_module>();
+			//- use constructor only to define the system
+			subsystem([&](flecs::world& w)
+				{
+					//- create dependency graph
+					auto transform_update_phase = w.entity()
+						.add(flecs::Phase)
+						.depends_on(flecs::OnUpdate);
 
-			//- register components in module scope
-			world.component<sreplicable_component>();
-			world.component<stransform_component>();
-			world.component<sidentifier_component>();
+					auto replication_update_phase = w.entity()
+						.add(flecs::Phase)
+						.depends_on(transform_update_phase);
 
-			//- register any system associated with the module, or not..
-			world.system<sreplicable_component,
-				const stransform_component,
-				const sidentifier_component>("Replication")
-				.each([](sreplicable_component& rep,
-					const stransform_component& trans,
-					const sidentifier_component& id)
-					{
-						//- send position and identifier over network
-						logging::log_info(fmt::format("[Network] Replicating entity \"{}\": [{}:{}:{}]", id.uuid.view(), trans.x, trans.y, trans.r));
-					});
+					//- first system of the module
+					auto transform_update_system = w.system<stransform_component>("Transform System")
+						.kind(transform_update_phase)
+						.each([](stransform_component& trans)
+							{
+								core::crandom rand;
 
+								trans.x += rand.normalized_float();
+								trans.y -= rand.normalized_float();
+								trans.r += rand.normalized_float();
+
+								logging::log_info(fmt::format("[Transform] Updating transform [{}:{}:{}]", trans.x, trans.y, trans.r));
+							});
+
+					//- second system of the module
+					auto replication_update_system = w.system<sreplicable_component, const stransform_component, const sidentifier_component>("Replication System")
+						.kind(replication_update_phase)
+						.each([](sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id)
+							{
+								logging::log_info(fmt::format("[Network] Replicating entity \"{}\": [{}:{}:{}]", id.uuid.view(), trans.x, trans.y, trans.r));
+							});
+				});
+		}
+	};
+
+	//- This module definition is outdated. See ecs_module.hpp
+	//------------------------------------------------------------------------------------------------------------------------
+	class cexample_module : public imodule<cexample_module>
+	{
+		cexample_module(flecs::world& w) :
+			imodule(w)
+		{
+			begin_module()
+				//- .depends_on<cother_module>()
+				.component<sreplicable_component>()
+				.component<stransform_component>()
+				.component<sidentifier_component>()
+				.subsystem<sexample_module_system>()
+			.end_module();
 		}
 
 	private:
