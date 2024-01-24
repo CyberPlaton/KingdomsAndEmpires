@@ -12,6 +12,7 @@ namespace ecs
 	ecs::csystem& csystem::subsystem(subsystem_registrator_t function)
 	{
 		function(world());
+		return *this;
 	}
 
 } //- ecs

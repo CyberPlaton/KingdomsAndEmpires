@@ -5,12 +5,10 @@ namespace ecs
 {
 	namespace detail
 	{
-
-		void cmodule_database::module_add(smodule_info& info)
+		//------------------------------------------------------------------------------------------------------------------------
+		const uset_t<stringview_t>& cmodule_database::modules() const
 		{
-			auto h = algorithm::hash(info.m_name);
-
-			m_modules[h] = std::move(info);
+			return m_modules;
 		}
 
 	} //- detail
@@ -78,23 +76,20 @@ namespace ecs::example
 		}
 	};
 
-	//- This module definition is outdated. See ecs_module.hpp
+	//- Example module definition
 	//------------------------------------------------------------------------------------------------------------------------
 	class cexample_module : public imodule<cexample_module>
 	{
 		cexample_module(flecs::world& w) :
 			imodule(w)
 		{
-			begin_module()
+			begin()
 				//- .depends_on<cother_module>()
 				.component<sreplicable_component>()
 				.component<stransform_component>()
 				.component<sidentifier_component>()
 				.subsystem<sexample_module_system>()
-			.end_module();
+			.end();
 		}
-
-	private:
-		flecs::entity m_module;
 	};
 }

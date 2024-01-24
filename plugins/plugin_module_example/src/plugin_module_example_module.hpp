@@ -5,11 +5,17 @@
 
 namespace module_example
 {
-	class cexample_module : public ecs::imodule<cexample_module>
+	//- Example module
+	//------------------------------------------------------------------------------------------------------------------------
+	class EXAMPLE_API cmy_module : public ecs::imodule<cmy_module>
 	{
 	public:
-		cexample_module() : ecs::imodule<cexample_module>("cexample_module")
+		cmy_module(flecs::world& w) : ecs::imodule<cmy_module>(w)
 		{
+			begin()
+				.component<stargeting_component>()
+				.subsystem<cmy_system>()
+			.end();
 		};
 	};
 

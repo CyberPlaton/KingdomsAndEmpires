@@ -2,14 +2,10 @@
 
 namespace module_example
 {
+	//------------------------------------------------------------------------------------------------------------------------
 	RTTR_PLUGIN_REGISTRATION
 	{
-		cexample_module::begin()
-			.depends_on("plugin_physics::cdestruction_module")
-			.system(targeting_system);
-
-		cmodule module;
-		module.system(targeting_system);
+		ECS_MODULE(cmy_module);
 	};
 
 } //- module_example

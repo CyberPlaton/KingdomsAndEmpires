@@ -7,55 +7,32 @@ namespace ecs
 {
 	namespace detail
 	{
-		//------------------------------------------------------------------------------------------------------------------------
-		struct smodule_info
-		{
-			stringview_t m_name;
-			vector_t<string_t> m_module_dependencies;
-			vector_t<string_t> m_module_systems;
-		};
+		//- forward decl.
+		class cmodule_database;
+	}
 
-		//------------------------------------------------------------------------------------------------------------------------
-		class cmodule_database final
-		{
-		public:
-			STATIC_INSTANCE(cmodule_database, s_cmodule_database);
-
-			void module_add(smodule_info& info);
-
-		private:
-			umap_t<unsigned, smodule_info> m_modules;
-		};
-
-	} //- detail
-
-
-
-
-
-	//- Current implementation directly registers the module with all components and systems.
-	//- Registering a module to load should probably be defined elsewhere.
-	//- Thus sinfo is misplaced here too.
-	//------------------------------------------------------------------------------------------------------------------------
+	//- utility class simplifying registering a module into ecs
+	//------------------------------------------------------------------------------------ ------------------------------------
 	template<class TModuleType>
 	class imodule
 	{
+		friend class detail::cmodule_database;
+
 	public:
 		imodule(flecs::world& w) :
-			m_world(w)
+			m_world(&w)
 		{
-			auto type = rttr::type::get<TModuleType>();
-
-			m_info.m_name = type.get_name().data();
 		}
+
 		virtual ~imodule() = default;
 
-		inline stringview_t name() const { return m_info.m_name.data(); }
-		imodule& begin_module()
+		imodule& begin()
 		{
-			world().module<TModuleType>(name());
+			world().module<TModuleType>();
+			return *this;
 		}
-		void end_module()
+
+		void end()
 		{
 			//- no-op
 		}
@@ -113,14 +90,39 @@ namespace ecs
 			return *this;
 		}
 
-	protected:
-		inline const flecs::world& world() const { return m_world; }
-		inline flecs::world& world() { return m_world; }
-		inline const sinfo& info() const { return m_info; }
+	private:
+		flecs::world* m_world;
 
 	private:
-		flecs::world& m_world;
-		detail::smodule_info m_info;
+		flecs::world& world() {ASSERT(m_world, "World for module was not set!"); return *m_world; }
 	};
 
+	namespace detail
+	{
+		//- database containing all currently registered modules
+		//------------------------------------------------------------------------------------------------------------------------
+		class cmodule_database
+		{
+		public:
+			STATIC_INSTANCE(cmodule_database, s_cmodule_database);
+
+			template<class TModuleType>
+			void push()
+			{
+				static_assert(std::is_base_of<imodule<TModuleType>, TModuleType>::value, "Modules must be derived from imodule class");
+
+				m_modules.insert(rttr::type::get<TModuleType>().get_name().data());
+			}
+
+			const uset_t<stringview_t>& modules() const;
+
+		private:
+			uset_t<stringview_t> m_modules;
+		};
+
+	} //- detail
+
 } //- ecs
+
+#define ECS_MODULE(c) \
+ecs::detail::cmodule_database::instance().push<c>()

@@ -5,7 +5,7 @@ function engine()
 		{},
 		{},
 		{},
-		{"rttr", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "box2d", "spdlog", "core", "mimalloc", "sokol", "flecs"},
+		{"rttr", "glm", "EASTL", "magic_enum", "taskflow", "box2d", "spdlog", "core", "mimalloc", "sokol", "flecs"},
 		"c++",
 		{},
 		{"test", "test2", "plugin_logging"})

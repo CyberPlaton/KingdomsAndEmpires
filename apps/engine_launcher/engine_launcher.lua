@@ -4,7 +4,7 @@ function engine_launcher()
 	add_target_app("engine_launcher",
 					{},
 					{},
-					{"rttr", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "box2d", "spdlog", "core", "mimalloc", "sokol"},
-					{"test", "test2", "plugin_logging"})
+					{"rttr", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "box2d", "spdlog", "core", "mimalloc", "sokol", "flecs"},
+					{"test", "test2", "plugin_logging", "plugin_module_example"})
 end
 engine_launcher()

@@ -42,9 +42,7 @@ namespace stl = std;
 #undef ARRAYSIZE
 #endif
 #define ARRAYSIZE(__array) ((u32)(sizeof(__array) / sizeof(*(__array))))
-#define STATIC_INSTANCE(__class, __member) \
-static __class& instance() \
-{ static __class __member; return __member;}
+#define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
 
 template<class T>
 using ref_t = stl::shared_ptr<T>;
