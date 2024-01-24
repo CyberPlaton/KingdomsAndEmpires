@@ -5,6 +5,34 @@
 
 namespace ecs
 {
+	namespace detail
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		struct smodule_info
+		{
+			stringview_t m_name;
+			vector_t<string_t> m_module_dependencies;
+			vector_t<string_t> m_module_systems;
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		class cmodule_database final
+		{
+		public:
+			STATIC_INSTANCE(cmodule_database, s_cmodule_database);
+
+			void module_add(smodule_info& info);
+
+		private:
+			umap_t<unsigned, smodule_info> m_modules;
+		};
+
+	} //- detail
+
+
+
+
+
 	//- Current implementation directly registers the module with all components and systems.
 	//- Registering a module to load should probably be defined elsewhere.
 	//- Thus sinfo is misplaced here too.
@@ -12,13 +40,6 @@ namespace ecs
 	template<class TModuleType>
 	class imodule
 	{
-		struct sinfo
-		{
-			stringview_t m_name;
-			vector_t<string_t> m_module_dependencies;
-			vector_t<string_t> m_module_systems;
-		};
-
 	public:
 		imodule(flecs::world& w) :
 			m_world(w)
@@ -99,7 +120,7 @@ namespace ecs
 
 	private:
 		flecs::world& m_world;
-		sinfo m_info;
+		detail::smodule_info m_info;
 	};
 
 } //- ecs

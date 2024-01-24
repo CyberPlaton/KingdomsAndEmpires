@@ -3,6 +3,18 @@
 
 namespace ecs
 {
+	namespace detail
+	{
+
+		void cmodule_database::module_add(smodule_info& info)
+		{
+			auto h = algorithm::hash(info.m_name);
+
+			m_modules[h] = std::move(info);
+		}
+
+	} //- detail
+
 } //- ecs
 
 namespace ecs::example
