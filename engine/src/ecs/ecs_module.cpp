@@ -6,21 +6,18 @@ RTTR_REGISTRATION
 	using namespace rttr;
 
 	registration::class_<ecs::imodule>("ecs::imodule")
-		.constructor<flecs::world&>();
+		.constructor<flecs::world&>()
+		.method("self_module", &ecs::imodule::self_module);
 
 };
 
 namespace ecs
 {
-	namespace detail
+	//------------------------------------------------------------------------------------------------------------------------
+	flecs::entity imodule::self_module() const
 	{
-		//------------------------------------------------------------------------------------------------------------------------
-		const uset_t<stringview_t>& cmodule_database::modules() const
-		{
-			return m_modules;
-		}
-
-	} //- detail
+		return m_module;
+	}
 
 } //- ecs
 

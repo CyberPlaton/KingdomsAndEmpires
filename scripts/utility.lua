@@ -5,6 +5,7 @@ function set_basic_defines()
 	filter{"configurations:release"}
 		defines{"NDEBUG", "RELEASE=1"}
 	filter{}
+	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"}
 end
 
 ------------------------------------------------------------------------------------------------------------------------

@@ -5,14 +5,8 @@
 
 namespace ecs
 {
-	namespace detail
-	{
-		//- forward decl.
-		class cmodule_database;
-	}
-
 	//- utility class simplifying registering a module into ecs
-	//------------------------------------------------------------------------------------ ------------------------------------
+	//-------------------------------------------------------------------------------------------------------------------------
 	class imodule
 	{
 	public:
@@ -21,7 +15,7 @@ namespace ecs
 		template<class TModuleType>
 		imodule* begin()
 		{
-			world().module<TModuleType>();
+			m_module = world().module<TModuleType>();
 
 			return this;
 		}
@@ -37,7 +31,7 @@ namespace ecs
 		template<class TSystem>
 		imodule* subsystem()
 		{
-			TSystem(world());
+			TSystem s(world());
 
 			return this;
 		}
@@ -55,8 +49,11 @@ namespace ecs
 			return true;
 		}
 
+		flecs::entity self_module() const;
+
 	private:
 		flecs::world* m_world;
+		flecs::entity m_module;
 
 	private:
 		flecs::world& world() { ASSERT(m_world, "World for module was not set!"); return *m_world; }
@@ -64,31 +61,4 @@ namespace ecs
 		RTTR_ENABLE();
 	};
 
-	namespace detail
-	{
-		//- database containing all currently registered modules.
-		//- The modules can be retrieved from RTTR with rttr::type::get_by_name("my_module");
-		//------------------------------------------------------------------------------------------------------------------------
-		class cmodule_database
-		{
-		public:
-			STATIC_INSTANCE(cmodule_database, s_cmodule_database);
-
-			template<class TModuleType>
-			void push()
-			{
-				m_modules.insert(rttr::type::get<TModuleType>().get_name().data());
-			}
-
-			const uset_t<stringview_t>& modules() const;
-
-		private:
-			uset_t<stringview_t> m_modules;
-		};
-
-	} //- detail
-
 } //- ecs
-
-#define ECS_MODULE(c) \
-ecs::detail::cmodule_database::instance().push<c>()
