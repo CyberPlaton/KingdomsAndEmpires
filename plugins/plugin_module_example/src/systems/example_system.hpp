@@ -1,5 +1,5 @@
 #pragma once
-#include <plugin_module_example.h>
+#include "../plugin_module_example_common.hpp"
 #include "../components/example_components.hpp"
 
 namespace module_example

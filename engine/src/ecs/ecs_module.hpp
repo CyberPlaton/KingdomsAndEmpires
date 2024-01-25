@@ -95,6 +95,7 @@ namespace ecs
 
 	private:
 		flecs::world& world() {ASSERT(m_world, "World for module was not set!"); return *m_world; }
+	
 	};
 
 	namespace detail
@@ -109,8 +110,6 @@ namespace ecs
 			template<class TModuleType>
 			void push()
 			{
-				static_assert(std::is_base_of<imodule<TModuleType>, TModuleType>::value, "Modules must be derived from imodule class");
-
 				m_modules.insert(rttr::type::get<TModuleType>().get_name().data());
 			}
 

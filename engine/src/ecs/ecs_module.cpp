@@ -1,6 +1,27 @@
 #include "ecs_module.hpp"
 #include <plugin_logging.h>
 
+namespace rttr
+{
+	template<typename T>
+	struct wrapper_mapper<ecs::imodule<T>>
+	{
+		using wrapped_type = const T&;
+		using type = T;
+
+		static RTTR_INLINE const T& get(const type& obj)
+		{
+			return obj.get();
+		}
+
+		static RTTR_INLINE type create(const wrapped_type& t)
+		{
+			return type(t);
+		}
+	};
+
+} //- rttr
+
 namespace ecs
 {
 	namespace detail

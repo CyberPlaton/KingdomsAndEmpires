@@ -84,10 +84,37 @@ void cleanup(void)
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+//int main(int argc, char* argv[])
 {
 	AllocConsole();
 
+	logging::init();
+
 	logging::log_debug(fmt::format("Starting on WinMain()"));
+
+	logging::log_debug(fmt::format("Type: {}", rttr::type::get<module_example::imodule>().get_name().data()));
+	logging::log_debug(fmt::format("Type: {}", rttr::type::get<module_example::cmy_module>().get_name().data()));
+
+
+	logging::log_debug(fmt::format("Modules"));
+
+	rttr::library module_plugin("plugin_module_example");
+	try
+	{
+		if (!module_plugin.load())
+		{
+			logging::log_debug(fmt::format("plugin_module_example could not be loaded"));
+		}
+	}
+	catch (const std::runtime_error& exc)
+	{
+		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()));
+	}
+
+	for (const auto& m : ecs::detail::cmodule_database::instance().modules())
+	{
+		logging::log_debug(fmt::format("{}", m.data()));
+	}
 
 	sapp_desc desc{ 0 };
 	desc.width = 720;

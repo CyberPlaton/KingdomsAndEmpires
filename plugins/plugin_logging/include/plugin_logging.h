@@ -25,9 +25,9 @@ namespace logging
 	};
 
 #if DEBUG
-	bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_debug);
+	LOG_API bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_debug);
 #else
-	bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_error);
+	LOG_API bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_error);
 #endif
 	LOG_API void shutdown();
 	LOG_API float app_runtime();
