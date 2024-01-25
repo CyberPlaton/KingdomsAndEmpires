@@ -1,26 +1,14 @@
 #include "ecs_module.hpp"
 #include <plugin_logging.h>
 
-namespace rttr
+RTTR_REGISTRATION
 {
-	template<typename T>
-	struct wrapper_mapper<ecs::imodule<T>>
-	{
-		using wrapped_type = const T&;
-		using type = T;
+	using namespace rttr;
 
-		static RTTR_INLINE const T& get(const type& obj)
-		{
-			return obj.get();
-		}
+	registration::class_<ecs::imodule>("ecs::imodule")
+		.constructor<flecs::world&>();
 
-		static RTTR_INLINE type create(const wrapped_type& t)
-		{
-			return type(t);
-		}
-	};
-
-} //- rttr
+};
 
 namespace ecs
 {
@@ -99,18 +87,18 @@ namespace ecs::example
 
 	//- Example module definition
 	//------------------------------------------------------------------------------------------------------------------------
-	class cexample_module : public imodule<cexample_module>
+	class cexample_module : public imodule
 	{
 		cexample_module(flecs::world& w) :
 			imodule(w)
 		{
-			begin()
+			begin<cexample_module>()
 				//- .depends_on<cother_module>()
-				.component<sreplicable_component>()
-				.component<stransform_component>()
-				.component<sidentifier_component>()
-				.subsystem<sexample_module_system>()
-			.end();
+				->comp<sreplicable_component>()
+				->comp<stransform_component>()
+				->comp<sidentifier_component>()
+				->subsystem<sexample_module_system>()
+			->end();
 		}
 	};
 }

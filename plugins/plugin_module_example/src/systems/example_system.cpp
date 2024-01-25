@@ -2,5 +2,4 @@
 
 namespace module_example
 {
-
 } //- module_example

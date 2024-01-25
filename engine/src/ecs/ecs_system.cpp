@@ -1,5 +1,14 @@
 #include "ecs_system.hpp"
 
+RTTR_REGISTRATION
+{
+	using namespace rttr;
+
+	registration::class_<ecs::csystem>("ecs::csystem")
+		.constructor<flecs::world&>();
+
+};
+
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
@@ -52,6 +61,7 @@ namespace ecs::example
 		int m_value;
 	};
 
+	//- Example system. Missing is the registration in RTTR, for this checkout plugin_module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	class csystem_example : public csystem
 	{
@@ -75,7 +85,6 @@ namespace ecs::example
 						.kind(physics_destruction_update_phase)
 						.each([](sdestructible_component& destr, sphysical_trigger_component& trigg)
 							{
-
 							});
 
 					//- second system of the module
@@ -84,8 +93,13 @@ namespace ecs::example
 						.each([](const sbehavior_component& behavior)
 							{
 							});
+
+					//- Physics Destruction system will run on ecs update and Behavior system will run after it because
+					//- the established dependency
 				});
-		}
+		};
+
+		RTTR_ENABLE(csystem);
 	};
 
 } //- ecs::example

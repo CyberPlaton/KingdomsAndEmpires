@@ -23,6 +23,8 @@ namespace ecs
 	private:
 		inline const flecs::world& world() const { return m_world; }
 		inline flecs::world& world() { return m_world; }
+
+		RTTR_ENABLE();
 	};
 
 

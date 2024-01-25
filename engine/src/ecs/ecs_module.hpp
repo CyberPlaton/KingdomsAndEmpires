@@ -13,94 +13,61 @@ namespace ecs
 
 	//- utility class simplifying registering a module into ecs
 	//------------------------------------------------------------------------------------ ------------------------------------
-	template<class TModuleType>
 	class imodule
 	{
-		friend class detail::cmodule_database;
-
 	public:
-		imodule(flecs::world& w) :
-			m_world(&w)
-		{
-		}
+		imodule(flecs::world& w) : m_world(&w) {}
 
-		virtual ~imodule() = default;
-
-		imodule& begin()
+		template<class TModuleType>
+		imodule* begin()
 		{
 			world().module<TModuleType>();
-			return *this;
-		}
 
-		void end()
-		{
-			//- no-op
+			return this;
 		}
 
 		template<class TDependency>
-		imodule& depends_on()
+		imodule* depends_on()
 		{
 			world().import<TDependency>();
 
-// 			auto type = rttr::type::get<TDependency>();
-// 
-// 			if (type.is_valid())
-// 			{
-// 				const auto* name = type.get_name().data();
-// 
-// 				//- ignore duplicate entries
-// 				if (!algorithm::find(m_info.m_module_dependencies.begin(), m_info.m_module_dependencies.end(), name))
-// 				{
-// 					m_info.m_module_dependencies.emplace_back(name);
-// 				}
-// 			}
-			return *this;
+			return this;
 		}
 
 		template<class TSystem>
-		imodule& subsystem()
+		imodule* subsystem()
 		{
-			static_assert(std::is_base_of<csystem, TSystem>::value, "Subsystems must be derived from csystem class");
-
 			TSystem(world());
 
-// 			auto type = rttr::type::get<TSystem>();
-// 
-// 			if (type.is_valid())
-// 			{
-// 				const auto* name = type.get_name().data();
-// 
-// 				//- ignore duplicate entries
-// 				if (!algorithm::find(m_info.m_module_systems.begin(), m_info.m_module_systems.end(), name))
-// 				{
-// 					m_info.m_module_systems.emplace_back(name);
-// 				}
-// 			}
-			return *this;
+			return this;
 		}
 
 		template<class TComponent>
-		imodule& component()
+		imodule* comp()
 		{
-			//- TODO: Verify that the component is registered in the correct scope
-			//- of the module or whether he has to be deferred too.
-			//- This however will prove difficult like this and we may have to rely on capturing
-			//- functions instead.
 			world().component<TComponent>();
-			return *this;
+
+			return this;
+		}
+
+		bool end()
+		{
+			return true;
 		}
 
 	private:
 		flecs::world* m_world;
 
 	private:
-		flecs::world& world() {ASSERT(m_world, "World for module was not set!"); return *m_world; }
-	
+		flecs::world& world() { ASSERT(m_world, "World for module was not set!"); return *m_world; }
+
+		RTTR_ENABLE();
 	};
 
 	namespace detail
 	{
-		//- database containing all currently registered modules
+		//- database containing all currently registered modules.
+		//- The modules can be retrieved from RTTR with rttr::type::get_by_name("my_module");
 		//------------------------------------------------------------------------------------------------------------------------
 		class cmodule_database
 		{

@@ -92,7 +92,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	logging::log_debug(fmt::format("Starting on WinMain()"));
 
-	logging::log_debug(fmt::format("Type: {}", rttr::type::get<module_example::imodule>().get_name().data()));
+	logging::log_debug(fmt::format("Type: {}", rttr::type::get<ecs::imodule>().get_name().data()));
 	logging::log_debug(fmt::format("Type: {}", rttr::type::get<module_example::cmy_module>().get_name().data()));
 
 

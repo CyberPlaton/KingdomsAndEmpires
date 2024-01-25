@@ -31,7 +31,10 @@ namespace module_example
 								target.m_cooldown -= C_DT;
 							});
 				});
-		}
+		};
+
+
+		RTTR_ENABLE(ecs::csystem);
 	};
 
 } //- module_example
