@@ -1,4 +1,5 @@
 #include "ecs_module_manager.hpp"
+#include <plugin_logging.h>
 
 namespace ecs
 {
@@ -37,11 +38,13 @@ namespace ecs
 				else
 				{
 					//- could not construct the module
+					logging::log_error(fmt::format("Could not construct module '{}'", m.data()));
 				}
 			}
 			else
 			{
 				//- could not find the module in RTTR
+				logging::log_error(fmt::format("Could not find module '{}' in RTTR", m.data()));
 			}
 		}
 	}

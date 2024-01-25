@@ -41,10 +41,6 @@ static void frame(void) {
 	sg_end_pass();
 	// Commit Sokol render.
 	sg_commit();
-
-
-	important_test_function();
-	important_test2_function();
 }
 
 // Called when the application is initializing.
@@ -109,11 +105,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	catch (const std::runtime_error& exc)
 	{
 		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()));
-	}
-
-	for (const auto& m : ecs::detail::cmodule_database::instance().modules())
-	{
-		logging::log_debug(fmt::format("{}", m.data()));
 	}
 
 	sapp_desc desc{ 0 };

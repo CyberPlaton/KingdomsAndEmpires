@@ -2,12 +2,12 @@ include (path.join(SCRIPTS_DIR, "utility.lua"))
 
 function engine()
 	add_target_static_library("engine",
-		{},
-		{},
-		{},
-		{"rttr", "glm", "EASTL", "magic_enum", "taskflow", "box2d", "spdlog", "core", "mimalloc", "sokol", "flecs"},
+		{}, -- build_options
+		{}, -- define_flags
+		{"plugin_logging"}, -- plugin_deps
+		{"rttr", "glm", "EASTL", "magic_enum", "taskflow", "box2d", "spdlog", "core", "mimalloc", "sokol", "flecs"}, -- thirdparty_deps
 		"c++",
-		{},
-		{"test", "test2", "plugin_logging"})
+		{}, -- thirdparty_headeronly_deps
+		{}) -- plugin_headeronly_deps
 end
 engine()

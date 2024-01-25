@@ -220,7 +220,7 @@ end
 
 -- special function for defining plugins that are linking with the engine
 ------------------------------------------------------------------------------------------------------------------------
-function add_target_plugin(name, build_options, define_flags, plugin_deps, thirdparty_deps, additional_includes)
+function add_target_plugin(name, build_options, define_flags, plugin_deps, thirdparty_deps, additional_includes, depends_on_engine)
 	if VERBOSE == true then
 		print("\tplugin: " .. name)
 	end
@@ -257,8 +257,10 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 			set_include_path(true, p)
 		end
 
-		-- link with engine by default
-		link_with_engine()
+		-- link with engine by default, if not explicitly disabled
+		if depends_on_engine ~= nil and depends_on_engine == true then
+			link_with_engine()
+		end
 
 		-- set additional default defines
 		defines{name .. "_EXPORTS"}
