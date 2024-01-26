@@ -1,6 +1,18 @@
 #include "enginelauncher_module.hpp"
 #include <iostream>
 
+namespace ecs
+{
+// 	RTTR_REGISTRATION
+// 	{
+// 		using namespace rttr;
+// 
+// 		registration::class_<csystem>("csystem")
+// 			.constructor<flecs::world&>();
+// 
+// 	};
+}
+
 void logging_function(const char* tag, uint32_t level, uint32_t item_id, const char* message, uint32_t line, const char* filename, void* data)
 {
 	logging::log_debug(fmt::format("[SOKOL] {}", message).data());
@@ -123,15 +135,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()).data());
 	}
 
-	for (auto type : rttr::type::get_types())
-	{
-		logging::log_debug(fmt::format("RTTR Types: '{}'", type.get_name().data()));
-	}
-
 	auto mt = rttr::type::get_by_name("cmy_module");
 	if (mt.is_valid())
 	{
 		logging::log_debug("cmy_module is valid");
+	}
+
+	logging::log_debug(fmt::format("RTTR Types:"));
+	for (auto type : rttr::type::get_types())
+	{
+		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
+	}
+
+	logging::log_debug(fmt::format("Modules:"));
+	for (auto m: ecs::cmodule_manager::registered_modules())
+	{
+		logging::log_debug(fmt::format("\t'{}'", m.data()));
 	}
 
 	sapp_desc desc{ 0 };

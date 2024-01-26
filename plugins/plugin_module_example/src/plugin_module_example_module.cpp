@@ -7,18 +7,17 @@ namespace module_example
 	{
 		using namespace rttr;
 
-		//- Registering component properties will make them seriailzable and retrievable with RTTR methods
-		registration::class_<stargeting_component>("stargeting_component")
-			.property("m_next_target", &stargeting_component::m_next_target)
-			.property("m_cooldown", &stargeting_component::m_cooldown);
-
-		registration::class_<cmy_system>("cmy_system")
-			.constructor<flecs::world&>();
+// 		registration::class_<cmy_module>("cmy_module")
+// 			.constructor<flecs::world&>();
+// 
+// 		ECS_MODULE(cmy_module);
 
 		registration::class_<cmy_module>("cmy_module")
 			.constructor<flecs::world&>();
 
-		ECS_MODULE(cmy_module);
+		registration::class_<cmy_second_module>("cmy_second_module")
+			.constructor<flecs::world&>();
+
 	};
 
 } //- module_example

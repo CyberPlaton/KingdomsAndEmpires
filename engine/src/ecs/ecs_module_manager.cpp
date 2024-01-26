@@ -27,6 +27,12 @@ namespace ecs
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------------
+	vector_t<stringview_t> cmodule_manager::registered_modules()
+	{
+		return s_registered_modules;
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------------
 	void cmodule_manager::init_modules()
 	{
 		for (const auto& m : s_registered_modules)

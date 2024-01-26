@@ -24,16 +24,16 @@ RTTR_REGISTRATION
 		.property("second",		&smaterial_pair::second);
 
 	registration::class_<srect>("srect")
-		.property("m_x", &srect::m_x)
-		.property("m_y", &srect::m_y)
-		.property("m_w", &srect::m_w)
-		.property("m_h", &srect::m_h);
+		.property("m_x",		&srect::m_x)
+		.property("m_y",		&srect::m_y)
+		.property("m_w",		&srect::m_w)
+		.property("m_h",		&srect::m_h);
 
 	registration::class_<scolor>("scolor")
-		.property("m_r", &scolor::m_r)
-		.property("m_g", &scolor::m_g)
-		.property("m_b", &scolor::m_b)
-		.property("m_a", &scolor::m_a);
+		.property("m_r",		&scolor::m_r)
+		.property("m_g",		&scolor::m_g)
+		.property("m_b",		&scolor::m_b)
+		.property("m_a",		&scolor::m_a);
 
 	registration::class_<cmutex>("cmutex")
 		.property("m_internal", &cmutex::m_internal);

@@ -1,13 +1,14 @@
 #pragma once
 #include <flecs.h>
 #include <core.h>
+#include <config.hpp>
 #include "ecs_system.hpp"
 
 namespace ecs
 {
 	//- utility class simplifying registering a module into ecs
 	//-------------------------------------------------------------------------------------------------------------------------
-	class imodule
+	class ENGINE_API imodule
 	{
 	public:
 		imodule(flecs::world& w) : m_world(&w) {}

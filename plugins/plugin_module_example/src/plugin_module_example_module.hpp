@@ -20,7 +20,21 @@ namespace module_example
 			->end();
 		};
 
-		RTTR_ENABLE(imodule);
+		RTTR_ENABLE(ecs::imodule);
+	};
+
+	class EXAMPLE_API cmy_second_module : public ecs::imodule
+	{
+	public:
+		cmy_second_module(flecs::world& w) : ecs::imodule(w)
+		{
+			begin<cmy_second_module>()
+				->comp<stargeting_component>()
+				->subsystem<cmy_system>()
+				->end();
+		};
+
+		RTTR_ENABLE(ecs::imodule);
 	};
 
 } //- module_example

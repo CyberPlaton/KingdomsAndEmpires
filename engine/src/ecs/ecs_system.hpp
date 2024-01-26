@@ -1,4 +1,5 @@
 #pragma once
+#include <config.hpp>
 #include <flecs.h>
 #include <core.h>
 
@@ -6,7 +7,7 @@ namespace ecs
 {
 	//- System interface.
 	//------------------------------------------------------------------------------------------------------------------------
-	class csystem
+	class ENGINE_API csystem
 	{
 	public:
 		using subsystem_registrator_t = std::function<void(flecs::world&)>;
