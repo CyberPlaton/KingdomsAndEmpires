@@ -1,16 +1,16 @@
 #include "ecs_system.hpp"
 
-RTTR_REGISTRATION
-{
-	using namespace rttr;
-
-	registration::class_<ecs::csystem>("ecs::csystem")
-		.constructor<flecs::world&>();
-
-};
-
 namespace ecs
 {
+	RTTR_PLUGIN_REGISTRATION
+	{
+		using namespace rttr;
+
+		registration::class_<csystem>("csystem")
+			.constructor<flecs::world&>();
+
+	};
+
 	//------------------------------------------------------------------------------------------------------------------------
 	csystem::csystem(flecs::world& w) :
 		m_world(w)

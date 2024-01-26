@@ -3,7 +3,7 @@
 
 void logging_function(const char* tag, uint32_t level, uint32_t item_id, const char* message, uint32_t line, const char* filename, void* data)
 {
-	logging::log_debug(fmt::format("[SOKOL] {}", message));
+	logging::log_debug(fmt::format("[SOKOL] {}", message).data());
 }
 
 // Called on every frame of the application.
@@ -46,7 +46,7 @@ static void frame(void) {
 // Called when the application is initializing.
 void init(void)
 {
-	logging::log_debug(fmt::format("Initializing SOKOL"));
+	logging::log_debug(fmt::format("Initializing SOKOL").data());
 
 	// Initialize Sokol GFX.
 	sg_desc sgdesc{ 0 }; 
@@ -71,7 +71,7 @@ void init(void)
 // Called when the application is shutting down.
 void cleanup(void)
 {
-	logging::log_debug(fmt::format("Shutting down SOKOL"));
+	logging::log_debug(fmt::format("Shutting down SOKOL").data());
 	// Cleanup Sokol GP and Sokol GFX resources.
 	sgp_shutdown();
 	sg_shutdown();
@@ -86,25 +86,52 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	logging::init();
 
-	logging::log_debug(fmt::format("Starting on WinMain()"));
+	logging::log_debug(fmt::format("Starting on WinMain()").data());
 
-	logging::log_debug(fmt::format("Type: {}", rttr::type::get<ecs::imodule>().get_name().data()));
-	logging::log_debug(fmt::format("Type: {}", rttr::type::get<module_example::cmy_module>().get_name().data()));
+	stringview_t enginename = "engine.dll";
+	stringview_t pluginname = "plugin_module_example.dll";
 
+	core::cfilesystem fs1(core::cfilesystem::cwd());
+	fs1.append(enginename);
 
-	logging::log_debug(fmt::format("Modules"));
-
-	rttr::library module_plugin("plugin_module_example");
+	rttr::library engine_plugin(fs1.current().path().generic_u8string());
 	try
 	{
-		if (!module_plugin.load())
+		if (!engine_plugin.load())
 		{
-			logging::log_debug(fmt::format("plugin_module_example could not be loaded"));
+			logging::log_debug(fmt::format("engine could not be loaded: '{}'", engine_plugin.get_error_string().data()).data());
 		}
 	}
 	catch (const std::runtime_error& exc)
 	{
-		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()));
+		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()).data());
+	}
+
+	core::cfilesystem fs(core::cfilesystem::cwd());
+	fs.append(pluginname);
+
+	rttr::library module_plugin(fs.current().path().generic_u8string());
+	try
+	{
+		if (!module_plugin.load())
+		{
+			logging::log_debug(fmt::format("plugin_module_example could not be loaded: '{}'", module_plugin.get_error_string().data()).data());
+		}
+	}
+	catch (const std::runtime_error& exc)
+	{
+		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()).data());
+	}
+
+	for (auto type : rttr::type::get_types())
+	{
+		logging::log_debug(fmt::format("RTTR Types: '{}'", type.get_name().data()));
+	}
+
+	auto mt = rttr::type::get_by_name("cmy_module");
+	if (mt.is_valid())
+	{
+		logging::log_debug("cmy_module is valid");
 	}
 
 	sapp_desc desc{ 0 };

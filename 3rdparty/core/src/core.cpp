@@ -5,6 +5,7 @@ RTTR_REGISTRATION
 {
 	using namespace rttr;
 	using namespace core;
+
 	registration::class_<cuuid>("cuuid")
 		.property("m_data",		&cuuid::m_data)
 		.property("m_string",	&cuuid::m_string)
@@ -22,6 +23,20 @@ RTTR_REGISTRATION
 		.property("first",		&smaterial_pair::first)
 		.property("second",		&smaterial_pair::second);
 
+	registration::class_<srect>("srect")
+		.property("m_x", &srect::m_x)
+		.property("m_y", &srect::m_y)
+		.property("m_w", &srect::m_w)
+		.property("m_h", &srect::m_h);
+
+	registration::class_<scolor>("scolor")
+		.property("m_r", &scolor::m_r)
+		.property("m_g", &scolor::m_g)
+		.property("m_b", &scolor::m_b)
+		.property("m_a", &scolor::m_a);
+
+	registration::class_<cmutex>("cmutex")
+		.property("m_internal", &cmutex::m_internal);
 
 };
 
@@ -156,7 +171,6 @@ namespace algorithm
 
 namespace core
 {
-
 	const core::cuuid cuuid::C_INVALID_UUID;
 
 	namespace
@@ -883,8 +897,8 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cfilesystem::cfilesystem(stringview_t path) :
-		m_current(path)
+	cfilesystem::cfilesystem(cpath path) :
+		m_current(std::move(path))
 	{
 	}
 

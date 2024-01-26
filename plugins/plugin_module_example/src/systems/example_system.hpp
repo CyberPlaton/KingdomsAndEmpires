@@ -26,7 +26,7 @@ namespace module_example
 									target.m_next_target = core::cuuid();
 									target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
 
-									logging::log_info(fmt::format("[Targeting System] Chaning Target '{}'", target.m_next_target.view()));
+									logging::log_info(fmt::format("[Targeting System] Chaning Target '{}'", target.m_next_target.view()).data());
 								}
 								target.m_cooldown -= C_DT;
 							});

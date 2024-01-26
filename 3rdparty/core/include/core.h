@@ -425,6 +425,9 @@ namespace core
 
 	private:
 		__declspec(align(16)) uint8_t m_internal[64];
+
+		RTTR_ENABLE();
+		RTTR_REGISTRATION_FRIEND;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -455,6 +458,8 @@ namespace core
 		inline float a() const { return glm::clamp(SCAST(float, m_a), 0.0f, 1.0f); }
 
 		uint8_t m_r, m_g, m_b, m_a;
+
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -478,6 +483,8 @@ namespace core
 		void set_dimension(float w, float h);
 
 		float m_x, m_y, m_w, m_h;
+
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -531,9 +538,8 @@ namespace core
 	class cfilesystem final
 	{
 	public:
-		cfilesystem() = default;
+		cfilesystem(cpath path);
 		~cfilesystem() = default;
-		cfilesystem(stringview_t path);
 
 		static cpath construct(stringview_t path, stringview_t addition);
 		static cpath cwd();

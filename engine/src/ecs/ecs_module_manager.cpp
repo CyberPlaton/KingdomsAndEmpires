@@ -3,7 +3,10 @@
 
 namespace ecs
 {
-	uset_t<stringview_t> cmodule_manager::s_registered_modules;
+	namespace
+	{
+		inline static vector_t<stringview_t> s_registered_modules;
+	}
 
 	//-------------------------------------------------------------------------------------------------------------------------
 	cmodule_manager::cmodule_manager(flecs::world& w) :
@@ -15,6 +18,12 @@ namespace ecs
 	cmodule_manager::~cmodule_manager()
 	{
 
+	}
+
+	//-------------------------------------------------------------------------------------------------------------------------
+	void cmodule_manager::register_module(rttr::type type)
+	{
+		s_registered_modules.push_back(type.get_name().data());
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------------

@@ -1,18 +1,18 @@
 #include "ecs_module.hpp"
 #include <plugin_logging.h>
 
-RTTR_REGISTRATION
-{
-	using namespace rttr;
-
-	registration::class_<ecs::imodule>("ecs::imodule")
-		.constructor<flecs::world&>()
-		.method("self_module", &ecs::imodule::self_module);
-
-};
-
 namespace ecs
 {
+	RTTR_PLUGIN_REGISTRATION
+	{
+		using namespace rttr;
+
+		registration::class_<imodule>("imodule")
+			.constructor<flecs::world&>()
+			.method("self_module", &imodule::self_module);
+
+	};
+
 	//------------------------------------------------------------------------------------------------------------------------
 	flecs::entity imodule::self_module() const
 	{
