@@ -40,7 +40,7 @@ namespace logging
 	void clog::trace(stringview_t message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity >= logging_verbosity::logging_verbosity_trace)
+			m_verbosity <= logging_verbosity::logging_verbosity_trace)
 		{
 			m_logger->trace(message.data());
 		}
@@ -50,7 +50,7 @@ namespace logging
 	void clog::info(stringview_t message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity >= logging_verbosity::logging_verbosity_info)
+			m_verbosity <= logging_verbosity::logging_verbosity_info)
 		{
 			m_logger->info(message.data());
 		}
@@ -60,7 +60,7 @@ namespace logging
 	void clog::warn(stringview_t message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity >= logging_verbosity::logging_verbosity_warn)
+			m_verbosity <= logging_verbosity::logging_verbosity_warn)
 		{
 			m_logger->warn(message.data());
 		}
@@ -70,7 +70,7 @@ namespace logging
 	void clog::error(stringview_t message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity >= logging_verbosity::logging_verbosity_error)
+			m_verbosity <= logging_verbosity::logging_verbosity_error)
 		{
 			m_logger->error(message.data());
 		}
@@ -80,7 +80,7 @@ namespace logging
 	void clog::critical(stringview_t message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity >= logging_verbosity::logging_verbosity_critical)
+			m_verbosity <= logging_verbosity::logging_verbosity_critical)
 		{
 			m_logger->critical(message.data());
 		}
@@ -90,7 +90,7 @@ namespace logging
 	void clog::debug(stringview_t message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity >= logging_verbosity::logging_verbosity_debug)
+			m_verbosity <= logging_verbosity::logging_verbosity_debug)
 		{
 			m_logger->debug(message.data());
 		}

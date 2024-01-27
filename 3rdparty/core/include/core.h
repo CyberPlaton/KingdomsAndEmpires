@@ -225,6 +225,16 @@ namespace algorithm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType, typename TIterator>
+	TType& get(TIterator begin, TIterator end, const TType& value)
+	{
+		auto it = stl::find(begin, end, value);
+
+		return *it;
+	}
+
+
+	//------------------------------------------------------------------------------------------------------------------------
 	template<class TEnum>
 	stringview_t enum_to_string(TEnum value)
 	{

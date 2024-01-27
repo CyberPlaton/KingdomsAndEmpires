@@ -75,12 +75,12 @@ namespace ecs
 	class ENGINE_API cmodule_manager
 	{
 	public:
-		inline static vector_t<std::function<void()>> s_registered_funcs;
+		inline static vector_t<rttr::type> s_registered_types;
 		inline static vector_t<irttr_object*> s_registered_objects;
 
-		static void register_function(std::function<void()> func)
+		static void register_type(rttr::type type)
 		{
-			s_registered_funcs.push_back(std::move(func));
+			s_registered_types.push_back(std::move(type));
 		}
 
 		template<typename TCallable>

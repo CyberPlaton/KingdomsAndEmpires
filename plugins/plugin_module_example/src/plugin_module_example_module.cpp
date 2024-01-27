@@ -1,19 +1,6 @@
 #include "plugin_module_example_module.hpp"
 #include <rttr/registration>
 
-class cexample_reflected_class
-{
-public:
-	cexample_reflected_class() = default;
-	
-	void some_func()
-	{
-		std::cout << "Hi";
-	}
-
-	int m_x;
-	float m_y;
-};
 
 cclass<cexample_reflected_class>* reg_func()
 {
@@ -24,11 +11,11 @@ cclass<cexample_reflected_class>* reg_func()
 		.prop("m_x", &cexample_reflected_class::m_x)
 		.prop("m_y", &cexample_reflected_class::m_y);
 
-	logging::log_debug(fmt::format("plugin_module_example RTTR Types:"));
-	for (auto type : rttr::type::get_types())
-	{
-		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
-	}
+// 	logging::log_debug(fmt::format("plugin_module_example RTTR Types:"));
+// 	for (auto type : rttr::type::get_types())
+// 	{
+// 		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
+// 	}
 
 	return &object;
 }
@@ -51,13 +38,7 @@ namespace module_example
 		registration::class_<cmy_second_module>("cmy_second_module")
 			.constructor<flecs::world&>();
 
-		ecs::cmodule_manager::register_function([]()
-			{
-				cclass<cexample_reflected_class>("cexample_reflected_class")
-					.meth("some_func", &cexample_reflected_class::some_func)
-					.prop("m_x", &cexample_reflected_class::m_x)
-					.prop("m_y", &cexample_reflected_class::m_y);
-			});
+		ecs::cmodule_manager::register_type(rttr::type::get<cexample_reflected_class>());
 		ecs::cmodule_manager::register_rttr_object(reg_func);
 
 	};

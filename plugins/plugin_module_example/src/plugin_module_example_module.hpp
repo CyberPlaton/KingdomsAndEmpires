@@ -3,6 +3,20 @@
 #include "components/example_components.hpp"
 #include "systems/example_system.hpp"
 
+class cexample_reflected_class
+{
+public:
+	cexample_reflected_class() = default;
+
+	void some_func()
+	{
+		logging::log_trace("Hello World, so complicated");
+	}
+
+	int m_x;
+	float m_y;
+};
+
 namespace module_example
 {
 	//- Trying alternative registering modules and systems without requiring templates.

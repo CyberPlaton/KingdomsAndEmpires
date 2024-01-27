@@ -18,6 +18,25 @@ void logging_function(const char* tag, uint32_t level, uint32_t item_id, const c
 	logging::log_debug(fmt::format("[SOKOL] {}", message).data());
 }
 
+template<class TType>
+static TType& instantiate_rttr_object(rttr::type type)
+{
+	static const std::vector<rttr::argument> C_EMPTY_ARGS = {};
+
+	if (type.is_valid())
+	{
+		auto var = type.create(C_EMPTY_ARGS);
+
+		logging::log_debug(fmt::format("TType type: '{}'", var.get_type().get_name().data()));
+
+		if (var.is_valid())
+		{
+			return var.get_value<TType>();
+		}
+	}
+	ASSERT(false, "Undefined behavior");
+}
+
 // Called on every frame of the application.
 static void frame(void) {
 	// Get current window size.
@@ -97,8 +116,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	AllocConsole();
 
 	logging::init();
-
 	logging::log_debug(fmt::format("Starting on WinMain()").data());
+	logging::log_trace("Log log_trace");
+	logging::log_debug("Log log_debug");
+	logging::log_info("Log log_info");
+	logging::log_warn("Log log_warn");
+	logging::log_error("Log log_error");
+	logging::log_critical("Log log_critical");
+
+
 
 	stringview_t enginename = "engine.dll";
 	stringview_t pluginname = "plugin_module_example.dll";
@@ -159,10 +185,33 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		logging::log_debug(fmt::format("\t'{}'", r->name()));
 	}
 
-	logging::log_debug(fmt::format("Execute RTTR functions:"));
-	for (auto func : ecs::cmodule_manager::s_registered_funcs)
+	logging::log_debug(fmt::format("RTTR plugin registered types:"));
+	for (auto t : ecs::cmodule_manager::s_registered_types)
 	{
-		func();
+		logging::log_debug(fmt::format("\t'{}'", t.get_name().data()));
+
+		auto v = t.get_constructor().invoke();
+
+		if (v.is_valid())
+		{
+			logging::log_info("\t\t ...valid!");
+			logging::log_info("\t\t Methods:");
+			for (auto meth : t.get_methods())
+			{
+				logging::log_info(fmt::format("\t\t\t '{}'", meth.get_signature().data()));
+			}
+			logging::log_info("\t\t Properties:");
+			for (auto prop: t.get_properties())
+			{
+				logging::log_info(fmt::format("\t\t\t '{}' :: '{}'", prop.get_type().get_name().data(), prop.get_name().data()));
+			}
+
+			auto object = instantiate_rttr_object<cexample_reflected_class>(t);
+
+			object.some_func();
+
+			rttr::type::type(t);
+		}
 	}
 
 
