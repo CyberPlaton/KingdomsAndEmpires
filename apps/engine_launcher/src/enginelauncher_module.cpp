@@ -135,13 +135,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()).data());
 	}
 
-	auto mt = rttr::type::get_by_name("cmy_module");
+	auto mt = rttr::type::get_by_name("cexample_reflected_class");
 	if (mt.is_valid())
 	{
-		logging::log_debug("cmy_module is valid");
+		logging::log_debug("cexample_reflected_class is valid");
 	}
 
-	logging::log_debug(fmt::format("RTTR Types:"));
+	logging::log_debug(fmt::format("1.) RTTR Types:"));
 	for (auto type : rttr::type::get_types())
 	{
 		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
@@ -151,6 +151,25 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	for (auto m: ecs::cmodule_manager::registered_modules())
 	{
 		logging::log_debug(fmt::format("\t'{}'", m.data()));
+	}
+
+	logging::log_debug(fmt::format("RTTR Objects:"));
+	for (auto r : ecs::cmodule_manager::s_registered_objects)
+	{
+		logging::log_debug(fmt::format("\t'{}'", r->name()));
+	}
+
+	logging::log_debug(fmt::format("Execute RTTR functions:"));
+	for (auto func : ecs::cmodule_manager::s_registered_funcs)
+	{
+		func();
+	}
+
+
+	logging::log_debug(fmt::format("2.) RTTR Types:"));
+	for (auto type : rttr::type::get_types())
+	{
+		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
 	}
 
 	sapp_desc desc{ 0 };
