@@ -4,7 +4,8 @@ VERBOSE = true
 SCRIPTS_DIR = "<undefined>"
 VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
-THIRDPARTY = {"box2d", "sokol", "spdlog", "core", "cereal", "glm", "EASTL", "magic_enum", "taskflow", "mimalloc", "flecs"}
+THIRDPARTY = {"box2d", "sokol", "spdlog", "core", "cereal", "glm", "EASTL",
+"magic_enum", "taskflow", "mimalloc", "flecs", "LuaBridge", "Lua"}
 PLUGINS = {"test", "test2", "plugin_logging", "plugin_module_example"}
 EXES = {"engine_launcher"}
 PLATFORM = "<undefined>"
