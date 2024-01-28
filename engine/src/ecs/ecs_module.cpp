@@ -1,14 +1,10 @@
 #include "ecs_module.hpp"
 #include "ecs_component.hpp"
+#include "ecs_world_manager.hpp"
 #include <plugin_logging.h>
 
 namespace ecs
 {
-
-	imodule::imodule(ref_t<flecs::world> w) :
-		iworld_context_holder(w)
-	{
-	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	flecs::entity imodule::module() const
@@ -16,25 +12,18 @@ namespace ecs
 		return m_module;
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	bool imodule::end()
-	{
-		//- 
-		return m_module.is_valid();
-	}
-
 } //- ecs
 
 namespace ecs::example
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sreplicable_component
+	struct sreplicable_component : public icomponent
 	{
 		DECLARE_COMPONENT(sreplicable_component);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct stransform_component
+	struct stransform_component : public icomponent
 	{
 		DECLARE_COMPONENT(stransform_component);
 
@@ -42,7 +31,7 @@ namespace ecs::example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sidentifier_component
+	struct sidentifier_component : public icomponent
 	{
 		DECLARE_COMPONENT(sidentifier_component);
 
@@ -53,8 +42,7 @@ namespace ecs::example
 	class sexample_module_system : public csystem
 	{
 	public:
-		sexample_module_system(ref_t<flecs::world> w) :
-			csystem(w)
+		sexample_module_system()
 		{
 			//- use constructor only to define the system
 			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
@@ -100,16 +88,15 @@ namespace ecs::example
 	class cexample_module : public imodule
 	{
 	public:
-		cexample_module(ref_t<flecs::world> w) :
-			imodule(w)
+		cexample_module(flecs::world& w) : imodule(w)
 		{
 			begin<cexample_module>()
-				//- .depends_on<cother_module>()
+				//- .depends_on<cother_module>() //- this will load cother_module first and import it before loading this one
 				->comp<sreplicable_component>()
 				->comp<stransform_component>()
 				->comp<sidentifier_component>()
 				->subsystem<sexample_module_system>()
-			->end();
+			->end<cexample_module>();
 		}
 	};
 }

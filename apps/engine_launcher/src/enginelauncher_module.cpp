@@ -41,6 +41,8 @@ static void frame(void) {
 	sg_end_pass();
 	// Commit Sokol render.
 	sg_commit();
+
+	ecs::cworld_manager::instance().current().progress(time);
 }
 
 // Called when the application is initializing.
@@ -92,9 +94,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
 
-	auto WORLD = std::make_shared<flecs::world>();
 
-	ecs::cmodule_manager module_manager(WORLD);
+	//- Important! Create a new world
+	ecs::cworld_manager::instance().create("My World");
+
+	//- Create module manager
+	ecs::cmodule_manager module_manager;
+
+	//- Load modules: Should be done by module manager
+	module_example::cmy_second_module my_module(ecs::cworld_manager::instance().current());
+
 
 	sapp_desc desc{ 0 };
 	desc.width = 720;
@@ -121,7 +130,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 #else
 int main(int argc, char* argv[])
 {
+	logging::init();
 	logging::log_debug(fmt::format("Starting on main()"));
+	logging::log_trace("Log log_trace");
+	logging::log_debug("Log log_debug");
+	logging::log_info("Log log_info");
+	logging::log_warn("Log log_warn");
+	logging::log_error("Log log_error");
+	logging::log_critical("Log log_critical");
 
 	sapp_desc desc{ 0 };
 	desc.width = 720;

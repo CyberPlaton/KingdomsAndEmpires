@@ -11,7 +11,7 @@ namespace ecs
 		using subsystem_registrator_return_t = std::pair<flecs::system, vector_t<flecs::system>>;
 		using subsystem_registrator_t = std::function<subsystem_registrator_return_t(flecs::world&)>;
 
-		csystem(ref_t<flecs::world> w);
+		csystem() = default;
 		virtual ~csystem() = default;
 
 		flecs::system system() const;

@@ -1,14 +1,9 @@
 #include "ecs_system.hpp"
 #include "ecs_component.hpp"
+#include "ecs_world_manager.hpp"
 
 namespace ecs
 {
-
-	csystem::csystem(ref_t<flecs::world> w) :
-		iworld_context_holder(w)
-	{
-	}
-
 	//------------------------------------------------------------------------------------------------------------------------
 	flecs::system csystem::system() const
 	{
@@ -78,8 +73,7 @@ namespace ecs::example
 	class csystem_example final : public csystem
 	{
 	public:
-		csystem_example(ref_t<flecs::world> w) :
-			csystem(w)
+		csystem_example()
 		{
 			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{
