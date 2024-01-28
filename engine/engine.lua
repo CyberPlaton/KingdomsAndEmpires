@@ -5,7 +5,7 @@ function engine()
 		{}, -- build_options
 		{}, -- define_flags
 		{"plugin_logging"}, -- plugin_deps
-		{"rttr", "glm", "EASTL", "magic_enum", "taskflow", "box2d", "spdlog", "core", "mimalloc", "sokol", "flecs"}, -- thirdparty_deps
+		{"glm", "EASTL", "magic_enum", "taskflow", "box2d", "spdlog", "core", "mimalloc", "sokol", "flecs"}, -- thirdparty_deps
 		false,
 		"c++",
 		{}) -- thirdparty_headeronly_deps

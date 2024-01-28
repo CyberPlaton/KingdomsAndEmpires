@@ -1,4 +1,5 @@
 #pragma once
-#include "rttr/registration"
-#include "rttr/type"
-#include "rttr/registration_friend"
+#include "rttr/registration.h"
+#include "rttr/type.h"
+#include "rttr/registration_friend.h"
+#include "rttr/library.h"

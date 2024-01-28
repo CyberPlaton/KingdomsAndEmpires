@@ -9,13 +9,14 @@ namespace module_example
 	class EXAMPLE_API cmy_system : public ecs::csystem
 	{
 	public:
-		cmy_system(flecs::world& w) : ecs::csystem(w)
+		cmy_system(ref_t<flecs::world> w) :
+			ecs::csystem(w)
 		{
-			subsystem([&](flecs::world& w)
+			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{
 					static constexpr auto C_DT = 0.016f;
 
-					w.system<stargeting_component>("Targeting System")
+					auto sys = w.system<stargeting_component>("Targeting System")
 						.each([](stargeting_component& target)
 							{
 								//- check for first start of the system or
@@ -26,15 +27,15 @@ namespace module_example
 									target.m_next_target = core::cuuid();
 									target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
 
-									logging::log_info(fmt::format("[Targeting System] Chaning Target '{}'", target.m_next_target.view()).data());
+									logging::log_info(fmt::format("[Targeting System] Changing Target '{}'", target.m_next_target.view()).data());
 								}
 								target.m_cooldown -= C_DT;
 							});
+
+					//- Return main system, without any dependencies
+					return { sys, {} };
 				});
-		};
-
-
-		RTTR_ENABLE(ecs::csystem);
+		}
 	};
 
 } //- module_example

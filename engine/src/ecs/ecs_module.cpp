@@ -1,22 +1,26 @@
 #include "ecs_module.hpp"
+#include "ecs_component.hpp"
 #include <plugin_logging.h>
 
 namespace ecs
 {
-	RTTR_PLUGIN_REGISTRATION
+
+	imodule::imodule(ref_t<flecs::world> w) :
+		iworld_context_holder(w)
 	{
-		using namespace rttr;
-
-		registration::class_<imodule>("imodule")
-			.constructor<flecs::world&>()
-			.method("self_module", &imodule::self_module);
-
-	};
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity imodule::self_module() const
+	flecs::entity imodule::module() const
 	{
 		return m_module;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool imodule::end()
+	{
+		//- 
+		return m_module.is_valid();
 	}
 
 } //- ecs
@@ -24,17 +28,24 @@ namespace ecs
 namespace ecs::example
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sreplicable_component {};
+	struct sreplicable_component
+	{
+		DECLARE_COMPONENT(sreplicable_component);
+	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct stransform_component
 	{
+		DECLARE_COMPONENT(stransform_component);
+
 		float x, y, r;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sidentifier_component
 	{
+		DECLARE_COMPONENT(sidentifier_component);
+
 		core::cuuid uuid;
 	};
 
@@ -42,11 +53,11 @@ namespace ecs::example
 	class sexample_module_system : public csystem
 	{
 	public:
-		sexample_module_system(flecs::world& w) :
+		sexample_module_system(ref_t<flecs::world> w) :
 			csystem(w)
 		{
 			//- use constructor only to define the system
-			subsystem([&](flecs::world& w)
+			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{
 					//- create dependency graph
 					auto transform_update_phase = w.entity()
@@ -78,6 +89,8 @@ namespace ecs::example
 							{
 								logging::log_info(fmt::format("[Network] Replicating entity \"{}\": [{}:{}:{}]", id.uuid.view(), trans.x, trans.y, trans.r));
 							});
+
+					return { transform_update_system, {replication_update_system} };
 				});
 		}
 	};
@@ -86,7 +99,8 @@ namespace ecs::example
 	//------------------------------------------------------------------------------------------------------------------------
 	class cexample_module : public imodule
 	{
-		cexample_module(flecs::world& w) :
+	public:
+		cexample_module(ref_t<flecs::world> w) :
 			imodule(w)
 		{
 			begin<cexample_module>()

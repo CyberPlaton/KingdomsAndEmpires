@@ -1,31 +1,28 @@
 #pragma once
-#include <config.hpp>
-#include <flecs.h>
-#include <core.h>
+#include "ecs_world_context_holder.hpp"
 
 namespace ecs
 {
 	//- System interface.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API csystem
+	class ENGINE_API csystem : public iworld_context_holder
 	{
 	public:
-		using subsystem_registrator_t = std::function<void(flecs::world&)>;
+		using subsystem_registrator_return_t = std::pair<flecs::system, vector_t<flecs::system>>;
+		using subsystem_registrator_t = std::function<subsystem_registrator_return_t(flecs::world&)>;
 
-		csystem(flecs::world& w);
+		csystem(ref_t<flecs::world> w);
 		virtual ~csystem() = default;
 
+		flecs::system system() const;
+		vector_t<flecs::system> subsystems() const;
+
 		//- argument function is responsible for registering subsystem(s) to the world.
-		csystem& subsystem(subsystem_registrator_t function);
+		void subsystem(subsystem_registrator_t function);
 
 	private:
-		flecs::world& m_world;
-
-	private:
-		inline const flecs::world& world() const { return m_world; }
-		inline flecs::world& world() { return m_world; }
-
-		RTTR_ENABLE();
+		flecs::system m_system;
+		vector_t<flecs::system> m_subsystems;
 	};
 
 

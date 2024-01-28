@@ -2,6 +2,8 @@
 #include <core.h>
 #include <config.hpp>
 
+//- use this macro for defining a simple component. Simple means that
+//- it does not inherit from a complex component hierarchy.
 #define DECLARE_COMPONENT(c) \
 static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; }
 
@@ -11,9 +13,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	struct ENGINE_API icomponent
 	{
-		DECLARE_COMPONENT(icomponent);
-
-		RTTR_ENABLE();
+		static stringview_t name() { static constexpr stringview_t C_NAME = "icomponent"; return C_NAME; };
 	};
 
 

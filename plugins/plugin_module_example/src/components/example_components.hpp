@@ -13,8 +13,6 @@ namespace module_example
 
 		core::cuuid m_next_target = core::cuuid::C_INVALID_UUID;
 		float m_cooldown = C_TARGET_COOLDOWN_INVALID;
-
-		RTTR_ENABLE(ecs::icomponent);
 	};
 
 } //- module_example

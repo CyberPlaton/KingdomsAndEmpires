@@ -13,7 +13,6 @@ namespace stl = std;
 #endif
 #include <mimalloc.h>
 #include <glm.h>
-#include <rttr.h>
 #include <magic_enum.h>
 #include <taskflow.h>
 #include <spdlog.h>
@@ -309,7 +308,6 @@ namespace core
 
 	namespace string_utils
 	{
-
 		void split(const string_t& string, char delimiter, stl::vector< string_t >& storage);
 		void insert(string_t& string, const string_t& to_insert_one, size_t index);
 		void push_front(string_t& string, const string_t& to_prepend_one);
@@ -323,6 +321,11 @@ namespace core
 		bool compare(const string_t& first, const string_t& second);
 
 	} //- string_utils
+
+	namespace detail
+	{
+
+	} //- detail
 
 	//- RTTR aware replacement for std::pair<>
 	//------------------------------------------------------------------------------------------------------------------------
@@ -392,9 +395,6 @@ namespace core
 		void copy_from(const cuuid& other);
 		int compare(const cuuid& other) const;
 		string_t generate_string() const;
-
-		RTTR_ENABLE();
-		RTTR_REGISTRATION_FRIEND;
 	};
 
 	//- random number generator
@@ -435,9 +435,6 @@ namespace core
 
 	private:
 		__declspec(align(16)) uint8_t m_internal[64];
-
-		RTTR_ENABLE();
-		RTTR_REGISTRATION_FRIEND;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -468,8 +465,6 @@ namespace core
 		inline float a() const { return glm::clamp(SCAST(float, m_a), 0.0f, 1.0f); }
 
 		uint8_t m_r, m_g, m_b, m_a;
-
-		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -493,8 +488,6 @@ namespace core
 		void set_dimension(float w, float h);
 
 		float m_x, m_y, m_w, m_h;
-
-		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

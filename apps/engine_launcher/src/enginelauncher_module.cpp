@@ -1,40 +1,9 @@
 #include "enginelauncher_module.hpp"
 #include <iostream>
 
-namespace ecs
-{
-// 	RTTR_REGISTRATION
-// 	{
-// 		using namespace rttr;
-// 
-// 		registration::class_<csystem>("csystem")
-// 			.constructor<flecs::world&>();
-// 
-// 	};
-}
-
 void logging_function(const char* tag, uint32_t level, uint32_t item_id, const char* message, uint32_t line, const char* filename, void* data)
 {
 	logging::log_debug(fmt::format("[SOKOL] {}", message).data());
-}
-
-template<class TType>
-static TType& instantiate_rttr_object(rttr::type type)
-{
-	static const std::vector<rttr::argument> C_EMPTY_ARGS = {};
-
-	if (type.is_valid())
-	{
-		auto var = type.create(C_EMPTY_ARGS);
-
-		logging::log_debug(fmt::format("TType type: '{}'", var.get_type().get_name().data()));
-
-		if (var.is_valid())
-		{
-			return var.get_value<TType>();
-		}
-	}
-	ASSERT(false, "Undefined behavior");
 }
 
 // Called on every frame of the application.
@@ -111,7 +80,6 @@ void cleanup(void)
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
-//int main(int argc, char* argv[])
 {
 	AllocConsole();
 
@@ -124,102 +92,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
 
+	auto WORLD = std::make_shared<flecs::world>();
 
-
-	stringview_t enginename = "engine.dll";
-	stringview_t pluginname = "plugin_module_example.dll";
-
-	core::cfilesystem fs1(core::cfilesystem::cwd());
-	fs1.append(enginename);
-
-	rttr::library engine_plugin(fs1.current().path().generic_u8string());
-	try
-	{
-		if (!engine_plugin.load())
-		{
-			logging::log_debug(fmt::format("engine could not be loaded: '{}'", engine_plugin.get_error_string().data()).data());
-		}
-	}
-	catch (const std::runtime_error& exc)
-	{
-		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()).data());
-	}
-
-	core::cfilesystem fs(core::cfilesystem::cwd());
-	fs.append(pluginname);
-
-	rttr::library module_plugin(fs.current().path().generic_u8string());
-	try
-	{
-		if (!module_plugin.load())
-		{
-			logging::log_debug(fmt::format("plugin_module_example could not be loaded: '{}'", module_plugin.get_error_string().data()).data());
-		}
-	}
-	catch (const std::runtime_error& exc)
-	{
-		logging::log_debug(fmt::format("Fatal error while loading plugin_module_example: '{}'", exc.what()).data());
-	}
-
-	auto mt = rttr::type::get_by_name("cexample_reflected_class");
-	if (mt.is_valid())
-	{
-		logging::log_debug("cexample_reflected_class is valid");
-	}
-
-	logging::log_debug(fmt::format("1.) RTTR Types:"));
-	for (auto type : rttr::type::get_types())
-	{
-		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
-	}
-
-	logging::log_debug(fmt::format("Modules:"));
-	for (auto m: ecs::cmodule_manager::registered_modules())
-	{
-		logging::log_debug(fmt::format("\t'{}'", m.data()));
-	}
-
-	logging::log_debug(fmt::format("RTTR Objects:"));
-	for (auto r : ecs::cmodule_manager::s_registered_objects)
-	{
-		logging::log_debug(fmt::format("\t'{}'", r->name()));
-	}
-
-	logging::log_debug(fmt::format("RTTR plugin registered types:"));
-	for (auto t : ecs::cmodule_manager::s_registered_types)
-	{
-		logging::log_debug(fmt::format("\t'{}'", t.get_name().data()));
-
-		auto v = t.get_constructor().invoke();
-
-		if (v.is_valid())
-		{
-			logging::log_info("\t\t ...valid!");
-			logging::log_info("\t\t Methods:");
-			for (auto meth : t.get_methods())
-			{
-				logging::log_info(fmt::format("\t\t\t '{}'", meth.get_signature().data()));
-			}
-			logging::log_info("\t\t Properties:");
-			for (auto prop: t.get_properties())
-			{
-				logging::log_info(fmt::format("\t\t\t '{}' :: '{}'", prop.get_type().get_name().data(), prop.get_name().data()));
-			}
-
-			auto object = instantiate_rttr_object<cexample_reflected_class>(t);
-
-			object.some_func();
-
-			rttr::type::type(t);
-		}
-	}
-
-
-	logging::log_debug(fmt::format("2.) RTTR Types:"));
-	for (auto type : rttr::type::get_types())
-	{
-		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
-	}
+	ecs::cmodule_manager module_manager(WORLD);
 
 	sapp_desc desc{ 0 };
 	desc.width = 720;

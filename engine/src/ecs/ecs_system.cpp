@@ -1,27 +1,33 @@
 #include "ecs_system.hpp"
+#include "ecs_component.hpp"
 
 namespace ecs
 {
-	RTTR_PLUGIN_REGISTRATION
-	{
-		using namespace rttr;
 
-		registration::class_<csystem>("csystem")
-			.constructor<flecs::world&>();
-
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	csystem::csystem(flecs::world& w) :
-		m_world(w)
+	csystem::csystem(ref_t<flecs::world> w) :
+		iworld_context_holder(w)
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ecs::csystem& csystem::subsystem(subsystem_registrator_t function)
+	flecs::system csystem::system() const
 	{
-		function(world());
-		return *this;
+		return m_system;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	vector_t<flecs::system> csystem::subsystems() const
+	{
+		return m_subsystems;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void csystem::subsystem(subsystem_registrator_t function)
+	{
+		auto [sys, subsys] = function(world());
+
+		m_system = sys;
+		m_subsystems = std::move(subsys);
 	}
 
 } //- ecs
@@ -29,14 +35,18 @@ namespace ecs
 namespace ecs::example
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sbehavior_component
+	struct sbehavior_component : public icomponent
 	{
+		DECLARE_COMPONENT(sbehavior_component);
+
 		stringview_t m_script;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sdestructible_component
+	struct sdestructible_component : public icomponent
 	{
+		DECLARE_COMPONENT(sdestructible_component);
+
 		enum type
 		{
 			physagreggator,
@@ -49,8 +59,10 @@ namespace ecs::example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sphysical_trigger_component
+	struct sphysical_trigger_component : public icomponent
 	{
+		DECLARE_COMPONENT(sphysical_trigger_component);
+
 		enum type
 		{
 			activating,
@@ -63,13 +75,13 @@ namespace ecs::example
 
 	//- Example system. Missing is the registration in RTTR, for this checkout plugin_module_example
 	//------------------------------------------------------------------------------------------------------------------------
-	class csystem_example : public csystem
+	class csystem_example final : public csystem
 	{
 	public:
-		csystem_example(flecs::world& w) : csystem(w)
+		csystem_example(ref_t<flecs::world> w) :
+			csystem(w)
 		{
-			//- use constructor only to define the system
-			subsystem([&](flecs::world& w)
+			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{
 					//- create dependency graph
 					auto physics_destruction_update_phase = w.entity()
@@ -96,10 +108,10 @@ namespace ecs::example
 
 					//- Physics Destruction system will run on ecs update and Behavior system will run after it because
 					//- the established dependency
+					//- Return Physics as main system and Behavior as a subsystem, because it depends on Physics.
+					return { physics_destruction_update_system, {behavior_update_system} };
 				});
-		};
-
-		RTTR_ENABLE(csystem);
+		}
 	};
 
 } //- ecs::example

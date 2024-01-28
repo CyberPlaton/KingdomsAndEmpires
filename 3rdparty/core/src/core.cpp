@@ -1,45 +1,6 @@
 #include "core.hpp"
 #include <sstream>
 
-RTTR_REGISTRATION
-{
-	using namespace rttr;
-	using namespace core;
-
-	registration::class_<cuuid>("cuuid")
-		.property("m_data",		&cuuid::m_data)
-		.property("m_string",	&cuuid::m_string)
-		.property("m_hash",		&cuuid::m_hash);
-
-	registration::class_<vec2_t>("vec2_t")
-		.property("x",			&vec2_t::x)
-		.property("y",			&vec2_t::y);
-
-	registration::class_<spair<handle_type_t, handle_type_t>>("spair")
-		.property("first",		&spair<handle_type_t, handle_type_t>::first)
-		.property("second",		&spair<handle_type_t, handle_type_t>::second);
-
-	registration::class_<smaterial_pair>("smaterial_pair")
-		.property("first",		&smaterial_pair::first)
-		.property("second",		&smaterial_pair::second);
-
-	registration::class_<srect>("srect")
-		.property("m_x",		&srect::m_x)
-		.property("m_y",		&srect::m_y)
-		.property("m_w",		&srect::m_w)
-		.property("m_h",		&srect::m_h);
-
-	registration::class_<scolor>("scolor")
-		.property("m_r",		&scolor::m_r)
-		.property("m_g",		&scolor::m_g)
-		.property("m_b",		&scolor::m_b)
-		.property("m_a",		&scolor::m_a);
-
-	registration::class_<cmutex>("cmutex")
-		.property("m_internal", &cmutex::m_internal);
-
-};
-
 namespace algorithm
 {
 	//------------------------------------------------------------------------------------------------------------------------
@@ -401,6 +362,11 @@ namespace core
 		}
 
 	} //- string_utils
+
+	namespace detail
+	{
+
+	} //- detail
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cuuid::cuuid()
