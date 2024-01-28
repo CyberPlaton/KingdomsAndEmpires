@@ -5,7 +5,7 @@ function plugin_module_example()
 					{},
 					{},
 					{"plugin_logging", "test", "test2"},
-					{"glm", "EASTL", "magic_enum", "taskflow", "sokol", "box2d", "spdlog", "core", "mimalloc", "flecs"},
+					{"cereal", "glm", "EASTL", "magic_enum", "taskflow", "sokol", "box2d", "spdlog", "core", "mimalloc", "flecs"},
 					{},
 					true)
 end

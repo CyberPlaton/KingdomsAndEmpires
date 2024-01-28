@@ -17,6 +17,7 @@ namespace stl = std;
 #include <taskflow.h>
 #include <spdlog.h>
 #include <box2d.h>
+#include <cereal.h>
 #include <cstddef>
 #include <memory>
 #include <filesystem>
