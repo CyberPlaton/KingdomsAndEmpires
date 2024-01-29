@@ -42,7 +42,7 @@ namespace logging
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_trace)
 		{
-			m_logger->trace(message.data());
+			m_logger->trace(message);
 		}
 	}
 
@@ -52,7 +52,7 @@ namespace logging
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_info)
 		{
-			m_logger->info(message.data());
+			m_logger->info(message);
 		}
 	}
 
@@ -62,7 +62,7 @@ namespace logging
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_warn)
 		{
-			m_logger->warn(message.data());
+			m_logger->warn(message);
 		}
 	}
 
@@ -72,7 +72,7 @@ namespace logging
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_error)
 		{
-			m_logger->error(message.data());
+			m_logger->error(message);
 		}
 	}
 
@@ -82,7 +82,7 @@ namespace logging
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_critical)
 		{
-			m_logger->critical(message.data());
+			m_logger->critical(message);
 		}
 	}
 
@@ -92,7 +92,7 @@ namespace logging
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_debug)
 		{
-			m_logger->debug(message.data());
+			m_logger->debug(message);
 		}
 	}
 

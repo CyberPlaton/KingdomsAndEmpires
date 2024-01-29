@@ -27,6 +27,7 @@ namespace stl = std;
 #include <chrono>
 #include <any>
 #include <new>
+#include <fstream>
 
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
@@ -35,8 +36,15 @@ namespace stl = std;
 #define MAX(type) std::numeric_limits<type>().max()
 #define MIN(type) std::numeric_limits<type>().min()
 #define BIT(x) 1 << x
-#define CORE_ASSERT(expression, message) assert((expression, message))
+
+#ifdef DEBUG
+#define CORE_ASSERT(expression, message) assert(expression && message)
 #define ASSERT(expression, ...) CORE_ASSERT(expression, __VA_ARGS__)
+#else
+#define CORE_ASSERT(expression, message)
+#define ASSERT(expression, ...)
+#endif
+
 #define SCAST(type, value) static_cast<type>(value)
 #ifdef ARRAYSIZE
 #undef ARRAYSIZE
@@ -49,7 +57,7 @@ using ref_t = stl::shared_ptr<T>;
 template<class T>
 using ptr_t = stl::unique_ptr<T>;
 using string_t = stl::string;
-using stringview_t = stl::string_view;
+using stringview_t = const char*;
 template<class T>
 using queue_t = stl::queue<T>;
 template<class T>
@@ -133,6 +141,7 @@ namespace core
 		file_read_write_mode_append		= BIT(4),
 		file_read_write_mode_binary		= BIT(5),
 		file_read_write_mode_text		= BIT(6),
+		file_read_write_mode_cereal		= BIT(7),
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -216,6 +225,14 @@ namespace algorithm
 	float percent_value(unsigned p, float total_value);
 	bool is_valid_handle(handle_type_t h);
 	handle_type_t invalid_handle();
+
+	//- utility to check whether query number is bitwise active in value
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TEnum>
+	bool bit_on(int value, TEnum query)
+	{
+		return (value & query);
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType, typename TIterator>
@@ -303,6 +320,34 @@ namespace algorithm
 	}
 
 } //- algorithm
+
+#ifndef CUSTOM_ARCHIVE_TYPE
+
+#define TArchiveOut cereal::JSONOutputArchive
+#define TArchiveIn cereal::JSONInputArchive
+//#define TArchiveOut cereal::BinaryOutputArchive
+//#define TArchiveIn cereal::BinaryInputArchive
+
+#endif
+
+namespace io
+{
+	//- Implement serialize function to save/load data and datastructures to/from file.
+	//- The serialize function can be as simple as:
+	//-
+	//- void serialize(TArchiveType& archive)
+	//- {
+	//-		archive(m_uuid, m_vector, m_map);
+	//- }
+	//------------------------------------------------------------------------------------------------------------------------
+	class iserializable
+	{
+	public:
+		virtual void save(TArchiveOut& /*archive*/) const= 0;
+		virtual void load(TArchiveIn& /*archive*/) = 0;
+	};
+
+} //- io
 
 namespace core
 {
@@ -515,9 +560,9 @@ namespace core
 		std::filesystem::path path() const;
 		std::filesystem::directory_entry dir() const;
 
-		inline stringview_t view() const { return m_path.generic_u8string().data(); }
-		inline stringview_t extension() const { return m_path.extension().generic_u8string().data(); }
-		inline stringview_t stem() const { return m_path.stem().generic_u8string().data(); }
+		inline stringview_t view() const { return m_string_path.c_str(); }
+		inline stringview_t extension() const { return m_string_ext.c_str(); }
+		inline stringview_t stem() const { return m_string_stem.c_str(); }
 
 		inline bool exists() const;
 		explicit operator bool() const { return exists(); }
@@ -534,8 +579,15 @@ namespace core
 		bool operator==(const std::filesystem::path& path);
 
 	private:
+		string_t m_string_path;
+		string_t m_string_ext;
+		string_t m_string_stem;
 		std::filesystem::path m_path;
 		std::filesystem::directory_entry m_dir;
+
+	private:
+		//- TODO: Reconsider later how to deal with filesystem wchar_t and ditch the 3 strings
+		void update_strings();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -580,19 +632,24 @@ namespace core
 	};
 
 	//- Helper class for performing I/O operations both sync and async.
-	//- Data is automatically free when object goes out of scope.
+	//- Data is automatically freed when object goes out of scope.
 	//- Object wíll not go out of scope until async task is finished.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cfile final
 	{
 	public:
-		cfile(const cpath& path, int mode = file_read_write_mode_read | file_read_write_mode_text);
+		cfile(cpath path, int mode = file_read_write_mode_read | file_read_write_mode_text);
 		~cfile();
 
 		inline file_io_status status() const { return m_status; }
-		inline spair<void*, unsigned> data() const { return { m_data, m_datasize }; }
+		spair<void*, unsigned> data() const;
 		template<typename TType>
-		inline spair<TType*, unsigned> data() const { { SCAST(TType*, m_data), m_datasize }; }
+		spair<TType*, unsigned> data() const
+		{
+			ASSERT(!(m_mode & file_read_write_mode_cereal), "Invalid operation! Data is empty when using cereal");
+
+			return { SCAST(TType*, m_data), m_datasize };
+		}
 
 		file_io_status read_sync();
 		file_io_status write_sync(void* data, unsigned data_size);
@@ -600,12 +657,17 @@ namespace core
 		file_io_status read_async();
 		file_io_status write_async(void* data, unsigned data_size);
 
+		template<class TType>
+		file_io_status write_sync_cereal(TType& structure);
+		template<class TType>
+		file_io_status read_sync_cereal(TType& structure);
+
 	private:
 		void* m_data;
 		unsigned m_datasize;
 
 		std::future<void> m_task;
-		const stringview_t m_path;
+		cpath m_path;
 		int m_mode = file_read_write_mode_none;
 		file_io_status m_status;
 	};
@@ -687,5 +749,112 @@ namespace core
 	private:
 		std::any m_data;
 	};
+
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TType>
+	file_io_status cfile::write_sync_cereal(TType& structure)
+	{
+		using namespace algorithm;
+
+		static_assert(std::is_base_of<io::iserializable, TType>::value, "TType must be inherited from iserializable");
+
+		if constexpr (std::is_same<TArchiveOut, cereal::BinaryOutputArchive>::value)
+		{
+			//- assure binary mode
+			ASSERT((bit_on(m_mode, file_read_write_mode_write)
+				&& bit_on(m_mode, file_read_write_mode_cereal)
+				&& bit_on(m_mode, file_read_write_mode_binary)), "cfile must be created with cereal binary write mode");
+		}
+		else
+		{
+			ASSERT((bit_on(m_mode, file_read_write_mode_write)
+				&& bit_on(m_mode, file_read_write_mode_cereal)
+				&& bit_on(m_mode, file_read_write_mode_text)), "cfile must be created with cereal text write mode");
+		}
+
+		//- will create file if it does not exist
+		std::ofstream out(m_path.view(), std::ios::binary);
+
+		if (out.is_open() && out.good())
+		{
+			TArchiveOut archive(out);
+
+			//- cereal throws on errors
+			try
+			{
+				archive(structure);
+
+				//- cereal guarantees that data is flushed when archive goes out of scope
+				m_status = file_io_status_success;
+			}
+			catch (const std::exception& e)
+			{
+				logging::log_error(fmt::format("Failed writing cereal data to file '{}', error: '{}'",
+					m_path.view(), e.what()));
+
+				m_status = file_io_status_failed;
+			}
+		}
+		else
+		{
+			logging::log_error(fmt::format("Failed opening cereal file for writing '{}'", m_path.view()));
+			m_status = file_io_status_failed;
+		}
+
+		return m_status;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TType>
+	file_io_status cfile::read_sync_cereal(TType& structure)
+	{
+		using namespace algorithm;
+
+		static_assert(std::is_base_of<io::iserializable, TType>::value, "TType must be inherited from iserializable");
+
+		if constexpr (std::is_same<TArchiveIn, cereal::BinaryInputArchive>::value)
+		{
+			//- assure binary mode
+			ASSERT((bit_on(m_mode, file_read_write_mode_read)
+				&& bit_on(m_mode, file_read_write_mode_cereal)
+				&& bit_on(m_mode, file_read_write_mode_binary)), "cfile must be created with cereal binary read mode");
+		}
+		else
+		{
+			ASSERT((bit_on(m_mode, file_read_write_mode_read)
+				&& bit_on(m_mode, file_read_write_mode_cereal)
+				&& bit_on(m_mode, file_read_write_mode_text)), "cfile must be created with cereal text read mode");
+		}
+
+		std::ifstream in(m_path.view(), std::ios::binary);
+
+		if (in.is_open() && in.good())
+		{
+			TArchiveIn archive(in);
+
+			//- cereal throws on errors
+			try
+			{
+				archive(structure);
+
+				m_status = file_io_status_success;
+			}
+			catch (const std::exception& e)
+			{
+				logging::log_error(fmt::format("Failed reading from file '{}' to cereal data, error: '{}'",
+					m_path.view(), e.what()));
+
+				m_status = file_io_status_failed;
+			}
+		}
+		else
+		{
+			logging::log_error(fmt::format("Failed opening cereal file for reading '{}'", m_path.view()));
+			m_status = file_io_status_failed;
+		}
+
+		return m_status;
+	}
 
 } //- core

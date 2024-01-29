@@ -32,11 +32,23 @@ namespace logging
 	LOG_API void shutdown();
 	LOG_API float app_runtime();
 	LOG_API float app_runtime_ms();
+
 	LOG_API void log_trace(stringview_t message);
+	LOG_API void log_trace(const string_t& message);
+
 	LOG_API void log_debug(stringview_t message);
+	LOG_API void log_debug(const string_t& message);
+	
 	LOG_API void log_info(stringview_t message);
+	LOG_API void log_info(const string_t& message);
+	
 	LOG_API void log_warn(stringview_t message);
+	LOG_API void log_warn(const string_t& message);
+	
 	LOG_API void log_error(stringview_t message);
+	LOG_API void log_error(const string_t& message);
+	
 	LOG_API void log_critical(stringview_t message);
+	LOG_API void log_critical(const string_t& message);
 
 } //- logging

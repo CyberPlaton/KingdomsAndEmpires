@@ -48,12 +48,11 @@ namespace algorithm
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned hash(stringview_t string)
 	{
-		auto len = static_cast<unsigned>(string.length());
-		const char* s = string.data();
+		auto len = static_cast<unsigned>(strlen(string));
 		unsigned h = len;
-		for (auto i = 0u; i < len; ++s, ++i)
+		for (auto i = 0u; i < len; ++string, ++i)
 		{
-			h = ((h << 5) + h) + (*s);
+			h = ((h << 5) + h) + (*string);
 		}
 		return h;
 	}
@@ -143,13 +142,13 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static bool is_path_directory(stringview_t path)
 		{
-			return string_utils::find_substr(path.data(), ".") == MAX(size_t);
+			return string_utils::find_substr(path, ".") == MAX(size_t);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static bool is_path_file(stringview_t path)
 		{
-			return string_utils::find_substr(path.data(), ".") != MAX(size_t);
+			return string_utils::find_substr(path, ".") != MAX(size_t);
 		}
 
 		//- @reference: raylib UnloadFileData.
@@ -167,9 +166,9 @@ namespace core
 			uint8_t* data = nullptr;
 			*data_size_out = 0;
 
-			if (file_path.data() != nullptr)
+			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path.data(), "rb");
+				FILE* file = fopen(file_path, "rb");
 
 				if (file != nullptr)
 				{
@@ -193,9 +192,9 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size)
 		{
-			if (file_path.data() != nullptr)
+			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path.data(), "wb");
+				FILE* file = fopen(file_path, "wb");
 
 				if (file != nullptr)
 				{
@@ -226,9 +225,9 @@ namespace core
 		{
 			char* text = nullptr;
 
-			if (file_path.data() != nullptr)
+			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path.data(), "rt");
+				FILE* file = fopen(file_path, "rt");
 
 				if (file != NULL)
 				{
@@ -262,13 +261,13 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static bool save_text_file_data(stringview_t file_path, stringview_t text)
 		{
-			if (file_path.data() != nullptr)
+			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path.data(), "wt");
+				FILE* file = fopen(file_path, "wt");
 
 				if (file != nullptr)
 				{
-					auto count = fprintf(file, "%s", text.data());
+					auto count = fprintf(file, "%s", text);
 
 					fclose(file);
 
@@ -758,11 +757,20 @@ namespace core
 		m_h = h;
 	}
 
+	void cpath::update_strings()
+	{
+		m_string_path = m_path.generic_u8string();
+		m_string_ext = m_path.extension().generic_u8string();
+		m_string_stem = m_path.stem().generic_u8string();
+	}
+
 	//------------------------------------------------------------------------------------------------------------------------
 	cpath::cpath(stringview_t path) :
-		m_path(path.data())
+		m_path(path)
 	{
 		m_dir = std::filesystem::directory_entry(m_path);
+
+		update_strings();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -770,6 +778,8 @@ namespace core
 		m_path(path)
 	{
 		m_dir = std::filesystem::directory_entry(m_path);
+
+		update_strings();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -777,6 +787,8 @@ namespace core
 		m_path(path.m_path)
 	{
 		m_dir = std::filesystem::directory_entry(m_path);
+
+		update_strings();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -830,7 +842,11 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	cpath& cpath::append(stringview_t path)
 	{
-		this->operator/=(path);
+		m_path = std::filesystem::path(fmt::format("{}{}", m_path.generic_u8string(), path).c_str());
+		m_dir = std::filesystem::directory_entry(m_path);
+
+		update_strings();
+
 		return *this;
 	}
 
@@ -849,8 +865,11 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	cpath& cpath::operator/=(stringview_t path)
 	{
-		m_path /= path.data();
+		m_path /= path;
 		m_dir = std::filesystem::directory_entry(m_path);
+
+		update_strings();
+
 		return *this;
 	}
 
@@ -859,6 +878,9 @@ namespace core
 	{
 		m_path = path.m_path;
 		m_dir = path.m_dir;
+
+		update_strings();
+
 		return *this;
 	}
 
@@ -890,7 +912,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cfilesystem::create_dir(stringview_t path)
 	{
-		return std::filesystem::create_directory(path.data());
+		return std::filesystem::create_directory(path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -902,15 +924,15 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cfilesystem::create_dir_recursive(stringview_t path)
 	{
-		return std::filesystem::create_directories(path.data());
+		return std::filesystem::create_directories(path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cfilesystem::create_file(stringview_t path)
 	{
-		std::ofstream out(path.data());
+		std::ofstream out(path);
 
-		std::filesystem::permissions(path.data(),
+		std::filesystem::permissions(path,
 			std::filesystem::perms::owner_all | std::filesystem::perms::group_all,
 			std::filesystem::perm_options::add);
 
@@ -922,7 +944,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cfilesystem::create_file_in(stringview_t path, stringview_t stem, stringview_t ext)
 	{
-		return create_file(fmt::format("{}/{}.{}", path.data(), stem.data(), ext.data()).data());
+		return create_file(fmt::format("{}/{}.{}", path, stem, ext).data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1021,7 +1043,7 @@ namespace core
 	{
 		auto absolute = std::filesystem::absolute(cfilesystem::cwd().path());
 
-		return std::filesystem::relative(path.data(), absolute);
+		return std::filesystem::relative(path, absolute);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1056,7 +1078,6 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-
 	void cfilesystem::append(stringview_t path)
 	{
 		m_current /= path;
@@ -1070,8 +1091,8 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cfile::cfile(const cpath& path, int mode /*= file_read_write_mode_read | file_read_write_mode_text*/) :
-		m_data(nullptr), m_datasize(0), m_mode(mode), m_status(file_io_status_none), m_path(path.view())
+	cfile::cfile(cpath path, int mode /*= file_read_write_mode_read | file_read_write_mode_text*/) :
+		m_data(nullptr), m_datasize(0), m_mode(mode), m_status(file_io_status_none), m_path(std::move(path))
 	{
 	}
 
@@ -1100,6 +1121,14 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	spair<void*, unsigned> cfile::data() const
+	{
+		ASSERT(!(m_mode & file_read_write_mode_cereal), "Invalid operation! Data is empty when using cereal");
+
+		return { m_data, m_datasize };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	core::file_io_status cfile::read_sync()
 	{
 		ASSERT(!!(m_mode & file_read_write_mode_read), "cfile must be created with read mode");
@@ -1109,12 +1138,12 @@ namespace core
 			if (!!(m_mode & file_read_write_mode_text))
 			{
 				//- load text file
-				m_data = SCAST(void*, load_text_file_data(m_path));
+				m_data = SCAST(void*, load_text_file_data(m_path.view()));
 			}
 			else if (!!(m_mode & file_read_write_mode_binary))
 			{
 				//- load binary file
-				m_data = SCAST(void*, load_binary_file_data(m_path, &m_datasize));
+				m_data = SCAST(void*, load_binary_file_data(m_path.view(), &m_datasize));
 			}
 
 			if (m_data && m_datasize > 0)
@@ -1143,12 +1172,12 @@ namespace core
 			if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
 			{
 				//- write text file data
-				m_status = save_text_file_data(m_path.data(), SCAST(char*, m_data)) == true ? file_io_status_success : file_io_status_failed;
+				m_status = save_text_file_data(m_path.view(), SCAST(char*, m_data)) == true ? file_io_status_success : file_io_status_failed;
 			}
 			else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
 			{
 				//- write binary file date
-				m_status = save_binary_file_data(m_path.data(), SCAST(uint8_t*, m_data), m_datasize) == true ? file_io_status_success : file_io_status_failed;
+				m_status = save_binary_file_data(m_path.view(), SCAST(uint8_t*, m_data), m_datasize) == true ? file_io_status_success : file_io_status_failed;
 			}
 			else
 			{
@@ -1177,12 +1206,12 @@ namespace core
 					if (!!(m_mode & file_read_write_mode_text))
 					{
 						//- load text file
-						m_data = SCAST(void*, load_text_file_data(m_path));
+						m_data = SCAST(void*, load_text_file_data(m_path.view()));
 					}
 					else if (!!(m_mode & file_read_write_mode_binary))
 					{
 						//- load binary file
-						m_data = SCAST(void*, load_binary_file_data(m_path, &m_datasize));
+						m_data = SCAST(void*, load_binary_file_data(m_path.view(), &m_datasize));
 					}
 					else
 					{
@@ -1219,12 +1248,12 @@ namespace core
 					if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
 					{
 						//- write text file data
-						m_status = save_text_file_data(m_path.data(), SCAST(char*, m_data)) == true ? file_io_status_success : file_io_status_failed;
+						m_status = save_text_file_data(m_path.view(), SCAST(char*, m_data)) == true ? file_io_status_success : file_io_status_failed;
 					}
 					else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
 					{
 						//- write binary file data
-						m_status = save_binary_file_data(m_path.data(), SCAST(uint8_t*, m_data), m_datasize) == true ? file_io_status_success : file_io_status_failed;
+						m_status = save_binary_file_data(m_path.view(), SCAST(uint8_t*, m_data), m_datasize) == true ? file_io_status_success : file_io_status_failed;
 					}
 					else
 					{
