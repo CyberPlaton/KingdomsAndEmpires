@@ -9,7 +9,8 @@ namespace module_example
 	class EXAMPLE_API cmy_system : public ecs::csystem
 	{
 	public:
-		cmy_system()
+		cmy_system(flecs::world& w) :
+			ecs::csystem(w)
 		{
 			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{

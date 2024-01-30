@@ -1,13 +1,23 @@
 #pragma once
+#include <config.hpp>
 #include <flecs.h>
+#include <core.h>
 
 namespace ecs
 {
-	class centity
+	//- more of a utility and wrapper for flecs::entity.
+	//- Name of the entity is a UUID generated either randomly or specific.
+	//------------------------------------------------------------------------------------------------------------------------
+	class ENGINE_API centity final
 	{
 	public:
+		centity(flecs::entity e);
+
+		inline auto self() const { return m_self; }
+		inline auto uuid() const { return m_self.name().c_str(); }
 
 	private:
+		const flecs::entity m_self;
 	};
 
 } //- ecs

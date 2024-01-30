@@ -293,8 +293,8 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		set_basic_defines()
 		defines{define_flags}
 		includedirs{"include"}
-		links{"engine"}
 		set_include_path_to_engine()
+		link_with_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()

@@ -5,6 +5,11 @@
 
 namespace ecs
 {
+	//------------------------------------------------------------------------------------------------------------------------
+	imodule::imodule(flecs::world& w) :
+		iworld_context_holder(w)
+	{
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	flecs::entity imodule::module() const
@@ -42,7 +47,8 @@ namespace ecs::example
 	class sexample_module_system : public csystem
 	{
 	public:
-		sexample_module_system()
+		sexample_module_system(flecs::world& w) :
+			csystem(w)
 		{
 			//- use constructor only to define the system
 			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t

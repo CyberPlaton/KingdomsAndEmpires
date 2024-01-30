@@ -42,7 +42,7 @@ static void frame(void) {
 	// Commit Sokol render.
 	sg_commit();
 
-	ecs::cworld_manager::instance().current().progress(time);
+	ecs::cworld_manager::instance().active().world().progress(time);
 }
 
 // Called when the application is initializing.
@@ -132,13 +132,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 
 	//- Important! Create a new world
-	ecs::cworld_manager::instance().create("My World");
+	auto& inst = ecs::cworld_manager::instance();
+	inst.create("My World");
 
 	//- Create module manager
-	ecs::cmodule_manager module_manager;
+	ecs::cmodule_manager module_manager(inst.active().world());
 
-	//- Load modules: Should be done by module manager
-	module_example::cmy_second_module my_module(ecs::cworld_manager::instance().current());
+	//- Load modules: Should be done by module manager later, semi-automagically.
+	module_example::cmy_second_module my_module(inst.active().world());
 
 
 	sapp_desc desc{ 0 };

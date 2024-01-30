@@ -10,7 +10,7 @@ namespace ecs
 	class ENGINE_API cmodule_manager final : public iworld_context_holder
 	{
 	public:
-		cmodule_manager() = default;
+		cmodule_manager(flecs::world& w);
 		~cmodule_manager() = default;
 
 	private:

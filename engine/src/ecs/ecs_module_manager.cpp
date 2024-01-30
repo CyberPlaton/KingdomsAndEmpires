@@ -8,4 +8,10 @@ namespace ecs
 
 	} //- unnamed
 
+	//------------------------------------------------------------------------------------------------------------------------
+	cmodule_manager::cmodule_manager(flecs::world& w) :
+		iworld_context_holder(w)
+	{
+	}
+
 } //- ecs

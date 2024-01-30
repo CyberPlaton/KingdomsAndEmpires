@@ -5,15 +5,15 @@
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::system csystem::system() const
-	{
-		return m_system;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	vector_t<flecs::system> csystem::subsystems() const
 	{
 		return m_subsystems;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	csystem::csystem(flecs::world& w) :
+		iworld_context_holder(w)
+	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -21,7 +21,9 @@ namespace ecs
 	{
 		auto [sys, subsys] = function(world());
 
-		m_system = sys;
+		ASSERT(sys.name().length() > 0, "csystem name can not be empty! Assign a descriptive name to the system");
+
+		m_self = sys;
 		m_subsystems = std::move(subsys);
 	}
 
@@ -73,7 +75,8 @@ namespace ecs::example
 	class csystem_example final : public csystem
 	{
 	public:
-		csystem_example()
+		csystem_example(flecs::world& w) :
+			csystem(w)
 		{
 			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{

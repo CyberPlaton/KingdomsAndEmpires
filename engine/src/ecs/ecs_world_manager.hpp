@@ -1,26 +1,24 @@
 #pragma once
-#include <config.hpp>
-#include <core.h>
-#include <flecs.h>
+#include "ecs_world.hpp"
 
 namespace ecs
 {
+	//- Central place for storing and accessing all worlds.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API cworld_manager
+	class ENGINE_API cworld_manager final
 	{
 	public:
 		STATIC_INSTANCE(cworld_manager, s_cworld_manager);
 
 		bool create(stringview_t name);
 
-		bool checkout(stringview_t name);
-
-		const flecs::world& current() const;
-		flecs::world& current();
+		bool set_active(stringview_t name);
+		const cworld& active() const;
+		cworld& active();
 
 	private:
 		unsigned m_current = 0;
-		umap_t<unsigned, ref_t<flecs::world>> m_worlds;
+		umap_t<unsigned, ref_t<cworld>> m_worlds;
 	};
 
 } //- ecs

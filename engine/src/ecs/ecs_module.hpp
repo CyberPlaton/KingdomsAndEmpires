@@ -9,7 +9,7 @@ namespace ecs
 	class ENGINE_API imodule : public iworld_context_holder
 	{
 	public:
-		imodule(flecs::world& /*w*/){}
+		imodule(flecs::world& w);
 		virtual ~imodule() = default;
 
 		flecs::entity module() const;
@@ -39,7 +39,7 @@ namespace ecs
 			static_assert(std::is_base_of<csystem, TSystem>::value, "TSystem must be derived from csystem");
 
 			//- create and register system into current world
-			TSystem sys;
+			TSystem sys(world());
 			return this;
 		}
 

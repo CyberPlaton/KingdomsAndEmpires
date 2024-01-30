@@ -1,33 +1,32 @@
-#include "ecs_world_context_holder.hpp"
-#include "ecs_world_manager.hpp"
+#include "ecs_world.hpp"
 
 namespace ecs
 {
+
 	//------------------------------------------------------------------------------------------------------------------------
-	iworld_context_holder::iworld_context_holder(flecs::world& w) :
-		m_world(&w)
+	cworld::cworld(stringview_t name) :
+		m_name(name),
+		m_entity_manager(m_world),
+		m_system_manager(m_world)
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	iworld_context_holder::~iworld_context_holder()
+	cworld::~cworld()
 	{
-		//- we are not responsible for memory
-		m_world = nullptr;
+
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::world& iworld_context_holder::world()
+	bool cworld::QueryCallback(int proxy_id)
 	{
-		ASSERT(m_world, "Invalid operation. World was null!");
-		return *m_world;
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	const flecs::world& iworld_context_holder::world() const
+	float cworld::RayCastCallback(const b2RayCastInput& ray_input, int proxy_id)
 	{
-		ASSERT(m_world, "Invalid operation. World was null!");
-		return *m_world;
+		return 0.0f;
 	}
 
 } //- ecs
