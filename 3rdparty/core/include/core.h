@@ -192,6 +192,15 @@ namespace core
 		common_color_neutral1000,	//- white
 	};
 
+	//- RTTR aware replacement for std::pair<>
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TKey, typename TValue>
+	struct spair
+	{
+		TKey first;
+		TValue second;
+	};
+
 } //- core
 
 namespace math
@@ -332,10 +341,15 @@ namespace algorithm
 
 namespace io
 {
-	//- Implement serialize function to save/load data and datastructures to/from file.
+	//- Implement serialize functions to save/load data and datastructures to/from file.
 	//- The serialize function can be as simple as:
 	//-
-	//- void serialize(TArchiveType& archive)
+	//- void save(TArchiveType& archive) const
+	//- {
+	//-		archive(m_uuid, m_vector, m_map);
+	//- }
+	//-
+	//- void load(TArchiveIn& archive)
 	//- {
 	//-		archive(m_uuid, m_vector, m_map);
 	//- }
@@ -346,6 +360,22 @@ namespace io
 		virtual void save(TArchiveOut& /*archive*/) const= 0;
 		virtual void load(TArchiveIn& /*archive*/) = 0;
 	};
+
+	//- utility functions to load and save spair structures
+	//- Note: if you get cereal errors that a 'serialize' function is missing, then
+	//- ensure that TKey and TValue implement save and load functions
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TKey, typename TValue>
+	void spair_save(const core::spair<TKey, TValue>& pair, TArchiveOut& archive)
+	{
+		archive(pair.first, pair.second);
+	}
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TKey, typename TValue>
+	void spair_load(core::spair<TKey, TValue>& pair, TArchiveIn& archive)
+	{
+		archive(pair.first, pair.second);
+	}
 
 } //- io
 
@@ -373,15 +403,6 @@ namespace core
 
 	} //- detail
 
-	//- RTTR aware replacement for std::pair<>
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TKey, typename TValue>
-	struct spair
-	{
-		TKey first;
-		TValue second;
-	};
-
 	//- define some common types of pairs
 	//------------------------------------------------------------------------------------------------------------------------
 	using smaterial_pair = spair<texture_t, material_t>;
@@ -407,7 +428,7 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cuuid final
+	class cuuid final : public io::iserializable
 	{
 	public:
 		static const cuuid C_INVALID_UUID;
@@ -424,6 +445,9 @@ namespace core
 		inline bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
 		inline bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
 		inline bool is_higher_as(const cuuid& uuid) const { return compare(uuid) > 0; }
+
+		void save(TArchiveOut& archive) const override final;
+		void load(TArchiveIn& archive)  override final;
 
 	private:
 		inline static const auto C_RANDOM_BYTES_COUNT = 4;
@@ -498,7 +522,7 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct scolor final
+	struct scolor final : public io::iserializable
 	{
 		scolor();
 		scolor(common_color color);
@@ -510,11 +534,14 @@ namespace core
 		inline float b() const { return glm::clamp(SCAST(float, m_b), 0.0f, 1.0f); }
 		inline float a() const { return glm::clamp(SCAST(float, m_a), 0.0f, 1.0f); }
 
+		void save(TArchiveOut& archive) const override final;
+		void load(TArchiveIn& archive) override final;
+
 		uint8_t m_r, m_g, m_b, m_a;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct srect final
+	struct srect final : public io::iserializable
 	{
 		srect(const vec2_t& xy, const vec2_t& wh);
 		srect(float x = 0.0f, float y = 0.0f, float w = 0.0f, float h = 0.0f);
@@ -533,6 +560,9 @@ namespace core
 		void set_position(float x, float y);
 		void set_dimension(float w, float h);
 
+		void save(TArchiveOut& archive) const override final;
+		void load(TArchiveIn& archive) override final;
+
 		float m_x, m_y, m_w, m_h;
 	};
 
@@ -548,7 +578,7 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cpath final
+	class cpath final : public io::iserializable
 	{
 	public:
 		cpath(stringview_t path);
@@ -577,6 +607,9 @@ namespace core
 		cpath& operator /=(stringview_t path);
 		bool operator==(stringview_t path);
 		bool operator==(const std::filesystem::path& path);
+
+		void save(TArchiveOut& archive) const override final;
+		void load(TArchiveIn& archive) override final;
 
 	private:
 		string_t m_string_path;

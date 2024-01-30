@@ -1,5 +1,4 @@
 #pragma once
-#include <config.hpp>
 #include "ecs_module.hpp"
 
 //#define ECS_MODULE(c) ecs::cmodule_manager::register_module(rttr::type::get<c>())

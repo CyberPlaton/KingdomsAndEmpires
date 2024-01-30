@@ -1,5 +1,4 @@
 #pragma once
-#include <config.hpp>
 #include <core.h>
 #include <flecs.h>
 

@@ -1,6 +1,5 @@
 #pragma once
 #include <core.h>
-#include <config.hpp>
 
 //- use this macro for defining a simple component. Simple means that
 //- it does not inherit from a complex component hierarchy.

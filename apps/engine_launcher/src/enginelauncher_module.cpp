@@ -103,7 +103,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 {
 	AllocConsole();
 
-	core::cfile file(core::cfilesystem::construct("somepath", ".json"), core::file_read_write_mode_write
+	core::cfile file(core::cfilesystem::construct("cereal_any", ".json"), core::file_read_write_mode_write
 		| core::file_read_write_mode_text
 		| core::file_read_write_mode_cereal);
 
