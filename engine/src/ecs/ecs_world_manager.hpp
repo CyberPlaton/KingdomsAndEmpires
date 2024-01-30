@@ -1,11 +1,12 @@
 #pragma once
+#include <config.hpp>
 #include <core.h>
 #include <flecs.h>
 
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cworld_manager
+	class ENGINE_API cworld_manager
 	{
 	public:
 		STATIC_INSTANCE(cworld_manager, s_cworld_manager);

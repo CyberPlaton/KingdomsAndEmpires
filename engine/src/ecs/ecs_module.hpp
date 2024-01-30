@@ -6,7 +6,7 @@ namespace ecs
 {
 	//- utility class simplifying registering a module into ecs
 	//-------------------------------------------------------------------------------------------------------------------------
-	class imodule : public iworld_context_holder
+	class ENGINE_API imodule : public iworld_context_holder
 	{
 	public:
 		imodule(flecs::world& /*w*/){}

@@ -1,11 +1,12 @@
 #pragma once
+#include <config.hpp>
 #include <core.h>
 #include <flecs.h>
 
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class iworld_context_holder
+	class ENGINE_API iworld_context_holder
 	{
 	public:
 		iworld_context_holder() = default;

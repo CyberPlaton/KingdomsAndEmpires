@@ -1,10 +1,11 @@
 #pragma once
+#include <config.hpp>
 #include <flecs.h>
 
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class centity_manager
+	class ENGINE_API centity_manager
 	{
 	public:
 		centity_manager(const flecs::world& world);

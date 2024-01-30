@@ -1,4 +1,5 @@
 #pragma once
+#define SOKOL_DLL
 #if defined (_WIN32) || defined (_WIN64)
 #define SOKOL_D3D11
 #elif defined (__linux__)
