@@ -5,7 +5,7 @@ namespace ecs
 {
 	//- System interface.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API csystem : public iworld_context_holder
+	class csystem : public iworld_context_holder
 	{
 	public:
 		using subsystem_registrator_return_t = std::pair<flecs::system, vector_t<flecs::system>>;

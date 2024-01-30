@@ -6,7 +6,7 @@
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API iworld_context_holder
+	class iworld_context_holder
 	{
 	public:
 		iworld_context_holder() = default;

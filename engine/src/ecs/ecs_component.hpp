@@ -11,7 +11,7 @@ namespace ecs
 {
 	//- base class for all components
 	//------------------------------------------------------------------------------------------------------------------------
-	struct ENGINE_API icomponent
+	struct icomponent
 	{
 		static stringview_t name() { static constexpr stringview_t C_NAME = "icomponent"; return C_NAME; };
 	};

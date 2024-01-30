@@ -6,7 +6,7 @@
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API cworld_manager
+	class cworld_manager
 	{
 	public:
 		STATIC_INSTANCE(cworld_manager, s_cworld_manager);
