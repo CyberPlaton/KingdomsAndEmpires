@@ -1266,6 +1266,44 @@ namespace core
 		return m_status;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfile::assert_cereal_read_mode(bool binary)
+	{
+		using namespace algorithm;
+
+		if (binary)
+		{
+			ASSERT((bit_on(m_mode, file_read_write_mode_read)
+				&& bit_on(m_mode, file_read_write_mode_cereal)
+				&& bit_on(m_mode, file_read_write_mode_binary)), "cfile must be created with cereal binary read mode");
+		}
+		else
+		{
+			ASSERT((bit_on(m_mode, file_read_write_mode_read)
+				&& bit_on(m_mode, file_read_write_mode_cereal)
+				&& bit_on(m_mode, file_read_write_mode_text)), "cfile must be created with cereal text read mode");
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfile::assert_cereal_write_mode(bool binary)
+	{
+		using namespace algorithm;
+
+		if (binary)
+		{
+			ASSERT((bit_on(m_mode, file_read_write_mode_write)
+				&& bit_on(m_mode, file_read_write_mode_cereal)
+				&& bit_on(m_mode, file_read_write_mode_binary)), "cfile must be created with cereal binary write mode");
+		}
+		else
+		{
+			ASSERT((bit_on(m_mode, file_read_write_mode_write)
+				&& bit_on(m_mode, file_read_write_mode_cereal)
+				&& bit_on(m_mode, file_read_write_mode_text)), "cfile must be created with cereal text write mode");
+		}
+	}
+
 	using namespace std::chrono_literals;
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -659,8 +659,15 @@ namespace core
 
 		template<class TType>
 		file_io_status write_sync_cereal(TType& structure);
+
+		template<class TType>
+		file_io_status write_async_cereal(TType& structure);
+
 		template<class TType>
 		file_io_status read_sync_cereal(TType& structure);
+
+		template<class TType>
+		file_io_status read_async_cereal(TType& structure);
 
 	private:
 		void* m_data;
@@ -670,6 +677,10 @@ namespace core
 		cpath m_path;
 		int m_mode = file_read_write_mode_none;
 		file_io_status m_status;
+
+	private:
+		void assert_cereal_read_mode(bool binary);
+		void assert_cereal_write_mode(bool binary);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -755,46 +766,44 @@ namespace core
 	template<class TType>
 	file_io_status cfile::write_sync_cereal(TType& structure)
 	{
-		using namespace algorithm;
-
 		static_assert(std::is_base_of<io::iserializable, TType>::value, "TType must be inherited from iserializable");
 
+		//- determine whether use binary mode or textual
+		int mode = 0;
 		if constexpr (std::is_same<TArchiveOut, cereal::BinaryOutputArchive>::value)
 		{
-			//- assure binary mode
-			ASSERT((bit_on(m_mode, file_read_write_mode_write)
-				&& bit_on(m_mode, file_read_write_mode_cereal)
-				&& bit_on(m_mode, file_read_write_mode_binary)), "cfile must be created with cereal binary write mode");
+			assert_cereal_write_mode(true);
+			mode = std::ios::binary;
 		}
 		else
 		{
-			ASSERT((bit_on(m_mode, file_read_write_mode_write)
-				&& bit_on(m_mode, file_read_write_mode_cereal)
-				&& bit_on(m_mode, file_read_write_mode_text)), "cfile must be created with cereal text write mode");
+			assert_cereal_write_mode(false);
+			mode = std::ios::out;
 		}
 
 		//- will create file if it does not exist
-		std::ofstream out(m_path.view(), std::ios::binary);
-
-		if (out.is_open() && out.good())
+		if (std::ofstream out(m_path.view(), mode); out.is_open() && out.good())
 		{
-			TArchiveOut archive(out);
-
-			//- cereal throws on errors
-			try
+			//- cereal guarantees that data is flushed when archive goes out of scope
 			{
-				archive(structure);
+				TArchiveOut archive(out);
 
-				//- cereal guarantees that data is flushed when archive goes out of scope
-				m_status = file_io_status_success;
-			}
-			catch (const std::exception& e)
-			{
-				logging::log_error(fmt::format("Failed writing cereal data to file '{}', error: '{}'",
-					m_path.view(), e.what()));
+				//- cereal throws on errors
+				try
+				{
+					archive(structure);
 
-				m_status = file_io_status_failed;
+					m_status = file_io_status_success;
+				}
+				catch (const std::exception& e)
+				{
+					logging::log_error(fmt::format("Failed writing cereal data to file '{}', error: '{}'",
+						m_path.view(), e.what()));
+
+					m_status = file_io_status_failed;
+				}
 			}
+			out.close();
 		}
 		else
 		{
@@ -807,51 +816,87 @@ namespace core
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TType>
-	file_io_status cfile::read_sync_cereal(TType& structure)
+	file_io_status cfile::write_async_cereal(TType& structure)
 	{
-		using namespace algorithm;
-
 		static_assert(std::is_base_of<io::iserializable, TType>::value, "TType must be inherited from iserializable");
 
+		if (!m_task.valid())
+		{
+			m_task = casync::launch_async([&]() -> void
+				{
+					m_status = file_io_status_pending;
+
+					write_sync_cereal<TType>(structure);
+				});
+		}
+
+		return m_status;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TType>
+	file_io_status cfile::read_sync_cereal(TType& structure)
+	{
+		static_assert(std::is_base_of<io::iserializable, TType>::value, "TType must be inherited from iserializable");
+
+		//- determine whether use binary mode or textual
+		int mode = 0;
 		if constexpr (std::is_same<TArchiveIn, cereal::BinaryInputArchive>::value)
 		{
-			//- assure binary mode
-			ASSERT((bit_on(m_mode, file_read_write_mode_read)
-				&& bit_on(m_mode, file_read_write_mode_cereal)
-				&& bit_on(m_mode, file_read_write_mode_binary)), "cfile must be created with cereal binary read mode");
+			assert_cereal_read_mode(true);
+			mode = std::ios::binary;
 		}
 		else
 		{
-			ASSERT((bit_on(m_mode, file_read_write_mode_read)
-				&& bit_on(m_mode, file_read_write_mode_cereal)
-				&& bit_on(m_mode, file_read_write_mode_text)), "cfile must be created with cereal text read mode");
+			assert_cereal_read_mode(false);
+			mode = std::ios::in;
 		}
 
-		std::ifstream in(m_path.view(), std::ios::binary);
-
-		if (in.is_open() && in.good())
+		if (std::ifstream in(m_path.view(), mode); in.is_open() && in.good())
 		{
-			TArchiveIn archive(in);
-
-			//- cereal throws on errors
-			try
 			{
-				archive(structure);
+				TArchiveIn archive(in);
 
-				m_status = file_io_status_success;
-			}
-			catch (const std::exception& e)
-			{
-				logging::log_error(fmt::format("Failed reading from file '{}' to cereal data, error: '{}'",
-					m_path.view(), e.what()));
+				//- cereal throws on errors
+				try
+				{
+					archive(structure);
 
-				m_status = file_io_status_failed;
+					m_status = file_io_status_success;
+				}
+				catch (const std::exception& e)
+				{
+					logging::log_error(fmt::format("Failed reading from file '{}' to cereal data, error: '{}'",
+						m_path.view(), e.what()));
+
+					m_status = file_io_status_failed;
+				}
 			}
+			in.close();
 		}
 		else
 		{
 			logging::log_error(fmt::format("Failed opening cereal file for reading '{}'", m_path.view()));
 			m_status = file_io_status_failed;
+		}
+
+		return m_status;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TType>
+	file_io_status cfile::read_async_cereal(TType& structure)
+	{
+		static_assert(std::is_base_of<io::iserializable, TType>::value, "TType must be inherited from iserializable");
+
+		if (!m_task.valid())
+		{
+			m_task = casync::launch_async([&]() -> void
+				{
+					m_status = file_io_status_pending;
+
+					read_sync_cereal<TType>(structure);
+				});
 		}
 
 		return m_status;
