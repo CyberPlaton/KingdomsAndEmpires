@@ -98,8 +98,6 @@ namespace core
 	namespace
 	{
 		inline static constexpr stringview_t C_EMPTY_STRING = "";
-		inline static constexpr size_t C_TO_SEC = 1 / (1000 * 1000);
-		inline static constexpr size_t C_TO_MILLISEC = 1 / (1000);
 
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static bool is_path_directory(stringview_t path)
@@ -1346,29 +1344,29 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	size_t ctimer::secs() const
+	float ctimer::secs() const
 	{
-		auto e = microsecs();
+		static constexpr float C_TO_SEC = 1000.0f * 1000.0f;
 
-		return e * C_TO_SEC;
+		return microsecs() / C_TO_SEC;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	float ctimer::millisecs() const
 	{
-		auto e = microsecs();
+		static constexpr float C_TO_MILLISEC = 1000.0f;
 
-		return SCAST(float, e * C_TO_MILLISEC);
+		return microsecs() / C_TO_MILLISEC;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	size_t ctimer::microsecs() const
+	float ctimer::microsecs() const
 	{
 		ASSERT(started(), "Timer must be started before it can be used");
 
 		auto now = std::chrono::high_resolution_clock::now();
 
-		return SCAST(size_t, std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count() -
+		return SCAST(float, std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count() -
 			std::chrono::time_point_cast<std::chrono::microseconds>(m_timepoint).time_since_epoch().count());
 	}
 

@@ -719,9 +719,9 @@ namespace core
 
 		void start();
 		bool started() const;
-		size_t secs() const;
+		float secs() const;
 		float millisecs() const;
-		size_t microsecs() const;
+		float microsecs() const;
 
 	private:
 		std::chrono::time_point<std::chrono::high_resolution_clock> m_timepoint;

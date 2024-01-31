@@ -27,7 +27,7 @@
 #include "box2d/b2_weld_joint.h"
 #include "box2d/b2_wheel_joint.h"
 
-namespace algorithm
+namespace physics
 {
 
 	b2AABB aabb(const core::srect& rect);
@@ -36,4 +36,4 @@ namespace algorithm
 	b2AABB aabb(float x, float y, float w, float h);
 	core::srect rect(const b2AABB& bbox);
 
-} //- algorithm
+} //- physics

@@ -140,6 +140,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	//- Load modules: Should be done by module manager later, semi-automagically.
 	module_example::cmy_second_module my_module(inst.active().world());
+	module_example::cmy_third_module other_module(inst.active().world());
 
 
 	sapp_desc desc{ 0 };

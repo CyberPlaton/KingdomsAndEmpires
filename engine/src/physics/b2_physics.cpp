@@ -2,11 +2,6 @@
 
 namespace physics
 {
-
-} //- physics
-
-namespace algorithm
-{
 	//------------------------------------------------------------------------------------------------------------------------
 	b2AABB aabb(const core::srect& rect)
 	{
@@ -45,4 +40,4 @@ namespace algorithm
 		return { c.x - he.x, c.y - he.y, he.x * 2.0f, he.y * 2.0f };
 	}
 
-} //- algorithm
+} //- physics

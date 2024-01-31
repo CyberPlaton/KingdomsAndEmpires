@@ -4,6 +4,12 @@
 
 namespace module_example
 {
+	namespace
+	{
+		static constexpr auto C_DT = 0.016f;
+
+	} //- unnamed
+
 	//- Example module system
 	//------------------------------------------------------------------------------------------------------------------------
 	class EXAMPLE_API cmy_system : public ecs::csystem
@@ -14,8 +20,6 @@ namespace module_example
 		{
 			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{
-					static constexpr auto C_DT = 0.016f;
-
 					auto sys = w.system<stargeting_component>("Targeting System")
 						.each([](stargeting_component& target)
 							{
@@ -34,6 +38,76 @@ namespace module_example
 
 					//- Return main system, without any dependencies
 					return { sys, {} };
+				});
+		}
+	};
+
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class EXAMPLE_API sexample_module_system : public ecs::csystem
+	{
+	public:
+		sexample_module_system(flecs::world& w) :
+			ecs::csystem(w)
+		{
+			//- use constructor only to define the system
+			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
+				{
+					static core::crandom rand;
+
+					//- create dependency graph
+					auto transform_update_phase = w.entity()
+						.add(flecs::Phase)
+						.depends_on(flecs::OnUpdate);
+
+					auto replication_update_phase = w.entity()
+						.add(flecs::Phase)
+						.depends_on(transform_update_phase);
+
+					//- first system of the module
+					auto transform_update_system = w.system<stransform_component>("Transform System")
+						.kind(transform_update_phase)
+						.each([](stransform_component& trans)
+							{
+								static core::ctimer transform_timer(false);
+
+								if (transform_timer.secs() > 5)
+								{
+									trans.x = rand.random_float();
+									trans.y = rand.random_float();
+									trans.rotation = rand.random_float();
+
+									logging::log_debug(fmt::format("[{}][Transform] Updating transform [{}:{}:{}]",
+										logging::app_runtime_ms(), trans.x, trans.y, trans.rotation));
+
+									transform_timer.start();
+								}
+							});
+
+					//- second system of the module
+					auto replication_update_system = w.system<sreplicable_component, const stransform_component, const sidentifier_component>("Replication System")
+						.kind(replication_update_phase)
+						.each([](sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id)
+							{
+								static core::ctimer network_timer(false);
+
+								//- simulate some heavy networking work
+								if (network_timer.secs() > 5)
+								{
+									auto n = 0;
+									for (auto ii = 0; ii < 25000; ++ii)
+									{
+										++n;
+									}
+
+									logging::log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{}\":\n\t[{}:{}:{}]",
+										logging::app_runtime_ms(), n, id.uuid.view(), trans.x, trans.y, trans.rotation));
+
+									network_timer.start();
+								}
+							});
+
+					return { transform_update_system, {replication_update_system} };
 				});
 		}
 	};

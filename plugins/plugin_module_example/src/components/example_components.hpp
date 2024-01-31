@@ -15,4 +15,28 @@ namespace module_example
 		float m_cooldown = C_TARGET_COOLDOWN_INVALID;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	struct EXAMPLE_API sreplicable_component : public ecs::icomponent
+	{
+		DECLARE_COMPONENT(sreplicable_component);
+
+		bool placeholder = true;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct EXAMPLE_API stransform_component : public ecs::icomponent
+	{
+		DECLARE_COMPONENT(stransform_component);
+
+		float x, y, rotation;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct EXAMPLE_API sidentifier_component : public ecs::icomponent
+	{
+		DECLARE_COMPONENT(sidentifier_component);
+
+		core::cuuid uuid;
+	};
+
 } //- module_example
