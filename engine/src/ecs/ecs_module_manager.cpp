@@ -15,7 +15,7 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	const vector_t<imodule::smodule_info>& cmodule_manager::active_modules() const
+	const vector_t<smodule_info>& cmodule_manager::active_modules() const
 	{
 		return m_active_modules;
 	}

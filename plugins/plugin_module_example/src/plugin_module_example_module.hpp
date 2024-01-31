@@ -9,29 +9,29 @@ namespace module_example
 	//- Note that while we are registering our classes inside RTTR_PLUGIN_REGISTRATION
 	//- we do not need to explicitly write EXAMPLE_API for exported classes
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_module : public ecs::imodule
+	class EXAMPLE_API cmy_module : public ecs::imodule<cmy_module>
 	{
 	public:
-		cmy_module(flecs::world& w) : ecs::imodule(w)
+		cmy_module(flecs::world& w) : ecs::imodule<cmy_module>(w)
 		{
-			begin<cmy_module>("My first module")
-				->comp<stargeting_component>()
-				->subsystem<cmy_system>()
-			->end<cmy_module>();
+			begin("My first module")
+				.comp<stargeting_component>()
+				.subsystem<cmy_system>()
+			.end();
 		}
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_second_module : public ecs::imodule
+	class EXAMPLE_API cmy_second_module : public ecs::imodule<cmy_second_module>
 	{
 	public:
-		cmy_second_module(flecs::world& w) : ecs::imodule(w)
+		cmy_second_module(flecs::world& w) : ecs::imodule<cmy_second_module>(w)
 		{
-			begin<cmy_second_module>("Module some other dude made")
-				->depends_on<cmy_module>()
-				->comp<stargeting_component>()
-				->subsystem<cmy_system>()
-			->end<cmy_second_module>();
+			begin("Module some other dude made")
+				.depends_on<cmy_module>()
+				.comp<stargeting_component>()
+				.subsystem<cmy_system>()
+			.end();
 
 			//- this is not the intended way to create entities
 			auto test = w.entity("Walther");
@@ -41,17 +41,17 @@ namespace module_example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_third_module : public ecs::imodule
+	class EXAMPLE_API cmy_third_module : public ecs::imodule<cmy_third_module>
 	{
 	public:
-		cmy_third_module(flecs::world& w) : ecs::imodule(w)
+		cmy_third_module(flecs::world& w) : ecs::imodule<cmy_third_module>(w)
 		{
-			begin<cmy_third_module>("My favorite module")
-				->comp<sreplicable_component>()
-				->comp<stransform_component>()
-				->comp<sidentifier_component>()
-				->subsystem<sexample_module_system>()
-			->end<cmy_third_module>();
+			begin("My favorite module")
+				.comp<sreplicable_component>()
+				.comp<stransform_component>()
+				.comp<sidentifier_component>()
+				.subsystem<sexample_module_system>()
+			.end();
 
 			//- this is not the intended way to create entities
 			auto e = w.entity("Manfred");
