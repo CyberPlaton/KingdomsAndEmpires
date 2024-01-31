@@ -1,6 +1,7 @@
 #pragma once
 #include "ecs_entity_manager.hpp"
 #include "ecs_system_manager.hpp"
+#include "ecs_module_manager.hpp"
 #include "../physics/b2_physics.hpp"
 
 namespace ecs
@@ -29,12 +30,16 @@ namespace ecs
 		inline const csystem_manager& sm() const { return m_system_manager; }
 		inline csystem_manager& sm() { return m_system_manager; }
 
+		inline const cmodule_manager& mm() const { return m_module_manager; }
+		inline cmodule_manager& mm() { return m_module_manager; }
+
 	private:
 		stringview_t m_name;
 		flecs::world m_world;
 
 		centity_manager m_entity_manager;
 		csystem_manager m_system_manager;
+		cmodule_manager m_module_manager;
 	};
 
 } //- ecs

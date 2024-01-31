@@ -1,8 +1,6 @@
 #pragma once
 #include "ecs_module.hpp"
 
-//#define ECS_MODULE(c) ecs::cmodule_manager::register_module(rttr::type::get<c>())
-
 namespace ecs
 {
 	//- class responsible for loading and unloading modules for a world. Contains all current active modules.
@@ -13,8 +11,26 @@ namespace ecs
 		cmodule_manager(flecs::world& w);
 		~cmodule_manager() = default;
 
+		template<class TModuleType>
+		cmodule_manager& import_module();
+
+		const vector_t<imodule::smodule_info>& active_modules() const;
+
 	private:
-		umap_t<stringview_t, flecs::entity> m_active_modules;
+		vector_t<imodule::smodule_info> m_active_modules;
 	};
+
+	//-------------------------------------------------------------------------------------------------------------------------
+	template<class TModuleType>
+	cmodule_manager& ecs::cmodule_manager::import_module()
+	{
+		static_assert(std::is_base_of<imodule, TModuleType>::value, "TModuleType must be derived from imodule!");
+
+		TModuleType m(world());
+
+		m_active_modules.emplace_back(m.info());
+
+		return *this;
+	}
 
 } //- ecs

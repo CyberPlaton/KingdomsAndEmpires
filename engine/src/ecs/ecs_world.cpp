@@ -7,7 +7,8 @@ namespace ecs
 	cworld::cworld(stringview_t name) :
 		m_name(name),
 		m_entity_manager(m_world),
-		m_system_manager(m_world)
+		m_system_manager(m_world),
+		m_module_manager(m_world)
 	{
 	}
 

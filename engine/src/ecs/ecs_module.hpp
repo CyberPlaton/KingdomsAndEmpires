@@ -9,17 +9,25 @@ namespace ecs
 	class ENGINE_API imodule : public iworld_context_holder
 	{
 	public:
+		struct smodule_info
+		{
+			string_t m_name;
+			flecs::entity m_module_entity;
+			vector_t<smodule_info> m_dependencies;
+		};
+
+
 		imodule(flecs::world& w);
 		virtual ~imodule() = default;
 
-		flecs::entity module() const;
-
 		template<class TModuleType>
-		imodule* begin()
+		imodule* begin(stringview_t name)
 		{
 			static_assert(std::is_base_of<imodule, TModuleType>::value, "TModuleType must be derived from imodule");
 
-			m_module = world().module<TModuleType>();
+			m_info.m_name = name;
+			m_info.m_module_entity = world().module<TModuleType>(name);
+			
 			return this;
 		}
 
@@ -30,6 +38,10 @@ namespace ecs
 
 			//- create and import the dependency module first
 			TDependency dep(world());
+
+			//- store its information for later
+			m_info.m_dependencies.push_back(dep.info());
+
 			return this;
 		}
 
@@ -40,6 +52,7 @@ namespace ecs
 
 			//- create and register system into current world
 			TSystem sys(world());
+
 			return this;
 		}
 
@@ -59,7 +72,7 @@ namespace ecs
 
 			world().import<TModuleType>();
 
-			auto success = m_module.is_valid();
+			auto success = m_info.m_module_entity.is_valid();
 			if(success)
 			{
 				logging::log_info(fmt::format("Successfully imported module '{}'", typeid(TModuleType).name()));
@@ -71,8 +84,12 @@ namespace ecs
 			return success;
 		}
 
+		inline const smodule_info& info() const { return m_info; }
+
+		flecs::entity module() const;
+
 	private:
-		flecs::entity m_module;
+		smodule_info m_info;
 	};
 
 } //- ecs

@@ -135,13 +135,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	auto& inst = ecs::cworld_manager::instance();
 	inst.create("My World");
 
-	//- Create module manager
-	ecs::cmodule_manager module_manager(inst.active().world());
+	//- Get current world
+	auto& world = inst.active();
 
-	//- Load modules: Should be done by module manager later, semi-automagically.
-	module_example::cmy_second_module my_module(inst.active().world());
-	module_example::cmy_third_module other_module(inst.active().world());
-
+	world.mm().import_module<module_example::cmy_second_module>();
+	world.mm().import_module<module_example::cmy_third_module>();
 
 	sapp_desc desc{ 0 };
 	desc.width = 720;

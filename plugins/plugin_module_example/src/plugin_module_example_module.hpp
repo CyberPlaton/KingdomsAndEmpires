@@ -14,7 +14,7 @@ namespace module_example
 	public:
 		cmy_module(flecs::world& w) : ecs::imodule(w)
 		{
-			begin<cmy_module>()
+			begin<cmy_module>("My first module")
 				->comp<stargeting_component>()
 				->subsystem<cmy_system>()
 			->end<cmy_module>();
@@ -27,7 +27,7 @@ namespace module_example
 	public:
 		cmy_second_module(flecs::world& w) : ecs::imodule(w)
 		{
-			begin<cmy_second_module>()
+			begin<cmy_second_module>("Module some other dude made")
 				->depends_on<cmy_module>()
 				->comp<stargeting_component>()
 				->subsystem<cmy_system>()
@@ -46,7 +46,7 @@ namespace module_example
 	public:
 		cmy_third_module(flecs::world& w) : ecs::imodule(w)
 		{
-			begin<cmy_third_module>()
+			begin<cmy_third_module>("My favorite module")
 				->comp<sreplicable_component>()
 				->comp<stransform_component>()
 				->comp<sidentifier_component>()

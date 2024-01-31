@@ -14,7 +14,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	flecs::entity imodule::module() const
 	{
-		return m_module;
+		return m_info.m_module_entity;
 	}
 
 } //- ecs
