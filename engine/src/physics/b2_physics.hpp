@@ -1,0 +1,39 @@
+#pragma once
+#include <core.h>
+
+#include "box2d/b2_settings.h"
+#include "box2d/b2_draw.h"
+#include "box2d/b2_timer.h"
+#include "box2d/b2_chain_shape.h"
+#include "box2d/b2_circle_shape.h"
+#include "box2d/b2_edge_shape.h"
+#include "box2d/b2_polygon_shape.h"
+#include "box2d/b2_broad_phase.h"
+#include "box2d/b2_dynamic_tree.h"
+#include "box2d/b2_body.h"
+#include "box2d/b2_contact.h"
+#include "box2d/b2_fixture.h"
+#include "box2d/b2_time_step.h"
+#include "box2d/b2_world.h"
+#include "box2d/b2_world_callbacks.h"
+#include "box2d/b2_distance_joint.h"
+#include "box2d/b2_friction_joint.h"
+#include "box2d/b2_gear_joint.h"
+#include "box2d/b2_motor_joint.h"
+#include "box2d/b2_mouse_joint.h"
+#include "box2d/b2_prismatic_joint.h"
+#include "box2d/b2_pulley_joint.h"
+#include "box2d/b2_revolute_joint.h"
+#include "box2d/b2_weld_joint.h"
+#include "box2d/b2_wheel_joint.h"
+
+namespace algorithm
+{
+
+	b2AABB aabb(const core::srect& rect);
+	b2AABB aabb(const vec2_t& center, const vec2_t& halfextents);
+	b2AABB aabb(float x, float y, float size);
+	b2AABB aabb(float x, float y, float w, float h);
+	core::srect rect(const b2AABB& bbox);
+
+} //- algorithm

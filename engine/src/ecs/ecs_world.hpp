@@ -1,7 +1,7 @@
 #pragma once
 #include "ecs_entity_manager.hpp"
 #include "ecs_system_manager.hpp"
-#include <box2d.h>
+#include "../physics/b2_physics.hpp"
 
 namespace ecs
 {

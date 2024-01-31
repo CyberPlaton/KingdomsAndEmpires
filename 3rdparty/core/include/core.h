@@ -16,7 +16,6 @@ namespace stl = std;
 #include <magic_enum.h>
 #include <taskflow.h>
 #include <spdlog.h>
-#include <box2d.h>
 #include <cereal.h>
 #include <cstddef>
 #include <memory>
@@ -225,11 +224,6 @@ namespace algorithm
 	void decompose_scale(const mat4_t& transform, vec3_t& out);
 	unsigned hash(stringview_t string);
 	unsigned hash(const core::cuuid& uuid);
-	b2AABB aabb(const core::srect& rect);
-	b2AABB aabb(const vec2_t& center, const vec2_t& halfextents);
-	b2AABB aabb(float x, float y, float size);
-	b2AABB aabb(float x, float y, float w, float h);
-	core::srect rect(const b2AABB& bbox);
 	unsigned percentage(float total_value, float part_value);
 	float percent_value(unsigned p, float total_value);
 	bool is_valid_handle(handle_type_t h);
