@@ -696,6 +696,8 @@ namespace core
 		template<class TType>
 		file_io_status read_async_cereal(TType& structure);
 
+		stringview_t error() const;
+
 	private:
 		void* m_data;
 		unsigned m_datasize;
@@ -704,6 +706,7 @@ namespace core
 		cpath m_path;
 		int m_mode = file_read_write_mode_none;
 		file_io_status m_status;
+		string_t m_error;
 
 	private:
 		void assert_cereal_read_mode(bool binary);

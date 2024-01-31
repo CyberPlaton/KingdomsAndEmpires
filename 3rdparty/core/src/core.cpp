@@ -119,18 +119,19 @@ namespace core
 			mi_free(data);
 		}
 
-		//- @reference: raylib LoadFileData
+		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out)
+		inline static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out, string_t* error)
 		{
 			uint8_t* data = nullptr;
 			*data_size_out = 0;
 
 			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path, "rb");
+				FILE* file = nullptr;
+				errno_t err;
 
-				if (file != nullptr)
+				if (err = fopen_s(&file, file_path, "rb"); err == 0)
 				{
 					fseek(file, 0, SEEK_END);
 					auto size = ftell(file);
@@ -144,19 +145,28 @@ namespace core
 						*data_size_out = count;
 					}
 				}
+				else
+				{
+					//- error occured
+					if (error)
+					{
+						error->assign(std::strerror(err));
+					}
+				}
 			}
 			return data;
 		}
 
 		//- @reference: raylib SaveFileData
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size)
+		inline static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size, string_t* error)
 		{
 			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path, "wb");
+				FILE* file = nullptr;
+				errno_t err;
 
-				if (file != nullptr)
+				if (err = fopen_s(&file, file_path, "wb"); err == 0)
 				{
 					auto count = SCAST(unsigned, fwrite(data, sizeof(uint8_t), data_size, file));
 
@@ -165,6 +175,14 @@ namespace core
 					if (count == data_size)
 					{
 						return true;
+					}
+				}
+				else
+				{
+					//- error occured
+					if (error)
+					{
+						error->assign(std::strerror(err));
 					}
 				}
 			}
@@ -181,15 +199,16 @@ namespace core
 
 		//- @reference: raylib LoadFileText
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static char* load_text_file_data(stringview_t file_path)
+		inline static char* load_text_file_data(stringview_t file_path, string_t* error)
 		{
 			char* text = nullptr;
 
 			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path, "rt");
+				FILE* file = nullptr;
+				errno_t err;
 
-				if (file != NULL)
+				if (err = fopen_s(&file, file_path, "rt"); err == 0)
 				{
 					fseek(file, 0, SEEK_END);
 					auto size = SCAST(unsigned, ftell(file));
@@ -213,19 +232,28 @@ namespace core
 					}
 					fclose(file);
 				}
+				else
+				{
+					//- error occured
+					if (error)
+					{
+						error->assign(std::strerror(err));
+					}
+				}
 			}
 			return text;
 		}
 
 		//- @reference: raylib SaveFileText
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static bool save_text_file_data(stringview_t file_path, stringview_t text)
+		inline static bool save_text_file_data(stringview_t file_path, stringview_t text, string_t* error)
 		{
 			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path, "wt");
+				FILE* file = nullptr;
+				errno_t err;
 
-				if (file != nullptr)
+				if(err = fopen_s(&file, file_path, "wt"); err == 0)
 				{
 					auto count = fprintf(file, "%s", text);
 
@@ -234,6 +262,14 @@ namespace core
 					if (count > 0)
 					{
 						return true;
+					}
+				}
+				else
+				{
+					//- error occured
+					if (error)
+					{
+						error->assign(std::strerror(err));
 					}
 				}
 			}
@@ -1153,12 +1189,12 @@ namespace core
 			if (!!(m_mode & file_read_write_mode_text))
 			{
 				//- load text file
-				m_data = SCAST(void*, load_text_file_data(m_path.view()));
+				m_data = SCAST(void*, load_text_file_data(m_path.view(), &m_error));
 			}
 			else if (!!(m_mode & file_read_write_mode_binary))
 			{
 				//- load binary file
-				m_data = SCAST(void*, load_binary_file_data(m_path.view(), &m_datasize));
+				m_data = SCAST(void*, load_binary_file_data(m_path.view(), &m_datasize, &m_error));
 			}
 
 			if (m_data && m_datasize > 0)
@@ -1187,12 +1223,12 @@ namespace core
 			if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
 			{
 				//- write text file data
-				m_status = save_text_file_data(m_path.view(), SCAST(char*, m_data)) == true ? file_io_status_success : file_io_status_failed;
+				m_status = save_text_file_data(m_path.view(), SCAST(char*, m_data), &m_error) == true ? file_io_status_success : file_io_status_failed;
 			}
 			else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
 			{
 				//- write binary file date
-				m_status = save_binary_file_data(m_path.view(), SCAST(uint8_t*, m_data), m_datasize) == true ? file_io_status_success : file_io_status_failed;
+				m_status = save_binary_file_data(m_path.view(), SCAST(uint8_t*, m_data), m_datasize, &m_error) == true ? file_io_status_success : file_io_status_failed;
 			}
 			else
 			{
@@ -1221,12 +1257,12 @@ namespace core
 					if (!!(m_mode & file_read_write_mode_text))
 					{
 						//- load text file
-						m_data = SCAST(void*, load_text_file_data(m_path.view()));
+						m_data = SCAST(void*, load_text_file_data(m_path.view(), &m_error));
 					}
 					else if (!!(m_mode & file_read_write_mode_binary))
 					{
 						//- load binary file
-						m_data = SCAST(void*, load_binary_file_data(m_path.view(), &m_datasize));
+						m_data = SCAST(void*, load_binary_file_data(m_path.view(), &m_datasize, &m_error));
 					}
 					else
 					{
@@ -1263,12 +1299,12 @@ namespace core
 					if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
 					{
 						//- write text file data
-						m_status = save_text_file_data(m_path.view(), SCAST(char*, m_data)) == true ? file_io_status_success : file_io_status_failed;
+						m_status = save_text_file_data(m_path.view(), SCAST(char*, m_data), &m_error) == true ? file_io_status_success : file_io_status_failed;
 					}
 					else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
 					{
 						//- write binary file data
-						m_status = save_binary_file_data(m_path.view(), SCAST(uint8_t*, m_data), m_datasize) == true ? file_io_status_success : file_io_status_failed;
+						m_status = save_binary_file_data(m_path.view(), SCAST(uint8_t*, m_data), m_datasize, &m_error) == true ? file_io_status_success : file_io_status_failed;
 					}
 					else
 					{
@@ -1279,6 +1315,12 @@ namespace core
 		}
 
 		return m_status;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	stringview_t cfile::error() const
+	{
+		return m_error.c_str();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
