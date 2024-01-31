@@ -14,6 +14,7 @@ namespace ecs
 
 		centity& create_entity();
 		centity& create_entity(stringview_t uuid);
+		centity& create_entity(const core::cuuid& uuid);
 
 		flecs::entity entity(const core::cuuid& uuid) const;
 

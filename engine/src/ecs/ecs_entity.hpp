@@ -7,6 +7,7 @@ namespace ecs
 {
 	//- more of a utility and wrapper for flecs::entity.
 	//- Name of the entity is a UUID generated either randomly or specific.
+	//- Is created from entity manager.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ENGINE_API centity final
 	{
