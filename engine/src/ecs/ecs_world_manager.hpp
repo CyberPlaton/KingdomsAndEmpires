@@ -11,7 +11,6 @@ namespace ecs
 		STATIC_INSTANCE(cworld_manager, s_cworld_manager);
 
 		bool create(stringview_t name);
-
 		bool set_active(stringview_t name);
 		const cworld& active() const;
 		cworld& active();

@@ -51,7 +51,7 @@ void init(void)
 	logging::log_debug(fmt::format("Initializing SOKOL").data());
 
 	// Initialize Sokol GFX.
-	sg_desc sgdesc{ 0 }; 
+	sg_desc sgdesc{ 0 };
 	sgdesc.context = sapp_sgcontext();
 	sgdesc.logger.func = logging_function;
 

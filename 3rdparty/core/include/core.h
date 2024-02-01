@@ -253,12 +253,11 @@ namespace algorithm
 		return *it;
 	}
 
-
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TEnum>
-	stringview_t enum_to_string(TEnum value)
+	string_t enum_to_string(TEnum value)
 	{
-		return magic_enum::enum_name(value);
+		return magic_enum::enum_name(value).data();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

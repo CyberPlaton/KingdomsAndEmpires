@@ -1,3 +1,3 @@
 #pragma once
-#include "detail/core_platform.hpp"
+#include <core/core_platform.hpp>
 #include <core.h>
