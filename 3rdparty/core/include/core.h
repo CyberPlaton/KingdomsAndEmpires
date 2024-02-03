@@ -51,6 +51,11 @@ namespace stl = std;
 #define ARRAYSIZE(__array) ((u32)(sizeof(__array) / sizeof(*(__array))))
 #define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
 
+#define CORE_MALLOC(size)		mi_malloc(size)
+#define CORE_CALLOC(n, size)	mi_calloc(n, size)
+#define CORE_REALLOC(p, size)	mi_realloc(p, size)
+#define CORE_FREE(p)			mi_free(p)
+
 template<class T>
 using ref_t = stl::shared_ptr<T>;
 template<class T>
@@ -85,7 +90,7 @@ using vec4_t = glm::vec4;
 using mat3_t = glm::mat3x3;
 using mat4_t = glm::mat4x4;
 
-#if defined(core_EXPORTS)
+#if defined(core_EXPORTS) && defined(CORE_USE_EASTL)
 //- implementation required for EASTL. The function will be available in any application or plugin
 //- linking to core, the implementation however is only exported to static library.
 //------------------------------------------------------------------------------------------------------------------------
@@ -335,7 +340,7 @@ namespace algorithm
 namespace io
 {
 	//- Implement serialize functions to save/load data and datastructures to/from file.
-	//- The serialize function can be as simple as:
+	//- The functions can be as simple as:
 	//-
 	//- void save(TArchiveType& archive) const
 	//- {
@@ -624,6 +629,7 @@ namespace core
 		~cfilesystem() = default;
 
 		static cpath construct(stringview_t path, stringview_t addition);
+		static cpath join(stringview_t path, stringview_t addition);
 		static cpath cwd();
 
 		static bool create_dir(stringview_t path);
@@ -640,6 +646,7 @@ namespace core
 		static bool find_at(stringview_t path, stringview_t name, filesystem_lookup_type type);
 
 		static cpath construct_relative_to_cwd(stringview_t path);
+		static bool is_contained(const cpath& contained, const cpath& container);
 
 		inline cpath current() const { return m_current; }
 
@@ -664,11 +671,16 @@ namespace core
 	class cfile final
 	{
 	public:
-		cfile(cpath path, int mode = file_read_write_mode_read | file_read_write_mode_text);
+		cfile(const cpath& path, int mode = file_read_write_mode_read | file_read_write_mode_text);
 		~cfile();
 
-		inline file_io_status status() const { return m_status; }
+		//- transfer ownership of memory to another object.
+		//- data has to be deallocated with mi_free(...)
+		//- operation is not blocking, if data is not ready we return nullptr
+		[[nodiscard]] spair<void*, unsigned> take();
+
 		spair<void*, unsigned> data() const;
+
 		template<typename TType>
 		spair<TType*, unsigned> data() const
 		{
@@ -695,17 +707,17 @@ namespace core
 		template<class TType>
 		file_io_status read_async_cereal(TType& structure);
 
-		stringview_t error() const;
+		inline stringview_t error() const{ return m_error.c_str(); }
+		inline file_io_status status() const { return m_status; }
 
 	private:
-		void* m_data;
-		unsigned m_datasize;
-
-		std::future<void> m_task;
-		cpath m_path;
-		int m_mode = file_read_write_mode_none;
-		file_io_status m_status;
 		string_t m_error;
+		std::future<void> m_task;
+		stringview_t m_path;
+		unsigned m_datasize;
+		void* m_data;
+		uint8_t m_mode = file_read_write_mode_none;
+		file_io_status m_status;
 
 	private:
 		void assert_cereal_read_mode(bool binary);
@@ -811,7 +823,7 @@ namespace core
 		}
 
 		//- will create file if it does not exist
-		if (std::ofstream out(m_path.view(), mode); out.is_open() && out.good())
+		if (std::ofstream out(m_path, mode); out.is_open() && out.good())
 		{
 			//- cereal guarantees that data is flushed when archive goes out of scope
 			{
@@ -827,7 +839,7 @@ namespace core
 				catch (const std::exception& e)
 				{
 					logging::log_error(fmt::format("Failed writing cereal data to file '{}', error: '{}'",
-						m_path.view(), e.what()));
+						m_path, e.what()));
 
 					m_status = file_io_status_failed;
 				}
@@ -836,7 +848,7 @@ namespace core
 		}
 		else
 		{
-			logging::log_error(fmt::format("Failed opening cereal file for writing '{}'", m_path.view()));
+			logging::log_error(fmt::format("Failed opening cereal file for writing '{}'", m_path));
 			m_status = file_io_status_failed;
 		}
 
@@ -881,7 +893,7 @@ namespace core
 			mode = std::ios::in;
 		}
 
-		if (std::ifstream in(m_path.view(), mode); in.is_open() && in.good())
+		if (std::ifstream in(m_path, mode); in.is_open() && in.good())
 		{
 			{
 				TArchiveIn archive(in);
@@ -896,7 +908,7 @@ namespace core
 				catch (const std::exception& e)
 				{
 					logging::log_error(fmt::format("Failed reading from file '{}' to cereal data, error: '{}'",
-						m_path.view(), e.what()));
+						m_path, e.what()));
 
 					m_status = file_io_status_failed;
 				}
@@ -905,7 +917,7 @@ namespace core
 		}
 		else
 		{
-			logging::log_error(fmt::format("Failed opening cereal file for reading '{}'", m_path.view()));
+			logging::log_error(fmt::format("Failed opening cereal file for reading '{}'", m_path));
 			m_status = file_io_status_failed;
 		}
 

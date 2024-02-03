@@ -948,6 +948,12 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	cpath cfilesystem::join(stringview_t path, stringview_t addition)
+	{
+		return cpath(path) /= addition;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	core::cpath cfilesystem::cwd()
 	{
 		try
@@ -1098,6 +1104,12 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::is_contained(const cpath& contained, const cpath& container)
+	{
+		return container.path() / std::filesystem::relative(contained.path()) == contained.path();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	bool cfilesystem::forwards(stringview_t path, bool forced /*= false*/)
 	{
 		//- create copy
@@ -1142,8 +1154,8 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cfile::cfile(cpath path, int mode /*= file_read_write_mode_read | file_read_write_mode_text*/) :
-		m_data(nullptr), m_datasize(0), m_mode(mode), m_status(file_io_status_none), m_path(std::move(path))
+	cfile::cfile(const cpath& path, int mode /*= file_read_write_mode_read | file_read_write_mode_text*/) :
+		m_data(nullptr), m_datasize(0), m_mode(mode), m_status(file_io_status_none), m_path(path.view())
 	{
 	}
 
@@ -1172,6 +1184,28 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	core::spair<void*, unsigned> cfile::take()
+	{
+		ASSERT(!(m_mode & file_read_write_mode_cereal), "Invalid operation! Data is empty when using cereal");
+
+		if (status() == file_io_status_success)
+		{
+			core::spair<void*, unsigned> out = { m_data, m_datasize };
+
+			//- soft reset to indicate that object should not be used
+			m_data = nullptr;
+			m_datasize = 0;
+			m_mode = file_read_write_mode_none;
+			m_error.clear();
+			m_status = file_io_status_none;
+			m_path = nullptr;
+
+			return out;
+		}
+		return {nullptr, 0};
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	spair<void*, unsigned> cfile::data() const
 	{
 		ASSERT(!(m_mode & file_read_write_mode_cereal), "Invalid operation! Data is empty when using cereal");
@@ -1189,12 +1223,12 @@ namespace core
 			if (!!(m_mode & file_read_write_mode_text))
 			{
 				//- load text file
-				m_data = SCAST(void*, load_text_file_data(m_path.view(), &m_error));
+				m_data = SCAST(void*, load_text_file_data(m_path, &m_error));
 			}
 			else if (!!(m_mode & file_read_write_mode_binary))
 			{
 				//- load binary file
-				m_data = SCAST(void*, load_binary_file_data(m_path.view(), &m_datasize, &m_error));
+				m_data = SCAST(void*, load_binary_file_data(m_path, &m_datasize, &m_error));
 			}
 
 			if (m_data && m_datasize > 0)
@@ -1223,12 +1257,12 @@ namespace core
 			if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
 			{
 				//- write text file data
-				m_status = save_text_file_data(m_path.view(), SCAST(char*, m_data), &m_error) == true ? file_io_status_success : file_io_status_failed;
+				m_status = save_text_file_data(m_path, SCAST(char*, m_data), &m_error) == true ? file_io_status_success : file_io_status_failed;
 			}
 			else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
 			{
 				//- write binary file date
-				m_status = save_binary_file_data(m_path.view(), SCAST(uint8_t*, m_data), m_datasize, &m_error) == true ? file_io_status_success : file_io_status_failed;
+				m_status = save_binary_file_data(m_path, SCAST(uint8_t*, m_data), m_datasize, &m_error) == true ? file_io_status_success : file_io_status_failed;
 			}
 			else
 			{
@@ -1257,12 +1291,12 @@ namespace core
 					if (!!(m_mode & file_read_write_mode_text))
 					{
 						//- load text file
-						m_data = SCAST(void*, load_text_file_data(m_path.view(), &m_error));
+						m_data = SCAST(void*, load_text_file_data(m_path, &m_error));
 					}
 					else if (!!(m_mode & file_read_write_mode_binary))
 					{
 						//- load binary file
-						m_data = SCAST(void*, load_binary_file_data(m_path.view(), &m_datasize, &m_error));
+						m_data = SCAST(void*, load_binary_file_data(m_path, &m_datasize, &m_error));
 					}
 					else
 					{
@@ -1299,12 +1333,12 @@ namespace core
 					if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
 					{
 						//- write text file data
-						m_status = save_text_file_data(m_path.view(), SCAST(char*, m_data), &m_error) == true ? file_io_status_success : file_io_status_failed;
+						m_status = save_text_file_data(m_path, SCAST(char*, m_data), &m_error) == true ? file_io_status_success : file_io_status_failed;
 					}
 					else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
 					{
 						//- write binary file data
-						m_status = save_binary_file_data(m_path.view(), SCAST(uint8_t*, m_data), m_datasize, &m_error) == true ? file_io_status_success : file_io_status_failed;
+						m_status = save_binary_file_data(m_path, SCAST(uint8_t*, m_data), m_datasize, &m_error) == true ? file_io_status_success : file_io_status_failed;
 					}
 					else
 					{
@@ -1315,12 +1349,6 @@ namespace core
 		}
 
 		return m_status;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	stringview_t cfile::error() const
-	{
-		return m_error.c_str();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

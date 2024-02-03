@@ -103,22 +103,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 {
 	AllocConsole();
 
-	core::cfile file(core::cfilesystem::construct("cereal_any", ".json"), core::file_read_write_mode_write
-		| core::file_read_write_mode_text
-		| core::file_read_write_mode_cereal);
-
-	core::cuuid uuid;
-	ssome_data datastructure, datastructure2;
-	datastructure.m_data.emplace_back(1);
-	datastructure.m_uuid = uuid.c_str();
-
-	file.write_sync_cereal(datastructure);
-
-	core::cfile file2(core::cfilesystem::construct("somepath", ".json"), core::file_read_write_mode_read
-		| core::file_read_write_mode_text
-		| core::file_read_write_mode_cereal);
-
-	file2.read_sync_cereal(datastructure2);
+// 	core::cfile file(core::cfilesystem::construct("cereal_any", ".json"), core::file_read_write_mode_write
+// 		| core::file_read_write_mode_text
+// 		| core::file_read_write_mode_cereal);
+// 
+// 	core::cuuid uuid;
+// 	ssome_data datastructure, datastructure2;
+// 	datastructure.m_data.emplace_back(1);
+// 	datastructure.m_uuid = uuid.c_str();
+// 
+// 	file.write_sync_cereal(datastructure);
+// 
+// 	core::cfile file2(core::cfilesystem::construct("somepath", ".json"), core::file_read_write_mode_read
+// 		| core::file_read_write_mode_text
+// 		| core::file_read_write_mode_cereal);
+// 
+// 	file2.read_sync_cereal(datastructure2);
 
 
 	logging::init();
@@ -129,7 +129,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_warn("Log log_warn");
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
-
 
 	//- Important! Create a new world
 	auto& inst = ecs::cworld_manager::instance();
