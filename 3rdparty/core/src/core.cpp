@@ -654,12 +654,6 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	scolor::scolor() :
-		m_r(0), m_g(0), m_b(0), m_a(0)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	scolor::scolor(common_color color) :
 		m_r(0), m_g(0), m_b(0), m_a(0)
 	{
@@ -716,18 +710,24 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	scolor::scolor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) :
+	scolor::scolor(uint8_t r /*= 0*/, uint8_t g /*= 0*/, uint8_t b /*= 0*/, uint8_t a /*= 0*/) :
 		m_r(r), m_g(g), m_b(b), m_a(a)
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	scolor::scolor(vec4_t normalized) :
-		m_r(SCAST(uint8_t, glm::clamp(normalized.r, 0.0f, 1.0f) * 255.0f)),
-		m_g(SCAST(uint8_t, glm::clamp(normalized.g, 0.0f, 1.0f) * 255.0f)),
-		m_b(SCAST(uint8_t, glm::clamp(normalized.b, 0.0f, 1.0f) * 255.0f)),
-		m_a(SCAST(uint8_t, glm::clamp(normalized.a, 0.0f, 1.0f) * 255.0f))
+		m_r(normalized.r * 255),
+		m_g(normalized.g * 255),
+		m_b(normalized.b * 255),
+		m_a(normalized.a * 255)
 	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	vec4_t scolor::normalize() const
+	{
+		return { m_r / 255.0f, m_g / 255.0f, m_b / 255.0f, m_a / 255.0f };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -764,14 +764,14 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void srect::set_position(float x, float y)
+	void srect::position(float x, float y)
 	{
 		m_x = x;
 		m_y = y;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void srect::set_dimension(float w, float h)
+	void srect::dimension(float w, float h)
 	{
 		m_w = w;
 		m_h = h;
@@ -1002,6 +1002,31 @@ namespace core
 	bool cfilesystem::create_file_in(stringview_t path, stringview_t stem, stringview_t ext)
 	{
 		return create_file(fmt::format("{}/{}.{}", path, stem, ext).data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::remove(stringview_t path, stringview_t name)
+	{
+		cpath p(path);
+		p.append(name);
+
+		return remove(p.view());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cfilesystem::remove(stringview_t path)
+	{
+		//- filesystem throws on errors
+		try
+		{
+			std::error_code err;
+
+			return std::filesystem::remove_all(path, err) >= 1;
+		}
+		catch (const std::exception& /*e*/)
+		{
+		}
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

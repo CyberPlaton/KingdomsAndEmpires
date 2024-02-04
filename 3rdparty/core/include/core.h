@@ -76,12 +76,14 @@ template<class T, unsigned S>
 using array_t = stl::array<T, S>;
 
 using handle_type_t = uint16_t;
+#define invalid_handle_t MAX(uint16_t);
 using technique_t = handle_type_t;
 using texture_t = handle_type_t;
 using uniform_t = handle_type_t;
 using material_t = handle_type_t;
 using spriteatlas_t = handle_type_t;
 using subtexture_t = handle_type_t;
+using render_target_t = handle_type_t;
 
 using ivec2_t = glm::lowp_u32vec2;
 using vec2_t = glm::vec2;
@@ -522,15 +524,16 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	struct scolor final : public io::iserializable
 	{
-		scolor();
 		scolor(common_color color);
-		scolor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+		scolor(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 0);
 		scolor(vec4_t normalized);
 
-		inline float r() const { return glm::clamp(SCAST(float, m_r), 0.0f, 1.0f); }
-		inline float g() const { return glm::clamp(SCAST(float, m_g), 0.0f, 1.0f); }
-		inline float b() const { return glm::clamp(SCAST(float, m_b), 0.0f, 1.0f); }
-		inline float a() const { return glm::clamp(SCAST(float, m_a), 0.0f, 1.0f); }
+		inline uint8_t r() const { return m_r; }
+		inline uint8_t g() const { return m_g; }
+		inline uint8_t b() const { return m_b; }
+		inline uint8_t a() const { return m_a; }
+
+		vec4_t normalize() const;
 
 		void save(TArchiveOut& archive) const override final;
 		void load(TArchiveIn& archive) override final;
@@ -555,8 +558,8 @@ namespace core
 		inline vec2_t bottom_right() const { return { m_x + m_w, m_y + m_h }; }
 
 		void set(float x, float y, float w, float h);
-		void set_position(float x, float y);
-		void set_dimension(float w, float h);
+		void position(float x, float y);
+		void dimension(float w, float h);
 
 		void save(TArchiveOut& archive) const override final;
 		void load(TArchiveIn& archive) override final;
@@ -638,6 +641,9 @@ namespace core
 
 		static bool create_file(stringview_t path);
 		static bool create_file_in(stringview_t path, stringview_t stem, stringview_t ext);
+
+		static bool remove(stringview_t path);
+		static bool remove(stringview_t path, stringview_t name);
 
 		static bool find_file(stringview_t path, stringview_t name);
 		static bool find_file_by_stem(stringview_t path, stringview_t name);

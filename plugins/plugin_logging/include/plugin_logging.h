@@ -1,5 +1,4 @@
 #pragma once
-#include "config.hpp"
 #include <spdlog.h>
 #include <core.h>
 
@@ -25,30 +24,30 @@ namespace logging
 	};
 
 #if DEBUG
-	LOG_API bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_trace);
+	bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_trace);
 #else
-	LOG_API bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_error);
+	bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_error);
 #endif
-	LOG_API void shutdown();
-	LOG_API float app_runtime();
-	LOG_API float app_runtime_ms();
+	void shutdown();
+	float app_runtime();
+	float app_runtime_ms();
 
-	LOG_API void log_trace(stringview_t message);
-	LOG_API void log_trace(const string_t& message);
+	void log_trace(stringview_t message);
+	void log_trace(const string_t& message);
 
-	LOG_API void log_debug(stringview_t message);
-	LOG_API void log_debug(const string_t& message);
-	
-	LOG_API void log_info(stringview_t message);
-	LOG_API void log_info(const string_t& message);
-	
-	LOG_API void log_warn(stringview_t message);
-	LOG_API void log_warn(const string_t& message);
-	
-	LOG_API void log_error(stringview_t message);
-	LOG_API void log_error(const string_t& message);
-	
-	LOG_API void log_critical(stringview_t message);
-	LOG_API void log_critical(const string_t& message);
+	void log_debug(stringview_t message);
+	void log_debug(const string_t& message);
+
+	void log_info(stringview_t message);
+	void log_info(const string_t& message);
+
+	void log_warn(stringview_t message);
+	void log_warn(const string_t& message);
+
+	void log_error(stringview_t message);
+	void log_error(const string_t& message);
+
+	void log_critical(stringview_t message);
+	void log_critical(const string_t& message);
 
 } //- logging

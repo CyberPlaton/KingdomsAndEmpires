@@ -6,13 +6,13 @@ namespace module_example
 {
 	namespace
 	{
-		static constexpr auto C_DT = 0.016f;
+		constexpr auto C_DT = 0.016f;
 
 	} //- unnamed
 
 	//- Example module system
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_system : public ecs::csystem
+	class cmy_system : public ecs::csystem
 	{
 	public:
 		cmy_system(flecs::world& w) :
@@ -44,7 +44,7 @@ namespace module_example
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API sexample_module_system : public ecs::csystem
+	class sexample_module_system : public ecs::csystem
 	{
 	public:
 		sexample_module_system(flecs::world& w) :

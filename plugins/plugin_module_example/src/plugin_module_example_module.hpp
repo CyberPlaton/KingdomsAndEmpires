@@ -9,7 +9,7 @@ namespace module_example
 	//- Note that while we are registering our classes inside RTTR_PLUGIN_REGISTRATION
 	//- we do not need to explicitly write EXAMPLE_API for exported classes
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_module : public ecs::imodule<cmy_module>
+	class cmy_module : public ecs::imodule<cmy_module>
 	{
 	public:
 		cmy_module(flecs::world& w) : ecs::imodule<cmy_module>(w)
@@ -22,7 +22,7 @@ namespace module_example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_second_module : public ecs::imodule<cmy_second_module>
+	class cmy_second_module : public ecs::imodule<cmy_second_module>
 	{
 	public:
 		cmy_second_module(flecs::world& w) : ecs::imodule<cmy_second_module>(w)
@@ -41,7 +41,7 @@ namespace module_example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_third_module : public ecs::imodule<cmy_third_module>
+	class cmy_third_module : public ecs::imodule<cmy_third_module>
 	{
 	public:
 		cmy_third_module(flecs::world& w) : ecs::imodule<cmy_third_module>(w)

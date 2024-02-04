@@ -13,7 +13,6 @@ function EASTL()
 			  "src/**.hpp",
 			  "src/**.c"}
 
-		buildoptions{build_options}
 		defines{"_CHAR16T", "_CRT_SECURE_NO_WARNINGS", "_SCL_SECURE_NO_WARNINGS", "EASTL_OPENSOURCE=1"}
 		includedirs{"include"}
 		includedirs{path.join("include", "EABase")}

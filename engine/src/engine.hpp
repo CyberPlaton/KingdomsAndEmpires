@@ -52,7 +52,6 @@ namespace engine
 		cengine() = default;
 
 	private:
-		sapp_desc m_config_desc;
 		sconfig m_config;
 		engine_run_result m_result;
 	};

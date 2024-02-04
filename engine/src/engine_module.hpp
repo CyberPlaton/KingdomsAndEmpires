@@ -1,7 +1,7 @@
 #pragma once
 //- thirdparty libraries
 #include <core.h>
-#include <sokol.h>
+#include <raylib.h>
 #include <flecs.h>
 //- plugins
 #include <plugin_logging.h>

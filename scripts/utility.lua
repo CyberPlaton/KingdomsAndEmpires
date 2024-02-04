@@ -53,7 +53,8 @@ function set_libs_path()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language, thirdparty_headeronly_deps, plugin_headeronly_deps)
+function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language,
+	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes)
 	if VERBOSE == true then
 		print("\tstatic library: " .. name)
 	end
@@ -71,6 +72,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
+		includedirs{additional_includes}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
@@ -228,7 +230,7 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		language ("c++")
 		location (path.join(".project", name))
 
-		kind ("SharedLib")
+		kind ("StaticLib")
 
 		files{"src/**.h",
 			  "src/**.cpp",
@@ -261,9 +263,6 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		if depends_on_engine ~= nil and depends_on_engine == true then
 			link_with_engine()
 		end
-
-		-- set additional default defines
-		defines{name .. "_EXPORTS"}
 
 		filter{"configurations:debug"}
 			symbols "On"

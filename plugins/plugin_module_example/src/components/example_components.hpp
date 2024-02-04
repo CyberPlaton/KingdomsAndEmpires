@@ -4,7 +4,7 @@
 namespace module_example
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	struct EXAMPLE_API stargeting_component : public ecs::icomponent
+	struct stargeting_component : public ecs::icomponent
 	{
 		static inline constexpr auto C_TARGET_COOLDOWN_INVALID = -100.0f;
 		static inline constexpr auto C_TARGET_COOLDOWN_TIMER = 3.0f;
@@ -16,7 +16,7 @@ namespace module_example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct EXAMPLE_API sreplicable_component : public ecs::icomponent
+	struct sreplicable_component : public ecs::icomponent
 	{
 		DECLARE_COMPONENT(sreplicable_component);
 
@@ -24,7 +24,7 @@ namespace module_example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct EXAMPLE_API stransform_component : public ecs::icomponent
+	struct stransform_component : public ecs::icomponent
 	{
 		DECLARE_COMPONENT(stransform_component);
 
@@ -32,7 +32,7 @@ namespace module_example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct EXAMPLE_API sidentifier_component : public ecs::icomponent
+	struct sidentifier_component : public ecs::icomponent
 	{
 		DECLARE_COMPONENT(sidentifier_component);
 

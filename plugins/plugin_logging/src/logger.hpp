@@ -5,7 +5,7 @@ namespace logging
 {
 	//- 
 	//------------------------------------------------------------------------------------------------------------------------
-	class LOG_API clog
+	class clog
 	{
 	public:
 		STATIC_INSTANCE(clog, s_clog);
