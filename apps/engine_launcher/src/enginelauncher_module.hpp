@@ -2,5 +2,6 @@
 #include <engine.h>
 #include <plugin_logging.h>
 #include <plugin_module_example.h>
+#include <plugin_kingdoms_core.h>
 #include <lua.h>
 #include <luabridge.h>

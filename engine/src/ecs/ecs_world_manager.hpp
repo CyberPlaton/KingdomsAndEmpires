@@ -5,7 +5,7 @@ namespace ecs
 {
 	//- Central place for storing and accessing all worlds.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API cworld_manager final
+	class cworld_manager final
 	{
 	public:
 		STATIC_INSTANCE(cworld_manager, s_cworld_manager);

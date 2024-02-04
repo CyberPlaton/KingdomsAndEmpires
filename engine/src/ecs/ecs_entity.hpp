@@ -1,5 +1,4 @@
 #pragma once
-#include <config.hpp>
 #include <flecs.h>
 #include <core.h>
 
@@ -9,7 +8,7 @@ namespace ecs
 	//- Name of the entity is a UUID generated either randomly or specific.
 	//- Is created from entity manager.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API centity final
+	class centity final
 	{
 	public:
 		centity(flecs::entity e);

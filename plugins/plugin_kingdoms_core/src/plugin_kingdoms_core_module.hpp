@@ -1,5 +1,6 @@
 #pragma once
 #include <core.h>
+#include <rttr.h>
 
 namespace kingdoms
 {
@@ -41,11 +42,8 @@ namespace technology
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct itech : public io::iserializable
+	struct itech
 	{
-		virtual void save(TArchiveOut& archive) const override;
-		virtual void load(TArchiveIn& archive) override;
-
 		string_t m_name;
 		vector_t<ref_t<itech>> m_requirements;
 		ref_t<itech> m_parent;
@@ -54,6 +52,8 @@ namespace technology
 		tech_category m_category;
 
 		on_researched_callback_t m_callback;
+
+		RTTR_ENABLE();
 	};
 
 } //- technology

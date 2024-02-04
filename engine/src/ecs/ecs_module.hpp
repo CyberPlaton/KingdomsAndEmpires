@@ -6,7 +6,7 @@ namespace ecs
 {
 	//- information about an active module,
 	//- dependencies can be traversed recursive
-	struct ENGINE_API smodule_info
+	struct smodule_info
 	{
 		string_t m_name;
 		flecs::entity m_module_entity;

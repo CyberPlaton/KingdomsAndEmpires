@@ -6,7 +6,7 @@ namespace ecs
 	//- manages all systems for a given world. Note that the managed world is not necessarily the current active one.
 	//- here we can execute all kind of system related actions within our world.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API csystem_manager final
+	class csystem_manager final
 	{
 	public:
 		csystem_manager(flecs::world& w);

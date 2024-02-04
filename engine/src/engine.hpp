@@ -1,5 +1,4 @@
 #pragma once
-#include <config.hpp>
 #include <core/core_platform.hpp>
 #include <core.h>
 #include "spritemancer/sm.hpp"
@@ -17,7 +16,7 @@ namespace engine
 	//- configures self and registers services etc. Does create a window and a rendering context and provides the main loop.
 	//- Constructile from cengine::instance() only to ensure correct functioning.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API cengine final : core::cnon_copyable
+	class cengine final : core::cnon_copyable
 	{
 	public:
 		struct sconfig

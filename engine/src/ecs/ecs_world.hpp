@@ -11,7 +11,7 @@ namespace ecs
 	//- Note that a world is not intended to be constructed on its own, rather through
 	//- the world manager.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API cworld final : protected b2DynamicTree, core::cnon_copyable
+	class cworld final : protected b2DynamicTree, core::cnon_copyable
 	{
 	public:
 		cworld(stringview_t name);

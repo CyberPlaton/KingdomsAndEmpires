@@ -6,7 +6,7 @@ namespace ecs
 	//- manages all entities for a given world. Note that managed world is not necessarily the current active one.
 	//- here we can execute all kind of entity related actions within our world.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ENGINE_API centity_manager final
+	class centity_manager final
 	{
 	public:
 		centity_manager(flecs::world& w);

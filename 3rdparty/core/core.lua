@@ -5,7 +5,7 @@ function core()
 					{},
 					{"core_EXPORTS"},
 					{},
-					{"cereal", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "mimalloc"},
+					{"rttr", "rapidjson", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "mimalloc"},
 					"c++",
 					{},
 					{})

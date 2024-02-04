@@ -4,8 +4,8 @@ VERBOSE = true
 SCRIPTS_DIR = "<undefined>"
 VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
-THIRDPARTY = {"raylib", "spdlog", "core", "cereal", "glm", "EASTL",
-"magic_enum", "taskflow", "mimalloc", "flecs", "LuaBridge", "Lua"}
+THIRDPARTY = {"raylib", "spdlog", "core", "rapidjson", "glm", "EASTL",
+			  "magic_enum", "taskflow", "mimalloc", "flecs", "LuaBridge", "Lua", "rttr"}
 PLUGINS = {"test", "test2", "plugin_logging", "plugin_module_example", "plugin_kingdoms_core"}
 EXES = {"engine_launcher"}
 PLATFORM = "<undefined>"
