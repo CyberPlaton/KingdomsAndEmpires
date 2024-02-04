@@ -12,6 +12,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 {
 	AllocConsole();
 
+	//- use rttr registered structures at least once in main application
+	//- in order for them to be registered
 	technology::itech tech;
 	auto race = kingdoms::kingdom_race_dark_elf;
 
