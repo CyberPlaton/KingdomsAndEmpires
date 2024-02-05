@@ -13,6 +13,8 @@ namespace ecs
 	struct icomponent
 	{
 		static stringview_t name() { static constexpr stringview_t C_NAME = "icomponent"; return C_NAME; };
+
+		RTTR_ENABLE();
 	};
 
 
