@@ -12,10 +12,31 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 {
 	AllocConsole();
 
+	logging::init();
+	logging::log_debug(fmt::format("Starting on WinMain()").data());
+	logging::log_trace("Log log_trace");
+	logging::log_debug("Log log_debug");
+	logging::log_info("Log log_info");
+	logging::log_warn("Log log_warn");
+	logging::log_error("Log log_error");
+	logging::log_critical("Log log_critical");
+
 	//- use rttr registered structures at least once in main application
 	//- in order for them to be registered
 	technology::itech tech;
 	auto race = kingdoms::kingdom_race_dark_elf;
+
+	core::cuuid uuid;
+	core::scolor color(0, 0, 255, 255);
+	core::srect rect(0.0f, 0.0f, 1.0f, 1.0f);
+
+	auto uuid_json = io::to_json(uuid);
+	auto color_json = io::to_json(color);
+	auto srect_json = io::to_json(rect);
+
+	logging::log_info(fmt::format("uuid: '{}'", uuid_json));
+	logging::log_info(fmt::format("color: '{}'", color_json));
+	logging::log_info(fmt::format("rect: '{}'", srect_json));
 
 // 	core::cfile file(core::cfilesystem::construct("cereal_any", ".json"), core::file_read_write_mode_write
 // 		| core::file_read_write_mode_text
@@ -34,15 +55,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 // 
 // 	file2.read_sync_cereal(datastructure2);
 
-
-	logging::init();
-	logging::log_debug(fmt::format("Starting on WinMain()").data());
-	logging::log_trace("Log log_trace");
-	logging::log_debug("Log log_debug");
-	logging::log_info("Log log_info");
-	logging::log_warn("Log log_warn");
-	logging::log_error("Log log_error");
-	logging::log_critical("Log log_critical");
 
 	//- Important! Create a new world
 	auto& inst = ecs::cworld_manager::instance();

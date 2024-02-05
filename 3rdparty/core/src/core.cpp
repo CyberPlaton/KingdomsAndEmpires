@@ -1,6 +1,55 @@
 #include "core.hpp"
 #include <sstream>
 
+RTTR_REGISTRATION
+{
+	using namespace rttr;
+	using namespace core;
+
+	registration::class_<cuuid>("cuuid")
+		.property("m_data", &cuuid::m_data)
+		.property("m_string", &cuuid::m_string)
+		.property("m_hash", &cuuid::m_hash)
+		;
+
+	registration::class_<scolor>("scolor")
+		.property("m_r", &scolor::m_r)
+		.property("m_g", &scolor::m_g)
+		.property("m_b", &scolor::m_b)
+		.property("m_a", &scolor::m_a)
+		;
+
+	registration::class_<srect>("srect")
+		.property("m_x", &srect::m_x)
+		.property("m_y", &srect::m_y)
+		.property("m_w", &srect::m_w)
+		.property("m_h", &srect::m_h)
+		;
+
+	registration::class_<vec2_t>("vec2_t")
+		.property("x", &vec2_t::x)
+		.property("y", &vec2_t::y)
+		;
+
+	registration::class_<vec3_t>("vec3_t")
+		.property("x", &vec3_t::x)
+		.property("y", &vec3_t::y)
+		.property("z", &vec3_t::z)
+		;
+
+	registration::class_<vec4_t>("vec4_t")
+		.property("x", &vec4_t::x)
+		.property("y", &vec4_t::y)
+		.property("z", &vec4_t::z)
+		.property("w", &vec4_t::w)
+		;
+
+	registration::class_<smaterial_pair>("smaterial_pair")
+		.property("first", &smaterial_pair::first)
+		.property("second", &smaterial_pair::second)
+		;
+};
+
 namespace algorithm
 {
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1060,52 +1109,52 @@ namespace core
 	scolor::scolor(common_color color) :
 		m_r(0), m_g(0), m_b(0), m_a(0)
 	{
-		static constexpr spair<common_color, array_t<uint8_t, 4>> C_COMMON_COLORS[] = {
-		{common_color_red400,		{134, 38, 51, 255}},
-		{common_color_red200,		{239, 83, 80, 255}},
-		{common_color_red50,		{255, 205, 210, 255}},
+		array_t<uint8_t, 4> C_COMMON_COLORS[] = {
+			{134, 38, 51, 255},
+			{239, 83, 80, 255},
+			{255, 205, 210, 255},
 
-		{common_color_orange400,	{245, 124, 0, 255}},
-		{common_color_orange200,	{255, 171, 64, 255}},
-		{common_color_orange50,		{255, 224, 178, 255}},
+			{245, 124, 0, 255},
+			{255, 171, 64, 255},
+			{255, 224, 178, 255},
 
-		{common_color_yellow400,	{251, 192, 45, 255}},
-		{common_color_yellow200,	{255, 235, 59, 255}},
-		{common_color_yellow50,		{255, 245, 157, 255}},
+			{251, 192, 45, 255},
+			{255, 235, 59, 255},
+			{255, 245, 157, 255},
 
-		{common_color_green400,		{52, 168, 83, 255}},
-		{common_color_green200,		{129, 199, 132, 255}},
-		{common_color_green50,		{200, 230, 201, 255}},
+			{52, 168, 83, 255},
+			{129, 199, 132, 255},
+			{200, 230, 201, 255},
 
-		{common_color_cyan400,		{0, 188, 212, 255}},
-		{common_color_cyan200,		{77, 208, 225, 255}},
-		{common_color_cyan50,		{178, 235, 242, 255}},
+			{0, 188, 212, 255},
+			{77, 208, 225, 255},
+			{178, 235, 242, 255},
 
-		{common_color_blue400,		{33, 150, 243, 255}},
-		{common_color_blue200,		{144, 202, 249, 255}},
-		{common_color_blue50,		{187, 222, 251, 255}},
+			{33, 150, 243, 255},
+			{144, 202, 249, 255},
+			{187, 222, 251, 255},
 
-		{common_color_magenta400,	{156, 39, 176, 255}},
-		{common_color_magenta200,	{233, 30, 99, 255}},
-		{common_color_magenta50,	{248, 187, 208, 255}},
+			{156, 39, 176, 255},
+			{233, 30, 99, 255},
+			{248, 187, 208, 255},
 
-		{common_color_pink400,		{233, 30, 99, 255}},
-		{common_color_pink200,		{240, 98, 146, 255}},
-		{common_color_pink50,		{248, 187, 208, 255}},
+			{233, 30, 99, 255},
+			{240, 98, 146, 255},
+			{248, 187, 208, 255},
 
-		{common_color_transparent,	{255, 255, 255, 255}},
-		{common_color_neutral0,		{0, 0, 0, 255}},		//- black
-		{common_color_neutral100,	{33, 33, 33, 255}},
-		{common_color_neutral200,	{66, 66, 66, 255}},
-		{common_color_neutral300,	{117, 117, 117, 255}},
-		{common_color_neutral400,	{153, 153, 153, 255}},
-		{common_color_neutral500,	{189, 189, 189, 255}},
-		{common_color_neutral600,	{224, 224, 224, 255}},
-		{common_color_neutral800,	{238, 238, 238, 255}},
-		{common_color_neutral1000,	{255, 255, 255, 255}}, //- white
+			{255, 255, 255, 255},
+			{0, 0, 0, 255},
+			{33, 33, 33, 255},
+			{66, 66, 66, 255},
+			{117, 117, 117, 255},
+			{153, 153, 153, 255},
+			{189, 189, 189, 255},
+			{224, 224, 224, 255},
+			{238, 238, 238, 255},
+			{255, 255, 255, 255},
 		};
 
-		const auto& c = C_COMMON_COLORS[color].second;
+		const auto& c = C_COMMON_COLORS[(unsigned)color];
 		m_r = c[0];
 		m_g = c[1];
 		m_b = c[2];
@@ -1572,11 +1621,14 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	core::spair<void*, unsigned> cfile::take()
 	{
-		ASSERT(!(m_mode & file_read_write_mode_cereal), "Invalid operation! Data is empty when using cereal");
+		core::spair<void*, unsigned> out;
+		out.first = nullptr;
+		out.second = 0;
 
 		if (status() == file_io_status_success)
 		{
-			core::spair<void*, unsigned> out = { m_data, m_datasize };
+			out.first = m_data;
+			out.second = m_datasize;
 
 			//- soft reset to indicate that object should not be used
 			m_data = nullptr;
@@ -1588,15 +1640,17 @@ namespace core
 
 			return out;
 		}
-		return {nullptr, 0};
+		return out;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	spair<void*, unsigned> cfile::data() const
 	{
-		ASSERT(!(m_mode & file_read_write_mode_cereal), "Invalid operation! Data is empty when using cereal");
+		core::spair<void*, unsigned> out;
+		out.first = nullptr;
+		out.second = 0;
 
-		return { m_data, m_datasize };
+		return out;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1735,44 +1789,6 @@ namespace core
 		}
 
 		return m_status;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cfile::assert_cereal_read_mode(bool binary)
-	{
-		using namespace algorithm;
-
-		if (binary)
-		{
-			ASSERT((bit_on(m_mode, file_read_write_mode_read)
-				&& bit_on(m_mode, file_read_write_mode_cereal)
-				&& bit_on(m_mode, file_read_write_mode_binary)), "cfile must be created with cereal binary read mode");
-		}
-		else
-		{
-			ASSERT((bit_on(m_mode, file_read_write_mode_read)
-				&& bit_on(m_mode, file_read_write_mode_cereal)
-				&& bit_on(m_mode, file_read_write_mode_text)), "cfile must be created with cereal text read mode");
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cfile::assert_cereal_write_mode(bool binary)
-	{
-		using namespace algorithm;
-
-		if (binary)
-		{
-			ASSERT((bit_on(m_mode, file_read_write_mode_write)
-				&& bit_on(m_mode, file_read_write_mode_cereal)
-				&& bit_on(m_mode, file_read_write_mode_binary)), "cfile must be created with cereal binary write mode");
-		}
-		else
-		{
-			ASSERT((bit_on(m_mode, file_read_write_mode_write)
-				&& bit_on(m_mode, file_read_write_mode_cereal)
-				&& bit_on(m_mode, file_read_write_mode_text)), "cfile must be created with cereal text write mode");
-		}
 	}
 
 	using namespace std::chrono_literals;
