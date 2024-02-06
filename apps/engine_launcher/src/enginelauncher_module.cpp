@@ -23,7 +23,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	//- use rttr registered structures at least once in main application
 	//- in order for them to be registered
-	technology::itech tech;
+	kingdoms::sskills skills;
 	auto race = kingdoms::kingdom_race_dark_elf;
 
 	core::cuuid uuid;
@@ -38,23 +38,30 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_info(fmt::format("color: '{}'", color_json));
 	logging::log_info(fmt::format("rect: '{}'", srect_json));
 
-// 	core::cfile file(core::cfilesystem::construct("cereal_any", ".json"), core::file_read_write_mode_write
-// 		| core::file_read_write_mode_text
-// 		| core::file_read_write_mode_cereal);
-// 
-// 	core::cuuid uuid;
-// 	ssome_data datastructure, datastructure2;
-// 	datastructure.m_data.emplace_back(1);
-// 	datastructure.m_uuid = uuid.c_str();
-// 
-// 	file.write_sync_cereal(datastructure);
-// 
-// 	core::cfile file2(core::cfilesystem::construct("somepath", ".json"), core::file_read_write_mode_read
-// 		| core::file_read_write_mode_text
-// 		| core::file_read_write_mode_cereal);
-// 
-// 	file2.read_sync_cereal(datastructure2);
+	logging::log_info(fmt::format("Type itech valid: '{}'", rttr::type::get_by_name("itech").is_valid() ? "True" : "False"));
+	logging::log_info(fmt::format("Type sskills valid: '{}'", rttr::type::get_by_name("sskills").is_valid() ? "True" : "False"));
 
+	logging::log_debug("Registered rttr types");
+	for (auto type : rttr::type::get_types())
+	{
+		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
+	}
+
+	auto skills_type = rttr::type::get_by_name("sskills");
+	logging::log_info("kingdoms::sskills properties:");
+	for (const auto& prop : skills_type.get_properties())
+	{
+		auto meta = prop.get_metadata(kingdoms::C_DISPLAY_NAME_PROP);
+
+		logging::log_info(fmt::format("\tDisplayName: '{}'", meta.get_value<string_t>()));
+	}
+
+	auto tech_type = rttr::type::get_by_name("itech");
+	logging::log_info("technology::itech properties:");
+	for (const auto& prop : tech_type.get_properties())
+	{
+		logging::log_info(fmt::format("\tproperty: '{}'", prop.get_name().data()));
+	}
 
 	//- Important! Create a new world
 	auto& inst = ecs::cworld_manager::instance();
@@ -65,14 +72,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	world.mm().import_module<module_example::cmy_second_module>();
 	world.mm().import_module<module_example::cmy_third_module>();
-
-	logging::log_info(fmt::format("Type itech valid: '{}'", rttr::type::get_by_name("itech").is_valid() ? "True" : "False"));
-
-	logging::log_debug("Registered rttr types");
-	for (auto type : rttr::type::get_types())
-	{
-		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
-	}
 
 	Sleep(10);
 	return 0;
