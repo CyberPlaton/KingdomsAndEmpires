@@ -1,55 +1,6 @@
 #include "core.hpp"
 #include <sstream>
 
-RTTR_REGISTRATION
-{
-	using namespace rttr;
-	using namespace core;
-
-	registration::class_<cuuid>("cuuid")
-		.property("m_data", &cuuid::m_data)
-		.property("m_string", &cuuid::m_string)
-		.property("m_hash", &cuuid::m_hash)
-		;
-
-	registration::class_<scolor>("scolor")
-		.property("m_r", &scolor::m_r)
-		.property("m_g", &scolor::m_g)
-		.property("m_b", &scolor::m_b)
-		.property("m_a", &scolor::m_a)
-		;
-
-	registration::class_<srect>("srect")
-		.property("m_x", &srect::m_x)
-		.property("m_y", &srect::m_y)
-		.property("m_w", &srect::m_w)
-		.property("m_h", &srect::m_h)
-		;
-
-	registration::class_<vec2_t>("vec2_t")
-		.property("x", &vec2_t::x)
-		.property("y", &vec2_t::y)
-		;
-
-	registration::class_<vec3_t>("vec3_t")
-		.property("x", &vec3_t::x)
-		.property("y", &vec3_t::y)
-		.property("z", &vec3_t::z)
-		;
-
-	registration::class_<vec4_t>("vec4_t")
-		.property("x", &vec4_t::x)
-		.property("y", &vec4_t::y)
-		.property("z", &vec4_t::z)
-		.property("w", &vec4_t::w)
-		;
-
-	registration::class_<smaterial_pair>("smaterial_pair")
-		.property("first", &smaterial_pair::first)
-		.property("second", &smaterial_pair::second)
-		;
-};
-
 namespace algorithm
 {
 	//------------------------------------------------------------------------------------------------------------------------

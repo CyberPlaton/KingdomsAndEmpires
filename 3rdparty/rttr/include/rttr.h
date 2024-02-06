@@ -15,6 +15,14 @@
 #define ANONYMOUS_VARIABLE(str) CAT_(str, __LINE__)
 #endif
 
+#define RTTR_REGISTRATION_FRIEND_NON_INTRUSIVE() \
+	template <typename T> \
+	friend void rttr_auto_register_reflection_function_t(); \
+	RTTR_REGISTRATION_FRIEND
+
+//- enable registration for private datamembers
+#define REFLECTABLE() RTTR_REGISTRATION_FRIEND_NON_INTRUSIVE()
+
 //- reflect a class inside the header file where it is defined.
 //- can easily be used multiples times per header file
 #define REFLECT_INLINE(__class) \
