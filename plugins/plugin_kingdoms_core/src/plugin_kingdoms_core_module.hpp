@@ -11,17 +11,74 @@ namespace kingdoms
 	using technology_t = handle_type_t;
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum kingdom_race : uint8_t
+	enum building_slot_type : uint8_t
 	{
-		kingdom_race_none = 0,
-		kingdom_race_human,
-		kingdom_race_orc,
-		kingdom_race_goblin,
-		kingdom_race_elf,
-		kingdom_race_gnome,
-		kingdom_race_dwarf,
-		kingdom_race_high_troll,
-		kingdom_race_dark_elf,
+		building_slot_type_none = 0,
+		building_slot_type_normal,
+		building_slot_type_port,
+
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum birthsign_type : uint8_t
+	{
+		birthsign_type_none			= 0,
+		birthsign_type_the_warrior	= 1,
+		birthsign_type_the_mage,
+		birthsign_type_the_thief,
+		birthsign_type_the_serpent,
+		birthsign_type_the_lady,
+		birthsign_type_the_stallion,
+		birthsign_type_the_lord,
+		birthsign_type_the_apprentice,
+		birthsign_type_the_storm,
+		birthsign_type_the_blizzard,
+		birthsign_type_the_ritual,
+		birthsign_type_the_tower,
+		birthsign_type_the_shadow	= 13,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum biome_type : uint8_t
+	{
+		biome_type_none = 0,
+		biome_type_temperate,
+		biome_type_tundra,
+		biome_type_jungle,
+		biome_type_savannah,
+		biome_type_sand,
+		biome_type_desert,
+		biome_type_snow,
+		biome_type_ice,
+		biome_type_shallow_water,
+		biome_type_deep_water,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum settlement_type
+	{
+		settlement_type_none = BIT(0),
+		settlement_type_city = BIT(1),
+		settlement_type_fort = BIT(2),
+
+		settlement_type_all = settlement_type_city | settlement_type_fort
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum kingdom_race
+	{
+		kingdom_race_none		= BIT(0),
+		kingdom_race_human		= BIT(1),
+		kingdom_race_orc		= BIT(2),
+		kingdom_race_goblin		= BIT(3),
+		kingdom_race_elf		= BIT(4),
+		kingdom_race_gnome		= BIT(5),
+		kingdom_race_dwarf		= BIT(6),
+		kingdom_race_high_troll = BIT(7),
+		kingdom_race_dark_elf	= BIT(8),
+
+		kingdom_race_all = kingdom_race_human | kingdom_race_orc | kingdom_race_goblin | kingdom_race_dark_elf |
+							kingdom_race_elf | kingdom_race_gnome | kingdom_race_dwarf | kingdom_race_high_troll
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -52,7 +109,7 @@ namespace kingdoms
 
 		unsigned m_health = 0;
 		unsigned m_mana = 0;
-		unsigned m_fatigue = 0;
+		unsigned m_action_points = 0;
 
 		RTTR_ENABLE(ecs::icomponent);
 	};
@@ -95,6 +152,100 @@ namespace kingdoms
 	};
 
 } //- kingdoms
+
+namespace resource
+{
+	//- base class for resource definitions. A resource should basically be an inherited child with no data
+	//- apart from meta data for rttr.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct iresource : ecs::icomponent
+	{
+		DECLARE_COMPONENT(iresource);
+
+		RTTR_ENABLE(ecs::icomponent);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct swood : iresource
+	{
+		DECLARE_COMPONENT(swood);
+
+		RTTR_ENABLE(iresource);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sclay : iresource
+	{
+		DECLARE_COMPONENT(sclay);
+
+		RTTR_ENABLE(iresource);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sfood : iresource
+	{
+		DECLARE_COMPONENT(sfood);
+
+		RTTR_ENABLE(iresource);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sleather : iresource
+	{
+		DECLARE_COMPONENT(sleather);
+
+		RTTR_ENABLE(iresource);
+	};
+
+} //- resource
+
+namespace building
+{
+	//- base class for building definitions
+	//------------------------------------------------------------------------------------------------------------------------
+	struct ibuilding : ecs::icomponent
+	{
+		DECLARE_COMPONENT(ibuilding);
+
+		struct srequirements
+		{
+			//- pairing { "swood" : 4 }, where swood is a struct and 4 is required amount to build this structure
+			umap_t<rttr::type, unsigned> m_cost;
+			//- races that can build this
+			int m_race = kingdoms::kingdom_race_all;
+			unsigned m_settlement_citizen_count = 0;
+			int m_settlement_type = kingdoms::settlement_type_all;
+			//- required building to build on top of, where the previous one is replaced with this one,
+			//- if this is left null then building has to be built on empty space
+			rttr::type m_previous_building;
+			//- required slot type. Can be only one
+			kingdoms::building_slot_type m_building_slot;
+			//- set of technologies that have to be researched for this building
+			vector_t<rttr::type> m_technologies;
+		};
+
+		struct sdata
+		{
+			//- pairing { "swood" : 2 }, where swood is a struct and 2 is amount of consumed resource
+			using consumption_pair_t = core::spair<rttr::type, unsigned>;
+			//- pairing { 1 : [{ "swood" : 2 }, ...] }, where 1 is produced amount and
+			//- second is vector of required resources along with amount of consumption
+			using production_pair_t = core::spair<unsigned, vector_t<consumption_pair_t>>;
+			//- pairing { "sbronze" : ... }, where sbronze is a struct and the rest is the production pair from above
+			using production_map_t = umap_t<rttr::type, production_pair_t>;
+
+			string_t m_name;
+			production_map_t m_production_consumption;
+			umap_t<rttr::type, unsigned> m_profession_level_requirements;
+		};
+
+		sdata m_data;
+		srequirements m_requirements;
+
+		RTTR_ENABLE(ecs::icomponent);
+	};
+
+} //- building
 
 namespace technology
 {
@@ -204,7 +355,7 @@ namespace kingdoms
 		rttr::registration::class_<sderived_attributes>("sderived_attributes")
 			.property("m_health", &sderived_attributes::m_health)
 			.property("m_mana", &sderived_attributes::m_mana)
-			.property("m_fatigue", &sderived_attributes::m_fatigue)
+			.property("m_action_points", &sderived_attributes::m_action_points)
 			;
 	};
 
@@ -370,3 +521,50 @@ namespace professions
 	};
 
 } //- professions
+
+namespace resource
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(iresource)
+	{
+		rttr::registration::class_<iresource>("iresource");
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(swood)
+	{
+		rttr::registration::class_<swood>("swood");
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(sclay)
+	{
+		rttr::registration::class_<sclay>("sclay");
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(sfood)
+	{
+		rttr::registration::class_<sfood>("sfood");
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(sleather)
+	{
+		rttr::registration::class_<sleather>("sleather");
+	}
+
+} //- resource
+
+namespace building
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(ibuilding)
+	{
+		rttr::registration::class_<ibuilding>("ibuilding")
+			.property("m_requirements", &ibuilding::m_requirements)
+			.property("m_data", &ibuilding::m_data)
+			;
+	}
+
+} //- building
