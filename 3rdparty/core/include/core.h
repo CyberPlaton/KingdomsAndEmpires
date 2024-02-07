@@ -1,4 +1,5 @@
 #pragma once
+#include <core/core_platform.hpp>
 #if defined(CORE_USE_EASTL)
 #include <eastl.h>
 namespace stl = eastl;
