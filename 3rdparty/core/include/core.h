@@ -470,7 +470,11 @@ namespace core
 		void unlock();
 
 	private:
+#if CORE_PLATFORM_WINDOWS
 		__declspec(align(16)) uint8_t m_internal[64];
+#else
+		__attribute__((aligned (16))) uint8_t m_internal[64];
+#endif
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -633,7 +637,7 @@ namespace core
 
 	//- Helper class for performing I/O operations both sync and async.
 	//- Data is automatically freed when object goes out of scope.
-	//- Object wíll not go out of scope until async task is finished.
+	//- Object wÃ­ll not go out of scope until async task is finished.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cfile final
 	{

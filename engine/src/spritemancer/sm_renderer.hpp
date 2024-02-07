@@ -10,7 +10,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		class cspriteatlas_manager
 		{
-			friend class crenderer;
+			friend class sm::crenderer;
 
 			struct sspriteatlas_wrapper
 			{
@@ -42,7 +42,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		class ctechnique_manager
 		{
-			friend class crenderer;
+			friend class sm::crenderer;
 
 			struct sshader_wrapper
 			{
@@ -75,11 +75,11 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		class cmaterial_manager
 		{
-			friend class crenderer;
+			friend class sm::crenderer;
 
 			struct smaterial_wrapper
 			{
-				smaterial_wrapper(cmaterial& material) : m_material(material) {}
+				smaterial_wrapper(cmaterial material) : m_material(std::move(material)) {}
 
 				cmaterial m_material;
 				bool m_removed = false;
@@ -115,7 +115,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		class ctexture_manager
 		{
-			friend class crenderer;
+			friend class sm::crenderer;
 
 			struct stexture_wrapper
 			{

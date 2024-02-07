@@ -544,9 +544,8 @@ namespace core
 			if (file_path != nullptr)
 			{
 				FILE* file = nullptr;
-				errno_t err;
 
-				if (err = fopen_s(&file, file_path, "rb"); err == 0)
+				if (spdlog::details::os::fopen_s(&file, file_path, "rb"))
 				{
 					fseek(file, 0, SEEK_END);
 					auto size = ftell(file);
@@ -565,7 +564,7 @@ namespace core
 					//- error occured
 					if (error)
 					{
-						error->assign(std::strerror(err));
+						error->assign("");
 					}
 				}
 			}
@@ -579,9 +578,8 @@ namespace core
 			if (file_path != nullptr)
 			{
 				FILE* file = nullptr;
-				errno_t err;
 
-				if (err = fopen_s(&file, file_path, "wb"); err == 0)
+				if (spdlog::details::os::fopen_s(&file, file_path, "wb"))
 				{
 					auto count = SCAST(unsigned, fwrite(data, sizeof(uint8_t), data_size, file));
 
@@ -597,7 +595,7 @@ namespace core
 					//- error occured
 					if (error)
 					{
-						error->assign(std::strerror(err));
+						error->assign("");
 					}
 				}
 			}
@@ -621,9 +619,8 @@ namespace core
 			if (file_path != nullptr)
 			{
 				FILE* file = nullptr;
-				errno_t err;
 
-				if (err = fopen_s(&file, file_path, "rt"); err == 0)
+				if (spdlog::details::os::fopen_s(&file, file_path, "rt"))
 				{
 					fseek(file, 0, SEEK_END);
 					auto size = SCAST(unsigned, ftell(file));
@@ -652,7 +649,7 @@ namespace core
 					//- error occured
 					if (error)
 					{
-						error->assign(std::strerror(err));
+						error->assign("");
 					}
 				}
 			}
@@ -666,9 +663,8 @@ namespace core
 			if (file_path != nullptr)
 			{
 				FILE* file = nullptr;
-				errno_t err;
 
-				if(err = fopen_s(&file, file_path, "wt"); err == 0)
+				if(spdlog::details::os::fopen_s(&file, file_path, "wt"))
 				{
 					auto count = fprintf(file, "%s", text);
 
@@ -684,7 +680,7 @@ namespace core
 					//- error occured
 					if (error)
 					{
-						error->assign(std::strerror(err));
+						error->assign("");
 					}
 				}
 			}

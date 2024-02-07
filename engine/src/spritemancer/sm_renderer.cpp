@@ -602,7 +602,7 @@ namespace sm
 					auto h = algorithm::hash(material_name.c_str());
 					m_material_names[h] = handle;
 
-					m_material_manager.emplace_back(std::move(cmaterial(technique, mode, equation, src, dst)));
+					m_material_manager.emplace_back(cmaterial(technique, mode, equation, src, dst));
 					return handle;
 				}
 			}

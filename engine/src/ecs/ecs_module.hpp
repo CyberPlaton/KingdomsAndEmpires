@@ -1,6 +1,8 @@
 #pragma once
 #include "ecs_world_context_holder.hpp"
 #include "ecs_system.hpp"
+#include "ecs_component.hpp"
+#include <plugin_logging.h>
 
 namespace ecs
 {
