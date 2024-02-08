@@ -4,7 +4,7 @@ function engine_launcher()
 	add_target_app("engine_launcher",
 					{},
 					{},
-					{"Lua", "LuaBridge", "rapidjson", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "rttr", "core", "mimalloc", "raylib", "flecs"},
+					{"Lua", "LuaBridge", "rapidjson", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "rttr", "core", "mimalloc", "raylib", "flecs", "argparse"},
 					{"test", "test2", "plugin_logging", "plugin_module_example", "plugin_kingdoms_core"})
 end
 engine_launcher()

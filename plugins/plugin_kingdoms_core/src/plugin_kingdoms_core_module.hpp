@@ -313,6 +313,30 @@ namespace professions
 
 } //- professions
 
+namespace settlement
+{
+	//- base class for a city or fort.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct isettlement : ecs::icomponent
+	{
+		DECLARE_COMPONENT(isettlement);
+
+		struct sdata
+		{
+			kingdoms::kingdom_race m_race = kingdoms::kingdom_race_none;
+			kingdoms::settlement_type m_type = kingdoms::settlement_type_none;
+
+			vector_t<flecs::entity> m_citizens;
+			vector_t<flecs::entity> m_buildings;
+			vector_t<flecs::entity> m_resources;
+		};
+
+		sdata m_data;
+
+		RTTR_ENABLE(ecs::icomponent);
+	};
+
+} //- settlement
 
 namespace kingdoms
 {

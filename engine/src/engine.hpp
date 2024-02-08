@@ -2,6 +2,7 @@
 #include <core/core_platform.hpp>
 #include <core.h>
 #include "spritemancer/sm.hpp"
+#include <argparse.h>
 
 namespace engine
 {
@@ -9,6 +10,8 @@ namespace engine
 	enum engine_run_result : uint8_t
 	{
 		engine_run_result_ok = 0,
+		engine_run_result_failed_parsing_arguments,
+		engine_run_result_failed_starting_spritemancer,
 		engine_run_result_fail = 255,
 	};
 
@@ -21,31 +24,15 @@ namespace engine
 	public:
 		struct sconfig
 		{
-			unsigned m_width;
-			unsigned m_height;
-
-			unsigned m_msaa_level;
-			unsigned m_swap_interval;
-
-			bool m_highdpi;
-			bool m_fullscreen;
-
-			bool m_framebuffer_alpha;
-
-			stringview_t m_title;
+			sm::cwindow::sconfig m_window_cfg;
 		};
 
 	public:
 		STATIC_INSTANCE(cengine, s_cengine);
 		~cengine();
 
-		void configure(sconfig cfg, int argc = 0, char* argv[] = {});
+		engine_run_result configure(sconfig cfg, int argc = 0, char* argv[] = {});
 		engine_run_result run() const;
-
-		//- not intended as public, however, there is no other way as of now
-		void private_init();
-		void private_frame();
-		void private_cleanup();
 
 	private:
 		cengine() = default;
@@ -53,6 +40,9 @@ namespace engine
 	private:
 		sconfig m_config;
 		engine_run_result m_result;
+
+		void handle_arguments(argparse::ArgumentParser& args, int argc, char* argv[]);
+		void register_services(argparse::ArgumentParser& args);
 	};
 
 } //- engine

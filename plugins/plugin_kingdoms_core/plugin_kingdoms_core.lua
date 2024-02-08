@@ -5,7 +5,7 @@ function plugin_kingdoms_core()
 					{},
 					{},
 					{"plugin_logging"},
-					{"rttr", "rapidjson", "glm", "EASTL", "magic_enum", "taskflow", "raylib", "spdlog", "core", "mimalloc", "flecs"},
+					{"rttr", "rapidjson", "glm", "EASTL", "magic_enum", "taskflow", "raylib", "spdlog", "core", "mimalloc", "flecs", "argparse"},
 					{},
 					true)
 end
