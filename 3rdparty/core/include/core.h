@@ -564,13 +564,13 @@ namespace core
 		inline stringview_t extension() const { return m_string_ext.c_str(); }
 		inline stringview_t stem() const { return m_string_stem.c_str(); }
 
-		inline bool exists() const;
+		bool exists() const;
 		explicit operator bool() const { return exists(); }
 
-		inline bool has_extension() const;
-		inline bool has_parent() const;
-		inline bool is_dir() const;
-		inline bool is_file() const;
+		bool has_extension() const;
+		bool has_parent() const;
+		bool is_dir() const;
+		bool is_file() const;
 
 		cpath parent() const;
 		cpath& append(stringview_t path);
