@@ -88,6 +88,11 @@ int main(int argc, char* argv[])
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
 
+	lua_State* state = luaL_newstate();
+	luaL_openlibs(state);
+
+	lua_close(state);
+
 	return 0;
 }
 #endif
