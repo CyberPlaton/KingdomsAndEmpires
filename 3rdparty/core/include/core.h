@@ -483,7 +483,6 @@ namespace core
 	{
 	public:
 		cscope_mutex(cmutex& m);
-
 		~cscope_mutex();
 		cscope_mutex& operator=(const cscope_mutex&) = delete;
 		cscope_mutex(const cscope_mutex&) = delete;

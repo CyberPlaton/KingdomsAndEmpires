@@ -9,5 +9,4 @@ namespace raylib
 #endif
 #include "raylib/raylib.h"
 #include "raylib/rlgl.h"
-#include "raylib/raymath.h"
 } //- raylib

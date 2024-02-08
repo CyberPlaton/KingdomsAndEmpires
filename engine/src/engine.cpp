@@ -48,6 +48,9 @@ namespace engine
 			{
 				m_result = engine_run_result_failed_starting_spritemancer;
 			}
+
+			//- default service init
+			cservice_manager::init(service_start_phase_init);
 		}
 
 		return m_result;
@@ -61,6 +64,9 @@ namespace engine
 			return m_result;
 		}
 
+		//- post-init service start up
+		cservice_manager::init(service_start_phase_post_init);
+
 		//- enter engine main loop
 		while (!raylib::WindowShouldClose())
 		{
@@ -70,7 +76,9 @@ namespace engine
 				sm::ctx().on_resize(raylib::GetScreenWidth(), raylib::GetScreenHeight());
 			}
 
-			sm::begin_drawing(camera);
+			cservice_manager::on_update(0.016f);
+
+			sm::begin_drawing(/*camera*/ nullptr);
 
 			sm::end_frame();
 
@@ -80,7 +88,6 @@ namespace engine
 
 			sm::end_drawing();
 		}
-
 
 		return m_result;
 	}
@@ -108,6 +115,11 @@ namespace engine
 		{
 			return;
 		}
+
+		//- register common engine services
+
+		//- pre-init services
+		cservice_manager::init(service_start_phase_pre_init);
 	}
 
 } //- engine

@@ -310,6 +310,12 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 			set_include_path(true, p)
 		end
 
+		if PLATFORM == "windows" then
+			links{"gdi32.lib", "ws2_32.lib", "kernel32.lib", "opengl32.lib", "psapi.lib", "winmm.lib"}
+		elseif PLATFORM == "linux" then
+		else
+		end
+
 		filter{"configurations:debug"}
 			symbols "On"
 			optimize "Off"

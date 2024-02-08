@@ -1,11 +1,6 @@
 #include "enginelauncher_module.hpp"
 #include <iostream>
 
-void logging_function(const char* tag, uint32_t level, uint32_t item_id, const char* message, uint32_t line, const char* filename, void* data)
-{
-	logging::log_debug(fmt::format("[SOKOL] {}", message).data());
-}
-
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
@@ -20,6 +15,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_warn("Log log_warn");
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
+
+	engine::cengine::sconfig cfg;
+	cfg.m_window_cfg.m_title = "Kingdoms & Empires";
+	cfg.m_window_cfg.m_width = 720;
+	cfg.m_window_cfg.m_height = 648;
+	cfg.m_window_cfg.m_target_fps = 60;
+
+	if (engine::cengine::instance().configure(cfg) == engine::engine_run_result_ok)
+	{
+		engine::cengine::instance().run();
+	}
 
 	//- use rttr registered structures at least once in main application
 	//- in order for them to be registered

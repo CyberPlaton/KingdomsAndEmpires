@@ -1,7 +1,9 @@
 #pragma once
-#include <core/core_platform.hpp>
 #include <core.h>
+#include "physics/b2_physics.hpp"
 #include "spritemancer/sm.hpp"
+#include "ecs/ecs.hpp"
+#include "services/service_manager.hpp"
 #include <argparse.h>
 
 namespace engine
