@@ -20,7 +20,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function link_with_engine()
-	links{"engine"}
+	link_with("engine")
 end
 
 function set_include_path_to_self(name)
@@ -47,6 +47,10 @@ function set_include_path(is_third_party, name)
 	end
 end
 
+function link_with(library)
+	links{path.join(VENDOR_DIR, OUTDIR, library)}
+end
+
 ------------------------------------------------------------------------------------------------------------------------
 function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
@@ -58,9 +62,10 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 	if VERBOSE == true then
 		print("\tstatic library: " .. name)
 	end
-	project(name)
+	project(name .. "_project")
 		language (target_language)
-		location (path.join(".project", name))
+		location (path.join(".project", name .. "_project"))
+		targetname (name)
 
 		kind ("StaticLib")
 
@@ -92,13 +97,13 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		end
 
 		-- set includes only from other plugins and thirdparty
-		for ii = 1, #thirdparty_headeronly_deps do
-			p = thirdparty_headeronly_deps[ii]
-			set_include_path(true, p)
-		end
 		for ii = 1, #plugin_headeronly_deps do
 			p = plugin_headeronly_deps[ii]
 			set_include_path(false, p)
+		end
+		for ii = 1, #thirdparty_headeronly_deps do
+			p = thirdparty_headeronly_deps[ii]
+			set_include_path(true, p)
 		end
 
 		filter{"configurations:debug"}
@@ -138,17 +143,19 @@ function add_target_library(name, build_options, define_flags, plugin_deps, thir
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
-		set_libs_path()
+		--set_libs_path()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
-			links{p}
+			--links{p}
+			link_with(p)
 			set_include_path(false, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
-			links{p}
+			--links{p}
+			link_with(p)
 			set_include_path(true, p)
 		end
 
@@ -193,17 +200,19 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
-		set_libs_path()
+		--set_libs_path()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
-			links{p}
+			--links{p}
+			link_with(p)
 			set_include_path(false, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
-			links{p}
+			--links{p}
+			link_with(p)
 			set_include_path(true, p)
 		end
 
@@ -222,7 +231,8 @@ end
 
 -- special function for defining plugins that are linking with the engine
 ------------------------------------------------------------------------------------------------------------------------
-function add_target_plugin(name, build_options, define_flags, plugin_deps, thirdparty_deps, additional_includes, depends_on_engine)
+function add_target_plugin(name, build_options, define_flags, plugin_deps, thirdparty_deps, plugin_headeronly_deps,
+	thirdparty_headeronly_deps, additional_includes, depends_on_engine)
 	if VERBOSE == true then
 		print("\tplugin: " .. name)
 	end
@@ -245,22 +255,32 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
-		set_libs_path()
+		--set_libs_path()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
-			links{p}
+			--links{p}
+			link_with(p)
 			set_include_path(false, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
-			links{p}
+			--links{p}
+			link_with(p)
+			set_include_path(true, p)
+		end
+		for ii = 1, #plugin_headeronly_deps do
+			p = plugin_headeronly_deps[ii]
+			set_include_path(false, p)
+		end
+		for ii = 1, #thirdparty_headeronly_deps do
+			p = thirdparty_headeronly_deps[ii]
 			set_include_path(true, p)
 		end
 
 		-- link with engine by default, if not explicitly disabled
-		if depends_on_engine ~= nil and depends_on_engine == true then
+		if depends_on_engine == true then
 			link_with_engine()
 		end
 
@@ -275,7 +295,8 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function add_target_app(name, build_options, define_flags, thirdparty_deps, plugin_deps)
+function add_target_app(name, build_options, define_flags, thirdparty_deps, plugin_deps, plugin_headeronly_deps,
+	thirdparty_headeronly_deps, additional_includes)
 	if VERBOSE == true then
 		print("\tapplication: " .. name)
 	end
@@ -292,21 +313,32 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		set_basic_defines()
 		defines{define_flags}
 		includedirs{"include"}
+		includedirs{additional_includes}
 		set_include_path_to_engine()
 		link_with_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
-		set_libs_path()
+		--set_libs_path()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
-			links{p}
+			--links{p}
+			link_with(p)
 			set_include_path(false, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
-			links{p}
+			--links{p}
+			link_with(p)
+			set_include_path(true, p)
+		end
+		for ii = 1, #plugin_headeronly_deps do
+			p = plugin_headeronly_deps[ii]
+			set_include_path(false, p)
+		end
+		for ii = 1, #thirdparty_headeronly_deps do
+			p = thirdparty_headeronly_deps[ii]
 			set_include_path(true, p)
 		end
 

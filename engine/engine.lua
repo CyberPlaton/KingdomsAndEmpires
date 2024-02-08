@@ -5,9 +5,10 @@ function engine()
 		{}, -- build_options
 		{}, -- define_flags
 		{"plugin_logging"}, -- plugin_deps
-		{"rttr", "Lua", "LuaBridge", "rapidjson", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "core", "mimalloc", "raylib", "flecs", "argparse"}, -- thirdparty_deps
+		{"rttr", "Lua", "EASTL", "spdlog", "core", "mimalloc", "raylib", "flecs"}, -- thirdparty_deps
 		"c++",
-		{}, {}, -- thirdparty_headeronly_deps, plugin_headeronly_deps
+		{}, -- plugin_headeronly_deps
+		{"rapidjson", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge"}, -- thirdparty_headeronly_deps
 		{"src/physics"}) -- additional_includes
 end
 engine()

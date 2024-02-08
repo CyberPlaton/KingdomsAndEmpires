@@ -1,9 +1,9 @@
 include (path.join(SCRIPTS_DIR, "utility.lua"))
 
 function raylib()
-	project("raylib")
+	project("raylib_project")
 		language ("c")
-		location (path.join(".project", "raylib"))
+		location (path.join(".project", "raylib_project"))
 
 		kind ("None")
 

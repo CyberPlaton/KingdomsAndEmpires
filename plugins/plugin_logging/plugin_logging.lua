@@ -5,7 +5,10 @@ function plugin_logging()
 					{},
 					{},
 					{},
-					{"rapidjson", "rttr", "glm", "EASTL", "magic_enum", "taskflow", "spdlog", "core", "mimalloc"},
-					{})
+					{"rttr", "EASTL", "spdlog", "core", "mimalloc"},
+					{},
+					{"rapidjson", "glm", "magic_enum", "taskflow", "argparse"},
+					{},
+					false)
 end
 plugin_logging()

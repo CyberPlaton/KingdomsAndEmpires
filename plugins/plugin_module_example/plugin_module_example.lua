@@ -5,7 +5,9 @@ function plugin_module_example()
 					{},
 					{},
 					{"plugin_logging", "test", "test2"},
-					{"rapidjson", "rttr", "glm", "EASTL", "magic_enum", "taskflow", "raylib", "spdlog", "core", "mimalloc", "flecs", "argparse"},
+					{"rttr", "EASTL", "raylib", "spdlog", "core", "mimalloc", "flecs"},
+					{},
+					{"rapidjson", "magic_enum", "taskflow", "argparse", "glm"},
 					{},
 					true)
 end

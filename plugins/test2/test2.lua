@@ -7,6 +7,8 @@ function test2()
 					{},
 					{},
 					{},
+					{},
+					{},
 					false)
 end
 test2()
