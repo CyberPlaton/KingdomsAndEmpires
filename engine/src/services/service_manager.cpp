@@ -3,10 +3,21 @@
 
 namespace engine
 {
-// 	handle_type_t cservice_manager::s_service_count = 0;
-// 	service_type_t cservice_manager::s_next_type = 0;
-// 	umap_t<size_t, service_type_t > cservice_manager::s_service_types;
-// 	array_t< ptr_t<cservice >, detail::iservice::C_SERVICE_COUNT_MAX> cservice_manager::s_services;
+	namespace
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		const ref_t<cservice>& get_base_service(const rttr::variant& var)
+		{
+			return var.get_value<ref_t<cservice>>();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		ref_t<cservice>& get_base_service(rttr::variant& var)
+		{
+			return var.get_value<ref_t<cservice>>();
+		}
+
+	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cservice_manager::init()
@@ -15,7 +26,7 @@ namespace engine
 		{
 			auto& var = s_services[i];
 
-			auto& service = var.get_value<ref_t<cservice>>();
+			auto& service = get_base_service(var);
 
 			if (!service->on_start())
 			{
@@ -30,9 +41,10 @@ namespace engine
 		for (auto i = 0; i < s_service_count; ++i)
 		{
 			auto& var = s_services[i];
-			auto& service = var.get_value<cservice>();
 
-			service.on_shutdown();
+			auto& service = get_base_service(var);
+
+			service->on_shutdown();
 			var.clear();
 		}
 	}
@@ -43,9 +55,10 @@ namespace engine
 		for (auto i = 0; i < s_service_count; ++i)
 		{
 			auto& var = s_services[i];
-			auto& service = var.get_value<cservice>();
 
-			service.on_update(dt);
+			auto& service = get_base_service(var);
+
+			service->on_update(dt);
 		}
 	}
 
@@ -54,8 +67,6 @@ namespace engine
 	{
 		if (service_type.is_valid())
 		{
-			auto id = SCAST(service_type_t, service_type.get_id());
-
 			auto var = service_type.create({});
 
 			if (var.is_valid())
