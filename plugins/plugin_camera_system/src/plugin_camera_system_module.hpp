@@ -18,7 +18,7 @@ namespace camera_system
 // 		template< class T >
 // 		T* push_camera(const string_t& name);
 // 		void pop_camera(const string_t& name);
-// 		void set_default_camera(const string_t& name);
+		void set_default_camera(const string_t& name) {}
 // 		template< class T >
 // 		void set_default_camera(const string_t& name);
 // 		void set_camera_active(const string_t& name);
@@ -53,9 +53,6 @@ namespace camera_system
 	{
 		rttr::registration::class_<ccamera_manager>("ccamera_manager")
 			.constructor<>()
-// 			.method("on_start", &ccamera_manager::on_start)
-// 			.method("on_shutdown", &ccamera_manager::on_shutdown)
-// 			.method("on_update", &ccamera_manager::on_update)
 			;
 	}
 

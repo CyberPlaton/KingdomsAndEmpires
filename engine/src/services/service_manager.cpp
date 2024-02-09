@@ -6,13 +6,13 @@ namespace engine
 	namespace
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		const ref_t<cservice>& get_base_service(const rttr::variant& var)
+		inline const ref_t<cservice>& get_base_service(const rttr::variant& var)
 		{
 			return var.get_value<ref_t<cservice>>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		ref_t<cservice>& get_base_service(rttr::variant& var)
+		inline ref_t<cservice>& get_base_service(rttr::variant& var)
 		{
 			return var.get_value<ref_t<cservice>>();
 		}
@@ -24,13 +24,11 @@ namespace engine
 	{
 		for (auto i = 0; i < s_service_count; ++i)
 		{
-			auto& var = s_services[i];
-
-			auto& service = get_base_service(var);
+			auto& service = get_base_service(s_services[i]);
 
 			if (!service->on_start())
 			{
-				logging::log_error(fmt::format("Failed starting service '{}'", var.get_type().get_name().data()));
+				logging::log_error(fmt::format("Failed starting service '{}'", s_services[i].get_type().get_name().data()));
 			}
 		}
 	}
@@ -40,12 +38,10 @@ namespace engine
 	{
 		for (auto i = 0; i < s_service_count; ++i)
 		{
-			auto& var = s_services[i];
-
-			auto& service = get_base_service(var);
+			auto& service = get_base_service(s_services[i]);
 
 			service->on_shutdown();
-			var.clear();
+			s_services[i].clear();
 		}
 	}
 
@@ -54,9 +50,7 @@ namespace engine
 	{
 		for (auto i = 0; i < s_service_count; ++i)
 		{
-			auto& var = s_services[i];
-
-			auto& service = get_base_service(var);
+			auto& service = get_base_service(s_services[i]);
 
 			service->on_update(dt);
 		}
@@ -76,6 +70,11 @@ namespace engine
 				s_service_count++;
 
 				return true;
+			} 
+			else
+			{
+				logging::log_error(fmt::format("\tFailed constructing service '{}'. Did you register a default constructor?",
+					service_type.get_name().data()));
 			}
 		}
 		return false;
