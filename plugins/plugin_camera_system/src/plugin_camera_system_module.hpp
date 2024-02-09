@@ -8,10 +8,7 @@ namespace camera_system
 	class ccamera_manager : public engine::cservice
 	{
 	public:
-		ccamera_manager(engine::service_type_t type) :
-			engine::cservice(type, engine::service_start_phase_init)
-		{
-		}
+		ccamera_manager() = default;
 		~ccamera_manager() = default;
 
 		bool on_start() override final{return true;}
@@ -55,10 +52,10 @@ namespace camera_system
 	REFLECT_INLINE(ccamera_manager)
 	{
 		rttr::registration::class_<ccamera_manager>("ccamera_manager")
-			.constructor<engine::service_type_t>()
-			.method("on_start", &ccamera_manager::on_start)
-			.method("on_shutdown", &ccamera_manager::on_shutdown)
-			.method("on_update", &ccamera_manager::on_update)
+			.constructor<>()
+// 			.method("on_start", &ccamera_manager::on_start)
+// 			.method("on_shutdown", &ccamera_manager::on_shutdown)
+// 			.method("on_update", &ccamera_manager::on_update)
 			;
 	}
 

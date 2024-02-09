@@ -14,6 +14,7 @@ namespace engine
 		engine_run_result_ok = 0,
 		engine_run_result_failed_parsing_arguments,
 		engine_run_result_failed_starting_spritemancer,
+		engine_run_result_failed_registering_services,
 		engine_run_result_fail = 255,
 	};
 
@@ -26,7 +27,10 @@ namespace engine
 	public:
 		struct sconfig
 		{
+			cservice_manager::sconfig m_service_cfg;
 			sm::cwindow::sconfig m_window_cfg;
+
+			RTTR_ENABLE();
 		};
 
 	public:
@@ -46,5 +50,18 @@ namespace engine
 		void handle_arguments(argparse::ArgumentParser& args, int argc, char* argv[]);
 		void register_services(argparse::ArgumentParser& args);
 	};
+
+} //- engine
+
+namespace engine
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cengine::sconfig)
+	{
+		rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
+			.property("m_service_cfg", &cengine::sconfig::m_service_cfg)
+			.property("m_window_cfg", &cengine::sconfig::m_window_cfg)
+			;
+	}
 
 } //- engine

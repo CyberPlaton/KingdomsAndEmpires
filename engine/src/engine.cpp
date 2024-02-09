@@ -32,6 +32,8 @@ namespace engine
 	{
 		m_result = engine_run_result_ok;
 
+		m_config = std::move(cfg);
+
 		//- parse arguments and configure self
 		argparse::ArgumentParser args;
 
@@ -44,13 +46,13 @@ namespace engine
 		{
 			register_services(args);
 
-			if (!sm::init(cfg.m_window_cfg))
+			//- default service init
+			cservice_manager::init();
+
+			if (!sm::init(m_config.m_window_cfg))
 			{
 				m_result = engine_run_result_failed_starting_spritemancer;
 			}
-
-			//- default service init
-			cservice_manager::init(service_start_phase_init);
 		}
 
 		return m_result;
@@ -63,9 +65,6 @@ namespace engine
 		{
 			return m_result;
 		}
-
-		//- post-init service start up
-		cservice_manager::init(service_start_phase_post_init);
 
 		//- enter engine main loop
 		while (!raylib::WindowShouldClose())
@@ -120,9 +119,22 @@ namespace engine
 		}
 
 		//- register common engine services
+		for (const auto& name : m_config.m_service_cfg.m_services)
+		{
+			auto type = rttr::type::get_by_name(name);
 
-		//- pre-init services
-		cservice_manager::init(service_start_phase_pre_init);
+			if (type.is_valid() && cservice_manager::emplace(type))
+			{
+				logging::log_info(fmt::format("Registered service: '{}'", type.get_name().data()));
+			}
+			else
+			{
+				logging::log_critical(fmt::format("Failed registering service: '{}'", type.get_name().data()));
+
+				//- fail configuration but let all try to register so we know all that are bugous
+				m_result = engine_run_result_failed_registering_services;
+			}
+		}
 	}
 
 } //- engine

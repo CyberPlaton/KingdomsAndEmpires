@@ -23,10 +23,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	engine::cengine::sconfig cfg;
+
+	//- service registration can be done from json file
+	cfg.m_service_cfg.m_services.emplace_back(rttr::type::get<camera_system::ccamera_manager>().get_name().data());
+
 	cfg.m_window_cfg.m_title = "Kingdoms & Empires";
 	cfg.m_window_cfg.m_width = 720;
 	cfg.m_window_cfg.m_height = 648;
 	cfg.m_window_cfg.m_target_fps = 60;
+
+	auto cfg_json = io::to_json(cfg);
+
+	logging::log_info(fmt::format("cengine::sconfig: '{}'", cfg_json));
+
 
 	if (engine::cengine::instance().configure(cfg) == engine::engine_run_result_ok)
 	{

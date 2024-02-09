@@ -7,64 +7,21 @@ namespace engine
 
 	using service_type_t = handle_type_t;
 
-	//------------------------------------------------------------------------------------------------------------------------
-	enum service_start_phase : uint8_t
-	{
-		service_start_phase_none = 0,
-		service_start_phase_pre_init,	//- init 'directly' after registration
-		service_start_phase_init,		//- init after normal init was done
-		service_start_phase_post_init,	//- init before entering run loop
-	};
-
-	namespace detail
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		class iservice
-		{
-		public:
-			inline static const service_type_t C_INVALID_TYPE = invalid_handle_t;
-			inline static const unsigned C_SERVICE_COUNT_MAX = 64;
-
-			explicit iservice(service_type_t type, service_start_phase start_phase = service_start_phase_init) :
-				m_type(type), m_start_phase(start_phase)
-			{
-			}
-			virtual ~iservice() = default;
-
-			virtual bool on_start() = 0;
-			virtual void on_shutdown() = 0;
-			virtual void on_update(float) = 0;
-
-			inline service_type_t type() const {return m_type;}
-			inline service_start_phase phase() const {return m_start_phase;}
-
-		private:
-			const service_type_t m_type;
-			const service_start_phase m_start_phase;
-		};
-
-	} //- detail
-
 	//- base class for a service
 	//------------------------------------------------------------------------------------------------------------------------
-	class cservice : public detail::iservice
+	class cservice
 	{
 		friend class cservice_manager;
 	public:
+		inline static const service_type_t C_INVALID_TYPE = invalid_handle_t;
+		inline static const unsigned C_SERVICE_COUNT_MAX = 64;
+
+		cservice() = default;
 		virtual ~cservice() = default;
 
 		virtual bool on_start() {return false;}
 		virtual void on_shutdown() {}
 		virtual void on_update(float) {}
-
-	protected:
-		cservice(service_type_t type, service_start_phase start_phase = service_start_phase_init) :
-			detail::iservice(type, start_phase)
-		{
-		}
-
-	private:
-		cservice() = default;
 
 		RTTR_ENABLE();
 		REFLECTABLE();
@@ -74,21 +31,30 @@ namespace engine
 	class cservice_manager
 	{
 	public:
-		static void init(service_start_phase start_phase);
+		struct sconfig
+		{
+			vector_t<string_t> m_services;
+
+			RTTR_ENABLE();
+		};
+
+		static void init();
 		static void shutdown();
 		static void on_update(float dt);
 
 		template<class TService>
-		static TService* modify();
+		static TService& modify();
 
 		template<class TService>
-		static const TService* find();
+		static const TService& find();
 
 		template<class TService>
-		static TService* emplace();
+		static TService& emplace();
 
 		template<class TService, typename... ARGS>
-		static TService* emplace(ARGS&&... args);
+		static TService& emplace(ARGS&&... args);
+
+		static bool emplace(rttr::type service_type);
 
 		template<class TService>
 		static void release();
@@ -97,12 +63,12 @@ namespace engine
 		inline static handle_type_t s_service_count = 0;
 		inline static service_type_t s_next_type = 0;
 		inline static umap_t<size_t, service_type_t> s_service_types;
-		inline static array_t<ptr_t<cservice>, detail::iservice::C_SERVICE_COUNT_MAX> s_services;
+		inline static array_t<rttr::variant, cservice::C_SERVICE_COUNT_MAX> s_services;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TService>
-	TService* cservice_manager::modify()
+	TService& cservice_manager::modify()
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
 
@@ -110,14 +76,14 @@ namespace engine
 
 		if (s_service_types.find(id) != s_service_types.end())
 		{
-			return reinterpret_cast<TService*>(s_services[s_service_types[id]].get());
+			return s_services[s_service_types[id]].get_value<ref_t<TService>>();
 		}
-		return nullptr;
+		ASSERT(false, "Invalid operation. Service does not exist");
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TService>
-	const TService* cservice_manager::find()
+	const TService& cservice_manager::find()
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
 
@@ -125,9 +91,9 @@ namespace engine
 
 		if (s_service_types.find(id) != s_service_types.end())
 		{
-			return reinterpret_cast<TService*>(s_services[s_service_types[id]].get());
+			return s_services[s_service_types[id]].get_value<ref_t<TService>>();
 		}
-		return nullptr;
+		ASSERT(false, "Invalid operation. Service does not exist");
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -141,8 +107,7 @@ namespace engine
 		if (s_service_types.find(id) != s_service_types.end())
 		{
 			const auto t = s_service_types[id];
-			s_services[t].reset();
-			s_services[t] = nullptr;
+			s_services[t].clear();
 			s_service_types.erase(id);
 			s_service_count = s_service_count - 1 < 0 ? 0 : s_service_count - 1;
 		}
@@ -150,7 +115,7 @@ namespace engine
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TService>
-	TService* cservice_manager::emplace()
+	TService& cservice_manager::emplace()
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
 
@@ -159,17 +124,17 @@ namespace engine
 			auto id = rttr::type::get<TService>().get_id();
 
 			auto t = s_next_type++;
-			s_services[t] = std::move(std::make_unique<TService>(t));
+			s_services[t] = TService(t);
 			s_service_types[id] = t;
 			s_service_count++;
-			return reinterpret_cast<TService*>(s_services[t].get());
+			return s_services[t].get_value<ref_t<TService>>();
 		}
-		return nullptr;
+		ASSERT(false, "Invalid operation. Service does not exist");
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template< class TService, typename... ARGS>
-	TService* cservice_manager::emplace(ARGS&&... args)
+	TService& cservice_manager::emplace(ARGS&&... args)
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
 
@@ -178,12 +143,12 @@ namespace engine
 			auto id = rttr::type::get<TService>().get_id();
 
 			auto t = s_next_type++;
-			s_services[t] = std::move(std::make_unique<TService>(t, args...));
+			s_services[t] = TService(t, args...);
 			s_service_types[id] = t;
 			s_service_count++;
-			return reinterpret_cast<TService*>(s_services[t].get());
+			return s_services[t].get_value<ref_t<TService>>();
 		}
-		return nullptr;
+		ASSERT(false, "Invalid operation. Service does not exist");
 	}
 
 } //- engine
@@ -194,7 +159,18 @@ namespace engine
 	REFLECT_INLINE(cservice)
 	{
 		rttr::registration::class_<cservice>("cservice")
-			.constructor<service_type_t, service_start_phase>()
+			.constructor<>()
+			.method("on_start", &cservice::on_start)
+			.method("on_shutdown", &cservice::on_shutdown)
+			.method("on_update", &cservice::on_update)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cservice_manager::sconfig)
+	{
+		rttr::registration::class_<cservice_manager::sconfig>("cservice_manager::sconfig")
+			.property("m_services", &cservice_manager::sconfig::m_services)
 			;
 	}
 

@@ -125,6 +125,8 @@ namespace sm
 			unsigned m_height;
 			unsigned m_target_fps;
 			int m_flags;
+
+			RTTR_ENABLE();
 		};
 
 		static ivec2_t dimension_for_resolution(window_resolution resolution);
@@ -329,3 +331,21 @@ namespace raylib
 // 	Image LoadQOIImageFromMemory(void* image_data, u32 image_size);
 
 } //- raylib
+
+namespace sm
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cwindow::sconfig)
+	{
+		rttr::registration::class_<cwindow::sconfig>("cwindow::sconfig")
+			.property("m_title", &cwindow::sconfig::m_title)
+			.property("m_window_icon_path", &cwindow::sconfig::m_window_icon_path)
+			.property("m_resolution", &cwindow::sconfig::m_resolution)
+			.property("m_width", &cwindow::sconfig::m_width)
+			.property("m_height", &cwindow::sconfig::m_height)
+			.property("m_target_fps", &cwindow::sconfig::m_target_fps)
+			.property("m_flags", &cwindow::sconfig::m_flags)
+			;
+	}
+
+} //- sm
