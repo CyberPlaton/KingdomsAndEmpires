@@ -331,8 +331,9 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		end
 
 		if PLATFORM == "windows" then
-			links{"gdi32.lib", "ws2_32.lib", "kernel32.lib", "opengl32.lib", "psapi.lib", "winmm.lib"}
+			links{"gdi32.lib", "ws2_32.lib", "kernel32.lib", "opengl32.lib", "psapi.lib", "winmm.lib", path.join(VENDOR_DIR, "raylib.lib")}
 		elseif PLATFORM == "linux" then
+			links{path.join(VENDOR_DIR, "libraylib.a")}
 		else
 		end
 
