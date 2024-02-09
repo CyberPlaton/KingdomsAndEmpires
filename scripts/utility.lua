@@ -274,6 +274,8 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 			link_with_engine()
 		end
 
+		defines{name.. "_EXPORTS"}
+
 		filter{"configurations:debug"}
 			symbols "On"
 			optimize "Off"

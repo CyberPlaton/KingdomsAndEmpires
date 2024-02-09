@@ -3,10 +3,10 @@
 
 namespace engine
 {
-	handle_type_t cservice_manager::s_service_count = 0;
-	service_type_t cservice_manager::s_next_type = 0;
-	umap_t<unsigned, service_type_t > cservice_manager::s_service_types;
-	array_t< ptr_t<cservice >, detail::iservice::C_SERVICE_COUNT_MAX> cservice_manager::s_services;
+// 	handle_type_t cservice_manager::s_service_count = 0;
+// 	service_type_t cservice_manager::s_next_type = 0;
+// 	umap_t<size_t, service_type_t > cservice_manager::s_service_types;
+// 	array_t< ptr_t<cservice >, detail::iservice::C_SERVICE_COUNT_MAX> cservice_manager::s_services;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cservice_manager::init(service_start_phase start_phase)

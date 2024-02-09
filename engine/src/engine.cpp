@@ -98,7 +98,10 @@ namespace engine
 		//- argparse throws on errorss
 		try
 		{
-			args.parse_args(argc, argv);
+			if (argc > 0 && argv)
+			{
+				args.parse_args(argc, argv);
+			}
 		}
 		catch (const std::runtime_error& err)
 		{

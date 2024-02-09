@@ -53,6 +53,7 @@ namespace engine
 	public:
 		virtual ~cservice() = default;
 
+		virtual bool on_start() {return false;}
 		virtual void on_shutdown() {}
 		virtual void on_update(float) {}
 
@@ -64,6 +65,9 @@ namespace engine
 
 	private:
 		cservice() = default;
+
+		RTTR_ENABLE();
+		REFLECTABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -90,10 +94,10 @@ namespace engine
 		static void release();
 
 	private:
-		static handle_type_t s_service_count;
-		static service_type_t s_next_type;
-		static umap_t<unsigned, service_type_t> s_service_types;
-		static array_t<ptr_t<cservice>, detail::iservice::C_SERVICE_COUNT_MAX> s_services;
+		inline static handle_type_t s_service_count = 0;
+		inline static service_type_t s_next_type = 0;
+		inline static umap_t<size_t, service_type_t> s_service_types;
+		inline static array_t<ptr_t<cservice>, detail::iservice::C_SERVICE_COUNT_MAX> s_services;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -102,9 +106,11 @@ namespace engine
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
 
-		if (s_service_types.find(typeid(TService).hash_code()) != s_service_types.end())
+		auto id = rttr::type::get<TService>().get_id();
+
+		if (s_service_types.find(id) != s_service_types.end())
 		{
-			return reinterpret_cast<TService*>(s_services[s_service_types[typeid(TService).hash_code()]].get());
+			return reinterpret_cast<TService*>(s_services[s_service_types[id]].get());
 		}
 		return nullptr;
 	}
@@ -115,9 +121,11 @@ namespace engine
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
 
-		if (s_service_types.find(typeid(TService).hash_code()) != s_service_types.end())
+		auto id = rttr::type::get<TService>().get_id();
+
+		if (s_service_types.find(id) != s_service_types.end())
 		{
-			return reinterpret_cast<TService*>(s_services[s_service_types[typeid(TService).hash_code()]].get());
+			return reinterpret_cast<TService*>(s_services[s_service_types[id]].get());
 		}
 		return nullptr;
 	}
@@ -128,12 +136,14 @@ namespace engine
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
 
-		if (s_service_types.find(typeid(TService).hash_code()) != s_service_types.end())
+		auto id = rttr::type::get<TService>().get_id();
+
+		if (s_service_types.find(id) != s_service_types.end())
 		{
-			const auto t = s_service_types[typeid(TService).hash_code()];
+			const auto t = s_service_types[id];
 			s_services[t].reset();
 			s_services[t] = nullptr;
-			s_service_types.erase(typeid(TService).hash_code());
+			s_service_types.erase(id);
 			s_service_count = s_service_count - 1 < 0 ? 0 : s_service_count - 1;
 		}
 	}
@@ -143,11 +153,14 @@ namespace engine
 	TService* cservice_manager::emplace()
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
+
 		if (s_next_type < detail::iservice::C_SERVICE_COUNT_MAX)
 		{
+			auto id = rttr::type::get<TService>().get_id();
+
 			auto t = s_next_type++;
 			s_services[t] = std::move(std::make_unique<TService>(t));
-			s_service_types[typeid(TService).hash_code()] = t;
+			s_service_types[id] = t;
 			s_service_count++;
 			return reinterpret_cast<TService*>(s_services[t].get());
 		}
@@ -159,15 +172,30 @@ namespace engine
 	TService* cservice_manager::emplace(ARGS&&... args)
 	{
 		static_assert(std::is_base_of<cservice, TService>::value, "TService is required to be derived from cservice");
+
 		if (s_next_type < detail::iservice::C_SERVICE_COUNT_MAX)
 		{
+			auto id = rttr::type::get<TService>().get_id();
+
 			auto t = s_next_type++;
 			s_services[t] = std::move(std::make_unique<TService>(t, args...));
-			s_service_types[typeid(TService).hash_code()] = t;
+			s_service_types[id] = t;
 			s_service_count++;
 			return reinterpret_cast<TService*>(s_services[t].get());
 		}
 		return nullptr;
+	}
+
+} //- engine
+
+namespace engine
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cservice)
+	{
+		rttr::registration::class_<cservice>("cservice")
+			.constructor<service_type_t, service_start_phase>()
+			;
 	}
 
 } //- engine

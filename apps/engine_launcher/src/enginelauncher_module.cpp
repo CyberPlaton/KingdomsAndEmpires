@@ -16,6 +16,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
 
+	logging::log_debug("Registered rttr types");
+	for (auto type : rttr::type::get_types())
+	{
+		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
+	}
+
 	engine::cengine::sconfig cfg;
 	cfg.m_window_cfg.m_title = "Kingdoms & Empires";
 	cfg.m_window_cfg.m_width = 720;
@@ -46,12 +52,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	logging::log_info(fmt::format("Type itech valid: '{}'", rttr::type::get_by_name("itech").is_valid() ? "True" : "False"));
 	logging::log_info(fmt::format("Type sskills valid: '{}'", rttr::type::get_by_name("sskills").is_valid() ? "True" : "False"));
-
-	logging::log_debug("Registered rttr types");
-	for (auto type : rttr::type::get_types())
-	{
-		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
-	}
 
 	auto skills_type = rttr::type::get_by_name("sskills");
 	logging::log_info("kingdoms::sskills properties:");
