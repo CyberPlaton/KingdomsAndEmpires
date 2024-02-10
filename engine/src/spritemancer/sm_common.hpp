@@ -313,7 +313,9 @@ namespace sm
 	class icamera_manager : public core::cservice
 	{
 	public:
-		virtual ccamera* get_active() const { ASSERT(false, "Invalid operation. Using icamera_manager interface  function"); return nullptr; };
+		virtual ccamera* active_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
+		virtual ccamera* default_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
+		virtual bool has_active_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return false; }
 
 		RTTR_ENABLE(core::cservice);
 	};
@@ -365,7 +367,8 @@ namespace sm
 			(
 				rttr::policy::ctor::as_raw_ptr
 			)
-			.method("get_active", &icamera_manager::get_active)
+			.method("active_camera", &icamera_manager::active_camera)
+			.method("default_camera", &icamera_manager::default_camera)
 			;
 	}
 

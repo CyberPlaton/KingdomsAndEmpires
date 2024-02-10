@@ -22,13 +22,37 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
 	}
 
-	auto type = rttr::type::get_by_name("cmy_third_module");
+	auto type = rttr::type::get_by_name("chuman_race_module");
 
 	flecs::world world;
 
 	auto var = type.create({world});
 
+	auto human_prefab = world.lookup(races::C_HUMAN_CITIZEN_PREFAB_NAME);
 
+	auto inst = world.entity("Walther").is_a(human_prefab);
+
+	auto* prefab = human_prefab.get_mut<races::shuman>();
+	auto* walther = inst.get_mut<races::shuman>();
+
+	logging::log_warn(fmt::format("Prefab Light Armor '{}'", prefab->m_skills.m_light_armor));
+	logging::log_warn(fmt::format("Walther Light Armor '{}'", walther->m_skills.m_light_armor));
+	logging::log_warn("\tchanging Walthers skill level...");
+
+	walther->m_skills.m_light_armor = 50;
+
+	logging::log_warn(fmt::format("Prefab Light Armor '{}'", prefab->m_skills.m_light_armor));
+	logging::log_warn(fmt::format("Walther Light Armor '{}'", walther->m_skills.m_light_armor));
+
+	logging::log_warn("\tchanging prefabs skill level and creating another human instance...");
+	prefab->m_skills.m_light_armor = 30;
+
+	auto sec_inst = world.entity("Manfred").is_a(human_prefab);
+	auto* manfred = sec_inst.get_mut<races::shuman>();
+
+	logging::log_warn(fmt::format("Prefab Light Armor '{}'", prefab->m_skills.m_light_armor));
+	logging::log_warn(fmt::format("Walther Light Armor '{}'", walther->m_skills.m_light_armor));
+	logging::log_warn(fmt::format("Manfred Light Armor '{}'", manfred->m_skills.m_light_armor));
 
 
 	engine::cengine::sconfig cfg;
@@ -93,8 +117,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	//- Important! Create a new world
-	auto& inst = ecs::cworld_manager::instance();
-	inst.create("My World");
+	//auto& inst = ecs::cworld_manager::instance();
+	//inst.create("My World");
 
 	//- Get current world
 	//auto& world = inst.active();

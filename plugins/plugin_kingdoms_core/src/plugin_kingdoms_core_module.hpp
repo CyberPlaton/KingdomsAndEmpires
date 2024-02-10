@@ -9,6 +9,7 @@ namespace kingdoms
 
 	using kingdom_t = handle_type_t;
 	using technology_t = handle_type_t;
+	using unit_level_t = handle_type_t;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum building_slot_type : uint8_t
@@ -85,6 +86,10 @@ namespace kingdoms
 	struct sattributes : ecs::icomponent
 	{
 		static constexpr unsigned C_ATTRIBUTE_VALUE_MAX = 100;
+		static constexpr unsigned C_MAJOR_DEVIATION_NEG = 10;
+		static constexpr unsigned C_MAJOR_DEVIATION_POS = 10;
+		static constexpr unsigned C_MINOR_DEVIATION_NEG = 5;
+		static constexpr unsigned C_MINOR_DEVIATION_POS = 5;
 
 		DECLARE_COMPONENT(sattributes);
 
@@ -119,6 +124,10 @@ namespace kingdoms
 	struct sskills : ecs::icomponent
 	{
 		static constexpr unsigned C_SKILL_VALUE_MAX = 100;
+		static constexpr unsigned C_MAJOR_DEVIATION_NEG = 10;
+		static constexpr unsigned C_MAJOR_DEVIATION_POS = 10;
+		static constexpr unsigned C_MINOR_DEVIATION_NEG = 5;
+		static constexpr unsigned C_MINOR_DEVIATION_POS = 5;
 
 		DECLARE_COMPONENT(sskills);
 
@@ -147,6 +156,29 @@ namespace kingdoms
 		unsigned m_enchantment = 0;
 		unsigned m_mysticism = 0;
 		unsigned m_restoration = 0;
+
+		RTTR_ENABLE(ecs::icomponent);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct irace : ecs::icomponent
+	{
+		DECLARE_COMPONENT(irace);
+
+		sattributes m_attributes;
+		sskills m_skills;
+		sderived_attributes m_derived_attributes;
+
+		RTTR_ENABLE(ecs::icomponent);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct iunit : ecs::icomponent
+	{
+		DECLARE_COMPONENT(irace);
+
+		kingdom_race m_race = kingdom_race_none;
+		birthsign_type m_birthsign = birthsign_type_none;
 
 		RTTR_ENABLE(ecs::icomponent);
 	};
@@ -490,6 +522,16 @@ namespace kingdoms
 			(
 				metadata(C_DISPLAY_NAME_PROP, "Restoration")
 			)
+			;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(irace)
+	{
+		rttr::registration::class_<irace>("irace")
+			.property("m_attributes", &irace::m_attributes)
+			.property("m_skills", &irace::m_skills)
+			.property("m_derived_attributes", &irace::m_derived_attributes)
 			;
 	};
 

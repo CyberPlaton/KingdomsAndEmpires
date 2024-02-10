@@ -881,6 +881,12 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	int crandom::random_deviation(int value, int negative, int positive)
+	{
+		return in_range_int(value - negative, value + positive);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	float crandom::random_float()
 	{
 		return SCAST(float, m_distribution(C_RANDOM_ENGINE));

@@ -31,6 +31,15 @@ namespace engine
 			auto* service = get_base_service(s_services[i]);
 
 			service->on_shutdown();
+
+			//- delete underlying raw pointers
+			auto type = s_services[i].get_type();
+
+			if (type.is_pointer())
+			{
+				type.destroy(s_services[i]);
+			}
+
 			s_services[i].clear();
 		}
 	}

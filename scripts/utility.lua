@@ -1,5 +1,7 @@
 ------------------------------------------------------------------------------------------------------------------------
 function set_basic_defines()
+	filter{"system:windows"}
+		buildoptions{"/bigobj"}
 	filter{"configurations:debug"}
 		defines{"DEBUG=1"}
 	filter{"configurations:release"}

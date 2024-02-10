@@ -1,5 +1,6 @@
 #pragma once
 #include <engine.h>
+#include <plugin_logging.h>
 
 namespace camera_system
 {
@@ -8,41 +9,58 @@ namespace camera_system
 	class ccamera_manager : public sm::icamera_manager
 	{
 	public:
-		ccamera_manager() = default;
+		ccamera_manager();
 		~ccamera_manager() = default;
 
 		bool on_start() override final{return true;}
 		void on_shutdown() override final {}
 		void on_update(float dt) override final {}
-		
-// 		template< class T >
-// 		T* push_camera(const string_t& name);
-// 		void pop_camera(const string_t& name);
-		void set_default_camera(const string_t& name) {}
-// 		template< class T >
-// 		void set_default_camera(const string_t& name);
-// 		void set_camera_active(const string_t& name);
-// 		bool is_camera_active(const string_t& name);
-		sm::ccamera* get_active() const override final {return nullptr;}
-// 		sm::ccamera* get_default() const;
-// 		sm::ccamera* find(const string_t& name) const;
-// 		template< class T >
-// 		T* find_as(const string_t& name) const;
-// 		template< class T >
-// 		T* get_active_as() const;
-// 		template< class T >
-// 		T* get_default_as() const;
-// 		bool has_default_camera() const;
-// 		bool has_active_camera() const;
+
+		template <class TCamera>
+		TCamera* push(stringview_t name, bool set_active = false);
+
+		void pop(stringview_t name);
+
+		sm::ccamera* default_camera() const override final;
+
+		sm::ccamera* active_camera() const override final;
+
+		bool has_active_camera() const override final;
 
 	private:
-		//umap_t<unsigned, ptr_t<sm::ccamera> > m_cameras;
-		unsigned m_default_camera = 0;
+		umap_t<unsigned, ptr_t<sm::ccamera>> m_cameras;
+		ptr_t<sm::ccamera> m_default;
 		unsigned m_active_camera = 0;
 
 		RTTR_ENABLE(sm::icamera_manager);
 		REFLECTABLE();
 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template <class TCamera>
+	TCamera* camera_system::ccamera_manager::push(stringview_t name, bool set_active /*= false*/)
+	{
+		auto h = algorithm::hash(name);
+
+		if (m_cameras.find(h) == m_cameras.end())
+		{
+			m_cameras[h] = std::make_unique<TCamera>();
+
+			if (set_active)
+			{
+				m_active_camera = h;
+			}
+
+			return reinterpret_cast<TCamera*>(m_cameras.at(h).get());
+		}
+		else
+		{
+			logging::log_warn(fmt::format("Trying to push a camera of type '{}' with existing name '{}'",
+				rttr::type::get<TCamera>().get_name().data(), name));
+		}
+		ASSERT(false, "Failed pushing camera");
+		return nullptr;
+	}
 
 } //- camera_system
 

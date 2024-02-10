@@ -106,12 +106,15 @@ namespace engine
 			cservice_manager::on_update(0.016f);
 
 			const auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
+			auto* camera = camera_manager->has_active_camera() ? camera_manager->active_camera() : camera_manager->default_camera();
 
-			sm::begin_drawing(camera_manager->get_active());
+			sm::begin_drawing(camera);
 
 			sm::end_frame();
 
 			sm::ui_frame();
+
+			ImGui::ShowDemoWindow();
 
 			sm::end_ui_frame();
 

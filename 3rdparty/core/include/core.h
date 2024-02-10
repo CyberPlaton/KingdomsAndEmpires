@@ -475,6 +475,10 @@ namespace core
 
 		static void seed(unsigned value = 0);
 
+		//- retrieve a random number deviating in range of given value by plus a positive amount or
+		//- by minus a negative amount
+		int random_deviation(int value, int negative, int positive);
+
 		float random_float();
 		unsigned random_int();
 		float alternate_one_float();

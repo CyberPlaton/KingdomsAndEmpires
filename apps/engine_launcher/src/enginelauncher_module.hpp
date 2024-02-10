@@ -4,5 +4,6 @@
 #include <plugin_module_example.h>
 #include <plugin_kingdoms_core.h>
 #include <plugin_camera_system.h>
+#include <plugin_race_human.h>
 #include <lua.h>
 #include <luabridge.h>
