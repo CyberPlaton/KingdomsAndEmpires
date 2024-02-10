@@ -22,6 +22,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
 	}
 
+	auto* manager = engine::cservice_manager::emplace<camera_system::ccamera_manager>();
+
+	auto* retrieve = engine::cservice_manager::find<camera_system::ccamera_manager>();
+
+	engine::cservice_manager::release<camera_system::ccamera_manager>();
+
+	auto* deleted = engine::cservice_manager::find<camera_system::ccamera_manager>();
+
 	engine::cengine::sconfig cfg;
 
 	//- service registration can be done from json file

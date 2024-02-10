@@ -56,9 +56,16 @@ namespace engine
 
 		if (s_service_types.find(id) != s_service_types.end())
 		{
-			return reinterpret_cast<TService*>(get_base_service(s_services[s_service_types[id]]));
+			auto& var = s_services[s_service_types[id]];
+
+			ASSERT(var.is_valid(), "Invalid operation. Trying to retrieve a released service");
+
+			return reinterpret_cast<TService*>(get_base_service(var));
 		}
+
 		ASSERT(false, "Invalid operation. Service does not exist");
+
+		return nullptr;
 	}
 
 	//- cast to given service type without inheritance indirection.
@@ -66,13 +73,20 @@ namespace engine
 	template<class TService>
 	TService* cservice_manager::find()
 	{
-		auto id = rttr::type::get<TService>.get_id();
+		auto id = rttr::type::get<TService>().get_id();
 
 		if (s_service_types.find(id) != s_service_types.end())
 		{
-			return reinterpret_cast<TService*>(get_base_service(s_services[s_service_types[id]]));
+			auto& var = s_services[s_service_types[id]];
+
+			ASSERT(var.is_valid(), "Invalid operation. Trying to retrieve a released service");
+
+			return reinterpret_cast<TService*>(get_base_service(var));
 		}
+
 		ASSERT(false, "Invalid operation. Service does not exist");
+
+		return nullptr;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -94,7 +108,7 @@ namespace engine
 	template<class TService>
 	TService* cservice_manager::emplace()
 	{
-		if (s_next_type < cservice::C_SERVICE_COUNT_MAX)
+		if (s_next_type < core::cservice::C_SERVICE_COUNT_MAX)
 		{
 			auto type = rttr::type::get<TService>();
 			auto id = type.get_id();
@@ -103,9 +117,12 @@ namespace engine
 			s_services[t] = type.create({});
 			s_service_types[id] = t;
 			s_service_count++;
-			return get_base_service(s_services[t]);
+			return reinterpret_cast<TService*>(get_base_service(s_services[t]));
 		}
-		ASSERT(false, "Invalid operation. Service does not exist");
+
+		ASSERT(false, "Invalid operation. Maximum Service count reached, increase the count in 'core' library");
+
+		return nullptr;
 	}
 
 } //- engine
