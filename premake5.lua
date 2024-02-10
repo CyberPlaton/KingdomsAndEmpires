@@ -27,7 +27,6 @@ workspace("KingdomsAndEmpires")
 		system "linux"
 	elseif os.host() == "windows" then
 		PLATFORM = "windows"
-
 		system "windows"
 	elseif os.host() == "macosx" then
 		PLATFORM = "macosx"
