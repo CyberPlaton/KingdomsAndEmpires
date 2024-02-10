@@ -77,7 +77,9 @@ namespace engine
 
 			cservice_manager::on_update(0.016f);
 
-			sm::begin_drawing(/*camera*/ nullptr);
+			const auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
+
+			sm::begin_drawing(camera_manager->get_active());
 
 			sm::end_frame();
 

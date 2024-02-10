@@ -5,7 +5,7 @@ namespace camera_system
 {
 	//- stack-machine-kind camera manager
 	//------------------------------------------------------------------------------------------------------------------------
-	class ccamera_manager : public engine::cservice
+	class ccamera_manager : public sm::icamera_manager
 	{
 	public:
 		ccamera_manager() = default;
@@ -23,7 +23,7 @@ namespace camera_system
 // 		void set_default_camera(const string_t& name);
 // 		void set_camera_active(const string_t& name);
 // 		bool is_camera_active(const string_t& name);
-// 		sm::ccamera* get_active() const;
+		sm::ccamera* get_active() const override final {return nullptr;}
 // 		sm::ccamera* get_default() const;
 // 		sm::ccamera* find(const string_t& name) const;
 // 		template< class T >
@@ -40,7 +40,7 @@ namespace camera_system
 		unsigned m_default_camera = 0;
 		unsigned m_active_camera = 0;
 
-		RTTR_ENABLE(engine::cservice);
+		RTTR_ENABLE(sm::icamera_manager);
 		REFLECTABLE();
 	};
 
@@ -53,6 +53,9 @@ namespace camera_system
 	{
 		rttr::registration::class_<ccamera_manager>("ccamera_manager")
 			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
 			;
 	}
 

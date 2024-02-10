@@ -48,19 +48,14 @@ namespace algorithm
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned hash(stringview_t string)
 	{
-		auto len = static_cast<unsigned>(strlen(string));
+		unsigned len = SCAST(unsigned, strlen(string));
+		const char* s = string;
 		unsigned h = len;
-		for (auto i = 0u; i < len; ++string, ++i)
+		for (auto i = 0u; i < len; ++s, ++i)
 		{
-			h = ((h << 5) + h) + (*string);
+			h = ((h << 5) + h) + (*s);
 		}
 		return h;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	unsigned hash(const core::cuuid& uuid)
-	{
-		return hash(uuid.view());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -778,7 +773,6 @@ namespace core
 	cuuid::cuuid()
 	{
 		generate(std::random_device()());
-		m_hash = algorithm::hash(*this);
 		m_string = generate_string();
 	}
 
@@ -786,7 +780,6 @@ namespace core
 	cuuid::cuuid(const string_t& uuid)
 	{
 		parse_string(uuid, m_data);
-		m_hash = algorithm::hash(uuid.data());
 		m_string = generate_string();
 	}
 
@@ -794,7 +787,6 @@ namespace core
 	cuuid::cuuid(size_t seed)
 	{
 		generate(seed);
-		m_hash = algorithm::hash(*this);
 		m_string = generate_string();
 	}
 
@@ -884,7 +876,6 @@ namespace core
 	void cuuid::copy_to(cuuid& other)
 	{
 		std::memcpy(&other.m_data[0], &m_data[0], 16);
-		other.m_hash = m_hash;
 		other.m_string = other.generate_string();
 	}
 
@@ -892,7 +883,6 @@ namespace core
 	void cuuid::copy_from(const cuuid& other)
 	{
 		std::memcpy(&m_data[0], &other.m_data[0], 16);
-		m_hash = other.m_hash;
 		m_string = generate_string();
 	}
 

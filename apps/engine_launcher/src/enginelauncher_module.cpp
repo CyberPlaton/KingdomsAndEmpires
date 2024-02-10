@@ -31,6 +31,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	cfg.m_window_cfg.m_width = 720;
 	cfg.m_window_cfg.m_height = 648;
 	cfg.m_window_cfg.m_target_fps = 60;
+	cfg.m_window_cfg.m_flags = sm::window_flag_vsync | sm::window_flag_show;
 
 	auto cfg_json = io::to_json(cfg);
 

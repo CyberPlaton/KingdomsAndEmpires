@@ -85,6 +85,7 @@ using array_t = stl::array<T, S>;
 
 using handle_type_t = uint16_t;
 #define invalid_handle_t MAX(uint16_t);
+using service_type_t = handle_type_t;
 using technique_t = handle_type_t;
 using texture_t = handle_type_t;
 using uniform_t = handle_type_t;
@@ -239,7 +240,6 @@ namespace algorithm
 	void decompose_translation(const mat4_t& transform, vec3_t& out);
 	void decompose_scale(const mat4_t& transform, vec3_t& out);
 	unsigned hash(stringview_t string);
-	unsigned hash(const core::cuuid& uuid);
 	unsigned percentage(float total_value, float part_value);
 	float percent_value(unsigned p, float total_value);
 	bool is_valid_handle(handle_type_t h);
@@ -346,6 +346,12 @@ namespace io
 
 } //- io
 
+namespace engine
+{
+	class cservice_manager;
+
+} //- engine
+
 namespace core
 {
 
@@ -373,6 +379,25 @@ namespace core
 	//- define some common types of pairs
 	//------------------------------------------------------------------------------------------------------------------------
 	using smaterial_pair = spair<texture_t, material_t>;
+
+	//- base class for a service
+	//------------------------------------------------------------------------------------------------------------------------
+	class cservice
+	{
+		friend class engine::cservice_manager;
+	public:
+		inline static const service_type_t C_INVALID_TYPE = invalid_handle_t;
+		inline static const unsigned C_SERVICE_COUNT_MAX = 64;
+
+		cservice() = default;
+		virtual ~cservice() = default;
+
+		virtual bool on_start() { return false; }
+		virtual void on_shutdown() {}
+		virtual void on_update(float) {}
+
+		RTTR_ENABLE();
+	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	class casync final
@@ -408,7 +433,7 @@ namespace core
 
 		inline stringview_t view() const { return m_string.data(); }
 		inline const char* c_str() const { return m_string.c_str(); }
-		inline unsigned hash() const { return m_hash; }
+		inline unsigned hash() const { return algorithm::hash(view()); }
 		inline bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
 		inline bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
 		inline bool is_higher_as(const cuuid& uuid) const { return compare(uuid) > 0; }
@@ -416,9 +441,9 @@ namespace core
 	private:
 		inline static const auto C_RANDOM_BYTES_COUNT = 4;
 		inline static const unsigned char C_HEX[] = "0123456789abcdef";
-		array_t<unsigned char, 16u> m_data;
+
 		string_t m_string;
-		unsigned m_hash;
+		array_t<unsigned char, 16u> m_data;
 
 	private:
 		void generate(size_t seed);
@@ -760,12 +785,25 @@ namespace core
 namespace core
 {
 	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cservice)
+	{
+		rttr::registration::class_<cservice>("cservice")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			.method("on_start", &cservice::on_start)
+			.method("on_shutdown", &cservice::on_shutdown)
+			.method("on_update", &cservice::on_update)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(cuuid)
 	{
 		rttr::registration::class_<cuuid>("cuuid")
 			.property("m_data", &cuuid::m_data)
 			.property("m_string", &cuuid::m_string)
-			.property("m_hash", &cuuid::m_hash)
 			;
 	}
 

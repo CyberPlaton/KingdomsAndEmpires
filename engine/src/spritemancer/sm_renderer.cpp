@@ -230,7 +230,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	core::srect crenderer::get_subtexture(spriteatlas_t atlas, const string_t& subtexture_name)
 	{
-		auto h = algorithm::hash(subtexture_name);
+		auto h = algorithm::hash(subtexture_name.c_str());
 		const auto& spriteatlas = m_spriteatlas_manager.get_internal_spriteatlas(h);
 		return spriteatlas.subtexture(h);
 	}
@@ -391,7 +391,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		texture_t ctexture_manager::get_texture(const string_t& texture_name) const
 		{
-			auto h = algorithm::hash(texture_name);
+			auto h = algorithm::hash(texture_name.c_str());
 			return m_texture_names.at(h);
 		}
 
@@ -462,7 +462,7 @@ namespace sm
 				else
 				{
 					technique_t h = m_technique_count++;
-					auto hash = algorithm::hash(technique_name);
+					auto hash = algorithm::hash(technique_name.c_str());
 
 					m_technique_names[hash] = h;
 					m_technique_manager.emplace_back(program);
@@ -475,7 +475,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		technique_t ctechnique_manager::create_technique_embedded(const string_t& technique_name, const char* vs, const char* ps)
 		{
-			auto h = algorithm::hash(technique_name);
+			auto h = algorithm::hash(technique_name.c_str());
 
 			if (m_technique_names.find(h) == m_technique_names.end())
 			{
@@ -521,7 +521,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		technique_t ctechnique_manager::get_technique(const string_t& technique_name)
 		{
-			auto h = algorithm::hash(technique_name);
+			auto h = algorithm::hash(technique_name.c_str());
 			
 			if (m_technique_names.find(h) != m_technique_names.end())
 			{
@@ -625,7 +625,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		material_t cmaterial_manager::get_material(const string_t& material_name) const
 		{
-			auto h = algorithm::hash(material_name);
+			auto h = algorithm::hash(material_name.c_str());
 
 			if (m_material_names.find(h) != m_material_names.end())
 			{
@@ -678,7 +678,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		spriteatlas_t cspriteatlas_manager::create_spriteatlas(const string_t& spriteatlas_name, const string_t& texture_path, const vec2_t& frames)
 		{
-			auto h = algorithm::hash(spriteatlas_name);
+			auto h = algorithm::hash(spriteatlas_name.c_str());
 			//- create only if not already created
 			if (m_spriteatlas_names.find(h) == m_spriteatlas_names.end())
 			{
@@ -755,7 +755,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		spriteatlas_t cspriteatlas_manager::get_spriteatlas(const string_t& spriteatlas_name) const
 		{
-			auto h = algorithm::hash(spriteatlas_name);
+			auto h = algorithm::hash(spriteatlas_name.c_str());
 			return m_spriteatlas_names.at(h);
 		}
 
@@ -778,7 +778,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		core::srect cspriteatlas_manager::get_subtexture(spriteatlas_t atlas, const string_t& subtexture_name)
 		{
-			auto h = algorithm::hash(subtexture_name);
+			auto h = algorithm::hash(subtexture_name.c_str());
 			const auto& spriteatlas = m_spriteatlas_manager[atlas];
 			return spriteatlas.m_atlas.subtexture(h);
 		}

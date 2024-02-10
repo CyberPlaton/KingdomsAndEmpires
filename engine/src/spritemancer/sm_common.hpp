@@ -118,13 +118,13 @@ namespace sm
 	public:
 		struct sconfig
 		{
-			string_t m_title;
-			string_t m_window_icon_path;
-			window_resolution m_resolution = window_resolution_custom;
-			unsigned m_width;
-			unsigned m_height;
-			unsigned m_target_fps;
-			int m_flags;
+			string_t m_title				= {};
+			string_t m_window_icon_path		= {};
+			window_resolution m_resolution	= window_resolution_custom;
+			unsigned m_width				= 0;
+			unsigned m_height				= 0;
+			unsigned m_target_fps			= 0;
+			int m_flags						= 0;
 
 			RTTR_ENABLE();
 		};
@@ -309,6 +309,15 @@ namespace sm
 		vector_t< core::srect > m_subtextures;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class icamera_manager : public core::cservice
+	{
+	public:
+		virtual ccamera* get_active() const { ASSERT(false, "Invalid operation. Using icamera_manager interface  function"); return nullptr; };
+
+		RTTR_ENABLE(core::cservice);
+	};
+
 } //- sm
 
 namespace compression
@@ -345,6 +354,18 @@ namespace sm
 			.property("m_height", &cwindow::sconfig::m_height)
 			.property("m_target_fps", &cwindow::sconfig::m_target_fps)
 			.property("m_flags", &cwindow::sconfig::m_flags)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(icamera_manager)
+	{
+		rttr::registration::class_<icamera_manager>("icamera_manager")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			.method("get_active", &icamera_manager::get_active)
 			;
 	}
 
