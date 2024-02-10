@@ -170,6 +170,8 @@ namespace sm
 			target = cfg.m_target_fps;
 		}
 
+		raylib::SetTargetFPS(target);
+
 		//- misc
 		set_window_state(raylib::FLAG_WINDOW_UNDECORATED, !bit_on(cfg.m_flags, window_flag_decorated));
 		set_window_state(raylib::FLAG_WINDOW_MINIMIZED, bit_on(cfg.m_flags, window_flag_minimized));

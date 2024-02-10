@@ -61,18 +61,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	cfg.m_service_cfg.m_services.emplace_back(rttr::type::get<camera_system::ccamera_manager>().get_name().data());
 
 	cfg.m_window_cfg.m_title = "Kingdoms & Empires";
-	cfg.m_window_cfg.m_width = 720;
-	cfg.m_window_cfg.m_height = 648;
+	cfg.m_window_cfg.m_width = 1024;
+	cfg.m_window_cfg.m_height = 920;
 	cfg.m_window_cfg.m_target_fps = 60;
 	cfg.m_window_cfg.m_flags = sm::window_flag_vsync | sm::window_flag_show;
-
-	auto cfg_json = io::to_json(cfg);
-
+	
 	{
-		core::cfile::save_text("config.json", cfg_json);
-	}
+		auto cfg_json = io::to_json(cfg);
 
-	logging::log_info(fmt::format("cengine::sconfig: '{}'", cfg_json));
+		core::cfile::save_text("config.json", cfg_json);
+
+		logging::log_info(fmt::format("cengine::sconfig: '{}'", cfg_json));
+	}
 
 
 	if (engine::cengine::instance().configure("config.json") == engine::engine_run_result_ok)
