@@ -13,7 +13,7 @@ function engine_launcher()
 					options,
 					{},
 					{"Lua", "EASTL", "spdlog", "rttr", "core", "mimalloc", "flecs"},
-					{"test", "test2", "plugin_logging", "plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system"},
+					{"test", "test2", "plugin_logging", "plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human"},
 					{},
 					{"rapidjson", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib"},
 					{}

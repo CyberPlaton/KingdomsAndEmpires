@@ -6,7 +6,8 @@ VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
 THIRDPARTY = {"raylib", "spdlog", "core", "rapidjson", "glm", "EASTL", "argparse",
 			  "magic_enum", "taskflow", "mimalloc", "flecs", "LuaBridge", "Lua", "rttr"}
-PLUGINS = {"test", "test2", "plugin_logging", "plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system"}
+PLUGINS = {"test", "test2", "plugin_logging", "plugin_module_example",
+			"plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human"}
 EXES = {"engine_launcher"}
 PLATFORM = "<undefined>"
 OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"
