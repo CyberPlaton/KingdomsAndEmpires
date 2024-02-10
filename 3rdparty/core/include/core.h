@@ -93,6 +93,7 @@ using material_t = handle_type_t;
 using spriteatlas_t = handle_type_t;
 using subtexture_t = handle_type_t;
 using render_target_t = handle_type_t;
+using entity_proxy_t = int;
 
 using ivec2_t = glm::lowp_u32vec2;
 using vec2_t = glm::vec2;
@@ -551,15 +552,15 @@ namespace core
 		srect(const vec2_t& xy, const vec2_t& wh);
 		srect(float x = 0.0f, float y = 0.0f, float w = 0.0f, float h = 0.0f);
 
-		inline float x() const { return m_x; };
-		inline float y() const { return m_y; };
-		inline float w() const { return m_w; };
-		inline float h() const { return m_h; };
+		float x() const { return m_x; };
+		float y() const { return m_y; };
+		float w() const { return m_w; };
+		float h() const { return m_h; };
 
-		inline vec2_t top_left() const { return {m_x, m_y}; }
-		inline vec2_t top_right() const { return { m_x + m_w, m_y }; }
-		inline vec2_t bottom_left() const { return { m_x, m_y + m_h }; }
-		inline vec2_t bottom_right() const { return { m_x + m_w, m_y + m_h }; }
+		vec2_t top_left() const { return { m_x, m_y }; }
+		vec2_t top_right() const { return { m_x + m_w, m_y }; }
+		vec2_t bottom_left() const { return { m_x, m_y + m_h }; }
+		vec2_t bottom_right() const { return { m_x + m_w, m_y + m_h }; }
 
 		void set(float x, float y, float w, float h);
 		void position(float x, float y);
