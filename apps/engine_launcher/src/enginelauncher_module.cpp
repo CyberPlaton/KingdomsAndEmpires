@@ -117,6 +117,19 @@ int main(int argc, char* argv[])
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
 
+	auto type = rttr::type::get_by_name("cmy_third_module");
+
+	flecs::world world;
+
+	auto var = type.create({world});
+
+	if (!var.is_valid())
+	{
+		return -1;
+	}
+
+
+
 	lua_State* state = luaL_newstate();
 	luaL_openlibs(state);
 
@@ -165,14 +178,14 @@ int main(int argc, char* argv[])
 	}
 
 	//- Important! Create a new world
-	auto& inst = ecs::cworld_manager::instance();
-	inst.create("My World");
+	//auto& inst = ecs::cworld_manager::instance();
+	//inst.create("My World");
 
 	//- Get current world
-	auto& world = inst.active();
+	//auto& world = inst.active();
 
-	world.mm().import_module<module_example::cmy_second_module>();
-	world.mm().import_module<module_example::cmy_third_module>();
+	//world.mm().import_module<module_example::cmy_second_module>();
+	//world.mm().import_module<module_example::cmy_third_module>();
 
 	engine::cengine::sconfig cfg;
 	cfg.m_window_cfg.m_title = "Kingdoms & Empires";
