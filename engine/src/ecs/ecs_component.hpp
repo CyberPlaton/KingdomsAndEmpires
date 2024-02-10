@@ -1,5 +1,6 @@
 #pragma once
 #include <core.h>
+#include <flecs.h>
 
 //- use this macro for defining a simple component. Simple means that
 //- it does not inherit from a complex component hierarchy.
@@ -22,7 +23,9 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(sidentifier);
 
-		core::cuuid m_uuid;
+		string_t get_uuid() const { return m_self.name(); }
+		void set_uuid(string_t uuid) { m_self.set_name(uuid.c_str());}
+
 		flecs::entity m_self;
 
 		//- internal usage
@@ -111,7 +114,7 @@ namespace ecs
 	REFLECT_INLINE(sidentifier)
 	{
 		rttr::registration::class_<sidentifier>("sidentifier")
-			.property("m_uuid", &sidentifier::m_uuid)
+			.property("m_uuid", &sidentifier::get_uuid, &sidentifier::set_uuid)
 			;
 	};
 

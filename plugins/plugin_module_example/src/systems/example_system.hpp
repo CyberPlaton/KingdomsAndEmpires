@@ -21,7 +21,7 @@ namespace module_example
 			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{
 					auto sys = w.system<stargeting_component>("Targeting System")
-						.each([](stargeting_component& target)
+						.each([](flecs::entity e, stargeting_component& target)
 							{
 								//- check for first start of the system or
 								//- end of cooldown and restart
@@ -31,7 +31,7 @@ namespace module_example
 									target.m_next_target = core::cuuid();
 									target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
 
-									logging::log_info(fmt::format("[Targeting System] Changing Target '{}'", target.m_next_target.view()).data());
+									logging::log_info(fmt::format("[Targeting System] Changing Target '{}'", target.m_next_target.string()).data());
 								}
 								target.m_cooldown -= C_DT;
 							});
@@ -67,7 +67,7 @@ namespace module_example
 					//- first system of the module
 					auto transform_update_system = w.system<stransform_component>("Transform System")
 						.kind(transform_update_phase)
-						.each([](stransform_component& trans)
+						.each([](flecs::entity e, stransform_component& trans)
 							{
 								static core::ctimer transform_timer(false);
 
@@ -87,7 +87,7 @@ namespace module_example
 					//- second system of the module
 					auto replication_update_system = w.system<sreplicable_component, const stransform_component, const sidentifier_component>("Replication System")
 						.kind(replication_update_phase)
-						.each([](sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id)
+						.each([](flecs::entity e, sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id)
 							{
 								static core::ctimer network_timer(false);
 
@@ -100,8 +100,9 @@ namespace module_example
 										++n;
 									}
 
-									logging::log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{}\":\n\t[{}:{}:{}]",
-										logging::app_runtime_ms(), n, id.uuid.view(), trans.x, trans.y, trans.rotation));
+									//- example: showing firstly that entity name is equal to his uuid.
+									logging::log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{} ()\":\n\t[{}:{}:{}]",
+										logging::app_runtime_ms(), n, id.uuid.string(), e.name(), trans.x, trans.y, trans.rotation));
 
 									network_timer.start();
 								}

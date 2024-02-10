@@ -438,18 +438,16 @@ namespace core
 		cuuid(const cuuid& other);
 		~cuuid() = default;
 
-		inline stringview_t view() const { return m_string.data(); }
-		inline const char* c_str() const { return m_string.c_str(); }
-		inline unsigned hash() const { return algorithm::hash(view()); }
-		inline bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
-		inline bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
-		inline bool is_higher_as(const cuuid& uuid) const { return compare(uuid) > 0; }
+		string_t string() const;
+		unsigned hash() const { return algorithm::hash(string().c_str()); }
+		bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
+		bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
+		bool is_higher_as(const cuuid& uuid) const { return compare(uuid) > 0; }
 
 	private:
 		inline static const auto C_RANDOM_BYTES_COUNT = 4;
 		inline static const unsigned char C_HEX[] = "0123456789abcdef";
 
-		string_t m_string;
 		array_t<unsigned char, 16u> m_data;
 
 	private:
@@ -800,7 +798,6 @@ namespace core
 	{
 		rttr::registration::class_<cuuid>("cuuid")
 			.property("m_data", &cuuid::m_data)
-			.property("m_string", &cuuid::m_string)
 			;
 	}
 

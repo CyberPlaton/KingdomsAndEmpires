@@ -23,7 +23,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	ecs::centity& centity_manager::create_entity(const core::cuuid& uuid)
 	{
-		return create_entity(uuid.view());
+		return create_entity(uuid.string().c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	flecs::entity centity_manager::entity(const core::cuuid& uuid) const
 	{
-		return w().lookup(uuid.view());
+		return w().lookup(uuid.string().c_str());
 	}
 
 } //- ecs

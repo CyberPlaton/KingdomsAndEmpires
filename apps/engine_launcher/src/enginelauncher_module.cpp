@@ -22,6 +22,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
 	}
 
+	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
+
 	auto type = rttr::type::get_by_name("chuman_race_module");
 
 	flecs::world world;
@@ -53,7 +55,31 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_warn(fmt::format("Prefab Light Armor '{}'", prefab->m_skills.m_light_armor));
 	logging::log_warn(fmt::format("Walther Light Armor '{}'", walther->m_skills.m_light_armor));
 	logging::log_warn(fmt::format("Manfred Light Armor '{}'", manfred->m_skills.m_light_armor));
+	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
 
+	//- check components
+	ecs::sidentifier identifier; identifier.m_self = inst;
+	ecs::stransform transform;
+	ecs::ssprite sprite;
+	ecs::sanimation animation;
+	ecs::shierarchy hierarchy;
+
+	auto json = io::to_json(identifier);
+	logging::log_info(fmt::format("sidentifier: '{}'", json));
+
+	json = io::to_json(transform);
+	logging::log_info(fmt::format("transform: '{}'", json));
+
+	json = io::to_json(sprite);
+	logging::log_info(fmt::format("sprite: '{}'", json));
+
+	json = io::to_json(animation);
+	logging::log_info(fmt::format("animation: '{}'", json));
+
+	json = io::to_json(hierarchy);
+	logging::log_info(fmt::format("hierarchy: '{}'", json));
+
+	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
 
 	engine::cengine::sconfig cfg;
 

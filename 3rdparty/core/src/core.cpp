@@ -740,28 +740,33 @@ namespace core
 	cuuid::cuuid()
 	{
 		generate(std::random_device()());
-		m_string = generate_string();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cuuid::cuuid(const string_t& uuid)
 	{
 		parse_string(uuid, m_data);
-		m_string = generate_string();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cuuid::cuuid(size_t seed)
 	{
 		generate(seed);
-		m_string = generate_string();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cuuid::cuuid(const cuuid& other)
 	{
 		copy_from(other);
-		m_string = generate_string();
+	}
+
+	string_t cuuid::string() const
+	{
+		string_t out;
+
+		write_string(m_data, out);
+
+		return out;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -843,14 +848,12 @@ namespace core
 	void cuuid::copy_to(cuuid& other)
 	{
 		std::memcpy(&other.m_data[0], &m_data[0], 16);
-		other.m_string = other.generate_string();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cuuid::copy_from(const cuuid& other)
 	{
 		std::memcpy(&m_data[0], &other.m_data[0], 16);
-		m_string = generate_string();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
