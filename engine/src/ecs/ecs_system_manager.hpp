@@ -22,8 +22,8 @@ namespace ecs
 		vector_t<ref_t<csystem>> m_systems;
 
 	private:
-		inline flecs::world& w() { return m_managed_world; }
-		inline const flecs::world& w() const { return m_managed_world; }
+		flecs::world& w() { return m_managed_world; }
+		const flecs::world& w() const { return m_managed_world; }
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

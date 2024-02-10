@@ -22,6 +22,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
 	}
 
+	auto type = rttr::type::get_by_name("cmy_third_module");
+
+	flecs::world world;
+
+	auto var = type.create({world});
+
+
+
 
 	engine::cengine::sconfig cfg;
 
@@ -89,10 +97,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	inst.create("My World");
 
 	//- Get current world
-	auto& world = inst.active();
+	//auto& world = inst.active();
 
-	world.mm().import_module<module_example::cmy_second_module>();
-	world.mm().import_module<module_example::cmy_third_module>();
+	//world.mm().import_module<module_example::cmy_second_module>();
+	//world.mm().import_module<module_example::cmy_third_module>();
 
 	Sleep(10);
 	return 0;

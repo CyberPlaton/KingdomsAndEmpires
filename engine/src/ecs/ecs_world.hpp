@@ -21,17 +21,17 @@ namespace ecs
 		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
 
 
-		inline const flecs::world& world() const { return m_world; }
-		inline flecs::world& world() { return m_world; }
+		const flecs::world& world() const { return m_world; }
+		flecs::world& world() { return m_world; }
 
-		inline const centity_manager& em() const { return m_entity_manager; }
-		inline centity_manager& em() { return m_entity_manager; }
+		const centity_manager& em() const { return m_entity_manager; }
+		centity_manager& em() { return m_entity_manager; }
 
-		inline const csystem_manager& sm() const { return m_system_manager; }
-		inline csystem_manager& sm() { return m_system_manager; }
+		const csystem_manager& sm() const { return m_system_manager; }
+		csystem_manager& sm() { return m_system_manager; }
 
-		inline const cmodule_manager& mm() const { return m_module_manager; }
-		inline cmodule_manager& mm() { return m_module_manager; }
+		const cmodule_manager& mm() const { return m_module_manager; }
+		cmodule_manager& mm() { return m_module_manager; }
 
 	private:
 		stringview_t m_name;

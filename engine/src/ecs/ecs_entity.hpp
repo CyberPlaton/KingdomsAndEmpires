@@ -13,8 +13,8 @@ namespace ecs
 	public:
 		centity(flecs::entity e);
 
-		inline auto self() const { return m_self; }
-		inline auto uuid() const { return m_self.name().c_str(); }
+		auto self() const { return m_self; }
+		auto uuid() const { return m_self.name().c_str(); }
 
 	private:
 		const flecs::entity m_self;

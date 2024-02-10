@@ -18,8 +18,8 @@ namespace ecs
 		//- argument function is responsible for registering subsystem(s) to the world.
 		void subsystem(subsystem_registrator_t function);
 
-		inline auto self() const {return m_self;}
-		inline auto name() const {return m_self.name().c_str(); }
+		auto self() const {return m_self;}
+		auto name() const {return m_self.name().c_str(); }
 		vector_t<flecs::system> subsystems() const;
 
 	private:

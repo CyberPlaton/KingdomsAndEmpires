@@ -9,49 +9,53 @@ namespace module_example
 	//- Note that while we are registering our classes inside RTTR_PLUGIN_REGISTRATION
 	//- we do not need to explicitly write EXAMPLE_API for exported classes
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmy_module : public ecs::imodule<cmy_module>
+	class cmy_module : public ecs::imodule
 	{
 	public:
-		cmy_module(flecs::world& w) : ecs::imodule<cmy_module>(w)
+		cmy_module(flecs::world& w) : ecs::imodule(w)
 		{
-			begin("My first module")
-				.comp<stargeting_component>()
-				.subsystem<cmy_system>()
-			.end();
+			begin<cmy_module>("My first module")
+				.comp<cmy_module, stargeting_component>()
+				.subsystem<cmy_module, cmy_system>()
+			.end<cmy_module>();
 		}
+
+		RTTR_ENABLE(ecs::imodule);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmy_second_module : public ecs::imodule<cmy_second_module>
+	class cmy_second_module : public ecs::imodule
 	{
 	public:
-		cmy_second_module(flecs::world& w) : ecs::imodule<cmy_second_module>(w)
+		cmy_second_module(flecs::world& w) : ecs::imodule(w)
 		{
-			begin("Module some other dude made")
-				.depends_on<cmy_module>()
-				.comp<stargeting_component>()
-				.subsystem<cmy_system>()
-			.end();
+			begin<cmy_second_module>("Module some other dude made")
+				.depends_on<cmy_second_module, cmy_module>()
+				.comp<cmy_second_module, stargeting_component>()
+				.subsystem<cmy_second_module, cmy_system>()
+			.end<cmy_second_module>();
 
 			//- this is not the intended way to create entities
 			auto test = w.entity("Walther");
 
 			test.set<stargeting_component>({});
 		}
+
+		RTTR_ENABLE(ecs::imodule);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmy_third_module : public ecs::imodule<cmy_third_module>
+	class cmy_third_module : public ecs::imodule
 	{
 	public:
-		cmy_third_module(flecs::world& w) : ecs::imodule<cmy_third_module>(w)
+		cmy_third_module(flecs::world& w) : ecs::imodule(w)
 		{
-			begin("My favorite module")
-				.comp<sreplicable_component>()
-				.comp<stransform_component>()
-				.comp<sidentifier_component>()
-				.subsystem<sexample_module_system>()
-			.end();
+			begin<cmy_third_module>("My favorite module")
+				.comp<cmy_third_module, sreplicable_component>()
+				.comp<cmy_third_module, stransform_component>()
+				.comp<cmy_third_module, sidentifier_component>()
+				.subsystem<cmy_third_module, sexample_module_system>()
+			.end<cmy_third_module>();
 
 			//- this is not the intended way to create entities
 			auto e = w.entity("Manfred");
@@ -65,6 +69,45 @@ namespace module_example
 			transform->y = 1.0f;
 			transform->rotation = 11.0f;
 		}
+
+		RTTR_ENABLE(ecs::imodule);
 	};
+
+} //- module_example
+
+namespace module_example
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cmy_module)
+	{
+		rttr::registration::class_<cmy_module>("cmy_module")
+			.constructor<flecs::world&>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cmy_second_module)
+	{
+		rttr::registration::class_<cmy_second_module>("cmy_second_module")
+			.constructor<flecs::world&>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+				)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cmy_third_module)
+	{
+		rttr::registration::class_<cmy_third_module>("cmy_third_module")
+			.constructor<flecs::world&>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+				)
+			;
+	}
 
 } //- module_example

@@ -19,6 +19,24 @@ namespace ecs
 	protected:
 		flecs::world& world();
 		const flecs::world& world() const;
+
+		RTTR_ENABLE();
+		REFLECTABLE();
 	};
+
+} //- ecs
+
+namespace ecs
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(iworld_context_holder)
+	{
+		rttr::registration::class_<iworld_context_holder>("iworld_context_holder")
+			.constructor<flecs::world&>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			;
+	}
 
 } //- ecs

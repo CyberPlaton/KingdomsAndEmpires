@@ -507,16 +507,16 @@ namespace core
 
 	namespace
 	{
-		inline static constexpr stringview_t C_EMPTY_STRING = "";
+		constexpr stringview_t C_EMPTY_STRING = "";
 
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static bool is_path_directory(stringview_t path)
+		static bool is_path_directory(stringview_t path)
 		{
 			return string_utils::find_substr(path, ".") == MAX(size_t);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static bool is_path_file(stringview_t path)
+		static bool is_path_file(stringview_t path)
 		{
 			return string_utils::find_substr(path, ".") != MAX(size_t);
 		}
@@ -524,14 +524,14 @@ namespace core
 		//- @reference: raylib UnloadFileData.
 		//- unload data allocated by load_binary_file_data
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static void unload_file_binary_data(void* data)
+		static void unload_file_binary_data(void* data)
 		{
 			mi_free(data);
 		}
 
 		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out, string_t* error)
+		static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out, string_t* error)
 		{
 			uint8_t* data = nullptr;
 			*data_size_out = 0;
@@ -562,7 +562,7 @@ namespace core
 
 		//- @reference: raylib SaveFileData
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size, string_t* error)
+		static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size, string_t* error)
 		{
 			if (file_path != nullptr)
 			{
@@ -583,14 +583,14 @@ namespace core
 		//- @reference: raylib UnloadFileText.
 		//- unload data allocated by load_text_file_data
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static void unload_file_text_data(char* text)
+		static void unload_file_text_data(char* text)
 		{
 			mi_free(text);
 		}
 
 		//- @reference: raylib LoadFileText
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static char* load_text_file_data(stringview_t file_path, string_t* error)
+		static char* load_text_file_data(stringview_t file_path, string_t* error)
 		{
 			char* text = nullptr;
 
@@ -628,7 +628,7 @@ namespace core
 
 		//- @reference: raylib SaveFileText
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static bool save_text_file_data(stringview_t file_path, stringview_t text, string_t* error)
+		static bool save_text_file_data(stringview_t file_path, stringview_t text, string_t* error)
 		{
 			if (file_path != nullptr)
 			{

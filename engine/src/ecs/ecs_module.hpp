@@ -13,66 +13,70 @@ namespace ecs
 		string_t m_name;
 		flecs::entity m_module_entity;
 		vector_t<smodule_info> m_dependencies;
+
+		RTTR_ENABLE();
 	};
 
 	//- class to be inherited from a new module. Can define components, systems and other module dependencies.
 	//- Declaration and import into ecs world will be done on mm().import_module<>() call.
 	//- Note that ENGINE_API is intentionally skipped here.
 	//-------------------------------------------------------------------------------------------------------------------------
-	template<class TModule>
 	class imodule : public iworld_context_holder
 	{
 	public:
 		imodule(flecs::world& w) : iworld_context_holder(w) {}
 		virtual ~imodule() = default;
 
-		imodule<TModule>& begin(stringview_t name);
+		template<class TModule>
+		TModule& begin(stringview_t name);
 
-		template<class TDependency>
-		imodule<TModule>& depends_on();
+		template<class TModule, class TDependency>
+		TModule& depends_on();
 
-		template<class TSystem>
-		imodule<TModule>& subsystem();
+		template<class TModule, class TSystem>
+		TModule& subsystem();
 
-		template<class TComponent>
-		imodule<TModule>& comp();
+		template<class TModule, class TComponent>
+		TModule& comp();
 
+		template<class TModule>
 		bool end();
 
-		inline const smodule_info& info() const { return m_info; }
-		inline flecs::entity module() const{ return m_info.m_module_entity; }
+		const smodule_info& info() const { return m_info; }
+		flecs::entity module() const{ return m_info.m_module_entity; }
 
 	private:
 		smodule_info m_info;
+
+		RTTR_ENABLE(iworld_context_holder);
+		REFLECTABLE();
 	};
 
 	//-------------------------------------------------------------------------------------------------------------------------
 	template<class TModule>
-	imodule<TModule>& ecs::imodule<TModule>::begin(stringview_t name)
+	TModule& ecs::imodule::begin(stringview_t name)
 	{
 		m_info.m_name = name;
 		m_info.m_module_entity = world().module<TModule>(name);
 
-		return *this;
+		return *reinterpret_cast<TModule*>(this);
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------------
-	template<class TModule>
-	template<class TSystem>
-	imodule<TModule>& ecs::imodule<TModule>::subsystem()
+	template<class TModule, class TSystem>
+	TModule& ecs::imodule::subsystem()
 	{
 		static_assert(std::is_base_of<csystem, TSystem>::value, "TSystem must be derived from csystem");
 
 		//- create and register system into current world
 		TSystem sys(world());
 
-		return *this;
+		return *reinterpret_cast<TModule*>(this);
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------------
-	template<class TModule>
-	template<class TDependency>
-	imodule<TModule>& ecs::imodule<TModule>::depends_on()
+	template<class TModule, class TDependency>
+	TModule& ecs::imodule::depends_on()
 	{
 		//- create and import the dependency module first
 		TDependency dep(world());
@@ -80,24 +84,23 @@ namespace ecs
 		//- store its information for later
 		m_info.m_dependencies.push_back(dep.info());
 
-		return *this;
+		return *reinterpret_cast<TModule*>(this);
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------------
-	template<class TModule>
-	template<class TComponent>
-	imodule<TModule>& ecs::imodule<TModule>::comp()
+	template<class TModule, class TComponent>
+	TModule& ecs::imodule::comp()
 	{
 		static_assert(std::is_base_of<icomponent, TComponent>::value, "TComponent must be derived from icomponent");
 
 		world().component<TComponent>();
 
-		return *this;
+		return *reinterpret_cast<TModule*>(this);
 	}
 
 	//-------------------------------------------------------------------------------------------------------------------------
 	template<class TModule>
-	bool ecs::imodule<TModule>::end()
+	bool ecs::imodule::end()
 	{
 		world().import<TModule>();
 
@@ -113,6 +116,32 @@ namespace ecs
 		}
 
 		return success;
+	}
+
+} //- ecs
+
+namespace ecs
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(smodule_info)
+	{
+		rttr::registration::class_<smodule_info>("smodule_info")
+			.property("m_name", &smodule_info::m_name)
+			.property("m_module_entity", &smodule_info::m_module_entity)
+			.property("m_dependencies", &smodule_info::m_dependencies)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(imodule)
+	{
+		rttr::registration::class_<imodule>("imodule")
+			.constructor<flecs::world&>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			.property("m_info", &imodule::m_info)
+			;
 	}
 
 } //- ecs

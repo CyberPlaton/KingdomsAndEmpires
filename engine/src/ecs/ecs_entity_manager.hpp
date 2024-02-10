@@ -23,8 +23,8 @@ namespace ecs
 		vector_t<centity> m_entities;
 
 	private:
-		inline flecs::world& w() { return m_managed_world; }
-		inline const flecs::world& w() const { return m_managed_world; }
+		flecs::world& w() { return m_managed_world; }
+		const flecs::world& w() const { return m_managed_world; }
 	};
 
 } //- ecs
