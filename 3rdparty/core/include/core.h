@@ -146,16 +146,22 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum file_read_write_mode : uint8_t
+	enum file_io_mode : uint8_t
 	{
-		file_read_write_mode_none		= 0,
-		file_read_write_mode_read		= BIT(0),
-		file_read_write_mode_write		= BIT(1),
-		file_read_write_mode_override	= BIT(2),
-		file_read_write_mode_truncate	= BIT(3),
-		file_read_write_mode_append		= BIT(4),
-		file_read_write_mode_binary		= BIT(5),
-		file_read_write_mode_text		= BIT(6),
+		file_io_mode_none		= 0,
+		file_io_mode_read		= BIT(0),
+		file_io_mode_write		= BIT(1),
+		file_io_mode_override	= BIT(2),
+		file_io_mode_truncate	= BIT(3),
+		file_io_mode_append		= BIT(4),
+		file_io_mode_binary		= BIT(5),
+		file_io_mode_text		= BIT(6),
+
+
+		file_io_mode_read_text = file_io_mode_read | file_io_mode_text,
+		file_io_mode_read_bin = file_io_mode_read | file_io_mode_binary,
+		file_io_mode_write_text = file_io_mode_write | file_io_mode_text,
+		file_io_mode_write_bin = file_io_mode_write | file_io_mode_binary,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -667,39 +673,25 @@ namespace core
 	class cfile final
 	{
 	public:
-		cfile(const cpath& path, int mode = file_read_write_mode_read | file_read_write_mode_text);
-		~cfile();
+		static string_t load_text(stringview_t path);
 
-		//- transfer ownership of memory to another object.
-		//- data has to be deallocated with mi_free(...)
-		//- operation is not blocking, if data is not ready we return nullptr
-		[[nodiscard]] spair<void*, unsigned> take();
+		static std::future<string_t> load_text_async(stringview_t path);
 
-		spair<void*, unsigned> data() const;
+		static file_io_status save_text(stringview_t path, const string_t& text);
 
-		template<typename TType>
-		spair<TType*, unsigned> data() const
-		{
-			return { SCAST(TType*, m_data), m_datasize };
-		}
+		static std::future<file_io_status> save_text_async(stringview_t path, const string_t& text);
 
-		file_io_status read_sync();
-		file_io_status write_sync(void* data, unsigned data_size);
+		static spair<uint8_t*, unsigned> load_binary(stringview_t path);
 
-		file_io_status read_async();
-		file_io_status write_async(void* data, unsigned data_size);
+		static std::future<spair<uint8_t*, unsigned>> load_binary_async(stringview_t path);
 
-		inline stringview_t error() const{ return m_error.c_str(); }
-		inline file_io_status status() const { return m_status; }
+		static file_io_status save_binary(stringview_t path, uint8_t* data, unsigned size);
 
-	private:
-		string_t m_error;
-		std::future<void> m_task;
-		stringview_t m_path;
-		unsigned m_datasize;
-		void* m_data;
-		uint8_t m_mode = file_read_write_mode_none;
-		file_io_status m_status;
+		static std::future<file_io_status> save_binary_async(stringview_t path, uint8_t* data, unsigned size);
+
+		static void unload(char* data);
+
+		static void unload(void* data);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

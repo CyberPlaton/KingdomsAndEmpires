@@ -22,13 +22,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
 	}
 
-	auto* manager = engine::cservice_manager::emplace<camera_system::ccamera_manager>();
-
-	auto* retrieve = engine::cservice_manager::find<camera_system::ccamera_manager>();
-
-	engine::cservice_manager::release<camera_system::ccamera_manager>();
-
-	auto* deleted = engine::cservice_manager::find<camera_system::ccamera_manager>();
 
 	engine::cengine::sconfig cfg;
 
@@ -43,10 +36,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	auto cfg_json = io::to_json(cfg);
 
+	{
+		core::cfile::save_text("config.json", cfg_json);
+	}
+
 	logging::log_info(fmt::format("cengine::sconfig: '{}'", cfg_json));
 
 
-	if (engine::cengine::instance().configure(cfg) == engine::engine_run_result_ok)
+	if (engine::cengine::instance().configure("config.json") == engine::engine_run_result_ok)
 	{
 		engine::cengine::instance().run();
 	}

@@ -13,6 +13,8 @@ namespace engine
 	{
 		engine_run_result_ok = 0,
 		engine_run_result_failed_parsing_arguments,
+		engine_run_result_failed_loading_config,
+		engine_run_result_failed_parsing_invalid_config,
 		engine_run_result_failed_starting_spritemancer,
 		engine_run_result_failed_registering_services,
 		engine_run_result_fail = 255,
@@ -38,6 +40,7 @@ namespace engine
 		~cengine();
 
 		engine_run_result configure(sconfig cfg, int argc = 0, char* argv[] = {});
+		engine_run_result configure(const core::cpath& cfg, int argc = 0, char* argv[] = {});
 		engine_run_result run() const;
 
 	private:

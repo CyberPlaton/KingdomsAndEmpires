@@ -524,7 +524,7 @@ namespace core
 		//- @reference: raylib UnloadFileData.
 		//- unload data allocated by load_binary_file_data
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static void unload_file_binary_data(uint8_t* data)
+		inline static void unload_file_binary_data(void* data)
 		{
 			mi_free(data);
 		}
@@ -538,9 +538,9 @@ namespace core
 
 			if (file_path != nullptr)
 			{
-				FILE* file = nullptr;
+				FILE* file = fopen(file_path, "rb");
 
-				if (spdlog::details::os::fopen_s(&file, file_path, "rb"))
+				if(file != NULL)
 				{
 					fseek(file, 0, SEEK_END);
 					auto size = ftell(file);
@@ -553,14 +553,8 @@ namespace core
 						unsigned count = SCAST(unsigned, fread(data, sizeof(uint8_t), size, file));
 						*data_size_out = count;
 					}
-				}
-				else
-				{
-					//- error occured
-					if (error)
-					{
-						error->assign("");
-					}
+
+					fclose(file);
 				}
 			}
 			return data;
@@ -572,26 +566,15 @@ namespace core
 		{
 			if (file_path != nullptr)
 			{
-				FILE* file = nullptr;
+				FILE* file = fopen(file_path, "wb");
 
-				if (spdlog::details::os::fopen_s(&file, file_path, "wb"))
+				if (file != NULL)
 				{
-					auto count = SCAST(unsigned, fwrite(data, sizeof(uint8_t), data_size, file));
+					unsigned count = (unsigned)fwrite(data, sizeof(unsigned char), data_size, file);
 
 					fclose(file);
 
-					if (count == data_size)
-					{
-						return true;
-					}
-				}
-				else
-				{
-					//- error occured
-					if (error)
-					{
-						error->assign("");
-					}
+					return count == data_size;
 				}
 			}
 			return false;
@@ -613,9 +596,9 @@ namespace core
 
 			if (file_path != nullptr)
 			{
-				FILE* file = nullptr;
+				FILE* file = fopen(file_path, "rt");
 
-				if (spdlog::details::os::fopen_s(&file, file_path, "rt"))
+				if (file != NULL)
 				{
 					fseek(file, 0, SEEK_END);
 					auto size = SCAST(unsigned, ftell(file));
@@ -639,14 +622,6 @@ namespace core
 					}
 					fclose(file);
 				}
-				else
-				{
-					//- error occured
-					if (error)
-					{
-						error->assign("");
-					}
-				}
 			}
 			return text;
 		}
@@ -657,9 +632,9 @@ namespace core
 		{
 			if (file_path != nullptr)
 			{
-				FILE* file = nullptr;
+				FILE* file = fopen(file_path, "wt");
 
-				if(spdlog::details::os::fopen_s(&file, file_path, "wt"))
+				if (file != NULL)
 				{
 					auto count = fprintf(file, "%s", text);
 
@@ -668,14 +643,6 @@ namespace core
 					if (count > 0)
 					{
 						return true;
-					}
-				}
-				else
-				{
-					//- error occured
-					if (error)
-					{
-						error->assign("");
 					}
 				}
 			}
@@ -1526,206 +1493,99 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cfile::cfile(const cpath& path, int mode /*= file_read_write_mode_read | file_read_write_mode_text*/) :
-		m_data(nullptr), m_datasize(0), m_mode(mode), m_status(file_io_status_none), m_path(path.view())
+	string_t cfile::load_text(stringview_t path)
 	{
+		//- TODO: decide how to handle report errors
+		string_t err;
+
+		return load_text_file_data(path, &err);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cfile::~cfile()
+	std::future<string_t> cfile::load_text_async(stringview_t path)
 	{
-		if (m_task.valid())
-		{
-			m_task.wait();
-		}
-		if (m_data && m_datasize > 0)
-		{
-			if (!!(m_mode & file_read_write_mode_text))
+		auto result = casync::launch_async([&]() -> string_t
 			{
-				//- unload text file data
-				unload_file_text_data(SCAST(char*, m_data));
-			}
-			else if (!!(m_mode & file_read_write_mode_binary))
+				return load_text(path);
+			});
+
+		return result;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	file_io_status cfile::save_text(stringview_t path, const string_t& text)
+	{
+		//- TODO: decide how to handle report errors
+		string_t err;
+
+		return save_text_file_data(path, text.c_str(), &err) ? file_io_status_success : file_io_status_failed;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	std::future<file_io_status> cfile::save_text_async(stringview_t path, const string_t& text)
+	{
+		auto result = casync::launch_async([&]() -> file_io_status
 			{
-				//- unload binary file data
-				unload_file_binary_data(SCAST(uint8_t*, m_data));
-			}
-			m_data = nullptr;
-			m_datasize = 0;
-		}
+				return save_text(path, text);
+			});
+
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::spair<void*, unsigned> cfile::take()
+	spair<uint8_t*, unsigned> cfile::load_binary(stringview_t path)
 	{
-		core::spair<void*, unsigned> out;
-		out.first = nullptr;
-		out.second = 0;
+		//- TODO: decide how to handle report errors
+		string_t err;
 
-		if (status() == file_io_status_success)
-		{
-			out.first = m_data;
-			out.second = m_datasize;
+		spair<uint8_t*, unsigned> out;
 
-			//- soft reset to indicate that object should not be used
-			m_data = nullptr;
-			m_datasize = 0;
-			m_mode = file_read_write_mode_none;
-			m_error.clear();
-			m_status = file_io_status_none;
-			m_path = nullptr;
-
-			return out;
-		}
-		return out;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	spair<void*, unsigned> cfile::data() const
-	{
-		core::spair<void*, unsigned> out;
-		out.first = nullptr;
-		out.second = 0;
+		out.first = load_binary_file_data(path, &out.second, &err);
 
 		return out;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::file_io_status cfile::read_sync()
+	std::future<spair<uint8_t*, unsigned>> cfile::load_binary_async(stringview_t path)
 	{
-		ASSERT(!!(m_mode & file_read_write_mode_read), "cfile must be created with read mode");
+		auto result = casync::launch_async([&]() -> spair<uint8_t*, unsigned>
+			{
+				return load_binary(path);
+			});
 
-		if (!m_task.valid())
-		{
-			if (!!(m_mode & file_read_write_mode_text))
-			{
-				//- load text file
-				m_data = SCAST(void*, load_text_file_data(m_path, &m_error));
-			}
-			else if (!!(m_mode & file_read_write_mode_binary))
-			{
-				//- load binary file
-				m_data = SCAST(void*, load_binary_file_data(m_path, &m_datasize, &m_error));
-			}
-
-			if (m_data && m_datasize > 0)
-			{
-				m_status = file_io_status_success;
-			}
-			else
-			{
-				m_status = file_io_status_failed;
-			}
-		}
-		else
-		{
-			m_task.wait();
-		}
-		return m_status;
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::file_io_status cfile::write_sync(void* data, unsigned data_size)
+	file_io_status cfile::save_binary(stringview_t path, uint8_t* data, unsigned size)
 	{
-		ASSERT(!!(m_mode & file_read_write_mode_write), "cfile must be created with write mode");
+		//- TODO: decide how to handle report errors
+		string_t err;
 
-		if (!m_task.valid())
-		{
-			if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
-			{
-				//- write text file data
-				m_status = save_text_file_data(m_path, SCAST(char*, m_data), &m_error) == true ? file_io_status_success : file_io_status_failed;
-			}
-			else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
-			{
-				//- write binary file date
-				m_status = save_binary_file_data(m_path, SCAST(uint8_t*, m_data), m_datasize, &m_error) == true ? file_io_status_success : file_io_status_failed;
-			}
-			else
-			{
-				m_status = file_io_status_failed;
-			}
-		}
-		else
-		{
-			m_task.wait();
-		}
-		return m_status;
+		return save_binary_file_data(path, data, size, &err) ? file_io_status_success : file_io_status_failed;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::file_io_status cfile::read_async()
+	std::future<file_io_status> cfile::save_binary_async(stringview_t path, uint8_t* data, unsigned size)
 	{
-		ASSERT(!!(m_mode & file_read_write_mode_read), "cfile must be created with read mode");
+		auto result = casync::launch_async([&]() -> file_io_status
+			{
+				return save_binary(path, data, size);
+			});
 
-		if (!m_task.valid())
-		{
-			//- begin async load operation
-			m_task = casync::launch_async([&]() -> void
-				{
-					m_status = file_io_status_pending;
-
-					if (!!(m_mode & file_read_write_mode_text))
-					{
-						//- load text file
-						m_data = SCAST(void*, load_text_file_data(m_path, &m_error));
-					}
-					else if (!!(m_mode & file_read_write_mode_binary))
-					{
-						//- load binary file
-						m_data = SCAST(void*, load_binary_file_data(m_path, &m_datasize, &m_error));
-					}
-					else
-					{
-						m_status = file_io_status_failed;
-						return;
-					}
-
-					if (m_data && m_datasize > 0)
-					{
-						m_status = file_io_status_success;
-					}
-					else
-					{
-						m_status = file_io_status_failed;
-					}
-				});
-		}
-
-		return m_status;
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::file_io_status cfile::write_async(void* data, unsigned data_size)
+	void cfile::unload(char* data)
 	{
-		ASSERT(!!(m_mode & file_read_write_mode_write), "cfile must be created with write mode");
+		unload_file_text_data(data);
+	}
 
-		if (!m_task.valid())
-		{
-			//- begin async save operation
-			m_task = casync::launch_async([&]() -> void
-				{
-					m_status = file_io_status_pending;
-
-					if (!!(m_mode & file_read_write_mode_text) && m_data && m_datasize > 0)
-					{
-						//- write text file data
-						m_status = save_text_file_data(m_path, SCAST(char*, m_data), &m_error) == true ? file_io_status_success : file_io_status_failed;
-					}
-					else if (!!(m_mode & file_read_write_mode_binary) && m_data && m_datasize > 0)
-					{
-						//- write binary file data
-						m_status = save_binary_file_data(m_path, SCAST(uint8_t*, m_data), m_datasize, &m_error) == true ? file_io_status_success : file_io_status_failed;
-					}
-					else
-					{
-						m_status = file_io_status_failed;
-						return;
-					}
-				});
-		}
-
-		return m_status;
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfile::unload(void* data)
+	{
+		unload_file_binary_data(data);
 	}
 
 	using namespace std::chrono_literals;

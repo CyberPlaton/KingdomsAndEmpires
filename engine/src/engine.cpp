@@ -59,6 +59,34 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	engine_run_result cengine::configure(const core::cpath& cfg, int argc /*= 0*/, char* argv[] /*= {}*/)
+	{
+		sconfig config;
+
+		if (cfg.exists() && cfg.is_file())
+		{
+			auto config_text = core::cfile::load_text(cfg.view());
+
+			string_t json(config_text);
+
+			if (io::from_json(json, config))
+			{
+				return configure(config, argc, argv);
+			}
+			else
+			{
+				m_result = engine_run_result_failed_parsing_invalid_config;
+			}
+		}
+		else
+		{
+			m_result = engine_run_result_failed_loading_config;
+		}
+
+		return m_result;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	engine_run_result cengine::run() const
 	{
 		if (m_result != engine_run_result_ok)
