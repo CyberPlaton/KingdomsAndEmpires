@@ -154,7 +154,7 @@ namespace engine
 		//- register common engine services
 		for (const auto& name : m_config.m_service_cfg.m_services)
 		{
-			auto type = rttr::type::get_by_name(name);
+			auto type = rttr::type::get_by_name(name.c_str());
 
 			if (type.is_valid() && cservice_manager::emplace(type))
 			{

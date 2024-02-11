@@ -1,8 +1,15 @@
 #pragma once
 #include <core.h>
 
+#define bitset(byte,nbit)   ((byte) |=  (1<<(nbit)))
+#define bitclear(byte,nbit) ((byte) &= ~(1<<(nbit)))
+#define bitflip(byte,nbit)  ((byte) ^=  (1<<(nbit)))
+#define bitcheck(byte,nbit) ((byte) &   (1<<(nbit)))
+
 namespace ecs
 {
+	using entity_id_t = uint64_t;
+
 	namespace detail
 	{
 		constexpr uint64_t C_STARTING_COMPONENT_COUNT = 1024;
@@ -68,6 +75,29 @@ namespace ecs
 			TType* unsafe(uint64_t index);
 		};
 
+		template<class TComponent>
+		class ccomponent_pool : public cdynamic_pool<TComponent>
+		{
+		public:
+			ccomponent_pool() = default;
+			~ccomponent_pool();
+
+
+			TComponent& add(entity_id_t entity)
+			{
+				uint64_t index = MAX(uint64_t);
+
+				auto* c = m_component_pool.create(index);
+
+				m_entity_lookup[entity] = index;
+			}
+
+
+		private:
+			cdynamic_pool<TComponent> m_component_pool;
+			umap_t<entity_id_t, uint64_t> m_entity_lookup;
+		};
+
 	} //- detail
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -75,11 +105,29 @@ namespace ecs
 	{
 	public:
 
+		//- O(log n) to check whether has component
 		template<class TComponent>
-		TComponent& find(uint64_t entity)
+		bool has(entity_id_t entity)
+		{
+			if (auto it = stl::find(m_entity_components.begin(), m_entity_components.end(), entity);
+				it != m_entity_components.end())
+			{
+				auto id = rttr::type::get<TComponent>().get_id();
+
+				auto comps = it->second;
+
+				return bitcheck(comps, id);
+			}
+			return false;
+		}
+
+		//- O(log n) + O(n) to find component (the n is quite small and most of the type nor more than 8)
+		template<class TComponent>
+		TComponent& find(entity_id_t entity)
 		{
 			auto id = rttr::type::get<TComponent>().get_id();
-			auto it = stl::find(m_entity_component_lookup, m_entity_component_lookup, entity);
+
+			auto it = stl::find(m_entity_component_lookup.begin(), m_entity_component_lookup.end(), entity);
 
 			if (it == m_entity_component_lookup.end())
 			{
@@ -97,7 +145,7 @@ namespace ecs
 			}
 		}
 
-
+		//- TODO: should be not index, but rather entity identifier
 		template<class TComponent>
 		TComponent& get(uint64_t index)
 		{
@@ -108,6 +156,7 @@ namespace ecs
 			return *pool.modify(index);
 		}
 
+		//- TODO: who is storing all those indices, and should this not be our job
 		template<class TComponent>
 		TComponent& add(uint64_t* index_out)
 		{
@@ -129,7 +178,9 @@ namespace ecs
 
 	private:
 		umap_t<rttr::type::type_id, ref_t<detail::ipool>> m_component_pool;
-		umap_t<uint64_t, vector_t<std::pair<rttr::type::type_id, uint64_t>>> m_entity_component_lookup;
+		umap_t<entity_id_t, vector_t<std::pair<rttr::type::type_id, uint64_t>>> m_entity_component_lookup;
+		umap_t<entity_id_t, uint64_t> m_entity_components;
+
 
 	private:
 		template<class TComponent>

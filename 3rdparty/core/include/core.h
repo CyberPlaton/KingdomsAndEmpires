@@ -29,11 +29,8 @@ namespace stl = std;
 #include <new>
 #include <fstream>
 
-#if CORE_USE_EASTL
-#define RAPIDJSON_HAS_STDSTRING 0
-#else
 #define RAPIDJSON_HAS_STDSTRING 1
-#endif
+#include <string>
 #include <rapidjson.h>
 
 #define STRINGIFY(s) #s
@@ -65,10 +62,10 @@ namespace stl = std;
 #define CORE_FREE(p)			mi_free(p)
 
 template<class T>
-using ref_t = stl::shared_ptr<T>;
+using ref_t = std::shared_ptr<T>;
 template<class T>
-using ptr_t = stl::unique_ptr<T>;
-using string_t = stl::string;
+using ptr_t = std::unique_ptr<T>;
+using string_t = std::string;
 using stringview_t = const char*;
 template<class T>
 using queue_t = stl::queue<T>;
@@ -117,7 +114,7 @@ void* operator new[](size_t size, const char* pName, int flags, unsigned debugFl
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned debugFlags,
 	const char* file, int line)
 {
-	return mi_aligned_alloc(alignment, size);
+	return mi_malloc(size);
 }
 #endif
 

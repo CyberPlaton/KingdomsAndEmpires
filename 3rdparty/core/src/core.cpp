@@ -473,7 +473,7 @@ namespace io
 	{
 		if (!object.is_valid())
 		{
-			return "";
+			return {};
 		}
 
 		rapidjson::StringBuffer sb;
@@ -654,14 +654,14 @@ namespace core
 	namespace string_utils
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		void split(const string_t& string, char delimiter, stl::vector< string_t >& storage)
+		void split(const string_t& string, char delimiter, stl::vector<string_t>& storage)
 		{
 			std::stringstream ss(string.c_str());
 			std::string token;
 
 			while (std::getline(ss, token, delimiter))
 			{
-				storage.emplace_back(token.c_str());
+				storage.push_back(token.c_str());
 			}
 		}
 
@@ -1133,9 +1133,9 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	void cpath::update_strings()
 	{
-		m_string_path = m_path.generic_u8string();
-		m_string_ext = m_path.extension().generic_u8string();
-		m_string_stem = m_path.stem().generic_u8string();
+		m_string_path = m_path.generic_u8string().c_str();
+		m_string_ext = m_path.extension().generic_u8string().c_str();
+		m_string_stem = m_path.stem().generic_u8string().c_str();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -19,6 +19,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	ecs::ccomponent_manager manager;
 
 	uint64_t index = 0;
+	uint64_t components = 0;
+	logging::log_debug(fmt::format("Components: '{}'", components));
 
 	auto& tr = manager.add<ecs::stransform>(&index);
 	tr.m_x = 24.0f;
@@ -26,6 +28,30 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	tr.m_w = 10;
 	tr.m_h = 10;
 	tr.m_rotation = 11;
+
+	bitset(components, rttr::type::get<ecs::stransform>().get_id());
+	logging::log_debug(fmt::format("Components: '{}' (added transform)", components));
+
+	bitset(components, rttr::type::get<ecs::ssprite>().get_id());
+	logging::log_debug(fmt::format("Components: '{}' (added sprite)", components));
+
+	if (bitcheck(components, rttr::type::get<ecs::ssprite>().get_id()))
+	{
+		logging::log_debug("...has sprite");
+	}
+	if (bitcheck(components, rttr::type::get<ecs::stransform>().get_id()))
+	{
+		logging::log_debug("...has transform");
+	}
+	bitclear(components, rttr::type::get<ecs::stransform>().get_id());
+	if (bitcheck(components, rttr::type::get<ecs::ssprite>().get_id()))
+	{
+		logging::log_debug("...has sprite");
+	}
+	if (bitcheck(components, rttr::type::get<ecs::stransform>().get_id()))
+	{
+		logging::log_debug("...has transform");
+	}
 
 
 	uint64_t second_index = 0;
@@ -137,7 +163,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 			logging::log_trace(fmt::format("\tserializing: '{}'", comp_name));
 
-			auto type = rttr::type::get_by_name(comp_name);
+			auto type = rttr::type::get_by_name(comp_name.c_str());
 
 			if(type.is_valid())
 			{
@@ -165,7 +191,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	auto json_text = core::cfile::load_text("entity.json");
 
-	doc.Parse(json_text);
+	doc.Parse(json_text.c_str());
 
 	logging::log_info(fmt::format("Deserializing JSON entity: '{}'", json_text));
 
@@ -272,7 +298,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 int main(int argc, char* argv[])
 {
 	logging::init();
-	logging::log_debug(fmt::format("Starting on main()"));
+	logging::log_debug(core::format("Starting on main()"));
 	logging::log_trace("Log log_trace");
 	logging::log_debug("Log log_debug");
 	logging::log_info("Log log_info");
@@ -311,17 +337,17 @@ int main(int argc, char* argv[])
 	auto color_json = io::to_json(color);
 	auto srect_json = io::to_json(rect);
 
-	logging::log_info(fmt::format("uuid: '{}'", uuid_json));
-	logging::log_info(fmt::format("color: '{}'", color_json));
-	logging::log_info(fmt::format("rect: '{}'", srect_json));
+	logging::log_info(core::format("uuid: '{}'", uuid_json));
+	logging::log_info(core::format("color: '{}'", color_json));
+	logging::log_info(core::format("rect: '{}'", srect_json));
 
-	logging::log_info(fmt::format("Type itech valid: '{}'", rttr::type::get_by_name("itech").is_valid() ? "True" : "False"));
-	logging::log_info(fmt::format("Type sskills valid: '{}'", rttr::type::get_by_name("sskills").is_valid() ? "True" : "False"));
+	logging::log_info(core::format("Type itech valid: '{}'", rttr::type::get_by_name("itech").is_valid() ? "True" : "False"));
+	logging::log_info(core::format("Type sskills valid: '{}'", rttr::type::get_by_name("sskills").is_valid() ? "True" : "False"));
 
 	logging::log_debug("Registered rttr types");
 	for (auto type : rttr::type::get_types())
 	{
-		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
+		logging::log_debug(core::format("\t'{}'", type.get_name().data()));
 	}
 
 	auto skills_type = rttr::type::get_by_name("sskills");
@@ -330,14 +356,14 @@ int main(int argc, char* argv[])
 	{
 		auto meta = prop.get_metadata(kingdoms::C_DISPLAY_NAME_PROP);
 
-		logging::log_info(fmt::format("\tDisplayName: '{}'", meta.get_value<string_t>()));
+		logging::log_info(core::format("\tDisplayName: '{}'", meta.get_value<string_t>()));
 	}
 
 	auto tech_type = rttr::type::get_by_name("itech");
 	logging::log_info("technology::itech properties:");
 	for (const auto& prop : tech_type.get_properties())
 	{
-		logging::log_info(fmt::format("\tproperty: '{}'", prop.get_name().data()));
+		logging::log_info(core::format("\tproperty: '{}'", prop.get_name().data()));
 	}
 
 	//- Important! Create a new world

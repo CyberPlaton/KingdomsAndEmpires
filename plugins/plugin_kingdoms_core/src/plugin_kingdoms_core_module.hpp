@@ -235,47 +235,47 @@ namespace building
 {
 	//- base class for building definitions
 	//------------------------------------------------------------------------------------------------------------------------
-	struct ibuilding : ecs::icomponent
-	{
-		DECLARE_COMPONENT(ibuilding);
-
-		struct srequirements
-		{
-			//- pairing { "swood" : 4 }, where swood is a struct and 4 is required amount to build this structure
-			umap_t<rttr::type, unsigned> m_cost;
-			//- races that can build this
-			int m_race = kingdoms::kingdom_race_all;
-			unsigned m_settlement_citizen_count = 0;
-			int m_settlement_type = kingdoms::settlement_type_all;
-			//- required building to build on top of, where the previous one is replaced with this one,
-			//- if this is left null then building has to be built on empty space
-			rttr::type m_previous_building;
-			//- required slot type. Can be only one
-			kingdoms::building_slot_type m_building_slot;
-			//- set of technologies that have to be researched for this building
-			vector_t<rttr::type> m_technologies;
-		};
-
-		struct sdata
-		{
-			//- pairing { "swood" : 2 }, where swood is a struct and 2 is amount of consumed resource
-			using consumption_pair_t = core::spair<rttr::type, unsigned>;
-			//- pairing { 1 : [{ "swood" : 2 }, ...] }, where 1 is produced amount and
-			//- second is vector of required resources along with amount of consumption
-			using production_pair_t = core::spair<unsigned, vector_t<consumption_pair_t>>;
-			//- pairing { "sbronze" : ... }, where sbronze is a struct and the rest is the production pair from above
-			using production_map_t = umap_t<rttr::type, production_pair_t>;
-
-			string_t m_name;
-			production_map_t m_production_consumption;
-			umap_t<rttr::type, unsigned> m_profession_level_requirements;
-		};
-
-		sdata m_data;
-		srequirements m_requirements;
-
-		RTTR_ENABLE(ecs::icomponent);
-	};
+// 	struct ibuilding : ecs::icomponent
+// 	{
+// 		DECLARE_COMPONENT(ibuilding);
+// 
+// 		struct srequirements
+// 		{
+// 			//- pairing { "swood" : 4 }, where swood is a struct and 4 is required amount to build this structure
+// 			umap_t<rttr::type, unsigned> m_cost;
+// 			//- races that can build this
+// 			int m_race = kingdoms::kingdom_race_all;
+// 			unsigned m_settlement_citizen_count = 0;
+// 			int m_settlement_type = kingdoms::settlement_type_all;
+// 			//- required building to build on top of, where the previous one is replaced with this one,
+// 			//- if this is left null then building has to be built on empty space
+// 			rttr::type m_previous_building;
+// 			//- required slot type. Can be only one
+// 			kingdoms::building_slot_type m_building_slot;
+// 			//- set of technologies that have to be researched for this building
+// 			vector_t<rttr::type> m_technologies;
+// 		};
+// 
+// 		struct sdata
+// 		{
+// 			//- pairing { "swood" : 2 }, where swood is a struct and 2 is amount of consumed resource
+// 			using consumption_pair_t = core::spair<rttr::type, unsigned>;
+// 			//- pairing { 1 : [{ "swood" : 2 }, ...] }, where 1 is produced amount and
+// 			//- second is vector of required resources along with amount of consumption
+// 			using production_pair_t = core::spair<unsigned, vector_t<consumption_pair_t>>;
+// 			//- pairing { "sbronze" : ... }, where sbronze is a struct and the rest is the production pair from above
+// 			using production_map_t = umap_t<rttr::type, production_pair_t>;
+// 
+// 			string_t m_name;
+// 			production_map_t m_production_consumption;
+// 			umap_t<rttr::type, unsigned> m_profession_level_requirements;
+// 		};
+// 
+// 		sdata m_data;
+// 		srequirements m_requirements;
+// 
+// 		RTTR_ENABLE(ecs::icomponent);
+// 	};
 
 } //- building
 
@@ -625,12 +625,12 @@ namespace resource
 namespace building
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(ibuilding)
-	{
-		rttr::registration::class_<ibuilding>("ibuilding")
-			.property("m_requirements", &ibuilding::m_requirements)
-			.property("m_data", &ibuilding::m_data)
-			;
-	}
+// 	REFLECT_INLINE(ibuilding)
+// 	{
+// 		rttr::registration::class_<ibuilding>("ibuilding")
+// 			.property("m_requirements", &ibuilding::m_requirements)
+// 			.property("m_data", &ibuilding::m_data)
+// 			;
+// 	}
 
 } //- building
