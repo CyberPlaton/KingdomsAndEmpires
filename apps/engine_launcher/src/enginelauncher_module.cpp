@@ -16,6 +16,35 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
 
+	ecs::ccomponent_manager manager;
+
+	uint64_t index = 0;
+
+	auto& tr = manager.add<ecs::stransform>(&index);
+	tr.m_x = 24.0f;
+	tr.m_y = 11920;
+	tr.m_w = 10;
+	tr.m_h = 10;
+	tr.m_rotation = 11;
+
+
+	uint64_t second_index = 0;
+
+	auto& tran = manager.add<ecs::stransform>(&second_index);
+	tran.m_x = 1.0f;
+	tran.m_y = 120;
+	tran.m_w = 25;
+	tran.m_h = 25;
+	tran.m_rotation = 0.5f;
+
+
+	uint64_t third_index = 0;
+
+	auto& sprite = manager.add<ecs::ssprite>(&third_index);
+
+
+	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
+
 	logging::log_debug("Registered rttr types");
 	for (auto type : rttr::type::get_types())
 	{
@@ -59,32 +88,32 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
 
 	//- check components
-	ecs::sidentifier identifier; identifier.m_self = inst;
-	ecs::stransform transform;
-	ecs::ssprite sprite;
-	ecs::sanimation animation;
-	ecs::shierarchy hierarchy;
+// 	ecs::sidentifier identifier; identifier.m_self = inst;
+// 	ecs::stransform transform;
+// 	ecs::ssprite sprite;
+// 	ecs::sanimation animation;
+// 	ecs::shierarchy hierarchy;
+// 
+// 	inst.set<ecs::sidentifier>(identifier);
+// 	inst.set<ecs::stransform>(transform);
+// 	inst.set<ecs::ssprite>(sprite);
+// 	inst.set<ecs::sanimation>(animation);
+// 	inst.set<ecs::shierarchy>(hierarchy);
 
-	inst.set<ecs::sidentifier>(identifier);
-	inst.set<ecs::stransform>(transform);
-	inst.set<ecs::ssprite>(sprite);
-	inst.set<ecs::sanimation>(animation);
-	inst.set<ecs::shierarchy>(hierarchy);
-
-	auto json = io::to_json(identifier);
-	logging::log_info(fmt::format("sidentifier: '{}'", json));
-
-	json = io::to_json(transform);
-	logging::log_info(fmt::format("transform: '{}'", json));
-
-	json = io::to_json(sprite);
-	logging::log_info(fmt::format("sprite: '{}'", json));
-
-	json = io::to_json(animation);
-	logging::log_info(fmt::format("animation: '{}'", json));
-
-	json = io::to_json(hierarchy);
-	logging::log_info(fmt::format("hierarchy: '{}'", json));
+// 	auto json = io::to_json(identifier);
+// 	logging::log_info(fmt::format("sidentifier: '{}'", json));
+// 
+// 	json = io::to_json(transform);
+// 	logging::log_info(fmt::format("transform: '{}'", json));
+// 
+// 	json = io::to_json(sprite);
+// 	logging::log_info(fmt::format("sprite: '{}'", json));
+// 
+// 	json = io::to_json(animation);
+// 	logging::log_info(fmt::format("animation: '{}'", json));
+// 
+// 	json = io::to_json(hierarchy);
+// 	logging::log_info(fmt::format("hierarchy: '{}'", json));
 
 
 	logging::log_debug("//Serialization-----------------------------------------------------------------------------------------------------------");

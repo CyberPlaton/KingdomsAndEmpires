@@ -4,20 +4,21 @@
 
 namespace ecs
 {
-	//- more of a utility and wrapper for flecs::entity.
-	//- Name of the entity is a UUID generated either randomly or specific.
-	//- Is created from entity manager.
+
 	//------------------------------------------------------------------------------------------------------------------------
 	class centity final
 	{
 	public:
-		centity(flecs::entity e);
+		centity(flecs::entity e) {}
 
-		auto self() const { return m_self; }
-		auto uuid() const { return m_self.name().c_str(); }
+		virtual void on_update(float) {}
+
+
+		const auto& uuid() const { return m_uuid; }
 
 	private:
-		const flecs::entity m_self;
+		core::cuuid m_uuid;
+		vector_t<rttr::variant> m_components;
 	};
 
 } //- ecs
