@@ -5,7 +5,15 @@
 //- use this macro for defining a simple component. Simple means that
 //- it does not inherit from a complex component hierarchy.
 #define DECLARE_COMPONENT(c) \
-static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; }
+static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; } \
+static void serialize(flecs::entity e, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) \
+{ \
+	const auto* comp = e.get<c>(); \
+	writer.StartObject(); \
+	writer.String(name(), strlen(name()), false); \
+	writer.String(io::to_json(comp).c_str()); \
+	writer.EndObject(); \
+}
 
 namespace ecs
 {
@@ -115,6 +123,7 @@ namespace ecs
 	{
 		rttr::registration::class_<sidentifier>("sidentifier")
 			.property("m_uuid", &sidentifier::get_uuid, &sidentifier::set_uuid)
+			.method("serialize", &sidentifier::serialize)
 			;
 	};
 
@@ -127,6 +136,7 @@ namespace ecs
 			.property("m_w", &stransform::m_w)
 			.property("m_h", &stransform::m_h)
 			.property("m_rotation", &stransform::m_rotation)
+			.method("serialize", &stransform::serialize)
 			;
 	};
 
@@ -145,6 +155,7 @@ namespace ecs
 			.property("m_sourcex", &ssprite::m_sourcex)
 			.property("m_sourcey", &ssprite::m_sourcey)
 			.property("m_tint", &ssprite::m_tint)
+			.method("serialize", &ssprite::serialize)
 			;
 	};
 
@@ -164,6 +175,7 @@ namespace ecs
 			.property("m_frame_height", &sanimation::m_frame_height)
 			.property("m_frame_width", &sanimation::m_frame_width)
 			.property("m_keyframes", &sanimation::m_keyframes)
+			.method("serialize", &sanimation::serialize)
 			;
 	};
 
@@ -173,6 +185,7 @@ namespace ecs
 		rttr::registration::class_<shierarchy>("shierarchy")
 			.property("m_parent", &shierarchy::m_parent)
 			.property("m_children", &shierarchy::m_children)
+			.method("serialize", &shierarchy::serialize)
 			;
 	};
 

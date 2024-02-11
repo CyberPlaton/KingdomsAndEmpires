@@ -91,6 +91,7 @@ namespace races
 	REFLECT_INLINE(shuman)
 	{
 		rttr::registration::class_<shuman>("shuman")
+			.method("serialize", &shuman::serialize)
 			;
 	};
 

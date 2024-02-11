@@ -42,6 +42,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_warn("\tchanging Walthers skill level...");
 
 	walther->m_skills.m_light_armor = 50;
+	walther->m_attributes.m_agility = 68;
 
 	logging::log_warn(fmt::format("Prefab Light Armor '{}'", prefab->m_skills.m_light_armor));
 	logging::log_warn(fmt::format("Walther Light Armor '{}'", walther->m_skills.m_light_armor));
@@ -64,6 +65,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	ecs::sanimation animation;
 	ecs::shierarchy hierarchy;
 
+	inst.set<ecs::sidentifier>(identifier);
+	inst.set<ecs::stransform>(transform);
+	inst.set<ecs::ssprite>(sprite);
+	inst.set<ecs::sanimation>(animation);
+	inst.set<ecs::shierarchy>(hierarchy);
+
 	auto json = io::to_json(identifier);
 	logging::log_info(fmt::format("sidentifier: '{}'", json));
 
@@ -78,6 +85,83 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	json = io::to_json(hierarchy);
 	logging::log_info(fmt::format("hierarchy: '{}'", json));
+
+
+	logging::log_debug("//Serialization-----------------------------------------------------------------------------------------------------------");
+	world.progress(0.016f);
+
+	rapidjson::StringBuffer buffer;
+	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+
+	writer.StartObject();
+	writer.String("components");
+	writer.StartArray();
+
+	inst.each([&](flecs::id c)
+		{
+			auto t = c.str();
+
+			vector_t<string_t> full_comp_name;
+			core::string_utils::split(t.c_str(), '.', full_comp_name);
+
+			const auto& comp_name = full_comp_name[full_comp_name.size() - 1];
+
+			logging::log_trace(fmt::format("\tserializing: '{}'", comp_name));
+
+			auto type = rttr::type::get_by_name(comp_name);
+
+			if(type.is_valid())
+			{
+				auto m = type.get_method("serialize");
+
+				if (m.is_valid())
+				{
+					m.invoke({}, inst, writer);
+				}
+			}
+
+			logging::log_trace(fmt::format("\tprogress: '{}'", buffer.GetString()));
+		});
+
+	writer.EndArray();
+	writer.EndObject();
+
+	logging::log_info(fmt::format("entity: '{}'", buffer.GetString()));
+
+	core::cfile::save_text("entity.json", buffer.GetString());
+
+	logging::log_debug("//Deserialization---------------------------------------------------------------------------------------------------------");
+
+	rapidjson::Document doc;
+
+	auto json_text = core::cfile::load_text("entity.json");
+
+	doc.Parse(json_text);
+
+	logging::log_info(fmt::format("Deserializing JSON entity: '{}'", json_text));
+
+	auto& val = doc.FindMember("components");
+
+	auto& comps = val->value;
+
+	for (auto& comp : comps.GetArray())
+	{
+		switch(comp.GetType())
+		{
+		case rapidjson::kObjectType:
+		{
+			auto& comp_object = comp.GetObject();
+			break;
+		}
+		default:
+		{
+			logging::log_warn(fmt::format("unrec. type: '{}'", comp.GetType()));
+		}
+		}
+	}
+
+
+
 
 	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
 
