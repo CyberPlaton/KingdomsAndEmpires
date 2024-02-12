@@ -10,7 +10,7 @@ namespace ecs
 	//- dependencies can be traversed recursive
 	struct smodule_info
 	{
-		string_t m_name;
+		std::string m_name;
 		flecs::entity m_module_entity;
 		vector_t<smodule_info> m_dependencies;
 

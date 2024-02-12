@@ -1,6 +1,69 @@
 #include "enginelauncher_module.hpp"
 #include <iostream>
 
+struct stest
+{
+	kingdoms::sskills skills;
+	core::cuuid uuid;
+	core::srect rect;
+	vec2_t vec;
+	vector_t<float> damages;
+
+	RTTR_ENABLE();
+};
+
+REFLECT_INLINE(stest)
+{
+	rttr::registration::class_<stest>("stest")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_object
+		)
+		.property("skills", &stest::skills)
+		.property("uuid", &stest::uuid)
+		.property("damages", &stest::damages)
+		.property("rect", &stest::rect)
+		.property("vec", &stest::vec)
+		;
+};
+
+void core_io_error_function(uint8_t level, const std::string& message)
+{
+	switch (level)
+	{
+	case SPDLOG_LEVEL_TRACE:
+	{
+		logging::log_trace(message);
+		break;
+	}
+	case SPDLOG_LEVEL_DEBUG:
+	{
+		logging::log_debug(message);
+		break;
+	}
+	case SPDLOG_LEVEL_INFO:
+	{
+		logging::log_info(message);
+		break;
+	}
+	case SPDLOG_LEVEL_WARN:
+	{
+		logging::log_warn(message);
+		break;
+	}
+	case SPDLOG_LEVEL_ERROR:
+	{
+		logging::log_error(message);
+		break;
+	}
+	case SPDLOG_LEVEL_CRITICAL:
+	{
+		logging::log_critical(message);
+		break;
+	}
+	}
+}
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
@@ -15,6 +78,43 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_warn("Log log_warn");
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
+
+	logging::log_debug("Registered rttr types");
+	for (auto type : rttr::type::get_types())
+	{
+		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
+	}
+
+	//- set core io callback
+	core::io::serror_reporter::instance().m_callback = core_io_error_function;
+
+	core::crandom rand;
+
+	stest test;
+	test.skills.m_block = 100;
+	test.skills.m_acrobatics = 25;
+	test.rect = {10.0f, 10.0f, 20.0f, 20.0f};
+	test.vec = {91.0f, 1.0f};
+	for(auto i = 0; i < 10; ++i)
+	{
+		test.damages.push_back(rand.normalized_float());
+	}
+
+	logging::log_debug("----------Serializing----------");
+	auto json = io::to_json(test);
+
+	logging::log_info(fmt::format("stest: '{}'", json));
+
+
+	logging::log_debug("----------Deserializing----------");
+	auto deser = core::io::from_json_string(test.get_type(), json);
+
+	auto deser_json = io::to_json(deser);
+
+	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
+
+
+
 
 	ecs::ccomponent_manager manager;
 
@@ -156,7 +256,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		{
 			auto t = c.str();
 
-			vector_t<string_t> full_comp_name;
+			vector_t<std::string> full_comp_name;
 			core::string_utils::split(t.c_str(), '.', full_comp_name);
 
 			const auto& comp_name = full_comp_name[full_comp_name.size() - 1];
@@ -271,7 +371,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	{
 		auto meta = prop.get_metadata(kingdoms::C_DISPLAY_NAME_PROP);
 
-		logging::log_info(fmt::format("\tDisplayName: '{}'", meta.get_value<string_t>()));
+		logging::log_info(fmt::format("\tDisplayName: '{}'", meta.get_value<std::string>()));
 	}
 
 	auto tech_type = rttr::type::get_by_name("itech");
@@ -356,7 +456,7 @@ int main(int argc, char* argv[])
 	{
 		auto meta = prop.get_metadata(kingdoms::C_DISPLAY_NAME_PROP);
 
-		logging::log_info(core::format("\tDisplayName: '{}'", meta.get_value<string_t>()));
+		logging::log_info(core::format("\tDisplayName: '{}'", meta.get_value<std::string>()));
 	}
 
 	auto tech_type = rttr::type::get_by_name("itech");

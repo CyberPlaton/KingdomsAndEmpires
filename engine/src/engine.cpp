@@ -67,7 +67,7 @@ namespace engine
 		{
 			auto config_text = core::cfile::load_text(cfg.view());
 
-			string_t json(config_text);
+			std::string json(config_text);
 
 			if (io::from_json(json, config))
 			{

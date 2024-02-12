@@ -383,7 +383,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader_uniform::cshader_uniform(const string_t& name, void* value, raylib::ShaderUniformDataType type) :
+	cshader_uniform::cshader_uniform(const std::string& name, void* value, raylib::ShaderUniformDataType type) :
 		m_name(name), m_data(value), m_type(type)
 	{
 	}
@@ -401,7 +401,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	string_t cshader_uniform::get_name() const
+	std::string cshader_uniform::get_name() const
 	{
 		return m_name;
 	}
@@ -791,9 +791,9 @@ namespace compression
 // 
 // 	//------------------------------------------------------------------------------------------------------------------------
 // 	bool compress_image_to_bc(const core::cpath& compressed_image_path, core::cpath& path, stringview_t filename,
-// 		nvtt::Format format, nvtt::Quality quality, string_t* error /*= nullptr*/)
+// 		nvtt::Format format, nvtt::Quality quality, std::string* error /*= nullptr*/)
 // 	{
-// 		auto report = [&](const string_t& e)
+// 		auto report = [&](const std::string& e)
 // 		{
 // 			if(error)
 // 			{

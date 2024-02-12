@@ -118,8 +118,8 @@ namespace sm
 	public:
 		struct sconfig
 		{
-			string_t m_title				= {};
-			string_t m_window_icon_path		= {};
+			std::string m_title				= {};
+			std::string m_window_icon_path		= {};
 			window_resolution m_resolution	= window_resolution_custom;
 			unsigned m_width				= 0;
 			unsigned m_height				= 0;
@@ -204,17 +204,17 @@ namespace sm
 	{
 	public:
 		cshader_uniform() = default;
-		cshader_uniform(const string_t& name, void* value, raylib::ShaderUniformDataType type);
+		cshader_uniform(const std::string& name, void* value, raylib::ShaderUniformDataType type);
 
 		void* get() const;
 		template< typename T >
 		T get_as();
 		raylib::ShaderUniformDataType get_type() const;
-		string_t get_name() const;
+		std::string get_name() const;
 		const char* c_str() const;
 
 	private:
-		string_t m_name;
+		std::string m_name;
 		raylib::ShaderUniformDataType m_type;
 		void* m_data;
 	};
@@ -253,9 +253,9 @@ namespace sm
 		void set_shader(technique_t technique);
 		technique_t get_shader() const;
 		template < typename T >
-		void add_static_uniform(const string_t& uniform_name, const T& value, raylib::ShaderUniformDataType type);
+		void add_static_uniform(const std::string& uniform_name, const T& value, raylib::ShaderUniformDataType type);
 		template < typename T >
-		void add_dynamic_uniform(const string_t& uniform_name, const T& value, raylib::ShaderUniformDataType type);
+		void add_dynamic_uniform(const std::string& uniform_name, const T& value, raylib::ShaderUniformDataType type);
 
 	private:
 		technique_t m_program;
@@ -272,14 +272,14 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template < typename T >
-	void sm::cmaterial::add_dynamic_uniform(const string_t& uniform_name, const T& value, raylib::ShaderUniformDataType type)
+	void sm::cmaterial::add_dynamic_uniform(const std::string& uniform_name, const T& value, raylib::ShaderUniformDataType type)
 	{
 		m_dynamic_uniforms.emplace_back(uniform_name, value, type);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template < typename T >
-	void sm::cmaterial::add_static_uniform(const string_t& uniform_name, const T& value, raylib::ShaderUniformDataType type)
+	void sm::cmaterial::add_static_uniform(const std::string& uniform_name, const T& value, raylib::ShaderUniformDataType type)
 	{
 		m_static_uniforms.emplace_back(uniform_name, value, type);
 	}
@@ -328,7 +328,7 @@ namespace compression
 // 	u64 estimate_texture_gpu_size(u32 w, u32 h, sm::texture_format format);
 // 	bool compress_image_to_qoi(const core::cpath& path, const raylib::Image& image);
 // 	bool compress_image_to_bc(const core::cpath& compressed_image_path, core::cpath& path,
-// 		stringview_t filename, nvtt::Format format, nvtt::Quality quality, string_t* error = nullptr);
+// 		stringview_t filename, nvtt::Format format, nvtt::Quality quality, std::string* error = nullptr);
 // 	bool decompress_qoi_to_image(const core::cpath& path, raylib::Image& image);
 // 	bool decompress_qoi_to_image(void* image_data, u32 image_size, raylib::Image& image);
 

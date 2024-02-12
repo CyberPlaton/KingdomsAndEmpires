@@ -266,7 +266,7 @@ namespace building
 // 			//- pairing { "sbronze" : ... }, where sbronze is a struct and the rest is the production pair from above
 // 			using production_map_t = umap_t<rttr::type, production_pair_t>;
 // 
-// 			string_t m_name;
+// 			std::string m_name;
 // 			production_map_t m_production_consumption;
 // 			umap_t<rttr::type, unsigned> m_profession_level_requirements;
 // 		};
@@ -300,7 +300,7 @@ namespace technology
 	//------------------------------------------------------------------------------------------------------------------------
 	struct itech
 	{
-		string_t m_name;
+		std::string m_name;
 		vector_t<ref_t<itech>> m_requirements;
 		ref_t<itech> m_parent;
 		int m_race_requirement;

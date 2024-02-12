@@ -147,7 +147,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	material_t crenderer::get_material(const string_t& material_name) const
+	material_t crenderer::get_material(const std::string& material_name) const
 	{
 		return m_material_manager.get_material(material_name);
 	}
@@ -160,13 +160,13 @@ namespace sm
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	texture_t crenderer::create_texture(const string_t& texture_name, const string_t& path)
+	texture_t crenderer::create_texture(const std::string& texture_name, const std::string& path)
 	{
 		return m_texture_manager.create_texture(texture_name, path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	texture_t crenderer::get_texture(const string_t& texture_name) const
+	texture_t crenderer::get_texture(const std::string& texture_name) const
 	{
 		return m_texture_manager.get_texture(texture_name);
 	}
@@ -178,25 +178,25 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	const raylib::Texture2D* crenderer::get_gl_texture(const string_t& texture_name) const
+	const raylib::Texture2D* crenderer::get_gl_texture(const std::string& texture_name) const
 	{
 		return m_texture_manager.get_gl_texture(texture_name);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	technique_t crenderer::create_technique(const string_t& technique_name, const string_t& vs_path, const string_t& ps_path)
+	technique_t crenderer::create_technique(const std::string& technique_name, const std::string& vs_path, const std::string& ps_path)
 	{
 		return m_technique_manager.create_technique(technique_name, vs_path, ps_path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	technique_t crenderer::create_technique_embedded(const string_t& technique_name, const char* vs, const char* ps)
+	technique_t crenderer::create_technique_embedded(const std::string& technique_name, const char* vs, const char* ps)
 	{
 		return m_technique_manager.create_technique_embedded(technique_name, vs, ps);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	technique_t crenderer::get_technique(const string_t& technique_name)
+	technique_t crenderer::get_technique(const std::string& technique_name)
 	{
 		return m_technique_manager.get_technique(technique_name);
 	}
@@ -209,13 +209,13 @@ namespace sm
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	spriteatlas_t crenderer::create_spriteatlas(const string_t& spriteatlas_name, const string_t& texture_path, const vec2_t& frames)
+	spriteatlas_t crenderer::create_spriteatlas(const std::string& spriteatlas_name, const std::string& texture_path, const vec2_t& frames)
 	{
 		return m_spriteatlas_manager.create_spriteatlas(spriteatlas_name, texture_path, frames);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	spriteatlas_t crenderer::get_spriteatlas(const string_t& spriteatlas_name) const
+	spriteatlas_t crenderer::get_spriteatlas(const std::string& spriteatlas_name) const
 	{
 		return m_spriteatlas_manager.get_spriteatlas(spriteatlas_name);
 	}
@@ -228,7 +228,7 @@ namespace sm
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::srect crenderer::get_subtexture(spriteatlas_t atlas, const string_t& subtexture_name)
+	core::srect crenderer::get_subtexture(spriteatlas_t atlas, const std::string& subtexture_name)
 	{
 		auto h = algorithm::hash(subtexture_name.c_str());
 		const auto& spriteatlas = m_spriteatlas_manager.get_internal_spriteatlas(h);
@@ -250,7 +250,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	material_t crenderer::create_material(const string_t& material_name, technique_t technique,
+	material_t crenderer::create_material(const std::string& material_name, technique_t technique,
 		blending_mode mode /*= blending_mode_alpha*/, blending_equation equation /*= blending_equation_blend_color*/,
 		blending_factor src /*= blending_factor_src_color*/, blending_factor dst /*= blending_factor_one_minus_src_alpha*/)
 	{
@@ -345,7 +345,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		texture_t ctexture_manager::create_texture(const string_t& texture_name, const string_t& path)
+		texture_t ctexture_manager::create_texture(const std::string& texture_name, const std::string& path)
 		{
 			auto texture = raylib::LoadTexture(path.c_str());
 
@@ -389,14 +389,14 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		texture_t ctexture_manager::get_texture(const string_t& texture_name) const
+		texture_t ctexture_manager::get_texture(const std::string& texture_name) const
 		{
 			auto h = algorithm::hash(texture_name.c_str());
 			return m_texture_names.at(h);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		const raylib::Texture2D* ctexture_manager::get_gl_texture(const string_t& texture_name) const
+		const raylib::Texture2D* ctexture_manager::get_gl_texture(const std::string& texture_name) const
 		{
 			auto tex = get_texture(texture_name);
 			return &m_texture_manager.at(tex).m_texture;
@@ -430,8 +430,8 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		technique_t ctechnique_manager::create_technique(const string_t& technique_name,
-			const string_t& vs_path, const string_t& ps_path)
+		technique_t ctechnique_manager::create_technique(const std::string& technique_name,
+			const std::string& vs_path, const std::string& ps_path)
 		{
 			auto program = raylib::LoadShader(vs_path.c_str(), ps_path.c_str());
 
@@ -473,7 +473,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		technique_t ctechnique_manager::create_technique_embedded(const string_t& technique_name, const char* vs, const char* ps)
+		technique_t ctechnique_manager::create_technique_embedded(const std::string& technique_name, const char* vs, const char* ps)
 		{
 			auto h = algorithm::hash(technique_name.c_str());
 
@@ -519,7 +519,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		technique_t ctechnique_manager::get_technique(const string_t& technique_name)
+		technique_t ctechnique_manager::get_technique(const std::string& technique_name)
 		{
 			auto h = algorithm::hash(technique_name.c_str());
 			
@@ -567,7 +567,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		material_t cmaterial_manager::create_material(const string_t& material_name, technique_t technique,
+		material_t cmaterial_manager::create_material(const std::string& material_name, technique_t technique,
 			blending_mode mode /*= blending_mode_alpha*/, blending_equation equation /*= blending_equation_blend_color*/,
 			blending_factor src /*= blending_factor_src_color*/, blending_factor dst /*= blending_factor_one_minus_src_alpha*/)
 		{
@@ -623,7 +623,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		material_t cmaterial_manager::get_material(const string_t& material_name) const
+		material_t cmaterial_manager::get_material(const std::string& material_name) const
 		{
 			auto h = algorithm::hash(material_name.c_str());
 
@@ -676,7 +676,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		spriteatlas_t cspriteatlas_manager::create_spriteatlas(const string_t& spriteatlas_name, const string_t& texture_path, const vec2_t& frames)
+		spriteatlas_t cspriteatlas_manager::create_spriteatlas(const std::string& spriteatlas_name, const std::string& texture_path, const vec2_t& frames)
 		{
 			auto h = algorithm::hash(spriteatlas_name.c_str());
 			//- create only if not already created
@@ -753,7 +753,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		spriteatlas_t cspriteatlas_manager::get_spriteatlas(const string_t& spriteatlas_name) const
+		spriteatlas_t cspriteatlas_manager::get_spriteatlas(const std::string& spriteatlas_name) const
 		{
 			auto h = algorithm::hash(spriteatlas_name.c_str());
 			return m_spriteatlas_names.at(h);
@@ -776,7 +776,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		core::srect cspriteatlas_manager::get_subtexture(spriteatlas_t atlas, const string_t& subtexture_name)
+		core::srect cspriteatlas_manager::get_subtexture(spriteatlas_t atlas, const std::string& subtexture_name)
 		{
 			auto h = algorithm::hash(subtexture_name.c_str());
 			const auto& spriteatlas = m_spriteatlas_manager[atlas];

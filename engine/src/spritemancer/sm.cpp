@@ -200,19 +200,19 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	technique_t create_technique(const string_t& technique_name, const string_t& vs_path, const string_t& ps_path)
+	technique_t create_technique(const std::string& technique_name, const std::string& vs_path, const std::string& ps_path)
 	{
 		return internal::ctx().renderer().create_technique(technique_name, vs_path, ps_path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	technique_t create_technique_embedded(const string_t& technique_name, const char* vs, const char* ps)
+	technique_t create_technique_embedded(const std::string& technique_name, const char* vs, const char* ps)
 	{
 		return internal::ctx().renderer().create_technique_embedded(technique_name, vs, ps);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	technique_t get_technique(const string_t& technique_name)
+	technique_t get_technique(const std::string& technique_name)
 	{
 		return internal::ctx().renderer().get_technique(technique_name);
 	}
@@ -225,13 +225,13 @@ namespace sm
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	texture_t create_texture(const string_t& texture_name, const string_t& path)
+	texture_t create_texture(const std::string& texture_name, const std::string& path)
 	{
 		return internal::ctx().renderer().create_texture(texture_name, path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	texture_t get_texture(const string_t& texture_name)
+	texture_t get_texture(const std::string& texture_name)
 	{
 		return internal::ctx().renderer().get_texture(texture_name);
 	}
@@ -244,13 +244,13 @@ namespace sm
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	const raylib::Texture2D* get_gl_texture(const string_t& texture_name)
+	const raylib::Texture2D* get_gl_texture(const std::string& texture_name)
 	{
 		return internal::ctx().renderer().get_gl_texture(texture_name);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	material_t create_material(const string_t& material_name, technique_t technique, blending_mode mode /*= blending_mode_alpha*/,
+	material_t create_material(const std::string& material_name, technique_t technique, blending_mode mode /*= blending_mode_alpha*/,
 		blending_equation equation /*= blending_equation_blend_color*/, blending_factor src /*= blending_factor_src_color*/,
 		blending_factor dst /*= blending_factor_one_minus_src_alpha*/)
 	{
@@ -258,7 +258,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	material_t get_material(const string_t& material_name)
+	material_t get_material(const std::string& material_name)
 	{
 		return internal::ctx().renderer().get_material(material_name);
 	}
@@ -271,13 +271,13 @@ namespace sm
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	spriteatlas_t create_spriteatlas(const string_t& spriteatlas_name, const string_t& texture_path, const vec2_t& frames)
+	spriteatlas_t create_spriteatlas(const std::string& spriteatlas_name, const std::string& texture_path, const vec2_t& frames)
 	{
 		return internal::ctx().renderer().create_spriteatlas(spriteatlas_name, texture_path, frames);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	spriteatlas_t get_spriteatlas(const string_t& spriteatlas_name)
+	spriteatlas_t get_spriteatlas(const std::string& spriteatlas_name)
 	{
 		return internal::ctx().renderer().get_spriteatlas(spriteatlas_name);
 	}

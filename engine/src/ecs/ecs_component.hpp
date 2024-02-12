@@ -31,8 +31,8 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(sidentifier);
 
-		string_t get_uuid() const { return m_self.name(); }
-		void set_uuid(string_t uuid) { m_self.set_name(uuid.c_str());}
+		std::string get_uuid() const { return m_self.name(); }
+		void set_uuid(std::string uuid) { m_self.set_name(uuid.c_str());}
 
 		flecs::entity m_self;
 

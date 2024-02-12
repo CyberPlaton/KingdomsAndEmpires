@@ -9,7 +9,7 @@ namespace engine
 	public:
 		struct sconfig
 		{
-			vector_t<string_t> m_services;
+			vector_t<std::string> m_services;
 
 			RTTR_ENABLE();
 		};

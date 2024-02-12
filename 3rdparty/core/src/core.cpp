@@ -1,4 +1,5 @@
 #include "core.hpp"
+#include "simdjson.h"
 #include <sstream>
 
 namespace algorithm
@@ -469,7 +470,7 @@ namespace io
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	string_t to_json(rttr::instance object)
+	std::string to_json(rttr::instance object)
 	{
 		if (!object.is_valid())
 		{
@@ -485,7 +486,7 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool from_json(const string_t& json, rttr::instance object)
+	bool from_json(const std::string& json, rttr::instance object)
 	{
 		rapidjson::Document document;
 
@@ -531,7 +532,7 @@ namespace core
 
 		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message
 		//------------------------------------------------------------------------------------------------------------------------
-		static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out, string_t* error)
+		static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out, std::string* error)
 		{
 			uint8_t* data = nullptr;
 			*data_size_out = 0;
@@ -562,7 +563,7 @@ namespace core
 
 		//- @reference: raylib SaveFileData
 		//------------------------------------------------------------------------------------------------------------------------
-		static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size, string_t* error)
+		static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size, std::string* error)
 		{
 			if (file_path != nullptr)
 			{
@@ -590,7 +591,7 @@ namespace core
 
 		//- @reference: raylib LoadFileText
 		//------------------------------------------------------------------------------------------------------------------------
-		static char* load_text_file_data(stringview_t file_path, string_t* error)
+		static char* load_text_file_data(stringview_t file_path, std::string* error)
 		{
 			char* text = nullptr;
 
@@ -628,7 +629,7 @@ namespace core
 
 		//- @reference: raylib SaveFileText
 		//------------------------------------------------------------------------------------------------------------------------
-		static bool save_text_file_data(stringview_t file_path, stringview_t text, string_t* error)
+		static bool save_text_file_data(stringview_t file_path, stringview_t text, std::string* error)
 		{
 			if (file_path != nullptr)
 			{
@@ -651,10 +652,426 @@ namespace core
 
 	} //- unnamed
 
+	namespace io
+	{
+// 		rttr::variant construct_object(rttr::type type)
+// 		{
+// 			if (type.get_constructor({}).is_valid())
+// 			{
+// 				return type.get_constructor({}).invoke();
+// 			}
+// 			return {};
+// 		}
+// 
+// 		rttr::variant from_json_recursively(rttr::type expected, nlohmann::json& json);
+// 		void from_json_recursively(rttr::variant& object_out, rttr::type expected, nlohmann::json& json);
+// 
+// 		void extract_from_array(rttr::variant& object_out, nlohmann::json& json)
+// 		{
+// 			auto type = object_out.get_type();
+// 
+// 			//- vector
+// 			if (type.is_sequential_container())
+// 			{
+// 				auto view = object_out.create_sequential_view();
+// 				auto expected = view.get_value_type();
+// 
+// 				auto i = 0;
+// 				for (auto& it : json)
+// 				{
+// 					auto val = from_json_recursively(expected, it);
+// 
+// 					view.set_value(i++, val);
+// 				}
+// 
+// 			}
+// 			//- map
+// 			else if(type.is_associative_container())
+// 			{
+// 				auto view = object_out.create_associative_view();
+// 				auto key_expected = view.get_key_type();
+// 				auto val_expected = view.get_value_type();
+// 
+// 				for (auto& it : json)
+// 				{
+// 					auto& key_elem = it.find("key");
+// 					auto& val_elem = it.find("value");
+// 
+// 					if(key_elem != it.end() && val_elem != it.end())
+// 					{
+// 						auto key = from_json_recursively(key_expected, key_elem.value());
+// 						auto val = from_json_recursively(val_expected, val_elem.value());
+// 
+// 						view.insert(key, val);
+// 					}
+// 				}
+// 			}
+// 			else
+// 			{
+// 				//- error
+// 			}
+// 		}
+// 
+// 		void extract_from_object(rttr::variant& object_out, nlohmann::json& json)
+// 		{
+// 			auto type = object_out.get_type();
+// 
+// 			if (type.is_class())
+// 			{
+// 				for(const auto& prop: type.get_properties())
+// 				{
+// 					std::string name = prop.get_name().data();
+// 
+// 					if (const auto& it = json.find(name); it != json.end())
+// 					{
+// 						auto& key = it.key();
+// 						auto& val = it.value();
+// 
+// 						auto object = prop.get_type().create();
+// 
+// 						from_json_recursively(object, prop.get_type(), val);
+// 
+// 						prop.set_value(object_out, object);
+// 					}
+// 				}
+// 			}
+// 			else
+// 			{
+// 				//- error
+// 			}
+// 		}
+// 
+// 		rttr::variant from_json_recursively(rttr::type expected, nlohmann::json& json)
+// 		{
+// 			rttr::variant var;
+// 			from_json_recursively(var, expected, json);
+// 			return var;
+// 		}
+// 
+// 		void from_json_recursively(rttr::variant& object_out, rttr::type expected, nlohmann::json& json)
+// 		{
+// 			for (const auto& prop : expected.get_properties())
+// 			{
+// 				std::string name = prop.get_name().data();
+// 
+// 				if(const auto& it = json.find(name); it != json.end())
+// 				{
+// 					auto& key = it.key();
+// 					auto& val = it.value();
+// 
+// 					switch (val.type())
+// 					{
+// 					case nlohmann::detail::value_t::object:
+// 					{
+// 						if (!object_out)
+// 						{
+// 							object_out = construct_object(expected);
+// 						}
+// 						//extract_from_object(object_out, json);
+// 						break;
+// 					}
+// 					case nlohmann::detail::value_t::array:
+// 					{
+// 						if (!object_out)
+// 						{
+// 							object_out = construct_object(expected);
+// 						}
+// 						//extract_from_array(object_out, json);
+// 						break;
+// 					}
+// 					case nlohmann::detail::value_t::string:
+// 					{
+// 						//auto s = val.get<std::string>();
+// 
+// 						//object_out = s;
+// 						break;
+// 					}
+// 					case nlohmann::detail::value_t::boolean:
+// 					{
+// 						//object_out = val.get<bool>();
+// 						break;
+// 					}
+// 					case nlohmann::detail::value_t::number_float:
+// 					{
+// 						//object_out = val.get<float>();
+// 						break;
+// 					}
+// 					case nlohmann::detail::value_t::number_integer:
+// 					{
+// 						//object_out = val.get<int64_t>();
+// 						break;
+// 					}
+// 					case nlohmann::detail::value_t::number_unsigned:
+// 					{
+// 						//object_out = val.get<uint64_t>();
+// 						break;
+// 					}
+// 					default:
+// 					{
+// 						break;
+// 					}
+// 					}
+// 				}
+// 			}
+// 		}
+// 
+// 		rttr::variant from_json(rttr::type expected, nlohmann::json& json)
+// 		{
+// 			return from_json_recursively(expected, json);
+// 		}
+
+// 		bool from_json(rttr::variant& object_out, nlohmann::json& json)
+// 		{
+// 			object_out = from_json(object_out.get_type(), json);
+// 
+// 			return object_out.is_valid();
+// 		}
+
+		simdjson::dom::element_type extract_type(rttr::type type)
+		{
+			if (rttr::type::get<double>() == type)
+			{
+				return simdjson::dom::element_type::DOUBLE;
+			}
+			else if (rttr::type::get<int64_t>() == type ||
+				rttr::type::get<int32_t>() == type ||
+				rttr::type::get<int16_t>() == type ||
+				rttr::type::get<int8_t>() == type)
+			{
+				return simdjson::dom::element_type::INT64;
+			}
+			else if (rttr::type::get<uint64_t>() == type ||
+				rttr::type::get<uint32_t>() == type ||
+				rttr::type::get<uint16_t>() == type ||
+				rttr::type::get<uint8_t>() == type)
+			{
+				return simdjson::dom::element_type::UINT64;
+			}
+			else if (rttr::type::get<bool>() == type)
+			{
+				return simdjson::dom::element_type::BOOL;
+			}
+			else if (rttr::type::get<std::string>() == type ||
+				rttr::type::get<std::string_view>() == type ||
+				rttr::type::get<const char*>() == type)
+			{
+				return simdjson::dom::element_type::STRING;
+			}
+			else if(type.is_class() || type.is_wrapper())
+			{
+				return simdjson::dom::element_type::OBJECT;
+			}
+			else if(type.is_sequential_container() || type.is_associative_container())
+			{
+				return simdjson::dom::element_type::ARRAY;
+			}
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("Unrecognized RTTR type '{}'",
+					type.get_name().data()));
+			}
+			return simdjson::dom::element_type::NULL_VALUE;
+		}
+
+		rttr::variant construct_object(rttr::type type)
+		{
+			if (type.get_constructor().is_valid())
+			{
+				return type.get_constructor().invoke();
+			}
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("No default constructor found for RTTR type '{}'",
+					type.get_name().data()));
+			}
+			return {};
+		}
+
+		rttr::variant from_json_recursively(rttr::type expected, const simdjson::dom::element& json);
+		void from_json_recursively(rttr::variant& object_out, rttr::type expected, const simdjson::dom::element& json);
+
+		void extract_from_array(rttr::variant& object_out, const simdjson::dom::array& json)
+		{
+			auto type = object_out.get_type();
+
+			//- vector
+			if (type.is_sequential_container())
+			{
+				auto view = object_out.create_sequential_view();
+				auto expected = view.get_value_type();
+
+				view.set_size(json.size());
+
+				auto i = 0;
+				for (auto& it : json)
+				{
+					auto val = from_json_recursively(expected, it);
+
+					view.set_value(i++, std::move(val));
+				}
+			}
+			//- map
+			else if (type.is_associative_container())
+			{
+				auto view = object_out.create_associative_view();
+				auto key_expected = view.get_key_type();
+				auto val_expected = view.get_value_type();
+
+				for (auto& it : json)
+				{
+					simdjson::dom::element key_elem, val_elem;
+
+					if(it.at_key("key").get(key_elem) != simdjson::SUCCESS ||
+						it.at_key("value").get(val_elem) != simdjson::SUCCESS)
+					{
+						continue;
+					}
+
+					auto key = from_json_recursively(key_expected, key_elem);
+					auto val = from_json_recursively(val_expected, val_elem);
+
+					view.insert(key, val);
+				}
+			}
+			else
+			{
+				//- error
+			}
+		}
+
+		void extract_from_object(rttr::variant& object_out, const simdjson::dom::element& json)
+		{
+			auto type = object_out.get_type();
+
+			if (type.is_class())
+			{
+				for (const auto& prop : type.get_properties())
+				{
+					std::string name = prop.get_name().data();
+
+					simdjson::dom::element element;
+
+					if(json.at_key(name).get(element) != simdjson::SUCCESS)
+					{
+						continue;
+					}
+
+					//- TODO: are we sure we should create it here and not let
+					//- from_json_recursively handle it ?
+					auto object = prop.get_type().create();
+
+					from_json_recursively(object, prop.get_type(), element);
+
+					prop.set_value(object_out, object);
+				}
+			}
+			else
+			{
+				//- error
+			}
+		}
+
+		rttr::variant from_json_recursively(rttr::type expected, const simdjson::dom::element& json)
+		{
+			rttr::variant var;
+			from_json_recursively(var, expected, json);
+			return var;
+		}
+
+		void from_json_recursively(rttr::variant& object_out, rttr::type expected, const simdjson::dom::element& json)
+		{
+			if (json.is_null())
+			{
+				object_out = {};
+				return;
+			}
+
+			for (const auto& prop : expected.get_properties())
+			{
+				auto t = extract_type(prop.get_type());
+
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("Extracting type '{}' from property type '{}'",
+						algorithm::enum_to_string(json.type()), prop.get_type().get_name().data()));
+				}
+
+				switch (t)
+				{
+				case simdjson::dom::element_type::OBJECT:
+				{
+					if (!object_out)
+					{
+						object_out = construct_object(expected);
+					}
+					extract_from_object(object_out, json);
+					break;
+				}
+				case simdjson::dom::element_type::ARRAY:
+				{
+					if (!object_out)
+					{
+						object_out = construct_object(expected);
+					}
+					extract_from_array(object_out, json);
+					break;
+				}
+				case simdjson::dom::element_type::STRING:
+				{
+					object_out = json.get_string();;
+					break;
+				}
+				case simdjson::dom::element_type::BOOL:
+				{
+					object_out = json.get_bool();
+					break;
+				}
+				case simdjson::dom::element_type::DOUBLE:
+				{
+					object_out = json.get_double();
+					break;
+				}
+				case simdjson::dom::element_type::INT64:
+				{
+					object_out = json.get_int64();
+					break;
+				}
+				case simdjson::dom::element_type::UINT64:
+				{
+					object_out = json.get_uint64();
+					break;
+				}
+				default:
+				{
+					break;
+				}
+				}
+			}
+		}
+
+		rttr::variant from_json_object(rttr::type expected, const simdjson::dom::element& json)
+		{
+			rttr::variant object;
+			from_json_recursively(object, expected, json);
+			return object;
+		}
+
+		rttr::variant from_json_string(rttr::type expected, const std::string& json)
+		{
+			simdjson::dom::parser parser;
+			simdjson::dom::element element;
+
+			parser.parse(json.data(), json.length()).get(element);
+
+			return from_json_object(expected, element);
+		}
+
+	} //- io
+
 	namespace string_utils
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		void split(const string_t& string, char delimiter, stl::vector<string_t>& storage)
+		void split(const std::string& string, char delimiter, stl::vector<std::string>& storage)
 		{
 			std::stringstream ss(string.c_str());
 			std::string token;
@@ -666,65 +1083,65 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void insert(string_t& string, const string_t& to_insert_one, size_t index)
+		void insert(std::string& string, const std::string& to_insert_one, size_t index)
 		{
 			string.insert(index, to_insert_one);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void push_front(string_t& string, const string_t& to_prepend_one)
+		void push_front(std::string& string, const std::string& to_prepend_one)
 		{
 			string.insert(0, to_prepend_one);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void push_back(string_t& string, const string_t& to_append_one)
+		void push_back(std::string& string, const std::string& to_append_one)
 		{
 			string.append(to_append_one);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void erase_substr(string_t& string, const string_t& substring_to_erase)
+		void erase_substr(std::string& string, const std::string& string_to_erase)
 		{
-			auto index = string.find(substring_to_erase);
+			auto index = string.find(string_to_erase);
 			if (index != std::string::npos)
 			{
-				string.erase(index, substring_to_erase.size());
+				string.erase(index, string_to_erase.size());
 			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void erase_range(string_t& string, size_t begin, size_t end)
+		void erase_range(std::string& string, size_t begin, size_t end)
 		{
 			string.erase(string.begin() + begin, string.begin() + end);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void to_lower(string_t& string)
+		void to_lower(std::string& string)
 		{
 			std::transform(string.begin(), string.end(), string.begin(), [](unsigned char c) {return std::tolower(c); });
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		size_t length(const string_t& string)
+		size_t length(const std::string& string)
 		{
 			return string.size();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		size_t find_substr(const string_t& string, const string_t& substring)
+		size_t find_substr(const std::string& string, const std::string& substring)
 		{
 			return string.find(substring);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool does_substr_exist(const string_t& string, const string_t& substring)
+		bool does_substr_exist(const std::string& string, const std::string& substring)
 		{
 			return string.find(substring) != std::string::npos;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool compare(const string_t& first, const string_t& second)
+		bool compare(const std::string& first, const std::string& second)
 		{
 			return first == second;
 		}
@@ -743,7 +1160,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cuuid::cuuid(const string_t& uuid)
+	cuuid::cuuid(const std::string& uuid)
 	{
 		parse_string(uuid, m_data);
 	}
@@ -760,9 +1177,9 @@ namespace core
 		copy_from(other);
 	}
 
-	string_t cuuid::string() const
+	std::string cuuid::string() const
 	{
-		string_t out;
+		std::string out;
 
 		write_string(m_data, out);
 
@@ -799,7 +1216,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cuuid::parse_string(const string_t& uuid, array_t<unsigned char, 16u>& out)
+	void cuuid::parse_string(const std::string& uuid, array_t<unsigned char, 16u>& out)
 	{
 		unsigned i = 0, j = 0;
 		while (i < 36 && j < 16)
@@ -814,7 +1231,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cuuid::write_string(const array_t<unsigned char, 16>& data, string_t& out) const
+	void cuuid::write_string(const array_t<unsigned char, 16>& data, std::string& out) const
 	{
 		out.resize(36);
 		unsigned i = 0, j = 0;
@@ -863,9 +1280,9 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	string_t cuuid::generate_string() const
+	std::string cuuid::generate_string() const
 	{
-		string_t s;
+		std::string s;
 		write_string(m_data, s);
 		return s;
 	}
@@ -1502,18 +1919,18 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	string_t cfile::load_text(stringview_t path)
+	std::string cfile::load_text(stringview_t path)
 	{
 		//- TODO: decide how to handle report errors
-		string_t err;
+		std::string err;
 
 		return load_text_file_data(path, &err);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<string_t> cfile::load_text_async(stringview_t path)
+	std::future<std::string> cfile::load_text_async(stringview_t path)
 	{
-		auto result = casync::launch_async([&]() -> string_t
+		auto result = casync::launch_async([&]() -> std::string
 			{
 				return load_text(path);
 			});
@@ -1522,16 +1939,16 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	file_io_status cfile::save_text(stringview_t path, const string_t& text)
+	file_io_status cfile::save_text(stringview_t path, const std::string& text)
 	{
 		//- TODO: decide how to handle report errors
-		string_t err;
+		std::string err;
 
 		return save_text_file_data(path, text.c_str(), &err) ? file_io_status_success : file_io_status_failed;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<file_io_status> cfile::save_text_async(stringview_t path, const string_t& text)
+	std::future<file_io_status> cfile::save_text_async(stringview_t path, const std::string& text)
 	{
 		auto result = casync::launch_async([&]() -> file_io_status
 			{
@@ -1545,7 +1962,7 @@ namespace core
 	spair<uint8_t*, unsigned> cfile::load_binary(stringview_t path)
 	{
 		//- TODO: decide how to handle report errors
-		string_t err;
+		std::string err;
 
 		spair<uint8_t*, unsigned> out;
 
@@ -1569,7 +1986,7 @@ namespace core
 	file_io_status cfile::save_binary(stringview_t path, uint8_t* data, unsigned size)
 	{
 		//- TODO: decide how to handle report errors
-		string_t err;
+		std::string err;
 
 		return save_binary_file_data(path, data, size, &err) ? file_io_status_success : file_io_status_failed;
 	}

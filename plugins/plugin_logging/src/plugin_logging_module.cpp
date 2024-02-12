@@ -68,37 +68,37 @@ namespace logging
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_trace(const string_t& message)
+	void log_trace(const std::string& message)
 	{
 		clog::instance().trace(message.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_debug(const string_t& message)
+	void log_debug(const std::string& message)
 	{
 		clog::instance().debug(message.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_info(const string_t& message)
+	void log_info(const std::string& message)
 	{
 		clog::instance().info(message.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_warn(const string_t& message)
+	void log_warn(const std::string& message)
 	{
 		clog::instance().warn(message.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_error(const string_t& message)
+	void log_error(const std::string& message)
 	{
 		clog::instance().error(message.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_critical(const string_t& message)
+	void log_critical(const std::string& message)
 	{
 		clog::instance().critical(message.c_str());
 	}

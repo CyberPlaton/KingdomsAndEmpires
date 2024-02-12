@@ -33,21 +33,21 @@ namespace logging
 	float app_runtime_ms();
 
 	void log_trace(stringview_t message);
-	void log_trace(const string_t& message);
+	void log_trace(const std::string& message);
 
 	void log_debug(stringview_t message);
-	void log_debug(const string_t& message);
+	void log_debug(const std::string& message);
 
 	void log_info(stringview_t message);
-	void log_info(const string_t& message);
+	void log_info(const std::string& message);
 
 	void log_warn(stringview_t message);
-	void log_warn(const string_t& message);
+	void log_warn(const std::string& message);
 
 	void log_error(stringview_t message);
-	void log_error(const string_t& message);
+	void log_error(const std::string& message);
 
 	void log_critical(stringview_t message);
-	void log_critical(const string_t& message);
+	void log_critical(const std::string& message);
 
 } //- logging

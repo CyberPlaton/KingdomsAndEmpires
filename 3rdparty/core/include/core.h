@@ -9,7 +9,6 @@ namespace stl = eastl;
 #include <unordered_map>
 #include <unordered_set>
 #include <queue>
-#include <string>
 namespace stl = std;
 #endif
 #include <mimalloc.h>
@@ -28,6 +27,7 @@ namespace stl = std;
 #include <any>
 #include <new>
 #include <fstream>
+#include <string>
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <string>
@@ -65,7 +65,6 @@ template<class T>
 using ref_t = std::shared_ptr<T>;
 template<class T>
 using ptr_t = std::unique_ptr<T>;
-using string_t = std::string;
 using stringview_t = const char*;
 template<class T>
 using queue_t = stl::queue<T>;
@@ -275,7 +274,7 @@ namespace algorithm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TEnum>
-	string_t enum_to_string(TEnum value)
+	std::string enum_to_string(TEnum value)
 	{
 		return magic_enum::enum_name(value).data();
 	}
@@ -345,8 +344,8 @@ namespace algorithm
 
 namespace io
 {
-	string_t to_json(rttr::instance object);
-	bool from_json(const string_t& json, rttr::instance object);
+	std::string to_json(rttr::instance object);
+	bool from_json(const std::string& json, rttr::instance object);
 
 } //- io
 
@@ -358,20 +357,35 @@ namespace engine
 
 namespace core
 {
+	namespace io
+	{
+		using error_report_function_t = std::function<void(uint8_t, const std::string&)>;
+
+		//------------------------------------------------------------------------------------------------------------------------
+		struct serror_reporter
+		{
+			STATIC_INSTANCE(serror_reporter, s_serror_reporter);
+
+			error_report_function_t m_callback = nullptr;
+		};
+
+		rttr::variant from_json_string(rttr::type expected, const std::string& json);
+
+	} //- io
 
 	namespace string_utils
 	{
-		void split(const string_t& string, char delimiter, stl::vector< string_t >& storage);
-		void insert(string_t& string, const string_t& to_insert_one, size_t index);
-		void push_front(string_t& string, const string_t& to_prepend_one);
-		void push_back(string_t& string, const string_t& to_append_one);
-		void erase_substr(string_t& string, const string_t& substring_to_erase);
-		void erase_range(string_t& string, size_t begin, size_t end);
-		void to_lower(string_t& string);
-		size_t length(const string_t& string);
-		size_t find_substr(const string_t& string, const string_t& substring);
-		bool does_substr_exist(const string_t& string, const string_t& substring);
-		bool compare(const string_t& first, const string_t& second);
+		void split(const std::string& string, char delimiter, stl::vector< std::string >& storage);
+		void insert(std::string& string, const std::string& to_insert_one, size_t index);
+		void push_front(std::string& string, const std::string& to_prepend_one);
+		void push_back(std::string& string, const std::string& to_append_one);
+		void erase_substr(std::string& string, const std::string& string_to_erase);
+		void erase_range(std::string& string, size_t begin, size_t end);
+		void to_lower(std::string& string);
+		size_t length(const std::string& string);
+		size_t find_substr(const std::string& string, const std::string& substring);
+		bool does_substr_exist(const std::string& string, const std::string& substring);
+		bool compare(const std::string& first, const std::string& second);
 
 	} //- string_utils
 
@@ -430,12 +444,12 @@ namespace core
 		static const cuuid C_INVALID_UUID;
 
 		cuuid();
-		cuuid(const string_t& uuid);
+		cuuid(const std::string& uuid);
 		cuuid(size_t seed);
 		cuuid(const cuuid& other);
 		~cuuid() = default;
 
-		string_t string() const;
+		std::string string() const;
 		unsigned hash() const { return algorithm::hash(string().c_str()); }
 		bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
 		bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
@@ -449,13 +463,13 @@ namespace core
 
 	private:
 		void generate(size_t seed);
-		void parse_string(const string_t& uuid, array_t<unsigned char, 16u>& out);
-		void write_string(const array_t<unsigned char, 16>& data, string_t& out) const;
+		void parse_string(const std::string& uuid, array_t<unsigned char, 16u>& out);
+		void write_string(const array_t<unsigned char, 16>& data, std::string& out) const;
 		unsigned hex2dec(char c);
 		void copy_to(cuuid& other);
 		void copy_from(const cuuid& other);
 		int compare(const cuuid& other) const;
-		string_t generate_string() const;
+		std::string generate_string() const;
 
 		RTTR_ENABLE();
 		REFLECTABLE();
@@ -609,9 +623,9 @@ namespace core
 		bool operator==(const std::filesystem::path& path);
 
 	private:
-		string_t m_string_path;
-		string_t m_string_ext;
-		string_t m_string_stem;
+		std::string m_string_path;
+		std::string m_string_ext;
+		std::string m_string_stem;
 		std::filesystem::path m_path;
 		std::filesystem::directory_entry m_dir;
 
@@ -673,13 +687,13 @@ namespace core
 	class cfile final
 	{
 	public:
-		static string_t load_text(stringview_t path);
+		static std::string load_text(stringview_t path);
 
-		static std::future<string_t> load_text_async(stringview_t path);
+		static std::future<std::string> load_text_async(stringview_t path);
 
-		static file_io_status save_text(stringview_t path, const string_t& text);
+		static file_io_status save_text(stringview_t path, const std::string& text);
 
-		static std::future<file_io_status> save_text_async(stringview_t path, const string_t& text);
+		static std::future<file_io_status> save_text_async(stringview_t path, const std::string& text);
 
 		static spair<uint8_t*, unsigned> load_binary(stringview_t path);
 
@@ -794,6 +808,10 @@ namespace core
 	REFLECT_INLINE(cuuid)
 	{
 		rttr::registration::class_<cuuid>("cuuid")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+				)
 			.property("m_data", &cuuid::m_data)
 			;
 	}
@@ -802,6 +820,10 @@ namespace core
 	REFLECT_INLINE(scolor)
 	{
 		rttr::registration::class_<scolor>("scolor")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+				)
 			.property("m_r", &scolor::m_r)
 			.property("m_g", &scolor::m_g)
 			.property("m_b", &scolor::m_b)
@@ -814,6 +836,10 @@ namespace core
 	REFLECT_INLINE(srect)
 	{
 		rttr::registration::class_<srect>("srect")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+				)
 			.property("m_x", &srect::m_x)
 			.property("m_y", &srect::m_y)
 			.property("m_w", &srect::m_w)
@@ -825,6 +851,10 @@ namespace core
 	REFLECT_INLINE(vec2_t)
 	{
 		rttr::registration::class_<vec2_t>("vec2_t")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+				)
 			.property("x", &vec2_t::x)
 			.property("y", &vec2_t::y)
 			;
@@ -834,6 +864,10 @@ namespace core
 	REFLECT_INLINE(vec3_t)
 	{
 		rttr::registration::class_<vec3_t>("vec3_t")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+				)
 			.property("x", &vec3_t::x)
 			.property("y", &vec3_t::y)
 			.property("z", &vec3_t::z)
@@ -844,6 +878,10 @@ namespace core
 	REFLECT_INLINE(vec4_t)
 	{
 		rttr::registration::class_<vec4_t>("vec4_t")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+				)
 			.property("x", &vec4_t::x)
 			.property("y", &vec4_t::y)
 			.property("z", &vec4_t::z)
@@ -855,6 +893,10 @@ namespace core
 	REFLECT_INLINE(smaterial_pair)
 	{
 		rttr::registration::class_<smaterial_pair>("smaterial_pair")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+				)
 			.property("first", &smaterial_pair::first)
 			.property("second", &smaterial_pair::second)
 			;

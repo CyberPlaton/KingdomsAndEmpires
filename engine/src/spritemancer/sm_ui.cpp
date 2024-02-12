@@ -124,7 +124,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::create_notification(const string_t& label, const string_t& message, notification_type type,
+	void cui::create_notification(const std::string& label, const std::string& message, notification_type type,
 		unsigned lifetime_seconds/* = 0*/, const vec2_t& size /*= { 400.0f, 100.0f }*/)
 	{
 		if (lifetime_seconds == 0)
@@ -174,9 +174,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::create_file_dialog(const string_t& field_text, const string_t& field_desc, bool* is_open, const vec2_t& position,
-		const vec2_t& size, const char* allowed_file_types[], unsigned file_type_count, const string_t& directory,
-		const string_t& ok_text /*= "OK"*/, const string_t& cancel_text /*= "Cancel"*/, ImGuiInputTextFlags flags /*= ImGuiInputTextFlags_None*/)
+	void cui::create_file_dialog(const std::string& field_text, const std::string& field_desc, bool* is_open, const vec2_t& position,
+		const vec2_t& size, const char* allowed_file_types[], unsigned file_type_count, const std::string& directory,
+		const std::string& ok_text /*= "OK"*/, const std::string& cancel_text /*= "Cancel"*/, ImGuiInputTextFlags flags /*= ImGuiInputTextFlags_None*/)
 	{
 		static const char* selected_file_type;
 		static int selected_file_type_option = -1;
@@ -216,24 +216,24 @@ namespace sm
 		if (ImGui::SmallButton(ok_text.c_str()))
 		{
 			// Get the string from text input buffer.
-			string_t file_name = string_t(buffer);
+			std::string file_name = std::string(buffer);
 
 			// Sanity check for the file and that type was selected.
 			if (!file_name.empty() && selected_file_type_option >= 0 && selected_file_type_option < file_type_count)
 			{
 				// Ready to create file. Get the extension from allowed file types.
-				string_t extension = string_t(allowed_file_types[selected_file_type_option]);
+				std::string extension = std::string(allowed_file_types[selected_file_type_option]);
 
 				// Try creating the file.
 				if (core::cfilesystem::create_file_in(directory.c_str(), file_name.c_str(), extension.c_str()))
 				{
 					cui::create_notification("Success", raylib::TextFormat("Success creating file \"%s\" at \"%s\"!",
-						string_t(file_name + extension).c_str(), directory.c_str()), notification_type_success, snotification::C_SUCCESS_LIFETIME);
+						std::string(file_name + extension).c_str(), directory.c_str()), notification_type_success, snotification::C_SUCCESS_LIFETIME);
 				}
 				else
 				{
 					cui::create_notification("Failure", raylib::TextFormat("Failed creating file \"%s\" at \"%s\"!",
-						string_t(file_name + extension).c_str(), directory.c_str()), notification_type_error, snotification::C_ERROR_LIFETIME);
+						std::string(file_name + extension).c_str(), directory.c_str()), notification_type_error, snotification::C_ERROR_LIFETIME);
 				}
 
 				// Reset the internal state.
@@ -257,8 +257,8 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::create_folder_dialog(const string_t& field_text, const string_t& field_desc, bool* is_open, const vec2_t& position,
-		const vec2_t& size, const string_t& directory, const string_t& ok_text /*= "OK"*/, const string_t& cancel_text /*= "Cancel"*/,
+	void cui::create_folder_dialog(const std::string& field_text, const std::string& field_desc, bool* is_open, const vec2_t& position,
+		const vec2_t& size, const std::string& directory, const std::string& ok_text /*= "OK"*/, const std::string& cancel_text /*= "Cancel"*/,
 		ImGuiInputTextFlags flags /*= ImGuiInputTextFlags_None*/)
 	{
 		static char buffer[128];
@@ -275,7 +275,7 @@ namespace sm
 		if (ImGui::SmallButton(ok_text.c_str()))
 		{
 			// Get the string from text input buffer.
-			string_t folder_name = string_t(buffer);
+			std::string folder_name = std::string(buffer);
 
 			if (!folder_name.empty())
 			{
@@ -310,8 +310,8 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::delete_folder_dialog(const string_t& field_text, const string_t& field_desc, bool* is_open, const vec2_t& position,
-		const vec2_t& size, const string_t& directory, const string_t& ok_text /*= "OK"*/, const string_t& cancel_text /*= "Cancel"*/)
+	void cui::delete_folder_dialog(const std::string& field_text, const std::string& field_desc, bool* is_open, const vec2_t& position,
+		const vec2_t& size, const std::string& directory, const std::string& ok_text /*= "OK"*/, const std::string& cancel_text /*= "Cancel"*/)
 	{
 		ImGui::SetNextWindowPos({ position.x, position.y }, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize({ size.x, size.y }, ImGuiCond_Appearing);
@@ -347,7 +347,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::image_button(const string_t& id, const raylib::Texture* texture, const vec2_t& size,
+	bool cui::image_button(const std::string& id, const raylib::Texture* texture, const vec2_t& size,
 		const core::scolor& bg /*= BLACK*/, const core::scolor& tint /*= RAYWHITE*/)
 	{
 		auto bg4 = bg.normalize();
@@ -385,7 +385,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::toggle_button(const string_t& field_text, bool* v)
+	void cui::toggle_button(const std::string& field_text, bool* v)
 	{
 		ImVec2 p = ImGui::GetCursorScreenPos();
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -419,7 +419,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::toggle_button_ex(const string_t field_text, bool* v, const core::scolor& bg_active /*= LIME*/,
+	void cui::toggle_button_ex(const std::string field_text, bool* v, const core::scolor& bg_active /*= LIME*/,
 		const core::scolor& bg_inactive /*= LIGHTGRAY*/, const core::scolor& fg_knob /*= RAYWHITE*/)
 	{
 		ImVec2 p = ImGui::GetCursorScreenPos();
@@ -457,7 +457,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::loading_bar(const string_t& field_id, float percent_value, const vec2_t& size,
+	void cui::loading_bar(const std::string& field_id, float percent_value, const vec2_t& size,
 		const core::scolor& background /*= DARKGRAY*/, const core::scolor& foreground /*= GREEN*/)
 	{
 		auto bg = background.normalize();
@@ -468,14 +468,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::loading_circle(const string_t& field_id, float radius, float thikness, const core::scolor& color /*= GREEN*/)
+	void cui::loading_circle(const std::string& field_id, float radius, float thikness, const core::scolor& color /*= GREEN*/)
 	{
 		auto col = color.normalize();
 		ImGui::Spinner(field_id.c_str(), radius, thikness, ImGui::GetColorU32(ImVec4(col.x, col.y, col.z, col.w)));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_sint32(int& value, int min, int max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_sint32(int& value, int min, int max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/)
 	{
 		bool result = false;
@@ -509,7 +509,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_sint64(long& value, long min, long max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_sint64(long& value, long min, long max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/)
 	{
 		bool result = false;
@@ -543,7 +543,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_uint32(unsigned& value, unsigned min, unsigned max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_uint32(unsigned& value, unsigned min, unsigned max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/)
 	{
 		bool result = false;
@@ -577,7 +577,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_uint64(unsigned long& value, unsigned long min, unsigned long max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_uint64(unsigned long& value, unsigned long min, unsigned long max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/)
 	{
 		bool result = false;
@@ -611,7 +611,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_f32(float& value, float min, float max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_f32(float& value, float min, float max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/, float speed /*= 1.0f*/)
 	{
 		bool result = false;
@@ -645,7 +645,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_bool(bool& value, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_bool(bool& value, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/)
 	{
 		bool result = false;
@@ -664,7 +664,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_vec2(vec2_t& value, float min, float max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_vec2(vec2_t& value, float min, float max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/, float speed /*= 1.0f*/)
 	{
 		bool result = false;
@@ -707,7 +707,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_vec3(vec3_t& value, float min, float max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_vec3(vec3_t& value, float min, float max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/, float speed /*= 1.0f*/)
 	{
 		bool result = false;
@@ -760,7 +760,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_vec4(vec4_t& value, float min, float max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_vec4(vec4_t& value, float min, float max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/, float speed /*= 1.0f*/, bool color_wheel /*= false*/)
 	{
 		bool result = false;
@@ -841,12 +841,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_string(string_t& value, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_string(std::string& value, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/)
 	{
 		bool result = false;
 
-		string_t text = "##" + field_text;
+		std::string text = "##" + field_text;
 
 		if (ImGui::CollapsingHeader(field_text.c_str()))
 		{
@@ -871,7 +871,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_color(core::scolor& value, unsigned char min, unsigned char max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_color(core::scolor& value, unsigned char min, unsigned char max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/, bool color_wheel /*= true*/)
 	{
 		bool result = false;
@@ -951,7 +951,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_rect(core::srect& value, float min, float max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_rect(core::srect& value, float min, float max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/, float speed /*= 1.0f*/)
 	{
 		bool result = false;
@@ -1010,7 +1010,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::edit_field_vec2_ranged(vec2_t& value, float min, float max, const string_t& field_text, const string_t& field_desc,
+	bool cui::edit_field_vec2_ranged(vec2_t& value, float min, float max, const std::string& field_text, const std::string& field_desc,
 		ImGuiID slider_id, ImGuiID scalar_id, ImGuiSliderFlags flags /*= ImGuiSliderFlags_None*/, float speed /*= 1.0f*/)
 	{
 		bool result = false;
@@ -1039,7 +1039,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::help_marker(const string_t& desc)
+	void cui::help_marker(const std::string& desc)
 	{
 		ImGui::TextDisabled("(?)");
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
@@ -1053,7 +1053,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::help_marker_no_question_mark(const string_t& desc, tooltip_hovering_delay delay /*= tooltip_hovering_delay_none*/)
+	void cui::help_marker_no_question_mark(const std::string& desc, tooltip_hovering_delay delay /*= tooltip_hovering_delay_none*/)
 	{
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		{
@@ -1079,7 +1079,7 @@ namespace sm
 		{
 			// Resize string callback
 			// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back to what we want.
-			string_t* str = user_data->Str;
+			std::string* str = user_data->Str;
 			IM_ASSERT(data->Buf == str->c_str());
 			str->resize(data->BufTextLen);
 			data->Buf = (char*)str->c_str();
@@ -1094,7 +1094,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::input_text_ex(const char* label, string_t* str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
+	bool cui::input_text_ex(const char* label, std::string* str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 		flags |= ImGuiInputTextFlags_CallbackResize;
@@ -1115,7 +1115,7 @@ namespace sm
 			unsigned max_index = 0;
 			float height_modifier = 0.0f;
 			unsigned index = 0;
-			string_t window_name;
+			std::string window_name;
 
 
 			// Compute max number of notifications we can display on the window.
@@ -1128,7 +1128,7 @@ namespace sm
 				window_name = fmt::format("##notification_window_{}", i).c_str();
 
 				// Construct the label for the Notification.
-				string_t label;
+				std::string label;
 				ImVec4 color;
 				switch (notify.m_type)
 				{
