@@ -31,11 +31,9 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(sidentifier);
 
-		std::string get_uuid() const { return m_self.name(); }
-		void set_uuid(std::string uuid) { m_self.set_name(uuid.c_str());}
-
 		flecs::entity m_self;
-
+		core::cuuid m_uuid;
+		
 		//- internal usage
 		entity_proxy_t m_aabb_proxy		= 0;
 		unsigned m_aabb_proxy_query_key = 0;
@@ -122,7 +120,7 @@ namespace ecs
 	REFLECT_INLINE(sidentifier)
 	{
 		rttr::registration::class_<sidentifier>("sidentifier")
-			.property("m_uuid", &sidentifier::get_uuid, &sidentifier::set_uuid)
+			.property("m_uuid", &sidentifier::m_uuid)
 			.method("serialize", &sidentifier::serialize)
 			;
 	};

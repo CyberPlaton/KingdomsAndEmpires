@@ -398,13 +398,44 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 int main(int argc, char* argv[])
 {
 	logging::init();
-	logging::log_debug(core::format("Starting on main()"));
+	logging::log_debug(fmt::format("Starting on main()"));
 	logging::log_trace("Log log_trace");
 	logging::log_debug("Log log_debug");
 	logging::log_info("Log log_info");
 	logging::log_warn("Log log_warn");
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
+
+//- set core io callback
+	core::io::serror_reporter::instance().m_callback = core_io_error_function;
+
+	core::crandom rand;
+
+	stest test;
+	test.skills.m_block = 100;
+	test.skills.m_acrobatics = 25;
+	test.rect = {10.0f, 10.0f, 20.0f, 20.0f};
+	test.vec = {91.0f, 1.0f};
+	for(auto i = 0; i < 10; ++i)
+	{
+		test.damages.push_back(rand.normalized_float());
+	}
+
+	logging::log_debug("----------Serializing----------");
+	auto json = io::to_json(test);
+
+	logging::log_info(fmt::format("stest: '{}'", json));
+
+
+	logging::log_debug("----------Deserializing----------");
+	auto deser = core::io::from_json_string(test.get_type(), json);
+
+	auto deser_json = io::to_json(deser);
+
+	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
+
+
+	return 0;
 
 	auto type = rttr::type::get_by_name("cmy_third_module");
 
@@ -437,17 +468,17 @@ int main(int argc, char* argv[])
 	auto color_json = io::to_json(color);
 	auto srect_json = io::to_json(rect);
 
-	logging::log_info(core::format("uuid: '{}'", uuid_json));
-	logging::log_info(core::format("color: '{}'", color_json));
-	logging::log_info(core::format("rect: '{}'", srect_json));
+	logging::log_info(fmt::format("uuid: '{}'", uuid_json));
+	logging::log_info(fmt::format("color: '{}'", color_json));
+	logging::log_info(fmt::format("rect: '{}'", srect_json));
 
-	logging::log_info(core::format("Type itech valid: '{}'", rttr::type::get_by_name("itech").is_valid() ? "True" : "False"));
-	logging::log_info(core::format("Type sskills valid: '{}'", rttr::type::get_by_name("sskills").is_valid() ? "True" : "False"));
+	logging::log_info(fmt::format("Type itech valid: '{}'", rttr::type::get_by_name("itech").is_valid() ? "True" : "False"));
+	logging::log_info(fmt::format("Type sskills valid: '{}'", rttr::type::get_by_name("sskills").is_valid() ? "True" : "False"));
 
 	logging::log_debug("Registered rttr types");
 	for (auto type : rttr::type::get_types())
 	{
-		logging::log_debug(core::format("\t'{}'", type.get_name().data()));
+		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
 	}
 
 	auto skills_type = rttr::type::get_by_name("sskills");
@@ -456,14 +487,14 @@ int main(int argc, char* argv[])
 	{
 		auto meta = prop.get_metadata(kingdoms::C_DISPLAY_NAME_PROP);
 
-		logging::log_info(core::format("\tDisplayName: '{}'", meta.get_value<std::string>()));
+		logging::log_info(fmt::format("\tDisplayName: '{}'", meta.get_value<std::string>()));
 	}
 
 	auto tech_type = rttr::type::get_by_name("itech");
 	logging::log_info("technology::itech properties:");
 	for (const auto& prop : tech_type.get_properties())
 	{
-		logging::log_info(core::format("\tproperty: '{}'", prop.get_name().data()));
+		logging::log_info(fmt::format("\tproperty: '{}'", prop.get_name().data()));
 	}
 
 	//- Important! Create a new world

@@ -829,7 +829,8 @@ namespace core
 
 		simdjson::dom::element_type extract_type(rttr::type type)
 		{
-			if (rttr::type::get<double>() == type)
+			if (rttr::type::get<double>() == type ||
+				rttr::type::get<float>() == type)
 			{
 				return simdjson::dom::element_type::DOUBLE;
 			}
@@ -903,7 +904,7 @@ namespace core
 				view.set_size(json.size());
 
 				auto i = 0;
-				for (auto& it : json)
+				for (auto it : json)
 				{
 					auto val = from_json_recursively(expected, it);
 
@@ -917,7 +918,7 @@ namespace core
 				auto key_expected = view.get_key_type();
 				auto val_expected = view.get_value_type();
 
-				for (auto& it : json)
+				for (auto it : json)
 				{
 					simdjson::dom::element key_elem, val_elem;
 

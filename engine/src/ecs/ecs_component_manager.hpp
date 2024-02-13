@@ -213,15 +213,15 @@ namespace ecs
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static uint64_t memloc(void* m)
+			inline static std::ptrdiff_t memloc(void* m)
 			{
-				return reinterpret_cast<uint64_t>(m);
+				return reinterpret_cast<std::ptrdiff_t>(m);
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
 			inline static uint64_t memloc_index(void* m, void* start, uint64_t object_size)
 			{
-				return (reinterpret_cast<uint64_t>(m) - reinterpret_cast<uint64_t>(start)) / object_size;
+				return (reinterpret_cast<std::ptrdiff_t>(m) - reinterpret_cast<std::ptrdiff_t>(start)) / object_size;
 			}
 
 		} //- unnamed
@@ -295,14 +295,16 @@ namespace ecs
 		template<class TType>
 		TType* ecs::detail::cdynamic_pool<TType>::advance(TType* object)
 		{
-			auto next = reinterpret_cast<void*>(memloc(object) + sizeof(TType));
+			auto next = memloc(object) + sizeof(TType);
 
 			while (next <= m_end && !m_initialized_bit[memloc_index(next, m_start, sizeof(TType))])
 			{
 				next += sizeof(TType);
 			}
 
-			next <= m_end ? return reinterpret_cast<TType*>(next) : return nullptr;
+			return nullptr;
+			
+			//next <= reinterpret_cast<std::ptrdiff_t>(m_end) ? return reinterpret_cast<TType*>(next) : return nullptr;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
