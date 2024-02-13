@@ -654,181 +654,41 @@ namespace core
 
 	namespace io
 	{
-// 		rttr::variant construct_object(rttr::type type)
-// 		{
-// 			if (type.get_constructor({}).is_valid())
-// 			{
-// 				return type.get_constructor({}).invoke();
-// 			}
-// 			return {};
-// 		}
-// 
-// 		rttr::variant from_json_recursively(rttr::type expected, nlohmann::json& json);
-// 		void from_json_recursively(rttr::variant& object_out, rttr::type expected, nlohmann::json& json);
-// 
-// 		void extract_from_array(rttr::variant& object_out, nlohmann::json& json)
-// 		{
-// 			auto type = object_out.get_type();
-// 
-// 			//- vector
-// 			if (type.is_sequential_container())
-// 			{
-// 				auto view = object_out.create_sequential_view();
-// 				auto expected = view.get_value_type();
-// 
-// 				auto i = 0;
-// 				for (auto& it : json)
-// 				{
-// 					auto val = from_json_recursively(expected, it);
-// 
-// 					view.set_value(i++, val);
-// 				}
-// 
-// 			}
-// 			//- map
-// 			else if(type.is_associative_container())
-// 			{
-// 				auto view = object_out.create_associative_view();
-// 				auto key_expected = view.get_key_type();
-// 				auto val_expected = view.get_value_type();
-// 
-// 				for (auto& it : json)
-// 				{
-// 					auto& key_elem = it.find("key");
-// 					auto& val_elem = it.find("value");
-// 
-// 					if(key_elem != it.end() && val_elem != it.end())
-// 					{
-// 						auto key = from_json_recursively(key_expected, key_elem.value());
-// 						auto val = from_json_recursively(val_expected, val_elem.value());
-// 
-// 						view.insert(key, val);
-// 					}
-// 				}
-// 			}
-// 			else
-// 			{
-// 				//- error
-// 			}
-// 		}
-// 
-// 		void extract_from_object(rttr::variant& object_out, nlohmann::json& json)
-// 		{
-// 			auto type = object_out.get_type();
-// 
-// 			if (type.is_class())
-// 			{
-// 				for(const auto& prop: type.get_properties())
-// 				{
-// 					std::string name = prop.get_name().data();
-// 
-// 					if (const auto& it = json.find(name); it != json.end())
-// 					{
-// 						auto& key = it.key();
-// 						auto& val = it.value();
-// 
-// 						auto object = prop.get_type().create();
-// 
-// 						from_json_recursively(object, prop.get_type(), val);
-// 
-// 						prop.set_value(object_out, object);
-// 					}
-// 				}
-// 			}
-// 			else
-// 			{
-// 				//- error
-// 			}
-// 		}
-// 
-// 		rttr::variant from_json_recursively(rttr::type expected, nlohmann::json& json)
-// 		{
-// 			rttr::variant var;
-// 			from_json_recursively(var, expected, json);
-// 			return var;
-// 		}
-// 
-// 		void from_json_recursively(rttr::variant& object_out, rttr::type expected, nlohmann::json& json)
-// 		{
-// 			for (const auto& prop : expected.get_properties())
-// 			{
-// 				std::string name = prop.get_name().data();
-// 
-// 				if(const auto& it = json.find(name); it != json.end())
-// 				{
-// 					auto& key = it.key();
-// 					auto& val = it.value();
-// 
-// 					switch (val.type())
-// 					{
-// 					case nlohmann::detail::value_t::object:
-// 					{
-// 						if (!object_out)
-// 						{
-// 							object_out = construct_object(expected);
-// 						}
-// 						//extract_from_object(object_out, json);
-// 						break;
-// 					}
-// 					case nlohmann::detail::value_t::array:
-// 					{
-// 						if (!object_out)
-// 						{
-// 							object_out = construct_object(expected);
-// 						}
-// 						//extract_from_array(object_out, json);
-// 						break;
-// 					}
-// 					case nlohmann::detail::value_t::string:
-// 					{
-// 						//auto s = val.get<std::string>();
-// 
-// 						//object_out = s;
-// 						break;
-// 					}
-// 					case nlohmann::detail::value_t::boolean:
-// 					{
-// 						//object_out = val.get<bool>();
-// 						break;
-// 					}
-// 					case nlohmann::detail::value_t::number_float:
-// 					{
-// 						//object_out = val.get<float>();
-// 						break;
-// 					}
-// 					case nlohmann::detail::value_t::number_integer:
-// 					{
-// 						//object_out = val.get<int64_t>();
-// 						break;
-// 					}
-// 					case nlohmann::detail::value_t::number_unsigned:
-// 					{
-// 						//object_out = val.get<uint64_t>();
-// 						break;
-// 					}
-// 					default:
-// 					{
-// 						break;
-// 					}
-// 					}
-// 				}
-// 			}
-// 		}
-// 
-// 		rttr::variant from_json(rttr::type expected, nlohmann::json& json)
-// 		{
-// 			return from_json_recursively(expected, json);
-// 		}
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TNumeric>
+		rttr::variant extract_numeric_type(TNumeric value, rttr::type required_type)
+		{
+			if(rttr::type::get<float>() == required_type) return static_cast<float>(value);
+			else if(rttr::type::get<double>() == required_type) return static_cast<double>(value);
+			else if (rttr::type::get<int64_t>() == required_type) return static_cast<int64_t>(value);
+			else if (rttr::type::get<int32_t>() == required_type) return static_cast<int32_t>(value);
+			else if (rttr::type::get<int16_t>() == required_type) return static_cast<int16_t>(value);
+			else if (rttr::type::get<int8_t>() == required_type) return static_cast<int8_t>(value);
+			else if (rttr::type::get<uint64_t>() == required_type) return static_cast<uint64_t>(value);
+			else if (rttr::type::get<uint32_t>() == required_type) return static_cast<uint32_t>(value);
+			else if (rttr::type::get<uint16_t>() == required_type) return static_cast<uint16_t>(value);
+			else if (rttr::type::get<uint8_t>() == required_type) return static_cast<uint8_t>(value);
+			else if (rttr::type::get<char>() == required_type) return static_cast<char>(value);
+			else if (rttr::type::get<bool>() == required_type) return static_cast<bool>(value);
 
-// 		bool from_json(rttr::variant& object_out, nlohmann::json& json)
-// 		{
-// 			object_out = from_json(object_out.get_type(), json);
-// 
-// 			return object_out.is_valid();
-// 		}
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					fmt::format("\tCould not extract numeric type '{}' from number '{} ({})'",
+						required_type.get_name().data(), value, rttr::type::get<TNumeric>().get_name().data()));
+			}
+			return value;
+		}
 
+		//------------------------------------------------------------------------------------------------------------------------
 		simdjson::dom::element_type extract_type(rttr::type type)
 		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+					fmt::format("\tExtracting RTTR type '{}'", type.get_name().data()));
+			}
+
 			if (rttr::type::get<double>() == type ||
 				rttr::type::get<float>() == type)
 			{
@@ -868,37 +728,43 @@ namespace core
 			}
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("Unrecognized RTTR type '{}'",
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("\t\tUnrecognized RTTR type '{}'",
 					type.get_name().data()));
 			}
 			return simdjson::dom::element_type::NULL_VALUE;
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
 		rttr::variant construct_object(rttr::type type)
 		{
 			if (type.get_constructor().is_valid())
 			{
 				return type.get_constructor().invoke();
 			}
+			else if(auto var = type.create(); var.is_valid())
+			{
+				return var;
+			}
 			if (serror_reporter::instance().m_callback)
 			{
 				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("No default constructor found for RTTR type '{}'",
 					type.get_name().data()));
 			}
-			return {};
+			return rttr::variant();
 		}
 
 		rttr::variant from_json_recursively(rttr::type expected, const simdjson::dom::element& json);
 		void from_json_recursively(rttr::variant& object_out, rttr::type expected, const simdjson::dom::element& json);
 
-		void extract_from_array(rttr::variant& object_out, const simdjson::dom::array& json)
+		//------------------------------------------------------------------------------------------------------------------------
+		void extract_from_array(const rttr::variant& object, const simdjson::dom::array& json)
 		{
-			auto type = object_out.get_type();
+			auto type = object.get_type();
 
-			//- vector
+			//- vector/array
 			if (type.is_sequential_container())
 			{
-				auto view = object_out.create_sequential_view();
+				auto view = object.create_sequential_view();
 				auto expected = view.get_value_type();
 
 				view.set_size(json.size());
@@ -908,13 +774,18 @@ namespace core
 				{
 					auto val = from_json_recursively(expected, it);
 
-					view.set_value(i++, std::move(val));
+					if (!view.set_value(i++, std::move(val)) && serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							fmt::format("\tCould not set sequential array value with type '{}' at index '{}'",
+								type.get_name().data(), i));
+					}
 				}
 			}
 			//- map
 			else if (type.is_associative_container())
 			{
-				auto view = object_out.create_associative_view();
+				auto view = object.create_associative_view();
 				auto key_expected = view.get_key_type();
 				auto val_expected = view.get_value_type();
 
@@ -931,7 +802,12 @@ namespace core
 					auto key = from_json_recursively(key_expected, key_elem);
 					auto val = from_json_recursively(val_expected, val_elem);
 
-					view.insert(key, val);
+					if (!view.insert(key, val).second && serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							fmt::format("\tCould not set associative array value with type '<{}:{}>'",
+								key_expected.get_name().data(), val_expected.get_name().data()));
+					}
 				}
 			}
 			else
@@ -940,38 +816,64 @@ namespace core
 			}
 		}
 
-		void extract_from_object(rttr::variant& object_out, const simdjson::dom::element& json)
+		//------------------------------------------------------------------------------------------------------------------------
+		void extract_from_object(rttr::variant& object_out, const simdjson::dom::object& json)
 		{
 			auto type = object_out.get_type();
+
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+					fmt::format("Extracting RTTR type '{}'from JSON Object", type.get_name().data()));
+			}
 
 			if (type.is_class())
 			{
 				for (const auto& prop : type.get_properties())
 				{
-					std::string name = prop.get_name().data();
+					auto name = prop.get_name().data();
+					auto prop_type = prop.get_type().get_name().data();
+
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+							fmt::format("\tDeserializing property '{}' with type '{}'", name, prop_type));
+					}
 
 					simdjson::dom::element element;
 
 					if(json.at_key(name).get(element) != simdjson::SUCCESS)
 					{
+						if (serror_reporter::instance().m_callback)
+						{
+							serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+								fmt::format("\t\tproperty not found"));
+						}
 						continue;
 					}
 
-					//- TODO: are we sure we should create it here and not let
-					//- from_json_recursively handle it ?
-					auto object = prop.get_type().create();
+					auto object = from_json_recursively(prop.get_type(), element);
 
-					from_json_recursively(object, prop.get_type(), element);
-
-					prop.set_value(object_out, object);
+					if (!prop.set_value(object_out, object) && serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							fmt::format("\tFailed setting value of from JSON element of type '{}' for property '{}::{} ({})'",
+								algorithm::enum_to_string(element.type()), type.get_name().data(), name, prop.get_type().get_name().data()));
+					}
 				}
 			}
 			else
 			{
 				//- error
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						fmt::format("\tRTTR type '{}' is not a class type", type.get_name().data()));
+				}
 			}
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
 		rttr::variant from_json_recursively(rttr::type expected, const simdjson::dom::element& json)
 		{
 			rttr::variant var;
@@ -979,6 +881,7 @@ namespace core
 			return var;
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
 		void from_json_recursively(rttr::variant& object_out, rttr::type expected, const simdjson::dom::element& json)
 		{
 			if (json.is_null())
@@ -987,69 +890,66 @@ namespace core
 				return;
 			}
 
-			for (const auto& prop : expected.get_properties())
+			if (serror_reporter::instance().m_callback)
 			{
-				auto t = extract_type(prop.get_type());
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+					fmt::format("Deserializing JSON object into expected RTTR type '{}', with JSON type '{}'",
+						expected.get_name().data(), algorithm::enum_to_string(json.type())));
+			}
 
-				if (serror_reporter::instance().m_callback)
+			switch (json.type())
+			{
+			case simdjson::dom::element_type::OBJECT:
+			{
+				if (!object_out)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("Extracting type '{}' from property type '{}'",
-						algorithm::enum_to_string(json.type()), prop.get_type().get_name().data()));
+					object_out = construct_object(expected);
 				}
-
-				switch (t)
+				extract_from_object(object_out, json.get<simdjson::dom::object>());
+				break;
+			}
+			case simdjson::dom::element_type::ARRAY:
+			{
+				if (!object_out)
 				{
-				case simdjson::dom::element_type::OBJECT:
-				{
-					if (!object_out)
-					{
-						object_out = construct_object(expected);
-					}
-					extract_from_object(object_out, json);
-					break;
+					object_out = construct_object(expected);
 				}
-				case simdjson::dom::element_type::ARRAY:
-				{
-					if (!object_out)
-					{
-						object_out = construct_object(expected);
-					}
-					extract_from_array(object_out, json);
-					break;
-				}
-				case simdjson::dom::element_type::STRING:
-				{
-					object_out = json.get_string();;
-					break;
-				}
-				case simdjson::dom::element_type::BOOL:
-				{
-					object_out = json.get_bool();
-					break;
-				}
-				case simdjson::dom::element_type::DOUBLE:
-				{
-					object_out = json.get_double();
-					break;
-				}
-				case simdjson::dom::element_type::INT64:
-				{
-					object_out = json.get_int64();
-					break;
-				}
-				case simdjson::dom::element_type::UINT64:
-				{
-					object_out = json.get_uint64();
-					break;
-				}
-				default:
-				{
-					break;
-				}
-				}
+				extract_from_array(object_out, json.get<simdjson::dom::array>());
+				break;
+			}
+			case simdjson::dom::element_type::STRING:
+			{
+				object_out = json.get_string();;
+				break;
+			}
+			case simdjson::dom::element_type::BOOL:
+			{
+				object_out = extract_numeric_type(json.get_bool().value(), expected);
+				break;
+			}
+			case simdjson::dom::element_type::DOUBLE:
+			{
+				object_out = extract_numeric_type(json.get_double().value(), expected);
+				break;
+			}
+			case simdjson::dom::element_type::INT64:
+			{
+				object_out = extract_numeric_type(json.get_int64().value(), expected);
+				break;
+			}
+			case simdjson::dom::element_type::UINT64:
+			{
+				object_out = extract_numeric_type(json.get_uint64().value(), expected);
+				break;
+			}
+			default:
+			{
+				break;
+			}
 			}
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
 		rttr::variant from_json_object(rttr::type expected, const simdjson::dom::element& json)
 		{
 			rttr::variant object;
@@ -1057,6 +957,7 @@ namespace core
 			return object;
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
 		rttr::variant from_json_string(rttr::type expected, const std::string& json)
 		{
 			simdjson::dom::parser parser;
@@ -1334,7 +1235,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	float crandom::normalized_float()
 	{
-		return SCAST(float, m_distribution(C_RANDOM_ENGINE) / MAX(unsigned));
+		return SCAST(float, m_distribution(C_RANDOM_ENGINE)) / MAX(unsigned);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

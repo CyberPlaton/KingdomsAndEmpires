@@ -394,6 +394,10 @@ namespace kingdoms
 	REFLECT_INLINE(sattributes)
 	{
 		rttr::registration::class_<sattributes>("sattributes")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+			)
 			.property("m_strength", &sattributes::m_strength)
 			.property("m_endurance", &sattributes::m_endurance)
 			.property("m_agility", &sattributes::m_agility)
@@ -409,6 +413,10 @@ namespace kingdoms
 	REFLECT_INLINE(sderived_attributes)
 	{
 		rttr::registration::class_<sderived_attributes>("sderived_attributes")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+			)
 			.property("m_health", &sderived_attributes::m_health)
 			.property("m_mana", &sderived_attributes::m_mana)
 			.property("m_action_points", &sderived_attributes::m_action_points)
@@ -419,6 +427,10 @@ namespace kingdoms
 	REFLECT_INLINE(sskills)
 	{
 		rttr::registration::class_<sskills>("sskills")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+			)
 			(
 				metadata(C_DISPLAY_NAME_PROP, "Skills")
 			)
@@ -529,6 +541,10 @@ namespace kingdoms
 	REFLECT_INLINE(irace)
 	{
 		rttr::registration::class_<irace>("irace")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+			)
 			.property("m_attributes", &irace::m_attributes)
 			.property("m_skills", &irace::m_skills)
 			.property("m_derived_attributes", &irace::m_derived_attributes)
@@ -555,6 +571,10 @@ namespace technology
 	REFLECT_INLINE(itech)
 	{
 		rttr::registration::class_<itech>("itech")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+			)
 			.property("m_name", &itech::m_name)
 			.property("m_requirements", &itech::m_requirements)
 			.property("m_parent", &itech::m_parent)

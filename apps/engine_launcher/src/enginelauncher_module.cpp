@@ -25,6 +25,8 @@ REFLECT_INLINE(stest)
 		.property("rect", &stest::rect)
 		.property("vec", &stest::vec)
 		;
+
+	rttr::default_constructor<vector_t<float>>();
 };
 
 void core_io_error_function(uint8_t level, const std::string& message)
@@ -114,59 +116,57 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
 
 
-
-
-	ecs::ccomponent_manager manager;
-
-	uint64_t index = 0;
-	uint64_t components = 0;
-	logging::log_debug(fmt::format("Components: '{}'", components));
-
-	auto& tr = manager.add<ecs::stransform>(&index);
-	tr.m_x = 24.0f;
-	tr.m_y = 11920;
-	tr.m_w = 10;
-	tr.m_h = 10;
-	tr.m_rotation = 11;
-
-	bitset(components, rttr::type::get<ecs::stransform>().get_id());
-	logging::log_debug(fmt::format("Components: '{}' (added transform)", components));
-
-	bitset(components, rttr::type::get<ecs::ssprite>().get_id());
-	logging::log_debug(fmt::format("Components: '{}' (added sprite)", components));
-
-	if (bitcheck(components, rttr::type::get<ecs::ssprite>().get_id()))
-	{
-		logging::log_debug("...has sprite");
-	}
-	if (bitcheck(components, rttr::type::get<ecs::stransform>().get_id()))
-	{
-		logging::log_debug("...has transform");
-	}
-	bitclear(components, rttr::type::get<ecs::stransform>().get_id());
-	if (bitcheck(components, rttr::type::get<ecs::ssprite>().get_id()))
-	{
-		logging::log_debug("...has sprite");
-	}
-	if (bitcheck(components, rttr::type::get<ecs::stransform>().get_id()))
-	{
-		logging::log_debug("...has transform");
-	}
-
-
-	uint64_t second_index = 0;
-
-	auto& tran = manager.add<ecs::stransform>(&second_index);
-	tran.m_x = 1.0f;
-	tran.m_y = 120;
-	tran.m_w = 25;
-	tran.m_h = 25;
-	tran.m_rotation = 0.5f;
-
-
-	uint64_t third_index = 0;
-
-	auto& sprite = manager.add<ecs::ssprite>(&third_index);
+// 	ecs::ccomponent_manager manager;
+// 
+// 	uint64_t index = 0;
+// 	uint64_t components = 0;
+// 	logging::log_debug(fmt::format("Components: '{}'", components));
+// 
+// 	auto& tr = manager.add<ecs::stransform>(&index);
+// 	tr.m_x = 24.0f;
+// 	tr.m_y = 11920;
+// 	tr.m_w = 10;
+// 	tr.m_h = 10;
+// 	tr.m_rotation = 11;
+// 
+// 	bitset(components, rttr::type::get<ecs::stransform>().get_id());
+// 	logging::log_debug(fmt::format("Components: '{}' (added transform)", components));
+// 
+// 	bitset(components, rttr::type::get<ecs::ssprite>().get_id());
+// 	logging::log_debug(fmt::format("Components: '{}' (added sprite)", components));
+// 
+// 	if (bitcheck(components, rttr::type::get<ecs::ssprite>().get_id()))
+// 	{
+// 		logging::log_debug("...has sprite");
+// 	}
+// 	if (bitcheck(components, rttr::type::get<ecs::stransform>().get_id()))
+// 	{
+// 		logging::log_debug("...has transform");
+// 	}
+// 	bitclear(components, rttr::type::get<ecs::stransform>().get_id());
+// 	if (bitcheck(components, rttr::type::get<ecs::ssprite>().get_id()))
+// 	{
+// 		logging::log_debug("...has sprite");
+// 	}
+// 	if (bitcheck(components, rttr::type::get<ecs::stransform>().get_id()))
+// 	{
+// 		logging::log_debug("...has transform");
+// 	}
+// 
+// 
+// 	uint64_t second_index = 0;
+// 
+// 	auto& tran = manager.add<ecs::stransform>(&second_index);
+// 	tran.m_x = 1.0f;
+// 	tran.m_y = 120;
+// 	tran.m_w = 25;
+// 	tran.m_h = 25;
+// 	tran.m_rotation = 0.5f;
+// 
+// 
+// 	uint64_t third_index = 0;
+// 
+// 	auto& sprite = manager.add<ecs::ssprite>(&third_index);
 
 
 	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");

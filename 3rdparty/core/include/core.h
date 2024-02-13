@@ -117,6 +117,53 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 }
 #endif
 
+namespace rttr
+{
+	namespace detail
+	{
+		template<class T, typename = void> struct skey_type { using type = void; };
+		template<class T, typename = void> struct svalue_type { using type = void; };
+		template<class T> struct skey_type<T, std::void_t<typename T::key_type>> { using type = typename T::key_type; };
+		template<class T> struct svalue_type<T, std::void_t<typename T::value_type>> { using type = typename T::value_type; };
+		template<class T, typename = void> struct sis_iterator : std::false_type { };
+		template<class T> struct sis_iterator<T, std::void_t<typename T::iterator>> : std::true_type { };
+		template<class T> constexpr bool sis_container = sis_iterator<T>::value && !std::is_same_v<T, std::string>;
+
+	} //- detail
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TContainer>
+	static void default_constructor()
+	{
+		//- i.e. vector_t or array_t (c-style arrays are not supported)
+		if constexpr (!std::is_array_v<TContainer>)
+		{
+			if (const auto type = rttr::type::get<TContainer>(); type.is_valid() && type.get_constructors().empty())
+			{
+				typename rttr::registration::template class_<TContainer> __class(type.get_name());
+				__class.constructor()(rttr::policy::ctor::as_object);
+			}
+		}
+		//- recursive register default constructor for i.e. map_t or nested containers, i.e. vector_t< map_t<>> etc.
+		if constexpr (detail::sis_container<TContainer>)
+		{
+			using key_t = typename detail::skey_type<TContainer>::type;
+			using value_t = typename detail::svalue_type<TContainer>::type;
+
+			if constexpr (detail::sis_container<key_t>)
+			{
+				default_constructor<key_t>();
+			}
+			if constexpr (detail::sis_container<value_t>)
+			{
+				default_constructor<value_t>();
+			}
+		}
+	}
+
+} //- rttr
+
+
 namespace core
 {
 	//- forward declarations
@@ -811,9 +858,11 @@ namespace core
 			.constructor<>()
 			(
 				rttr::policy::ctor::as_object
-				)
+			)
 			.property("m_data", &cuuid::m_data)
 			;
+
+		rttr::default_constructor<array_t<unsigned char, 16u>>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -823,7 +872,7 @@ namespace core
 			.constructor<>()
 			(
 				rttr::policy::ctor::as_object
-				)
+			)
 			.property("m_r", &scolor::m_r)
 			.property("m_g", &scolor::m_g)
 			.property("m_b", &scolor::m_b)
@@ -839,7 +888,7 @@ namespace core
 			.constructor<>()
 			(
 				rttr::policy::ctor::as_object
-				)
+			)
 			.property("m_x", &srect::m_x)
 			.property("m_y", &srect::m_y)
 			.property("m_w", &srect::m_w)
@@ -854,7 +903,7 @@ namespace core
 			.constructor<>()
 			(
 				rttr::policy::ctor::as_object
-				)
+			)
 			.property("x", &vec2_t::x)
 			.property("y", &vec2_t::y)
 			;
@@ -867,7 +916,7 @@ namespace core
 			.constructor<>()
 			(
 				rttr::policy::ctor::as_object
-				)
+			)
 			.property("x", &vec3_t::x)
 			.property("y", &vec3_t::y)
 			.property("z", &vec3_t::z)
@@ -881,7 +930,7 @@ namespace core
 			.constructor<>()
 			(
 				rttr::policy::ctor::as_object
-				)
+			)
 			.property("x", &vec4_t::x)
 			.property("y", &vec4_t::y)
 			.property("z", &vec4_t::z)
@@ -896,7 +945,7 @@ namespace core
 			.constructor<>()
 			(
 				rttr::policy::ctor::as_object
-				)
+			)
 			.property("first", &smaterial_pair::first)
 			.property("second", &smaterial_pair::second)
 			;
