@@ -103,7 +103,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	logging::log_debug("----------Serializing----------");
-	auto json = io::to_json(test);
+	auto json = core::io::to_json_string(test, true);
 
 	logging::log_info(fmt::format("stest: '{}'", json));
 
@@ -111,7 +111,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_debug("----------Deserializing----------");
 	auto deser = core::io::from_json_string(test.get_type(), json);
 
-	auto deser_json = io::to_json(deser);
+	auto deser_json = core::io::to_json_string(deser, true);
 
 	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
 
@@ -241,83 +241,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 // 	json = io::to_json(hierarchy);
 // 	logging::log_info(fmt::format("hierarchy: '{}'", json));
 
-
-	logging::log_debug("//Serialization-----------------------------------------------------------------------------------------------------------");
-	world.progress(0.016f);
-
-	rapidjson::StringBuffer buffer;
-	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-
-	writer.StartObject();
-	writer.String("components");
-	writer.StartArray();
-
-	inst.each([&](flecs::id c)
-		{
-			auto t = c.str();
-
-			vector_t<std::string> full_comp_name;
-			core::string_utils::split(t.c_str(), '.', full_comp_name);
-
-			const auto& comp_name = full_comp_name[full_comp_name.size() - 1];
-
-			logging::log_trace(fmt::format("\tserializing: '{}'", comp_name));
-
-			auto type = rttr::type::get_by_name(comp_name.c_str());
-
-			if(type.is_valid())
-			{
-				auto m = type.get_method("serialize");
-
-				if (m.is_valid())
-				{
-					m.invoke({}, inst, writer);
-				}
-			}
-
-			logging::log_trace(fmt::format("\tprogress: '{}'", buffer.GetString()));
-		});
-
-	writer.EndArray();
-	writer.EndObject();
-
-	logging::log_info(fmt::format("entity: '{}'", buffer.GetString()));
-
-	core::cfile::save_text("entity.json", buffer.GetString());
-
-	logging::log_debug("//Deserialization---------------------------------------------------------------------------------------------------------");
-
-	rapidjson::Document doc;
-
-	auto json_text = core::cfile::load_text("entity.json");
-
-	doc.Parse(json_text.c_str());
-
-	logging::log_info(fmt::format("Deserializing JSON entity: '{}'", json_text));
-
-	auto& val = doc.FindMember("components");
-
-	auto& comps = val->value;
-
-	for (auto& comp : comps.GetArray())
-	{
-		switch(comp.GetType())
-		{
-		case rapidjson::kObjectType:
-		{
-			auto& comp_object = comp.GetObject();
-			break;
-		}
-		default:
-		{
-			logging::log_warn(fmt::format("unrec. type: '{}'", comp.GetType()));
-		}
-		}
-	}
-
-
-
-
 	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
 
 	engine::cengine::sconfig cfg;
@@ -332,7 +255,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	cfg.m_window_cfg.m_flags = sm::window_flag_vsync | sm::window_flag_show;
 	
 	{
-		auto cfg_json = io::to_json(cfg);
+		auto cfg_json = core::io::to_json_string(cfg);
 
 		core::cfile::save_text("config.json", cfg_json);
 
@@ -354,9 +277,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	core::scolor color(0, 0, 255, 255);
 	core::srect rect(0.0f, 0.0f, 1.0f, 1.0f);
 
-	auto uuid_json = io::to_json(uuid);
-	auto color_json = io::to_json(color);
-	auto srect_json = io::to_json(rect);
+	auto uuid_json = core::io::to_json_string(uuid);
+	auto color_json = core::io::to_json_string(color);
+	auto srect_json = core::io::to_json_string(rect);
 
 	logging::log_info(fmt::format("uuid: '{}'", uuid_json));
 	logging::log_info(fmt::format("color: '{}'", color_json));

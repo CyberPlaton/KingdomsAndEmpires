@@ -17,6 +17,7 @@ namespace stl = std;
 #include <taskflow.h>
 #include <spdlog.h>
 #include <rttr.h>
+#include <nlohmann.h>
 #include <cstddef>
 #include <memory>
 #include <filesystem>
@@ -28,10 +29,6 @@ namespace stl = std;
 #include <new>
 #include <fstream>
 #include <string>
-
-#define RAPIDJSON_HAS_STDSTRING 1
-#include <string>
-#include <rapidjson.h>
 
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
@@ -389,13 +386,6 @@ namespace algorithm
 
 } //- algorithm
 
-namespace io
-{
-	std::string to_json(rttr::instance object);
-	bool from_json(const std::string& json, rttr::instance object);
-
-} //- io
-
 namespace engine
 {
 	class cservice_manager;
@@ -416,7 +406,23 @@ namespace core
 			error_report_function_t m_callback = nullptr;
 		};
 
-		rttr::variant from_json_string(rttr::type expected, const std::string& json);
+		constexpr std::string_view C_NO_SERIALIZE_META = "NO_SERIALIZE";
+		constexpr std::string_view C_MAP_KEY_NAME = "__key__";
+		constexpr std::string_view C_MAP_VALUE_NAME = "__value__";
+
+		[[nodiscard]] rttr::variant from_json_string(rttr::type expected, const std::string& json);
+		template<class TType>
+		[[nodiscard]] TType from_json_string(const std::string& json)
+		{
+			auto var = from_json_string(rttr::type::get<TType>(), json);
+			if (var.is_valid())
+			{
+				return var.get_value<TType>();
+			}
+			return {};
+		}
+		std::string to_json_string(rttr::instance object, bool beautify = false);
+		[[nodiscard]] nlohmann::json to_json_object(rttr::instance object);
 
 	} //- io
 

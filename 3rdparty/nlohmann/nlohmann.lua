@@ -1,7 +1,7 @@
 include (path.join(SCRIPTS_DIR, "utility.lua"))
 
-function rapidjson()
-	add_target_library("rapidjson",
+function nlohmann()
+	add_target_library("nlohmann",
 					{},
 					{},
 					{},
@@ -9,4 +9,4 @@ function rapidjson()
 					true,
 					"c++")
 end
-rapidjson()
+nlohmann()

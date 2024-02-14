@@ -7,7 +7,7 @@ function plugin_logging()
 					{},
 					{"rttr", "EASTL", "spdlog", "core", "mimalloc"},
 					{},
-					{"rapidjson", "glm", "magic_enum", "taskflow", "argparse"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse"},
 					{},
 					false)
 end

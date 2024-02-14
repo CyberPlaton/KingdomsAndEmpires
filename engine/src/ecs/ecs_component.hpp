@@ -6,13 +6,12 @@
 //- it does not inherit from a complex component hierarchy.
 #define DECLARE_COMPONENT(c) \
 static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; } \
-static void serialize(flecs::entity e, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) \
+static void serialize(flecs::entity e, nlohmann::json& json) \
 { \
-	const auto* comp = e.get<c>(); \
-	writer.StartObject(); \
-	writer.String(name(), strlen(name()), false); \
-	writer.String(io::to_json(comp).c_str()); \
-	writer.EndObject(); \
+	if(const auto* eComp = e.get<c>(); eComp) \
+	{ \
+		json = core::io::to_json_object(*eComp); \
+	} \
 }
 
 namespace ecs

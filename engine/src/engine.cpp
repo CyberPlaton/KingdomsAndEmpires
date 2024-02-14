@@ -69,8 +69,10 @@ namespace engine
 
 			std::string json(config_text);
 
-			if (io::from_json(json, config))
+			if (!json.empty())
 			{
+				config = core::io::from_json_string<sconfig>(json);
+
 				return configure(config, argc, argv);
 			}
 			else
