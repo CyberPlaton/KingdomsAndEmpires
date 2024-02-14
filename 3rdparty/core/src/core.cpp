@@ -403,6 +403,42 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		rttr::variant extract_from_string(std::string_view value, const rttr::type& type)
+		{
+			if (!value.empty())
+			{
+				rttr::variant var = std::string(value);
+
+				if (var.get_type() == type || rttr::type::get<std::string_view>() == type)
+				{
+					return var;
+				}
+				//- try converting to desired type
+				if (var.convert(type))
+				{
+					return var;
+				}
+				//- error
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						fmt::format("\tFailed extracting String '{}' to type '{}'",
+							value.data(), type.get_name().data()));
+				}
+			}
+			else
+			{
+				//- Not an error, but nice to have, report quietly
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+						"\tIgnoring extraction of empty String");
+				}
+			}
+			return {};
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		void extract_from_object(rttr::variant& object_out, const simdjson::dom::object& json)
 		{
 			auto type = object_out.get_type();
@@ -505,7 +541,7 @@ namespace core
 			}
 			case simdjson::dom::element_type::STRING:
 			{
-				object_out = json.get_string();;
+				object_out = extract_from_string(json.get_string().value(), rttr::type::get<std::string>());
 				break;
 			}
 			case simdjson::dom::element_type::BOOL:
@@ -606,12 +642,6 @@ namespace core
 				if(auto s = var.to_string(&result); result)
 				{
 					json = s;
-					return true;
-				}
-				//- try serializing as number
-				if (auto n = var.to_uint64(&result); result)
-				{
-					json = n;
 					return true;
 				}
 				//- could not write enum value, ignore but report

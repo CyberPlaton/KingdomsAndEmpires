@@ -65,6 +65,8 @@ namespace engine
 			.property("m_service_cfg", &cengine::sconfig::m_service_cfg)
 			.property("m_window_cfg", &cengine::sconfig::m_window_cfg)
 			;
+
+		rttr::default_constructor<cengine::sconfig>();
 	}
 
 } //- engine

@@ -252,6 +252,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	cfg.m_window_cfg.m_width = 1024;
 	cfg.m_window_cfg.m_height = 920;
 	cfg.m_window_cfg.m_target_fps = 60;
+	cfg.m_window_cfg.m_resolution = sm::window_resolution_steamdeck;
 	cfg.m_window_cfg.m_flags = sm::window_flag_vsync | sm::window_flag_show;
 	
 	{

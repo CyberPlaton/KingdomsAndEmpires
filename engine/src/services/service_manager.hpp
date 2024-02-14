@@ -135,6 +135,9 @@ namespace engine
 		rttr::registration::class_<cservice_manager::sconfig>("cservice_manager::sconfig")
 			.property("m_services", &cservice_manager::sconfig::m_services)
 			;
+
+		rttr::default_constructor<cservice_manager::sconfig>();
+		rttr::default_constructor<vector_t<std::string>>();
 	}
 
 } //- engine

@@ -119,7 +119,7 @@ namespace sm
 		struct sconfig
 		{
 			std::string m_title				= {};
-			std::string m_window_icon_path		= {};
+			std::string m_window_icon_path	= {};
 			window_resolution m_resolution	= window_resolution_custom;
 			unsigned m_width				= 0;
 			unsigned m_height				= 0;
@@ -345,6 +345,40 @@ namespace raylib
 
 namespace sm
 {
+// 	enum window_resolution : uint8_t
+// 	{
+// 		window_resolution_custom = 0,
+// 		window_resolution_switch,
+// 		window_resolution_steamdeck,
+// 		window_resolution_sxga,
+// 		window_resolution_hd,
+// 		window_resolution_hd_plus,
+// 		window_resolution_fhd,
+// 		window_resolution_wuxga,
+// 		window_resolution_qhd,
+// 		window_resolution_wqhd,
+// 		window_resolution_uhd,
+// 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(window_resolution)
+	{
+		rttr::registration::enumeration<window_resolution>("window_resolution")
+			(
+				rttr::value("window_resolution_custom", window_resolution_custom),
+				rttr::value("window_resolution_switch", window_resolution_switch),
+				rttr::value("window_resolution_steamdeck", window_resolution_steamdeck),
+				rttr::value("window_resolution_sxga", window_resolution_sxga),
+				rttr::value("window_resolution_hd", window_resolution_hd),
+				rttr::value("window_resolution_hd_plus", window_resolution_hd_plus),
+				rttr::value("window_resolution_fhd", window_resolution_fhd),
+				rttr::value("window_resolution_wuxga", window_resolution_wuxga),
+				rttr::value("window_resolution_qhd", window_resolution_qhd),
+				rttr::value("window_resolution_wqhd", window_resolution_wqhd),
+				rttr::value("window_resolution_uhd", window_resolution_uhd)
+			);
+	}
+
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(cwindow::sconfig)
 	{
@@ -357,6 +391,8 @@ namespace sm
 			.property("m_target_fps", &cwindow::sconfig::m_target_fps)
 			.property("m_flags", &cwindow::sconfig::m_flags)
 			;
+
+		rttr::default_constructor<cwindow::sconfig>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
