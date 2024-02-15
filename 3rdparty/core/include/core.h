@@ -417,7 +417,7 @@ namespace core
 			auto var = from_json_string(rttr::type::get<TType>(), json);
 			if (var.is_valid())
 			{
-				return var.get_value<TType>();
+				return var.template get_value<TType>();
 			}
 			return {};
 		}

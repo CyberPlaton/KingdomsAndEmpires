@@ -346,7 +346,7 @@ int main(int argc, char* argv[])
 	}
 
 	logging::log_debug("----------Serializing----------");
-	auto json = io::to_json(test);
+	auto json = core::io::to_json_string(test);
 
 	logging::log_info(fmt::format("stest: '{}'", json));
 
@@ -354,7 +354,7 @@ int main(int argc, char* argv[])
 	logging::log_debug("----------Deserializing----------");
 	auto deser = core::io::from_json_string(test.get_type(), json);
 
-	auto deser_json = io::to_json(deser);
+	auto deser_json = core::io::to_json_string(deser);
 
 	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
 
@@ -388,9 +388,9 @@ int main(int argc, char* argv[])
 	core::scolor color(0, 0, 255, 255);
 	core::srect rect(0.0f, 0.0f, 1.0f, 1.0f);
 
-	auto uuid_json = io::to_json(uuid);
-	auto color_json = io::to_json(color);
-	auto srect_json = io::to_json(rect);
+	auto uuid_json = core::io::to_json_string(uuid);
+	auto color_json = core::io::to_json_string(color);
+	auto srect_json = core::io::to_json_string(rect);
 
 	logging::log_info(fmt::format("uuid: '{}'", uuid_json));
 	logging::log_info(fmt::format("color: '{}'", color_json));
@@ -441,8 +441,6 @@ int main(int argc, char* argv[])
 	{
 		engine::cengine::instance().run();
 	}
-
-	sleep(10);
 
 	return 0;
 }
