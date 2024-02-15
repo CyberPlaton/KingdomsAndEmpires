@@ -541,7 +541,14 @@ namespace core
 			}
 			case simdjson::dom::element_type::STRING:
 			{
-				object_out = extract_from_string(json.get_string().value(), rttr::type::get<std::string>());
+				if (expected.is_enumeration() && serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+						fmt::format("\tExtracting stringified enum of type '{}'",
+							expected.get_name().data()));
+				}
+
+				object_out = extract_from_string(json.get_string().value(), expected);
 				break;
 			}
 			case simdjson::dom::element_type::BOOL:
