@@ -93,6 +93,8 @@ namespace races
 		rttr::registration::class_<shuman>("shuman")
 			.method("serialize", &shuman::serialize)
 			;
+
+		rttr::default_constructor<shuman>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -102,7 +104,7 @@ namespace races
 			.constructor<flecs::world&>()
 			(
 				rttr::policy::ctor::as_raw_ptr
-				)
+			)
 			;
 	}
 

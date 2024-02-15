@@ -116,6 +116,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
 
 
+
+
+
 // 	ecs::ccomponent_manager manager;
 // 
 // 	uint64_t index = 0;
@@ -212,6 +215,30 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_warn(fmt::format("Walther Light Armor '{}'", walther->m_skills.m_light_armor));
 	logging::log_warn(fmt::format("Manfred Light Armor '{}'", manfred->m_skills.m_light_armor));
 	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
+
+	auto json_string = core::io::to_json_string(*walther, true);
+	logging::log_info(fmt::format("races::shuman JSON: '{}'", json_string));
+
+	races::shuman human_component;
+	human_component = core::io::from_json_string<races::shuman>(json_string);
+
+	logging::log_warn(fmt::format("races::shuman deserialized Light Armor '{}'", human_component.m_skills.m_light_armor));
+
+	//- change some values around
+	human_component.m_attributes.m_speed = 34;
+	human_component.m_attributes.m_strength = 20;
+	human_component.m_skills.m_axe = 69;
+	human_component.m_skills.m_light_armor = 3;
+
+	inst.set<races::shuman>(human_component);
+
+	json_string = core::io::to_json_string(*walther, true);
+	logging::log_info(fmt::format("races::shuman after deserializing and setting component values: '{}'", json_string));
+
+	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
+
+
+
 
 	//- check components
 // 	ecs::sidentifier identifier; identifier.m_self = inst;
