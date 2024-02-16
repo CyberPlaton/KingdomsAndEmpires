@@ -47,6 +47,7 @@ namespace stl = std;
 #endif
 
 #define SCAST(type, value) static_cast<type>(value)
+#define RCAST(type, value) reinterpret_cast<type>(value)
 #ifdef ARRAYSIZE
 #undef ARRAYSIZE
 #endif
@@ -291,8 +292,39 @@ namespace algorithm
 	float percent_value(unsigned p, float total_value);
 	bool is_valid_handle(handle_type_t h);
 	handle_type_t invalid_handle();
+	float bytes_to_kilobytes(unsigned b);
+	float bytes_to_megabytes(unsigned b);
+	float bytes_to_gigabytes(unsigned b);
 
-	//- utility to check whether query number is bitwise active in value
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename T>
+	void bit_set(T& byte, T bit)
+	{
+		byte |= (1 << (bit));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename T>
+	void bit_clear(T& byte, T bit)
+	{
+		byte &= ~(1 << (bit));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename T>
+	void bit_flip(T& byte, T bit)
+	{
+		byte ^= (1 << (bit));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename T>
+	bool bit_check(T& byte, T bit)
+	{
+		byte & (1 << (bit));
+	}
+
+	//- utility to check whether query number is bitwise active in bitwise enum value
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TEnum>
 	bool bit_on(int value, TEnum query)
@@ -384,6 +416,33 @@ namespace algorithm
 		stl::sort(begin, end, function);
 	}
 
+	namespace detail
+	{
+		//- @reference: https://gist.github.com/khvorov/cd626ea3685fd5e8bf14
+			//------------------------------------------------------------------------------------------------------------------------
+		template <typename F>
+		struct function_traits : public function_traits<decltype(&F::operator())> {};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template <typename R, typename C, typename... ARGS>
+		struct function_traits<R(C::*)(ARGS...) const>
+		{
+			using function_type = std::function<R(ARGS...)>;
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename F>
+		using function_type_t = typename detail::function_traits<F>::function_type;
+
+	} //- detail
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename F>
+	detail::function_type_t<F> convert_to_function(F& lambda)
+	{
+		return static_cast<detail::function_type_t<F>>(lambda);
+	}
+
 } //- algorithm
 
 namespace engine
@@ -394,18 +453,19 @@ namespace engine
 
 namespace core
 {
+	constexpr uint64_t C_LINKED_TREE_DEFAULT_CAPACITY = 512;
+	using error_report_function_t = std::function<void(uint8_t, const std::string&)>;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct serror_reporter
+	{
+		STATIC_INSTANCE(serror_reporter, s_serror_reporter);
+
+		error_report_function_t m_callback = nullptr;
+	};
+
 	namespace io
 	{
-		using error_report_function_t = std::function<void(uint8_t, const std::string&)>;
-
-		//------------------------------------------------------------------------------------------------------------------------
-		struct serror_reporter
-		{
-			STATIC_INSTANCE(serror_reporter, s_serror_reporter);
-
-			error_report_function_t m_callback = nullptr;
-		};
-
 		constexpr std::string_view C_NO_SERIALIZE_META = "NO_SERIALIZE";
 		constexpr std::string_view C_MAP_KEY_NAME = "__key__";
 		constexpr std::string_view C_MAP_VALUE_NAME = "__value__";
@@ -444,6 +504,50 @@ namespace core
 
 	namespace detail
 	{
+		//- utility to allow storing pointers to dynamic pools holding arbitrary template types
+		//------------------------------------------------------------------------------------------------------------------------
+		struct ipool{};
+
+		//- Note: you have to deallocate memory using the shutdown function
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		class cdynamic_pool : public ipool
+		{
+		public:
+			cdynamic_pool();
+			~cdynamic_pool() = default;
+
+			bool init(uint64_t count, uint64_t alignment = 0);
+			void shutdown();
+			void reset();
+			TType* create(uint64_t* index_out);
+			TType* replace(uint64_t index);
+			void destroy(uint64_t index);
+			TType* begin();
+			TType* advance(TType* object);
+			const TType* find(uint64_t index) const;
+			TType* modify(uint64_t index);
+			uint64_t size() const;
+			uint64_t capacity() const;
+			bool empty() const;
+			uint64_t memory_usage() const;
+			uint64_t memory_reserved() const;
+
+		private:
+			vector_t<bool> m_initialized_bit;
+			std::stack<unsigned> m_fragmentation_indices;
+			uint64_t m_top;
+			uint64_t m_size;
+			uint64_t m_capacity;
+			uint64_t m_alignment;
+			void* m_start;
+			void* m_end;
+
+		private:
+			void resize(uint64_t count, uint64_t alignment);
+			TType* unsafe(uint64_t index);
+			bool initialized_at_index(uint64_t index) const;
+		};
 
 	} //- detail
 
@@ -839,7 +943,398 @@ namespace core
 		std::any m_data;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TType>
+	class clinked_tree
+	{
+	public:
+		struct snode : public TType
+		{
+			snode* m_parent = nullptr;
+			vector_t<snode*> m_children;
+		};
+
+		using visitor_func_t = std::function<bool(snode*)>;
+
+		clinked_tree(uint64_t size = C_LINKED_TREE_DEFAULT_CAPACITY)
+		{
+			m_pool.init(size);
+
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+					fmt::format("Creating clinked_tree with reserved capacity of '{}KB'",
+						algorithm::bytes_to_kilobytes(m_pool.memory_reserved())));
+			}
+		}
+
+		~clinked_tree()
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+					fmt::format("Destroying clinked_tree of size '{}({}KB)' and capacity '{}({}KB)'",
+						m_pool.size(), algorithm::bytes_to_kilobytes(m_pool.memory_usage()),
+						m_pool.capacity(), algorithm::bytes_to_kilobytes(m_pool.memory_reserved())));
+			}
+
+			m_pool.shutdown();
+		}
+
+		void visit_depth_first(visitor_func_t visitor)
+		{
+			if (!m_pool.empty())
+			{
+				std::stack<snode*> stack;
+				stack.push(m_pool.begin());
+
+				while (!stack.empty())
+				{
+					auto n = stack.top();
+					stack.pop();
+
+					if (!visitor(n)) { break; }
+
+					for (const auto& k : n->m_children)
+					{
+						stack.push(k);
+					}
+				}
+			}
+		}
+
+		template<typename TCallable>
+		void visit_depth_first(TCallable&& lambda)
+		{
+			visit_depth_first(algorithm::convert_to_function(lambda));
+		}
+
+		snode* append_to(snode* node = nullptr)
+		{
+			node = node ? node : &m_root;
+
+			//- TODO: decide what to do whit indices being given out from pool
+			uint64_t i = 0;
+
+			snode* n = m_pool.create(&i);
+
+			n->m_parent = node;
+			node->m_children.push_back(n);
+
+			return n;
+		}
+
+
+		bool empty() const {return m_pool.empty();}
+		uint64_t size() const { return m_pool.size(); }
+		uint64_t capacity() const { return m_pool.capacity(); }
+
+	private:
+		detail::cdynamic_pool<snode> m_pool;
+		snode m_root;
+	};
+
+
 } //- core
+
+namespace core
+{
+	namespace detail
+	{
+		namespace
+		{
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static uint64_t next_power_of_2(uint64_t n)
+			{
+				n--;
+				n |= n >> 1;
+				n |= n >> 2;
+				n |= n >> 4;
+				n |= n >> 8;
+				n |= n >> 16;
+				n++;
+				return n;
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static uint64_t memloc(void* m)
+			{
+				return reinterpret_cast<uint64_t>(m);
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static uint64_t memloc_index(void* m, void* start, uint64_t object_size)
+			{
+				return (reinterpret_cast<uint64_t>(m) - reinterpret_cast<uint64_t>(start)) / object_size;
+			}
+
+		}//- unnamed
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		core::detail::cdynamic_pool<TType>::cdynamic_pool() :
+			m_top(0), m_size(0), m_capacity(0), m_alignment(0), m_start(nullptr), m_end(nullptr)
+		{
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		TType* core::detail::cdynamic_pool<TType>::unsafe(uint64_t index)
+		{
+			return reinterpret_cast<TType*>(reinterpret_cast<void*>((reinterpret_cast<uint64_t>(m_start) + index * sizeof(TType))));
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		void core::detail::cdynamic_pool<TType>::resize(uint64_t count, uint64_t alignment)
+		{
+			auto prev_start = m_start;
+			auto prev_count = m_size;
+			auto prev_align = m_alignment;
+
+			m_start = mi_aligned_alloc(alignment, count * sizeof(TType));
+
+			m_end = reinterpret_cast<void*>(memloc(m_start) + count * SCAST(uint64_t, sizeof(TType)));
+
+			//m_capacity = count * SCAST(uint64_t, sizeof(TType));
+
+			m_capacity = count;
+
+			m_alignment = alignment;
+
+			m_initialized_bit.resize(count, false);
+
+			std::memmove(m_start, prev_start, prev_count * sizeof(TType));
+
+			mi_free_size_aligned(prev_start, prev_count, prev_align);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		uint64_t core::detail::cdynamic_pool<TType>::capacity() const
+		{
+			return m_capacity;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		uint64_t core::detail::cdynamic_pool<TType>::memory_usage() const
+		{
+			return size() * sizeof(TType);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		uint64_t core::detail::cdynamic_pool<TType>::memory_reserved() const
+		{
+			return capacity() * sizeof(TType);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		bool core::detail::cdynamic_pool<TType>::empty() const
+		{
+			return m_size == 0;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		uint64_t core::detail::cdynamic_pool<TType>::size() const
+		{
+			return m_size;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		TType* core::detail::cdynamic_pool<TType>::modify(uint64_t index)
+		{
+			return unsafe(index);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		const TType* core::detail::cdynamic_pool<TType>::find(uint64_t index) const
+		{
+			return unsafe(index);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		bool core::detail::cdynamic_pool<TType>::initialized_at_index(uint64_t index) const
+		{
+			return  index < capacity() && m_initialized_bit[index];
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		TType* core::detail::cdynamic_pool<TType>::advance(TType* object)
+		{
+			auto next = memloc(object) + sizeof(TType);
+
+			while (next <= RCAST(uint64_t, m_end) && !initialized_at_index(memloc_index(RCAST(void*, next), m_start, sizeof(TType))))
+			{
+				next += sizeof(TType);
+			}
+
+			return next <= reinterpret_cast<uint64_t>(m_end) ? reinterpret_cast<TType*>(next) : nullptr;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		TType* core::detail::cdynamic_pool<TType>::begin()
+		{
+			if (m_size == 0)
+			{
+				return nullptr;
+			}
+
+			if (!m_initialized_bit[0])
+			{
+				return advance(reinterpret_cast<TType*>(m_start));
+			}
+
+			return reinterpret_cast<TType*>(m_start);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		void core::detail::cdynamic_pool<TType>::destroy(uint64_t index)
+		{
+			if (m_size > 0)
+			{
+				const auto fragmentation = index < m_size - 1;
+
+				TType* object = unsafe(index);
+
+				object->~TType();
+
+				m_initialized_bit[index] = false;
+
+				--m_size;
+
+				if (fragmentation)
+				{
+					m_fragmentation_indices.push(index);
+				}
+				else
+				{
+					--m_top;
+				}
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		TType* core::detail::cdynamic_pool<TType>::replace(uint64_t index)
+		{
+			TType* object = unsafe(index);
+
+			object->~TType();
+
+			object = new (object) TType;
+
+			return object;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		TType* core::detail::cdynamic_pool<TType>::create(uint64_t* index_out)
+		{
+			if (size() == capacity())
+			{
+				resize(m_size * 2, m_alignment);
+			}
+
+			uint64_t index = 0;
+
+			if (!m_fragmentation_indices.empty())
+			{
+				index = m_fragmentation_indices.top();
+
+				m_fragmentation_indices.pop();
+			}
+			else
+			{
+				index = m_top++;
+			}
+
+			TType* object = unsafe(index);
+
+			object = new (object) TType;
+
+			m_initialized_bit[index] = true;
+			++m_size;
+
+			*index_out = index;
+
+			return object;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		void core::detail::cdynamic_pool<TType>::reset()
+		{
+			auto i = 0;
+			auto object = begin();
+			while (i < m_size)
+			{
+				object->~TType();
+
+				object = advance(object);
+
+				++i;
+			}
+
+			std::memset(m_start, NULL, m_size);
+
+			std::fill(m_initialized_bit.begin(), m_initialized_bit.end(), false);
+
+			m_fragmentation_indices = std::stack<unsigned>();
+
+			m_size = 0;
+			m_capacity = 0;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		void core::detail::cdynamic_pool<TType>::shutdown()
+		{
+			auto* object = begin();
+			while (object)
+			{
+				object->~TType();
+
+				object = advance(object);
+			}
+
+			mi_free_size_aligned(m_start, m_size, m_alignment);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		bool core::detail::cdynamic_pool<TType>::init(uint64_t count, uint64_t alignment /*= 0*/)
+		{
+			auto __alignment = alignment == 0 ? next_power_of_2(alignof(TType)) : alignment;
+
+			m_start = mi_aligned_alloc(__alignment, sizeof(TType) * count);
+
+			m_end = reinterpret_cast<void*>(memloc(m_start) + count * SCAST(uint64_t, sizeof(TType)));
+
+			//m_capacity = count * SCAST(uint64_t, sizeof(TType));
+
+			m_capacity = count;
+
+			m_alignment = __alignment;
+
+			m_initialized_bit.resize(count, false);
+
+			return true;
+		}
+
+	} //- detail
+
+} //- core
+
 
 namespace core
 {

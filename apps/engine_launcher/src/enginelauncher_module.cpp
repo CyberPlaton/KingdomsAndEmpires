@@ -88,7 +88,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	//- set core io callback
-	core::io::serror_reporter::instance().m_callback = core_io_error_function;
+	core::serror_reporter::instance().m_callback = core_io_error_function;
+
+	{
+		core::clinked_tree<stest> tree(10);
+
+		auto* node = tree.append_to(nullptr);
+
+		logging::log_debug("Tree depth-first iterative:");
+		tree.visit_depth_first([&](core::clinked_tree<stest>::snode* node) -> bool
+			{
+				logging::log_debug(fmt::format("'{}'", node->uuid.string()));
+
+				return true;
+			});
+	}
+
 
 	core::crandom rand;
 

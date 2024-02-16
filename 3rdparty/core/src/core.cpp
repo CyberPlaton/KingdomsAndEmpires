@@ -85,6 +85,24 @@ namespace algorithm
 		return MAX(handle_type_t);
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	float bytes_to_kilobytes(unsigned b)
+	{
+		return SCAST(float, b) / 1000.0f;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	float bytes_to_megabytes(unsigned b)
+	{
+		return bytes_to_kilobytes(b) / 1000.0f;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	float bytes_to_gigabytes(unsigned b)
+	{
+		return bytes_to_megabytes(b) / 1000.0f;
+	}
+
 } //- algorithm
 
 namespace core
