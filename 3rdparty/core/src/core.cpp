@@ -276,6 +276,7 @@ namespace core
 			else if (rttr::type::get<uint16_t>() == required_type) return static_cast<uint16_t>(value);
 			else if (rttr::type::get<uint8_t>() == required_type) return static_cast<uint8_t>(value);
 			else if (rttr::type::get<char>() == required_type) return static_cast<char>(value);
+			else if (rttr::type::get<unsigned char>() == required_type) return static_cast<unsigned char>(value);
 			else if (rttr::type::get<bool>() == required_type) return static_cast<bool>(value);
 
 			if (serror_reporter::instance().m_callback)
@@ -487,7 +488,7 @@ namespace core
 						if (serror_reporter::instance().m_callback)
 						{
 							serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
-								fmt::format("\t\tproperty not found"));
+								fmt::format("\t\tproperty '{}' with type '{}' not found", name, prop_type));
 						}
 						continue;
 					}

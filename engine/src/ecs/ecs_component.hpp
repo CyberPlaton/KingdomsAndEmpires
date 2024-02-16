@@ -12,6 +12,11 @@ static void serialize(flecs::entity e, nlohmann::json& json) \
 	{ \
 		json = core::io::to_json_object(*eComp); \
 	} \
+} \
+static void deserialize(flecs::entity e, const std::string& json) \
+{ \
+	c component = core::io::from_json_string<c>(json); \
+	e.set<c>(std::move(component)); \
 }
 
 namespace ecs
@@ -121,7 +126,10 @@ namespace ecs
 		rttr::registration::class_<sidentifier>("sidentifier")
 			.property("m_uuid", &sidentifier::m_uuid)
 			.method("serialize", &sidentifier::serialize)
+			.method("deserialize", &sidentifier::deserialize)
 			;
+
+		rttr::default_constructor<sidentifier>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

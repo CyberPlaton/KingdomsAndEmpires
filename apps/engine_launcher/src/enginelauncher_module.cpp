@@ -90,45 +90,46 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	//- set core io callback
 	core::serror_reporter::instance().m_callback = core_io_error_function;
 
-	{
-		core::clinked_tree<stest> tree(10);
 
-		auto* node = tree.append_to(nullptr);
-
-		logging::log_debug("Tree depth-first iterative:");
-		tree.visit_depth_first([&](core::clinked_tree<stest>::snode* node) -> bool
-			{
-				logging::log_debug(fmt::format("'{}'", node->uuid.string()));
-
-				return true;
-			});
-	}
-
-
-	core::crandom rand;
-
-	stest test;
-	test.skills.m_block = 100;
-	test.skills.m_acrobatics = 25;
-	test.rect = {10.0f, 10.0f, 20.0f, 20.0f};
-	test.vec = {91.0f, 1.0f};
-	for(auto i = 0; i < 10; ++i)
-	{
-		test.damages.push_back(rand.normalized_float());
-	}
-
-	logging::log_debug("----------Serializing----------");
-	auto json = core::io::to_json_string(test, true);
-
-	logging::log_info(fmt::format("stest: '{}'", json));
+// 	{
+// 		core::clinked_tree<stest> tree(10);
+// 
+// 		auto* node = tree.append_to();
+// 
+// 		logging::log_debug("Tree depth-first iterative:");
+// 		tree.visit_depth_first([&](core::clinked_tree<stest>::snode* node) -> bool
+// 			{
+// 				logging::log_debug(fmt::format("'{}'", node->uuid.string()));
+// 
+// 				return true;
+// 			});
+// 	}
 
 
-	logging::log_debug("----------Deserializing----------");
-	auto deser = core::io::from_json_string(test.get_type(), json);
-
-	auto deser_json = core::io::to_json_string(deser, true);
-
-	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
+// 	core::crandom rand;
+// 
+// 	stest test;
+// 	test.skills.m_block = 100;
+// 	test.skills.m_acrobatics = 25;
+// 	test.rect = {10.0f, 10.0f, 20.0f, 20.0f};
+// 	test.vec = {91.0f, 1.0f};
+// 	for(auto i = 0; i < 10; ++i)
+// 	{
+// 		test.damages.push_back(rand.normalized_float());
+// 	}
+// 
+// 	logging::log_debug("----------Serializing----------");
+// 	auto json = core::io::to_json_string(test, true);
+// 
+// 	logging::log_info(fmt::format("stest: '{}'", json));
+// 
+// 
+// 	logging::log_debug("----------Deserializing----------");
+// 	auto deser = core::io::from_json_string(test.get_type(), json);
+// 
+// 	auto deser_json = core::io::to_json_string(deser, true);
+// 
+// 	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
 
 
 
@@ -250,10 +251,25 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	json_string = core::io::to_json_string(*walther, true);
 	logging::log_info(fmt::format("races::shuman after deserializing and setting component values: '{}'", json_string));
 
-	logging::log_debug("//------------------------------------------------------------------------------------------------------------------------");
+	logging::log_debug("//Serializing--------------------------------------------------------------------------------------------------------------");
 
+	ecs::sidentifier id;
 
+	auto id_string = core::io::to_json_string(id, true);
 
+	logging::log_info(fmt::format("deserializing identifier ('{}') component '{}'", id.m_uuid.string(), id_string));
+
+	flecs::entity dude = world.entity("My Dude");
+
+	auto t = rttr::type::get<ecs::sidentifier>();
+
+	auto method = t.get_method("deserialize");
+
+	method.invoke({}, dude, id_string);
+
+	const auto* id_comp = dude.get<ecs::sidentifier>();
+
+	logging::log_info(fmt::format("deserialized identifier component '{}'", id_comp->m_uuid.string()));
 
 	//- check components
 // 	ecs::sidentifier identifier; identifier.m_self = inst;

@@ -475,11 +475,7 @@ namespace core
 		[[nodiscard]] TType from_json_string(const std::string& json)
 		{
 			auto var = from_json_string(rttr::type::get<TType>(), json);
-			if (var.is_valid())
-			{
-				return var.template get_value<TType>();
-			}
-			return {};
+			return std::move(var.template get_value<TType>());
 		}
 		std::string to_json_string(rttr::instance object, bool beautify = false);
 		[[nodiscard]] nlohmann::json to_json_object(rttr::instance object);
@@ -963,8 +959,8 @@ namespace core
 			if (serror_reporter::instance().m_callback)
 			{
 				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
-					fmt::format("Creating clinked_tree with reserved capacity of '{}KB'",
-						algorithm::bytes_to_kilobytes(m_pool.memory_reserved())));
+					fmt::format("Creating clinked_tree with reserved capacity of '{}({}KB)'",
+						m_pool.capacity(), algorithm::bytes_to_kilobytes(m_pool.memory_reserved())));
 			}
 		}
 
