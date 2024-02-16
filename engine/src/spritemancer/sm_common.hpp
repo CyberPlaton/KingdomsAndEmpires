@@ -154,16 +154,16 @@ namespace sm
 	class ccamera
 	{
 	public:
-		ccamera() = default;
-		virtual ~ccamera() = default;
+		ccamera() {};
+		virtual ~ccamera() {};
 
 		core::srect viewport() const;
 		void viewport(float x, float y, float w, float h);
 
-		inline float viewport_x() const { return m_viewport.x(); }
-		inline float viewport_y() const { return m_viewport.y(); }
-		inline float viewport_w() const { return m_viewport.w(); }
-		inline float viewport_h() const { return m_viewport.h(); }
+		float viewport_x() const { return m_viewport.x(); }
+		float viewport_y() const { return m_viewport.y(); }
+		float viewport_w() const { return m_viewport.w(); }
+		float viewport_h() const { return m_viewport.h(); }
 
 		core::scolor clearcolor() const;
 		void clearcolor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
@@ -314,7 +314,7 @@ namespace sm
 	{
 	public:
 		virtual ccamera* active_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
-		virtual ccamera* default_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
+		virtual ccamera* default_camera() { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
 		virtual bool has_active_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return false; }
 
 		RTTR_ENABLE(core::cservice);

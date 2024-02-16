@@ -3,20 +3,20 @@
 namespace camera_system
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	ccamera_manager::ccamera_manager()
+	bool ccamera_manager::on_start()
 	{
-		m_default = std::make_unique<sm::ccamera>();
-
 		auto w = raylib::GetScreenWidth();
 		auto h = raylib::GetScreenHeight();
 
 		//- create engine default camera,
 		//- so we can still run without a user made one
-		m_default->viewport(0.0f, 0.0f, SCAST(float, w), SCAST(float, h));
-		m_default->clearcolor(250, 250, 250, 250);
-		m_default->move_to({ 0.0f, 0.0f });
-		m_default->rotate_to(0.0f);
-		m_default->zoom_to(0.5f);
+		m_default.viewport(0.0f, 0.0f, SCAST(float, w), SCAST(float, h));
+		m_default.clearcolor(250, 250, 250, 250);
+		m_default.move_to({ 0.0f, 0.0f });
+		m_default.rotate_to(0.0f);
+		m_default.zoom_to(0.5f);
+
+		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -33,9 +33,9 @@ namespace camera_system
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::ccamera* ccamera_manager::default_camera() const
+	sm::ccamera* ccamera_manager::default_camera()
 	{
-		return m_default.get();
+		return &m_default;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

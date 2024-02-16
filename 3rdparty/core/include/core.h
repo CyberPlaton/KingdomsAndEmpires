@@ -321,7 +321,7 @@ namespace algorithm
 	template<typename T>
 	bool bit_check(T& byte, T bit)
 	{
-		byte & (1 << (bit));
+		return byte & (1 << (bit));
 	}
 
 	//- utility to check whether query number is bitwise active in bitwise enum value

@@ -373,7 +373,24 @@ int main(int argc, char* argv[])
 	logging::log_critical("Log log_critical");
 
 //- set core io callback
-	core::io::serror_reporter::instance().m_callback = core_io_error_function;
+	core::serror_reporter::instance().m_callback = core_io_error_function;
+
+	{
+		core::clinked_tree<stest> tree(10);
+
+		auto* node = tree.append_to(nullptr);
+
+		logging::log_debug("Tree depth-first iterative:");
+		tree.visit_depth_first([&](core::clinked_tree<stest>::snode* node) -> bool
+			{
+				logging::log_debug(fmt::format("'{}'", node->uuid.string()));
+
+				return true;
+			});
+	}
+
+	return 0;
+
 
 	core::crandom rand;
 
@@ -400,8 +417,6 @@ int main(int argc, char* argv[])
 
 	logging::log_info(fmt::format("deser stest: '{}'", deser_json));
 
-
-	return 0;
 
 	auto type = rttr::type::get_by_name("cmy_third_module");
 
