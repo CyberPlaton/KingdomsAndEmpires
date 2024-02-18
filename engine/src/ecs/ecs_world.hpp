@@ -1,4 +1,5 @@
 #pragma once
+#include <core.h>
 #include "ecs_entity_manager.hpp"
 #include "ecs_system_manager.hpp"
 #include "ecs_module_manager.hpp"
@@ -20,6 +21,8 @@ namespace ecs
 		bool QueryCallback(int proxy_id);
 		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
 
+		bool load(const core::cpath& path);
+		void save(const core::cpath& path);
 
 		const flecs::world& world() const { return m_world; }
 		flecs::world& world() { return m_world; }
@@ -40,6 +43,9 @@ namespace ecs
 		centity_manager m_entity_manager;
 		csystem_manager m_system_manager;
 		cmodule_manager m_module_manager;
+
+	private:
+		void deserialize_entity(const simdjson::dom::object& json);
 	};
 
 } //- ecs

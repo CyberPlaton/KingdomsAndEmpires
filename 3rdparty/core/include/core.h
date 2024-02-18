@@ -18,6 +18,7 @@ namespace stl = std;
 #include <spdlog.h>
 #include <rttr.h>
 #include <nlohmann.h>
+#include <../src/simdjson.h>
 #include <cstddef>
 #include <memory>
 #include <filesystem>
@@ -467,9 +468,11 @@ namespace core
 	namespace io
 	{
 		constexpr std::string_view C_NO_SERIALIZE_META = "NO_SERIALIZE";
+		constexpr std::string_view C_OBJECT_TYPE_NAME = "__type__";
 		constexpr std::string_view C_MAP_KEY_NAME = "__key__";
 		constexpr std::string_view C_MAP_VALUE_NAME = "__value__";
 
+		[[nodiscard]] rttr::variant from_json_object(rttr::type expected, const simdjson::dom::element& json);
 		[[nodiscard]] rttr::variant from_json_string(rttr::type expected, const std::string& json);
 		template<class TType>
 		[[nodiscard]] TType from_json_string(const std::string& json)

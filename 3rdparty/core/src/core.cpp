@@ -1,5 +1,4 @@
 #include "core.hpp"
-#include "simdjson.h"
 #include <sstream>
 
 namespace algorithm
@@ -766,6 +765,10 @@ namespace core
 			else
 			{
 				//- write an object
+				json = nlohmann::json::object();
+
+				json[C_OBJECT_TYPE_NAME] = t.get_name().data();
+
 				if (auto props = t.get_properties(); !props.empty())
 				{
 					to_json_recursive(v, json);

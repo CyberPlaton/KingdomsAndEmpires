@@ -13,14 +13,19 @@ static void serialize(flecs::entity e, nlohmann::json& json) \
 		json = core::io::to_json_object(*eComp); \
 	} \
 } \
-static void deserialize(flecs::entity e, const std::string& json) \
+static void deserialize(flecs::entity e, const simdjson::dom::element& json) \
 { \
-	c component = core::io::from_json_string<c>(json); \
+	c component; \
+	auto var = core::io::from_json_object(rttr::type::get<c>(), json); \
+	component = var.get_value<c>(); \
 	e.set<c>(std::move(component)); \
 }
 
 namespace ecs
 {
+	constexpr std::string_view C_COMPONENT_SERIALIZE_FUNC_NAME = "serialize";
+	constexpr std::string_view C_COMPONENT_DESERIALIZE_FUNC_NAME = "deserialize";
+
 	//- base class for all components
 	//------------------------------------------------------------------------------------------------------------------------
 	struct icomponent
@@ -143,6 +148,8 @@ namespace ecs
 			.property("m_rotation", &stransform::m_rotation)
 			.method("serialize", &stransform::serialize)
 			;
+
+		rttr::default_constructor<stransform>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -162,6 +169,8 @@ namespace ecs
 			.property("m_tint", &ssprite::m_tint)
 			.method("serialize", &ssprite::serialize)
 			;
+
+		rttr::default_constructor<ssprite>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -182,6 +191,8 @@ namespace ecs
 			.property("m_keyframes", &sanimation::m_keyframes)
 			.method("serialize", &sanimation::serialize)
 			;
+
+		rttr::default_constructor<sanimation>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -192,6 +203,8 @@ namespace ecs
 			.property("m_children", &shierarchy::m_children)
 			.method("serialize", &shierarchy::serialize)
 			;
+
+		rttr::default_constructor<shierarchy>();
 	};
 
 } //- ecs

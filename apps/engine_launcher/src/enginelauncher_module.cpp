@@ -8,6 +8,8 @@ struct stest
 	core::srect rect;
 	vec2_t vec;
 	vector_t<float> damages;
+	ecs::stransform transform;
+	ecs::ssprite sprite;
 
 	RTTR_ENABLE();
 };
@@ -24,6 +26,8 @@ REFLECT_INLINE(stest)
 		.property("damages", &stest::damages)
 		.property("rect", &stest::rect)
 		.property("vec", &stest::vec)
+		.property("transform", &stest::transform)
+		.property("sprite", &stest::sprite)
 		;
 
 	rttr::default_constructor<vector_t<float>>();
@@ -89,6 +93,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	//- set core io callback
 	core::serror_reporter::instance().m_callback = core_io_error_function;
+
+	stest test;
+	test.transform.m_x = 10000.0f;
+	stest test2;
+
+	auto json = core::io::to_json_string(test, true);
+
+	logging::log_info(fmt::format("stest JSON: '{}'", json));
+
+	test2 = core::io::from_json_string<stest>(json);
 
 
 	{

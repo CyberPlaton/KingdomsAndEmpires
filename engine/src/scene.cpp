@@ -4,17 +4,17 @@ namespace engine
 {
 	const std::string& cscene_base::entities() const
 	{
-		
+		return {};
 	}
 	
 	const std::string& cscene_base::modules() const
 	{
-		
+		return {};
 	}
 	
 	const std::string& cscene_base::systems() const
 	{
-		if(m_json.find(C_SYSTEMS_PROP)
+		return {};
 	}
 	
 	
