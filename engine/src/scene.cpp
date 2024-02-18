@@ -2,6 +2,22 @@
 
 namespace engine
 {
+	const std::string& cscene_base::entities() const
+	{
+		
+	}
+	
+	const std::string& cscene_base::modules() const
+	{
+		
+	}
+	
+	const std::string& cscene_base::systems() const
+	{
+		if(m_json.find(C_SYSTEMS_PROP)
+	}
+	
+	
 	//------------------------------------------------------------------------------------------------------------------------
 	bool scene_properties::has(const std::string& component) const
 	{

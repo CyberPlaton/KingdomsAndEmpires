@@ -16,11 +16,36 @@ namespace engine
 	enum scene_status
 	{
 		scene_status_none = 0,
+		scene_status_saving,	//- exporting as JSON file
+		scene_status_saved,		//- successfully exported as JSON file
 		scene_status_loading,	//- loading JSON resource from file
 		scene_status_loaded,	//- finished loading JSON resource
 		scene_status_resolving,	//- processing JSON into scene tree
 		scene_status_resolved,	//- JSON resource processed and converted into scene tree
 		scene_status_failed,	//- either failed JSON loading or converting to scene tree
+	};
+	
+	//- base class for all scene types implementing certain features.
+	//- The base class is responsible for loading the JSON representation and
+	//- allows access to basic elements in a scene. It is lightweight.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cscene_base
+	{
+	public:
+		static constexpr stringview_t C_ENTITIES_PROP = "entities";
+		static constexpr stringview_t C_MODULES_PROP = "modules";
+		static constexpr stringview_t C_SYSTEMS_PROP = "systems";
+		
+		virtual scene_status load(const core::cpath& scene_path);
+		virtual scene_status save(const core::cpath& scene_path);
+		
+		const std::string& entities() const;
+		const std::string& modules() const;
+		const std::string& systems() const;
+		
+		
+	private:
+		nlohmann::json m_json;
 	};
 
 	//- basically pairing component rttr names to component data. The variant is easily castable to actual
@@ -109,7 +134,7 @@ namespace engine
 
 		if (m_props.find(h) != m_props.end())
 		{
-			return RCAST(TProperty*, &m_props.at(h).get_value<TProperty>());
+			return RCAST(TProperty*, &m_props.at(h).template get_value<TProperty>());
 		}
 		return nullptr;
 	}
@@ -122,7 +147,7 @@ namespace engine
 
 		if (m_props.find(h) != m_props.end())
 		{
-			return RCAST(TProperty*, &m_props.at(h).get_value<TProperty>());
+			return RCAST(TProperty*, &m_props.at(h).template get_value<TProperty>());
 		}
 		return nullptr;
 	}
