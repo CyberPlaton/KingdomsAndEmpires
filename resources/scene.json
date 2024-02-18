@@ -1,0 +1,40 @@
+{
+  "modules": {
+    "AiModule": 1,
+    "RaceModule": 1,
+    "HumanRaceModule": 3,
+    "PathfindingModule": 2,
+    "KingdomsModule": 5,
+    "DwarfRaceModule": 1
+  },
+  "entities": {
+    "Walther": {
+      "name": "Walther",
+      "uuid": "dddddddd-dddd-dddd-dddddddd",
+      "components": {
+        "sidentifier": {
+          "m_uuid": {
+            "m_data" : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          }
+        }
+      }
+    },
+    "Peter": {
+      "name": "Peter",
+      "uuid": "dddddddd-dddd-dddd-dddddddd",
+      "components": {
+        "sidentifier": {
+          "m_uuid": {
+            "m_data": [ 1, 24, 44, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 253, 11, 0 ]
+          }
+        }
+      }
+    }
+  },
+  "systems": {
+    "BehaviorEngineSystem": 1,
+    "KingdomManagementSystem": 1,
+    "WeatherEffectsSystem": 3,
+    "SceneRenderingSystem": 16
+  }
+}

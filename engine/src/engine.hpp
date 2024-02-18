@@ -4,6 +4,7 @@
 #include "spritemancer/sm.hpp"
 #include "ecs/ecs.hpp"
 #include "services/service_manager.hpp"
+#include "scene.hpp"
 #include <argparse.h>
 
 namespace engine

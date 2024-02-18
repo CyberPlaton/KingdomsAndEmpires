@@ -542,6 +542,7 @@ namespace core
 		private:
 			void resize(uint64_t count, uint64_t alignment);
 			TType* unsafe(uint64_t index);
+			const TType* unsafe(uint64_t index) const;
 			bool initialized_at_index(uint64_t index) const;
 		};
 
@@ -607,6 +608,7 @@ namespace core
 		bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
 		bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
 		bool is_higher_as(const cuuid& uuid) const { return compare(uuid) > 0; }
+		bool operator==(const cuuid& other) const { return is_equal_to(other); }
 
 	private:
 		inline static const auto C_RANDOM_BYTES_COUNT = 4;
@@ -840,21 +842,21 @@ namespace core
 	class cfile final
 	{
 	public:
-		static std::string load_text(stringview_t path);
+		static std::string load_text(const std::string& path);
 
-		static std::future<std::string> load_text_async(stringview_t path);
+		static std::future<std::string> load_text_async(const std::string& path);
 
-		static file_io_status save_text(stringview_t path, const std::string& text);
+		static file_io_status save_text(const std::string& path, const std::string& text);
 
-		static std::future<file_io_status> save_text_async(stringview_t path, const std::string& text);
+		static std::future<file_io_status> save_text_async(const std::string& path, const std::string& text);
 
-		static spair<uint8_t*, unsigned> load_binary(stringview_t path);
+		static spair<uint8_t*, unsigned> load_binary(const std::string& path);
 
-		static std::future<spair<uint8_t*, unsigned>> load_binary_async(stringview_t path);
+		static std::future<spair<uint8_t*, unsigned>> load_binary_async(const std::string& path);
 
-		static file_io_status save_binary(stringview_t path, uint8_t* data, unsigned size);
+		static file_io_status save_binary(const std::string& path, uint8_t* data, unsigned size);
 
-		static std::future<file_io_status> save_binary_async(stringview_t path, uint8_t* data, unsigned size);
+		static std::future<file_io_status> save_binary_async(const std::string& path, uint8_t* data, unsigned size);
 
 		static void unload(char* data);
 
@@ -1005,14 +1007,11 @@ namespace core
 			visit_depth_first(algorithm::convert_to_function(lambda));
 		}
 
-		snode* append_to(snode* node = nullptr)
+		snode* append_to(snode* node = nullptr, uint64_t* index_out = nullptr)
 		{
 			node = node ? node : &m_root;
-
-			//- TODO: decide what to do whit indices being given out from pool
-			uint64_t i = 0;
-
-			snode* n = m_pool.create(&i);
+			
+			auto* n = m_pool.create(index_out);
 
 			n->m_parent = node;
 			node->m_children.push_back(n);
@@ -1020,6 +1019,20 @@ namespace core
 			return n;
 		}
 
+		const snode* find(uint64_t index) const
+		{
+			return m_pool.find(index);
+		}
+
+		snode* modify(uint64_t index)
+		{
+			return m_pool.modify(index);
+		}
+
+		snode* root() const
+		{
+			return m_pool.begin();
+		}
 
 		bool empty() const {return m_pool.empty();}
 		uint64_t size() const { return m_pool.size(); }
@@ -1076,6 +1089,13 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::unsafe(uint64_t index)
+		{
+			return reinterpret_cast<TType*>(reinterpret_cast<void*>((reinterpret_cast<uint64_t>(m_start) + index * sizeof(TType))));
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		const TType* core::detail::cdynamic_pool<TType>::unsafe(uint64_t index) const
 		{
 			return reinterpret_cast<TType*>(reinterpret_cast<void*>((reinterpret_cast<uint64_t>(m_start) + index * sizeof(TType))));
 		}
@@ -1261,7 +1281,10 @@ namespace core
 			m_initialized_bit[index] = true;
 			++m_size;
 
-			*index_out = index;
+			if (index_out)
+			{
+				*index_out = index;
+			}
 
 			return object;
 		}

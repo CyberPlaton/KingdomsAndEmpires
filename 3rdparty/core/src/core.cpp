@@ -1657,16 +1657,16 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::string cfile::load_text(stringview_t path)
+	std::string cfile::load_text(const std::string& path)
 	{
 		//- TODO: decide how to handle report errors
 		std::string err;
 
-		return load_text_file_data(path, &err);
+		return load_text_file_data(path.c_str(), &err);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<std::string> cfile::load_text_async(stringview_t path)
+	std::future<std::string> cfile::load_text_async(const std::string& path)
 	{
 		auto result = casync::launch_async([&]() -> std::string
 			{
@@ -1677,16 +1677,16 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	file_io_status cfile::save_text(stringview_t path, const std::string& text)
+	file_io_status cfile::save_text(const std::string& path, const std::string& text)
 	{
 		//- TODO: decide how to handle report errors
 		std::string err;
 
-		return save_text_file_data(path, text.c_str(), &err) ? file_io_status_success : file_io_status_failed;
+		return save_text_file_data(path.c_str(), text.c_str(), &err) ? file_io_status_success : file_io_status_failed;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<file_io_status> cfile::save_text_async(stringview_t path, const std::string& text)
+	std::future<file_io_status> cfile::save_text_async(const std::string& path, const std::string& text)
 	{
 		auto result = casync::launch_async([&]() -> file_io_status
 			{
@@ -1697,20 +1697,20 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	spair<uint8_t*, unsigned> cfile::load_binary(stringview_t path)
+	spair<uint8_t*, unsigned> cfile::load_binary(const std::string& path)
 	{
 		//- TODO: decide how to handle report errors
 		std::string err;
 
 		spair<uint8_t*, unsigned> out;
 
-		out.first = load_binary_file_data(path, &out.second, &err);
+		out.first = load_binary_file_data(path.c_str(), &out.second, &err);
 
 		return out;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<spair<uint8_t*, unsigned>> cfile::load_binary_async(stringview_t path)
+	std::future<spair<uint8_t*, unsigned>> cfile::load_binary_async(const std::string& path)
 	{
 		auto result = casync::launch_async([&]() -> spair<uint8_t*, unsigned>
 			{
@@ -1721,16 +1721,16 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	file_io_status cfile::save_binary(stringview_t path, uint8_t* data, unsigned size)
+	file_io_status cfile::save_binary(const std::string& path, uint8_t* data, unsigned size)
 	{
 		//- TODO: decide how to handle report errors
 		std::string err;
 
-		return save_binary_file_data(path, data, size, &err) ? file_io_status_success : file_io_status_failed;
+		return save_binary_file_data(path.c_str(), data, size, &err) ? file_io_status_success : file_io_status_failed;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<file_io_status> cfile::save_binary_async(stringview_t path, uint8_t* data, unsigned size)
+	std::future<file_io_status> cfile::save_binary_async(const std::string& path, uint8_t* data, unsigned size)
 	{
 		auto result = casync::launch_async([&]() -> file_io_status
 			{

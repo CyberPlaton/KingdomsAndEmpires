@@ -91,20 +91,44 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	core::serror_reporter::instance().m_callback = core_io_error_function;
 
 
-// 	{
-// 		core::clinked_tree<stest> tree(10);
-// 
-// 		auto* node = tree.append_to();
-// 
-// 		logging::log_debug("Tree depth-first iterative:");
-// 		tree.visit_depth_first([&](core::clinked_tree<stest>::snode* node) -> bool
-// 			{
-// 				logging::log_debug(fmt::format("'{}'", node->uuid.string()));
-// 
-// 				return true;
-// 			});
-// 	}
+	{
+		core::clinked_tree<stest> tree(10);
 
+		auto* node = tree.append_to();
+
+		logging::log_debug("Tree depth-first iterative:");
+		tree.visit_depth_first([&](core::clinked_tree<stest>::snode* node) -> bool
+			{
+				logging::log_debug(fmt::format("'{}'", node->uuid.string()));
+
+				return true;
+			});
+	}
+
+	{
+		engine::scene_properties props;
+		auto& id = props["sidentifier"];
+		auto& tr = props["stransform"];
+
+		if(auto* c = props.find<ecs::sidentifier>(); c)
+		{
+			logging::log_debug(fmt::format("\tIdentifier '{}'", c->m_uuid.string()));
+		}
+		if (auto* c = props.find<ecs::stransform>(); c)
+		{
+			logging::log_debug(fmt::format("\tTransform'{}'", c->m_rotation));
+		}
+	}
+
+	ecs::cworld ecsworld("My World");
+	engine::cscene scene;
+	while(scene.load("scene.json") != engine::scene_status_loaded)
+	{
+	}
+
+	scene.resolve();
+
+	return 0;
 
 // 	core::crandom rand;
 // 
