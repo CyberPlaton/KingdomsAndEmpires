@@ -44,9 +44,16 @@ namespace ecs
 		simdjson::dom::parser parser;
 		simdjson::dom::element element;
 
-		auto json = core::cfile::load_text(path.view());
+		auto string = core::cfile::load_text(path.view());
 
-		parser.parse(json.data(), json.length()).get(element);
+// 		const auto& json = nlohmann::json::parse(string);
+// 
+// 		for (const auto& e : json.at("entities"))
+// 		{
+// 			deserialize_entity(e);
+// 		}
+
+		parser.parse(string.data(), string.length()).get(element);
 
 		simdjson::dom::array entities_array;
 		simdjson::dom::array systems_array;
@@ -81,6 +88,39 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::deserialize_entity(const nlohmann::json& json)
+	{
+		for (const auto& c : json.at("components"))
+		{
+			logging::log_debug(fmt::format("\t c: '{}'", c.dump(4)));
+
+			auto t = c.at(core::io::C_OBJECT_TYPE_NAME);
+
+			if (auto type = rttr::type::get_by_name(t.template get<std::string_view>().data()); type.is_valid())
+			{
+				auto var = type.create();
+
+				const auto& comp = c.at(t);
+
+				logging::log_debug(fmt::format("\t comp: '{}'", comp.dump(4)));
+
+				var = core::io::from_json_string(type, comp.dump());
+
+				if (var.is_valid())
+				{
+					auto s = core::io::to_json_string(var, true);
+
+					logging::log_debug(fmt::format("\t component: '{}'", s));
+				}
+				else
+				{
+					logging::log_debug(fmt::format("\t failed to load component with type '{}'", type.get_name().data()));
+				}
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::save(const core::cpath& path)
 	{
 
@@ -90,27 +130,43 @@ namespace ecs
 	void cworld::deserialize_entity(const simdjson::dom::object& json)
 	{
 		simdjson::dom::array components_array;
+		simdjson::dom::element component_element;
+		std::string_view type_name;
 
 		if (json.at_key(C_COMPONENTS_PROP).get(components_array) == simdjson::SUCCESS)
 		{
 			for (auto it : components_array)
 			{
-				simdjson::dom::object component_object;
-
-				component_object = it.get<simdjson::dom::object>();
-
-				std::string type_name;
-
-				if (component_object.at_key(core::io::C_OBJECT_TYPE_NAME).get(type_name) == simdjson::SUCCESS)
+				if (it.at_key(core::io::C_OBJECT_TYPE_NAME).get(type_name) == simdjson::SUCCESS)
 				{
-					if (auto type = rttr::type::get_by_name(type_name); type.is_valid())
+					if (auto type = rttr::type::get_by_name(type_name.data()); type.is_valid())
 					{
-						if (auto m = type.get_method(C_COMPONENT_DESERIALIZE_FUNC_NAME.data()); m.is_valid())
+						if (it.at_key(type_name).get(component_element) == simdjson::SUCCESS)
 						{
-							//- TODO: at this point we already require an existing flecs entity in order to components to him
-							m.invoke({}, e, component_object);
+							auto var = core::io::from_json_object(type, component_element);
+
+							if (var.is_valid())
+							{
+								//-- success. Component deserialized.
+							}
+							else
+							{
+								//-- error. Could not deserialize component from JSON
+							}
+						}
+						else
+						{
+							//-- JSON error. Cant find component object by given type key
 						}
 					}
+					else
+					{
+						//-- RTTR error. Cant find type by name
+					}
+				}
+				else
+				{
+					//-- JSON error. Cant find type name
 				}
 			}
 		}

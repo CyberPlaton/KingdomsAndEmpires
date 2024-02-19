@@ -1,0 +1,41 @@
+{
+    "modules": {
+      "AiModule": 1,
+      "RaceModule": 1,
+      "HumanRaceModule": 3,
+      "PathfindingModule": 2,
+      "KingdomsModule": 5,
+      "DwarfRaceModule": 1
+    },
+    "entities": [
+        {
+            "components": [
+              {
+                "__type__": "sidentifier",
+                "sidentifier": {
+                  "m_uuid": {
+                    "__type__": "cuuid",
+                    "m_data": [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 221, 1, 1, 1, 33 ]
+                  }
+                }
+              },
+              {
+                "__type__": "stransform",
+                "stransform": {
+                  "m_x": 22,
+                  "m_y": 123,
+                  "m_w": 1,
+                  "m_h": 1,
+                  "m_rotation": 0
+                }
+              }
+            ]
+        }
+    ],
+    "systems": {
+      "BehaviorEngineSystem": 1,
+      "KingdomManagementSystem": 1,
+      "WeatherEffectsSystem": 3,
+      "SceneRenderingSystem": 16
+    }
+  }

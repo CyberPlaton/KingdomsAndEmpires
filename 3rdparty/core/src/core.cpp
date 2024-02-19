@@ -620,6 +620,11 @@ namespace core
 		{
 			auto inst = object.get_type().get_raw_type().is_wrapper() ? object.get_wrapped_instance() : object;
 
+			//-- wrap into object with type information
+			//-- Note: type information is outside of the object to make deserializing easiert
+			json[C_OBJECT_TYPE_NAME] = object.get_type().get_raw_type().get_name().data();
+			json = nlohmann::json::object();
+
 			for(const auto prop : inst.get_derived_type().get_properties())
 			{
 				auto val = prop.get_value(inst);
@@ -765,10 +770,6 @@ namespace core
 			else
 			{
 				//- write an object
-				json = nlohmann::json::object();
-
-				json[C_OBJECT_TYPE_NAME] = t.get_name().data();
-
 				if (auto props = t.get_properties(); !props.empty())
 				{
 					to_json_recursive(v, json);

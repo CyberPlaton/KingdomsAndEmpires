@@ -94,47 +94,49 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	//- set core io callback
 	core::serror_reporter::instance().m_callback = core_io_error_function;
 
-	stest test;
-	test.transform.m_x = 10000.0f;
-	stest test2;
-
-	auto json = core::io::to_json_string(test, true);
-
-	logging::log_info(fmt::format("stest JSON: '{}'", json));
-
-	test2 = core::io::from_json_string<stest>(json);
-
-
-	{
-		core::clinked_tree<stest> tree(10);
-
-		auto* node = tree.append_to();
-
-		logging::log_debug("Tree depth-first iterative:");
-		tree.visit_depth_first([&](core::clinked_tree<stest>::snode* node) -> bool
-			{
-				logging::log_debug(fmt::format("'{}'", node->uuid.string()));
-
-				return true;
-			});
-	}
-
-	{
-		engine::scene_properties props;
-		auto& id = props["sidentifier"];
-		auto& tr = props["stransform"];
-
-		if(auto* c = props.find<ecs::sidentifier>(); c)
-		{
-			logging::log_debug(fmt::format("\tIdentifier '{}'", c->m_uuid.string()));
-		}
-		if (auto* c = props.find<ecs::stransform>(); c)
-		{
-			logging::log_debug(fmt::format("\tTransform'{}'", c->m_rotation));
-		}
-	}
+// 	stest test;
+// 	test.transform.m_x = 10000.0f;
+// 	stest test2;
+// 
+// 	auto json = core::io::to_json_string(test, true);
+// 
+// 	logging::log_info(fmt::format("stest JSON: '{}'", json));
+// 
+// 	test2 = core::io::from_json_string<stest>(json);
+// 
+// 
+// 	{
+// 		core::clinked_tree<stest> tree(10);
+// 
+// 		auto* node = tree.append_to();
+// 
+// 		logging::log_debug("Tree depth-first iterative:");
+// 		tree.visit_depth_first([&](core::clinked_tree<stest>::snode* node) -> bool
+// 			{
+// 				logging::log_debug(fmt::format("'{}'", node->uuid.string()));
+// 
+// 				return true;
+// 			});
+// 	}
+// 
+// 	{
+// 		engine::scene_properties props;
+// 		auto& id = props["sidentifier"];
+// 		auto& tr = props["stransform"];
+// 
+// 		if(auto* c = props.find<ecs::sidentifier>(); c)
+// 		{
+// 			logging::log_debug(fmt::format("\tIdentifier '{}'", c->m_uuid.string()));
+// 		}
+// 		if (auto* c = props.find<ecs::stransform>(); c)
+// 		{
+// 			logging::log_debug(fmt::format("\tTransform'{}'", c->m_rotation));
+// 		}
+// 	}
 
 	ecs::cworld ecsworld("My World");
+	ecsworld.load("world.json");
+
 	engine::cscene scene;
 	while(scene.load("scene.json") != engine::scene_status_loaded)
 	{
