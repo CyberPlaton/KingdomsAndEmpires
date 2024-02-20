@@ -12,15 +12,17 @@ namespace ecs
 		centity_manager(flecs::world& w);
 		~centity_manager();
 
-		centity& create_entity();
-		centity& create_entity(stringview_t uuid);
-		centity& create_entity(const core::cuuid& uuid);
+		flecs::entity create_entity();
+		flecs::entity create_entity(stringview_t uuid);
+		flecs::entity create_entity(const core::cuuid& uuid);
 
 		flecs::entity entity(const core::cuuid& uuid) const;
 
+		const vector_t<flecs::entity>& entities() const;
+
 	private:
 		flecs::world& m_managed_world;
-		vector_t<centity> m_entities;
+		vector_t<flecs::entity> m_entities;
 
 	private:
 		flecs::world& w() { return m_managed_world; }

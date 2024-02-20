@@ -1,7 +1,19 @@
 #pragma once
 #include <core/core_platform.hpp>
+#if defined(CORE_USE_EASTL)
+//- Note: if you decide to use EASTL, make sure that you are ready
+//- to integrate all of them used structures to RTTR
 #include <eastl.h>
 namespace stl = eastl;
+#else
+#include <vector>
+#include <array>
+#include <map>
+#include <unordered_set>
+#include <unordered_map>
+#include <queue>
+namespace stl = std;
+#endif
 #include <mimalloc.h>
 #include <glm.h>
 #include <magic_enum.h>
@@ -88,22 +100,22 @@ using vec4_t = glm::vec4;
 using mat3_t = glm::mat3x3;
 using mat4_t = glm::mat4x4;
 
-#if defined(core_EXPORTS)
+#if defined(core_EXPORTS) && defined(CORE_USE_EASTL)
 //- implementation required for EASTL. The function will be available in any application or plugin
 //- linking to core, the implementation however is only exported to static library.
+//- Note: using mi_aligned_alloc and mi_alloc seems to break something while using with EASTL and
+//- freeing arrays does not work, using malloc is fine however.
 //------------------------------------------------------------------------------------------------------------------------
 void* operator new[](size_t size, const char* pName, int flags, unsigned debugFlags, const char* file, int line)
 {
-	return mi_malloc(size);
+	return malloc(size);
 }
 
-//- implementation required for EASTL. The function will be available in any application or plugin
-//- linking to core, the implementation however is only exported to static library.
 //------------------------------------------------------------------------------------------------------------------------
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned debugFlags,
 	const char* file, int line)
 {
-	return mi_malloc(size);
+	return malloc(size);
 }
 #endif
 
@@ -473,6 +485,7 @@ namespace core
 		}
 		std::string to_json_string(rttr::instance object, bool beautify = false);
 		[[nodiscard]] nlohmann::json to_json_object(rttr::instance object);
+		void to_json_object(rttr::instance object, nlohmann::json& json);
 
 	} //- io
 

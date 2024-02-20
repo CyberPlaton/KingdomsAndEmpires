@@ -2,30 +2,40 @@
 #include <core.h>
 #include <flecs.h>
 
+namespace ecs
+{
+	constexpr std::string_view C_COMPONENT_SERIALIZE_FUNC_NAME = "serialize";
+
+	namespace detail
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TComponent>
+		inline static void serialize_component(const flecs::entity& e, nlohmann::json& json)
+		{
+			if (const auto* c = e.get<TComponent>(); c)
+			{
+				const auto type_name = rttr::type::get<TComponent>().get_name().data();
+				json = nlohmann::json::object();
+				json[core::io::C_OBJECT_TYPE_NAME] = type_name;
+				json[type_name] = core::io::to_json_object(*c);
+			}
+		}
+
+	} //- detail
+
+} //- ecs
+
 //- use this macro for defining a simple component. Simple means that
 //- it does not inherit from a complex component hierarchy.
 #define DECLARE_COMPONENT(c) \
 static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; } \
 static void serialize(flecs::entity e, nlohmann::json& json) \
 { \
-	if(const auto* eComp = e.get<c>(); eComp) \
-	{ \
-		json = core::io::to_json_object(*eComp); \
-	} \
-} \
-static void deserialize(flecs::entity e, const simdjson::dom::element& json) \
-{ \
-	c component; \
-	auto var = core::io::from_json_object(rttr::type::get<c>(), json); \
-	component = var.get_value<c>(); \
-	e.set<c>(std::move(component)); \
+	ecs::detail::serialize_component<c>(e, json); \
 }
 
 namespace ecs
 {
-	constexpr std::string_view C_COMPONENT_SERIALIZE_FUNC_NAME = "serialize";
-	constexpr std::string_view C_COMPONENT_DESERIALIZE_FUNC_NAME = "deserialize";
-
 	//- base class for all components
 	//------------------------------------------------------------------------------------------------------------------------
 	struct icomponent
@@ -131,7 +141,6 @@ namespace ecs
 		rttr::registration::class_<sidentifier>("sidentifier")
 			.property("m_uuid", &sidentifier::m_uuid)
 			.method("serialize", &sidentifier::serialize)
-			.method("deserialize", &sidentifier::deserialize)
 			;
 
 		rttr::default_constructor<sidentifier>();

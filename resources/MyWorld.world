@@ -1,0 +1,111 @@
+{
+    "entities": [
+        {
+            "components": [
+                {
+                    "__type__": "sidentifier",
+                    "sidentifier": {
+                        "m_uuid": {
+                            "m_data": [
+                                157,
+                                89,
+                                126,
+                                110,
+                                42,
+                                227,
+                                74,
+                                183,
+                                165,
+                                84,
+                                177,
+                                192,
+                                110,
+                                168,
+                                114,
+                                51
+                            ]
+                        }
+                    }
+                },
+                {
+                    "__type__": "shuman",
+                    "shuman": {
+                        "m_attributes": {
+                            "m_agility": 0,
+                            "m_endurance": 0,
+                            "m_intelligence": 0,
+                            "m_luck": 0,
+                            "m_personality": 0,
+                            "m_speed": 0,
+                            "m_strength": 0,
+                            "m_willpower": 0
+                        },
+                        "m_derived_attributes": {
+                            "m_action_points": 0,
+                            "m_health": 0,
+                            "m_mana": 0
+                        },
+                        "m_skills": {
+                            "m_acrobatics": 0,
+                            "m_alchemy": 0,
+                            "m_alteration": 0,
+                            "m_athletics": 0,
+                            "m_axe": 0,
+                            "m_block": 0,
+                            "m_blunt_weapon": 0,
+                            "m_conjuration": 0,
+                            "m_craftsmanship": 0,
+                            "m_destruction": 0,
+                            "m_enchantment": 0,
+                            "m_heavy_armor": 0,
+                            "m_illusion": 0,
+                            "m_light_armor": 0,
+                            "m_long_blade": 0,
+                            "m_marksman": 0,
+                            "m_medium_armor": 0,
+                            "m_mercantile": 0,
+                            "m_mysticism": 0,
+                            "m_restoration": 0,
+                            "m_short_blade": 0,
+                            "m_sneak": 0,
+                            "m_spear": 0,
+                            "m_speechcraft": 0,
+                            "m_unarmored": 0
+                        }
+                    }
+                }
+            ],
+            "name": "Rimuru"
+        },
+        {
+            "components": [
+                {
+                    "__type__": "sidentifier",
+                    "sidentifier": {
+                        "m_uuid": {
+                            "m_data": [
+                                220,
+                                22,
+                                194,
+                                51,
+                                39,
+                                59,
+                                76,
+                                252,
+                                169,
+                                96,
+                                177,
+                                58,
+                                215,
+                                97,
+                                70,
+                                134
+                            ]
+                        }
+                    }
+                }
+            ],
+            "name": "Veldora"
+        }
+    ]
+}

@@ -46,7 +46,7 @@ namespace ecs
 
 	private:
 		void deserialize_entity(const simdjson::dom::object& json);
-		void deserialize_entity(const nlohmann::json& json);
+		void serialize_entity(const flecs::entity e, nlohmann::json& json);
 	};
 
 } //- ecs

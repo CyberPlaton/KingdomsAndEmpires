@@ -8,6 +8,7 @@ namespace ecs
 		constexpr auto C_SYSTEMS_PROP = "systems";
 		constexpr auto C_MODULES_PROP = "modules";
 		constexpr auto C_COMPONENTS_PROP = "components";
+		constexpr auto C_AVRG_ENTITY_COMPONENT_COUNT = 8;
 
 	} //- unnamed
 
@@ -88,42 +89,65 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld::deserialize_entity(const nlohmann::json& json)
+	void cworld::save(const core::cpath& path)
 	{
-		for (const auto& c : json.at("components"))
+		nlohmann::json json;
+
+		json = nlohmann::json::object();
+
+		json[C_ENTITIES_PROP] = nlohmann::json::array();
+
+		auto i = 0;
+		for (const auto e : em().entities())
 		{
-			logging::log_debug(fmt::format("\t c: '{}'", c.dump(4)));
-
-			auto t = c.at(core::io::C_OBJECT_TYPE_NAME);
-
-			if (auto type = rttr::type::get_by_name(t.template get<std::string_view>().data()); type.is_valid())
-			{
-				auto var = type.create();
-
-				const auto& comp = c.at(t);
-
-				logging::log_debug(fmt::format("\t comp: '{}'", comp.dump(4)));
-
-				var = core::io::from_json_string(type, comp.dump());
-
-				if (var.is_valid())
-				{
-					auto s = core::io::to_json_string(var, true);
-
-					logging::log_debug(fmt::format("\t component: '{}'", s));
-				}
-				else
-				{
-					logging::log_debug(fmt::format("\t failed to load component with type '{}'", type.get_name().data()));
-				}
-			}
+			serialize_entity(e, json[C_ENTITIES_PROP][i++]);
 		}
+
+		core::cfile::save_text(path.view(), json.dump(4));
+
+		logging::log_debug(fmt::format("Saved World: '{}'", json.dump(4)));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld::save(const core::cpath& path)
+	void cworld::serialize_entity(const flecs::entity e, nlohmann::json& json)
 	{
+		json = nlohmann::json::object();
 
+		json["name"] = e.name();
+
+		json[C_COMPONENTS_PROP] = nlohmann::json::array();
+
+		vector_t<std::string> names; names.reserve(C_AVRG_ENTITY_COMPONENT_COUNT);
+
+		auto i = 0;
+		e.each([&](flecs::id c)
+			{
+				//- retrieve usable name of component without namespaces etc
+				std::string name = c.str();
+				core::string_utils::split(name, '.', names);
+
+				if (auto component_type = rttr::type::get_by_name(names[names.size() - 1]); component_type.is_valid())
+				{
+					if (auto serialize_method = component_type.get_method(ecs::C_COMPONENT_SERIALIZE_FUNC_NAME.data()); serialize_method.is_valid())
+					{
+						logging::log_error(fmt::format("\tserializing component '{}'", name));
+
+						serialize_method.invoke({}, e, json[C_COMPONENTS_PROP][i++]);
+					}
+					else
+					{
+						//- RTTR error, component does not have a serialize function
+						logging::log_error(fmt::format("\tcould not find 'serialize' method for component '{}'", name));
+					}
+				}
+				else
+				{
+					//- RTTR error, component not found with given name
+					logging::log_error(fmt::format("\tcould not find component '{} ({})' with RTTR", names[names.size() - 1], name));
+				}
+
+				names.clear();
+			});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -148,25 +172,30 @@ namespace ecs
 							if (var.is_valid())
 							{
 								//-- success. Component deserialized.
+								logging::log_info(fmt::format("\tdeserialized component '{}'", type_name));
 							}
 							else
 							{
 								//-- error. Could not deserialize component from JSON
+								logging::log_error(fmt::format("\tfailed deserializing component '{}' from JSON", type_name));
 							}
 						}
 						else
 						{
 							//-- JSON error. Cant find component object by given type key
+							logging::log_error(fmt::format("\tcould not find component by type key '__type__' = '{}'", type_name));
 						}
 					}
 					else
 					{
 						//-- RTTR error. Cant find type by name
+						logging::log_error(fmt::format("\tcould not locate component '{}' within RTTR", type_name));
 					}
 				}
 				else
 				{
 					//-- JSON error. Cant find type name
+					logging::log_error("\tcould not locate '__type__' of component");
 				}
 			}
 		}

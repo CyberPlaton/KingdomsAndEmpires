@@ -15,19 +15,19 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ecs::centity& centity_manager::create_entity()
+	flecs::entity centity_manager::create_entity()
 	{
 		return create_entity(core::cuuid{});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ecs::centity& centity_manager::create_entity(const core::cuuid& uuid)
+	flecs::entity centity_manager::create_entity(const core::cuuid& uuid)
 	{
 		return create_entity(uuid.string().c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ecs::centity& centity_manager::create_entity(stringview_t uuid)
+	flecs::entity centity_manager::create_entity(stringview_t uuid)
 	{
 		//- create runtime ecs entity uniquely identifiable by uuid
 		auto e = w().entity(uuid);
@@ -39,6 +39,12 @@ namespace ecs
 	flecs::entity centity_manager::entity(const core::cuuid& uuid) const
 	{
 		return w().lookup(uuid.string().c_str());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const vector_t<flecs::entity>& centity_manager::entities() const
+	{
+		return m_entities;
 	}
 
 } //- ecs

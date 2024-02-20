@@ -808,6 +808,15 @@ namespace core
 			return std::move(json);
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		void to_json_object(rttr::instance object, nlohmann::json& json)
+		{
+			if (object.is_valid())
+			{
+				to_json_recursive(object, json);
+			}
+		}
+
 	} //- io
 
 	namespace string_utils
@@ -820,7 +829,7 @@ namespace core
 
 			while (std::getline(ss, token, delimiter))
 			{
-				storage.push_back(token.c_str());
+				storage.emplace_back(token);
 			}
 		}
 

@@ -135,7 +135,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 // 	}
 
 	ecs::cworld ecsworld("My World");
-	ecsworld.load("world.json");
+
+	auto e = ecsworld.em().create_entity("Rimuru");
+	e.add<ecs::sidentifier>();
+	e.add<stest>();
+	e.add<races::shuman>();
+
+
+	auto veldora = ecsworld.em().create_entity("Veldora");
+	veldora.add<ecs::sidentifier>();
+
+	ecsworld.save("MyWorld.world");
+
+	ecsworld.load("MyWorld.world");
 
 	engine::cscene scene;
 	while(scene.load("scene.json") != engine::scene_status_loaded)
