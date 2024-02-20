@@ -1,16 +1,7 @@
 #pragma once
 #include <core/core_platform.hpp>
-#if defined(CORE_USE_EASTL)
 #include <eastl.h>
 namespace stl = eastl;
-#else
-#include <vector>
-#include <map>
-#include <unordered_map>
-#include <unordered_set>
-#include <queue>
-namespace stl = std;
-#endif
 #include <mimalloc.h>
 #include <glm.h>
 #include <magic_enum.h>
@@ -97,7 +88,7 @@ using vec4_t = glm::vec4;
 using mat3_t = glm::mat3x3;
 using mat4_t = glm::mat4x4;
 
-#if defined(core_EXPORTS) && defined(CORE_USE_EASTL)
+#if defined(core_EXPORTS)
 //- implementation required for EASTL. The function will be available in any application or plugin
 //- linking to core, the implementation however is only exported to static library.
 //------------------------------------------------------------------------------------------------------------------------
