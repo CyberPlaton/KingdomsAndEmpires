@@ -192,25 +192,6 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum file_io_mode : uint8_t
-	{
-		file_io_mode_none		= 0,
-		file_io_mode_read		= BIT(0),
-		file_io_mode_write		= BIT(1),
-		file_io_mode_override	= BIT(2),
-		file_io_mode_truncate	= BIT(3),
-		file_io_mode_append		= BIT(4),
-		file_io_mode_binary		= BIT(5),
-		file_io_mode_text		= BIT(6),
-
-
-		file_io_mode_read_text = file_io_mode_read | file_io_mode_text,
-		file_io_mode_read_bin = file_io_mode_read | file_io_mode_binary,
-		file_io_mode_write_text = file_io_mode_write | file_io_mode_text,
-		file_io_mode_write_bin = file_io_mode_write | file_io_mode_binary,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
 	enum common_color
 	{
 		//- convention: 400 - dark, 200 - normal, 50 - light

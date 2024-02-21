@@ -134,7 +134,7 @@ namespace core
 
 		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message
 		//------------------------------------------------------------------------------------------------------------------------
-		static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out, std::string* error)
+		static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out)
 		{
 			uint8_t* data = nullptr;
 			*data_size_out = 0;
@@ -159,13 +159,29 @@ namespace core
 
 					fclose(file);
 				}
+				else
+				{
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							fmt::format("Could not open file '{}'", file_path));
+					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						"Invalid file path provided for load_binary_file_data");
+				}
 			}
 			return data;
 		}
 
 		//- @reference: raylib SaveFileData
 		//------------------------------------------------------------------------------------------------------------------------
-		static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size, std::string* error)
+		static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size)
 		{
 			if (file_path != nullptr)
 			{
@@ -178,6 +194,22 @@ namespace core
 					fclose(file);
 
 					return count == data_size;
+				}
+				else
+				{
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							fmt::format("Could not open file '{}'", file_path));
+					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						"Invalid file path provided for save_binary_file_data");
 				}
 			}
 			return false;
@@ -193,7 +225,7 @@ namespace core
 
 		//- @reference: raylib LoadFileText
 		//------------------------------------------------------------------------------------------------------------------------
-		static char* load_text_file_data(stringview_t file_path, std::string* error)
+		static char* load_text_file_data(stringview_t file_path)
 		{
 			char* text = nullptr;
 
@@ -223,7 +255,31 @@ namespace core
 							text[count] = '\0';
 						}
 					}
+					else
+					{
+						if (serror_reporter::instance().m_callback)
+						{
+							serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+								fmt::format("Could not read text from file '{}'", file_path));
+						}
+					}
 					fclose(file);
+				}
+				else
+				{
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							fmt::format("Could not open file '{}'", file_path));
+					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						"Invalid file path provided for load_text_file_data");
 				}
 			}
 			return text;
@@ -231,7 +287,7 @@ namespace core
 
 		//- @reference: raylib SaveFileText
 		//------------------------------------------------------------------------------------------------------------------------
-		static bool save_text_file_data(stringview_t file_path, stringview_t text, std::string* error)
+		static bool save_text_file_data(stringview_t file_path, stringview_t text)
 		{
 			if (file_path != nullptr)
 			{
@@ -247,6 +303,30 @@ namespace core
 					{
 						return true;
 					}
+					else
+					{
+						if (serror_reporter::instance().m_callback)
+						{
+							serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+								fmt::format("Could not write text to file '{}'", file_path));
+						}
+					}
+				}
+				else
+				{
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							fmt::format("Could not open file '{}'", file_path));
+					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						"Invalid file path provided for save_text_file_data");
 				}
 			}
 			return false;
@@ -1672,10 +1752,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	std::string cfile::load_text(const std::string& path)
 	{
-		//- TODO: decide how to handle report errors
-		std::string err;
-
-		return load_text_file_data(path.c_str(), &err);
+		return load_text_file_data(path.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1692,10 +1769,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	file_io_status cfile::save_text(const std::string& path, const std::string& text)
 	{
-		//- TODO: decide how to handle report errors
-		std::string err;
-
-		return save_text_file_data(path.c_str(), text.c_str(), &err) ? file_io_status_success : file_io_status_failed;
+		return save_text_file_data(path.c_str(), text.c_str()) ? file_io_status_success : file_io_status_failed;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1712,12 +1786,9 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	spair<uint8_t*, unsigned> cfile::load_binary(const std::string& path)
 	{
-		//- TODO: decide how to handle report errors
-		std::string err;
-
 		spair<uint8_t*, unsigned> out;
 
-		out.first = load_binary_file_data(path.c_str(), &out.second, &err);
+		out.first = load_binary_file_data(path.c_str(), &out.second);
 
 		return out;
 	}
@@ -1736,10 +1807,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	file_io_status cfile::save_binary(const std::string& path, uint8_t* data, unsigned size)
 	{
-		//- TODO: decide how to handle report errors
-		std::string err;
-
-		return save_binary_file_data(path.c_str(), data, size, &err) ? file_io_status_success : file_io_status_failed;
+		return save_binary_file_data(path.c_str(), data, size) ? file_io_status_success : file_io_status_failed;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
