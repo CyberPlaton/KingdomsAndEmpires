@@ -404,7 +404,7 @@ namespace algorithm
 	namespace detail
 	{
 		//- @reference: https://gist.github.com/khvorov/cd626ea3685fd5e8bf14
-			//------------------------------------------------------------------------------------------------------------------------
+		//------------------------------------------------------------------------------------------------------------------------
 		template <typename F>
 		struct function_traits : public function_traits<decltype(&F::operator())> {};
 
@@ -546,8 +546,8 @@ namespace core
 	{
 		friend class engine::cservice_manager;
 	public:
-		inline static const service_type_t C_INVALID_TYPE = invalid_handle_t;
-		inline static const unsigned C_SERVICE_COUNT_MAX = 64;
+		static constexpr service_type_t C_INVALID_TYPE = invalid_handle_t;
+		static constexpr unsigned C_SERVICE_COUNT_MAX = 64;
 
 		cservice() = default;
 		virtual ~cservice() = default;
