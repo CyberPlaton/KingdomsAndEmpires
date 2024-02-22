@@ -615,7 +615,7 @@ namespace core
 		std::string generate_string() const;
 
 		RTTR_ENABLE();
-		REFLECTABLE();
+		RTTR_REFLECTABLE();
 	};
 
 	//- random number generator

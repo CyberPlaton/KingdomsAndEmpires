@@ -21,7 +21,7 @@ namespace ecs
 		const flecs::world& world() const;
 
 		RTTR_ENABLE();
-		REFLECTABLE();
+		RTTR_REFLECTABLE();
 	};
 
 } //- ecs

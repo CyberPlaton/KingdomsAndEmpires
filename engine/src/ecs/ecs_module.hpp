@@ -49,7 +49,7 @@ namespace ecs
 		smodule_info m_info;
 
 		RTTR_ENABLE(iworld_context_holder);
-		REFLECTABLE();
+		RTTR_REFLECTABLE();
 	};
 
 	//-------------------------------------------------------------------------------------------------------------------------

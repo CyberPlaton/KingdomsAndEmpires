@@ -149,15 +149,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	ecsworld.load("MyWorld.world");
 
-	engine::cscene scene;
-	while(scene.load("scene.json") != engine::scene_status_loaded)
-	{
-	}
-
-	scene.resolve();
-
-	return 0;
-
 // 	core::crandom rand;
 // 
 // 	stest test;

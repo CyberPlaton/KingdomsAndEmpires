@@ -33,7 +33,7 @@ namespace camera_system
 		unsigned m_active_camera = 0;
 
 		RTTR_ENABLE(sm::icamera_manager);
-		REFLECTABLE();
+		RTTR_REFLECTABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -21,7 +21,7 @@
 	RTTR_REGISTRATION_FRIEND
 
 //- enable registration for private datamembers
-#define REFLECTABLE() RTTR_REGISTRATION_FRIEND_NON_INTRUSIVE()
+#define RTTR_REFLECTABLE() RTTR_REGISTRATION_FRIEND_NON_INTRUSIVE()
 
 //- reflect a class inside the header file where it is defined.
 //- can easily be used multiples times per header file

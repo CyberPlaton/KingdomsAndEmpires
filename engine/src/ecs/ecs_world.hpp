@@ -20,6 +20,8 @@ namespace ecs
 
 		void tick(float dt);
 
+		flecs::snapshot snapshot() const;
+
 		bool QueryCallback(int proxy_id);
 		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
 
@@ -39,12 +41,12 @@ namespace ecs
 		cmodule_manager& mm() { return m_module_manager; }
 
 	private:
-		stringview_t m_name;
-		flecs::world m_world;
-
 		centity_manager m_entity_manager;
 		csystem_manager m_system_manager;
 		cmodule_manager m_module_manager;
+
+		stringview_t m_name;
+		flecs::world m_world;
 
 	private:
 		void deserialize_entity(const simdjson::dom::object& json);

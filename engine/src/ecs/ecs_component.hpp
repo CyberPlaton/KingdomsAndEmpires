@@ -120,6 +120,8 @@ namespace ecs
 		RTTR_ENABLE(icomponent);
 	};
 
+	//- Parent and children are represented as uuids because those are easy serializable,
+	//- a flecs::entity however, is not.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct shierarchy final : public icomponent
 	{
