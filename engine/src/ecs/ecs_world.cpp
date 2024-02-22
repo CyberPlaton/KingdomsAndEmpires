@@ -28,6 +28,12 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::tick(float dt)
+	{
+		m_world.progress(dt);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	bool cworld::QueryCallback(int proxy_id)
 	{
 		return false;
@@ -47,45 +53,36 @@ namespace ecs
 
 		auto string = core::cfile::load_text(path.view());
 
-// 		const auto& json = nlohmann::json::parse(string);
-// 
-// 		for (const auto& e : json.at("entities"))
-// 		{
-// 			deserialize_entity(e);
-// 		}
-
-		parser.parse(string.data(), string.length()).get(element);
-
-		simdjson::dom::array entities_array;
-		simdjson::dom::array systems_array;
-		simdjson::dom::array modules_array;
-
-		if (element.at_key(C_ENTITIES_PROP).get(entities_array) == simdjson::SUCCESS)
+		if(parser.parse(string.data(), string.length()).get(element) == simdjson::SUCCESS)
 		{
-			for (auto it : entities_array)
+			simdjson::dom::array entities_array;
+			simdjson::dom::array systems_array;
+			simdjson::dom::array modules_array;
+
+			if (element.at_key(C_ENTITIES_PROP).get(entities_array) == simdjson::SUCCESS)
 			{
-				simdjson::dom::object entity_object;
-
-				if (it.type() != simdjson::dom::element_type::OBJECT)
+				for (auto it : entities_array)
 				{
-					//- error
+					if (it.type() == simdjson::dom::element_type::OBJECT)
+					{
+						deserialize_entity(it.get<simdjson::dom::object>());
+					}
+					else
+					{
+						logging::log_error("Could not deserialize entity, as it is not a JSON object");
+					}
 				}
+			}
+			if (element.at_key(C_SYSTEMS_PROP).get(systems_array) == simdjson::SUCCESS)
+			{
 
-				entity_object = it.get<simdjson::dom::object>();
+			}
+			if (element.at_key(C_MODULES_PROP).get(modules_array) == simdjson::SUCCESS)
+			{
 
-				deserialize_entity(entity_object);
 			}
 		}
-		if (element.at_key(C_SYSTEMS_PROP).get(systems_array) == simdjson::SUCCESS)
-		{
-
-		}
-		if (element.at_key(C_MODULES_PROP).get(modules_array) == simdjson::SUCCESS)
-		{
-
-		}
-
-		return true;
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -104,8 +101,6 @@ namespace ecs
 		}
 
 		core::cfile::save_text(path.view(), json.dump(4));
-
-		logging::log_debug(fmt::format("Saved World: '{}'", json.dump(4)));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

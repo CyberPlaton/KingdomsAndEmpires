@@ -18,6 +18,8 @@ namespace ecs
 		cworld(stringview_t name);
 		~cworld();
 
+		void tick(float dt);
+
 		bool QueryCallback(int proxy_id);
 		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
 
