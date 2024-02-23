@@ -19,6 +19,54 @@ namespace ecs
 		m_system_manager(m_world),
 		m_module_manager(m_world)
 	{
+		//- initialize common observers
+		m_world.observer()
+			.event(flecs::OnAdd)
+			.event(flecs::OnRemove)
+			.each([&](flecs::iter& it, size_t index)
+				{
+					flecs::entity e = it.entity(index);
+					std::string c = it.event_id().str();
+
+					//- check whether we should add or remove entity from internal storage
+
+					if (it.event() == flecs::OnAdd)
+					{
+						//- propagate fact of added component to entity to other managers
+					}
+					else if (it.event() == flecs::OnRemove)
+					{
+						//- propagate fact of removed component from entity to other managers
+					}
+					else if (it.event() == flecs::OnSet)
+					{
+						//- propagate fact of changed values in component in entity to otehr managers
+					}
+				});
+
+		m_world.observer<ecs::stransform>()
+			.event(flecs::OnAdd)
+			.event(flecs::OnRemove)
+			.event(flecs::OnSet)
+			.each([&](flecs::iter& it, size_t index)
+				{
+					flecs::entity e = it.entity(index);
+					std::string c = it.event_id().str();
+
+					if (it.event() == flecs::OnAdd)
+					{
+						//- add aabb proxy for entity to b2DynamicTree
+					}
+					else if (it.event() == flecs::OnRemove)
+					{
+						//- remove aabb proxy of entity from b2DynamicTree
+					}
+					else if (it.event() == flecs::OnSet)
+					{
+						//- update internal b2DynamicTree aabb proxy with new position of entity
+					}
+
+				});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
