@@ -41,6 +41,9 @@ namespace ecs
 		const cmodule_manager& mm() const { return m_module_manager; }
 		cmodule_manager& mm() { return m_module_manager; }
 
+		const ccomponent_manager& cm() const { return m_component_manager; }
+		ccomponent_manager& cm() { return m_component_manager; }
+
 	private:
 		centity_manager m_entity_manager;
 		csystem_manager m_system_manager;
@@ -53,6 +56,10 @@ namespace ecs
 	private:
 		void deserialize_entity(const simdjson::dom::object& json);
 		void serialize_entity(const flecs::entity e, nlohmann::json& json);
+		void update_proxy(flecs::entity e);
+		void destroy_proxy(flecs::entity e);
+		void create_proxy(flecs::entity e);
+		bool has_proxy(flecs::entity e);
 	};
 
 } //- ecs

@@ -29,8 +29,6 @@ namespace ecs
 					flecs::entity e = it.entity(index);
 					std::string c = it.event_id().str().c_str();
 
-					//- check whether we should add or remove entity from internal storage
-
 					if (it.event() == flecs::OnAdd)
 					{
 						//- propagate fact of added component to entity to other managers
@@ -41,13 +39,9 @@ namespace ecs
 						//- propagate fact of removed component from entity to other managers
 						m_component_manager.on_component_removed(e, c);
 					}
-					else if (it.event() == flecs::OnSet)
-					{
-						//- propagate fact of changed values in component in entity to otehr managers
-					}
 				});
 
-		m_world.observer<ecs::stransform>()
+		m_world.observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
 			.event(flecs::OnSet)
@@ -59,16 +53,18 @@ namespace ecs
 					if (it.event() == flecs::OnAdd)
 					{
 						//- add aabb proxy for entity to b2DynamicTree
+						create_proxy(e);
 					}
 					else if (it.event() == flecs::OnRemove)
 					{
 						//- remove aabb proxy of entity from b2DynamicTree
+						destroy_proxy(e);
 					}
 					else if (it.event() == flecs::OnSet)
 					{
 						//- update internal b2DynamicTree aabb proxy with new position of entity
+						update_proxy(e);
 					}
-
 				});
 	}
 
@@ -200,6 +196,45 @@ namespace ecs
 
 				names.clear();
 			});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::update_proxy(flecs::entity e)
+	{
+		const auto* id = e.get<sidentifier>();
+		const auto* tr = e.get<stransform>();
+
+		const auto& prev_aabb = GetFatAABB(id->m_aabb_proxy);
+
+		auto dx = (prev_aabb.GetCenter().x - prev_aabb.GetExtents().x) - tr->m_x;
+		auto dy = (prev_aabb.GetCenter().y - prev_aabb.GetExtents().y) - tr->m_y;
+
+		MoveProxy(id->m_aabb_proxy, physics::aabb(tr->m_x, tr->m_y, tr->m_w, tr->m_h), { dx, dy });
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::destroy_proxy(flecs::entity e)
+	{
+		const auto* id = e.get<sidentifier>();
+
+		DestroyProxy(id->m_aabb_proxy);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::create_proxy(flecs::entity e)
+	{
+		auto* id = e.get_mut<sidentifier>();
+		const auto* tr = e.get<stransform>();
+
+		id->m_aabb_proxy = CreateProxy(physics::aabb(tr->m_x, tr->m_y, tr->m_w, tr->m_h), &id);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cworld::has_proxy(flecs::entity e)
+	{
+		const auto* id = e.get<sidentifier>();
+
+		return GetUserData(id->m_aabb_proxy) != nullptr;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
