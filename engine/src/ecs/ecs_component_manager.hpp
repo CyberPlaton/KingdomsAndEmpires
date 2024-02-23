@@ -1,20 +1,21 @@
 #pragma once
 #include <core.h>
-namespace ecs
-{
-} //- ecs
+#include "ecs_world_context_holder.hpp"
 
 namespace ecs
 {
-	namespace detail
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccomponent_manager : public iworld_context_holder
 	{
-		namespace
-		{
+	public:
+		ccomponent_manager(flecs::world& w);
 
-		} //- unnamed
+		void on_component_added(flecs::entity e, const std::string& component);
+		void on_component_removed(flecs::entity e, const std::string& component);
+		const vector_t<std::string>& components(flecs::entity e) const;
 
-		
-
-	} //- detail
+	private:
+		umap_t<unsigned, vector_t<std::string>> m_components;
+	};
 
 } //- ecs

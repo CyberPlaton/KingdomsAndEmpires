@@ -3,6 +3,7 @@
 #include "ecs_entity_manager.hpp"
 #include "ecs_system_manager.hpp"
 #include "ecs_module_manager.hpp"
+#include "ecs_component_manager.hpp"
 #include "../physics/b2_physics.hpp"
 
 namespace ecs
@@ -44,6 +45,7 @@ namespace ecs
 		centity_manager m_entity_manager;
 		csystem_manager m_system_manager;
 		cmodule_manager m_module_manager;
+		ccomponent_manager m_component_manager;
 
 		stringview_t m_name;
 		flecs::world m_world;
