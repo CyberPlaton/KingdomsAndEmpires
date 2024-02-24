@@ -1,7 +1,7 @@
 #pragma once
 #include <core.h>
 #include "ecs_world_context_holder.hpp"
-#include "ecs_component.hpp"
+#include "ecs_singleton.hpp"
 
 namespace ecs
 {
