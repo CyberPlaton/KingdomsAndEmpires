@@ -10,6 +10,18 @@ namespace kingdoms
 	using kingdom_t = handle_type_t;
 	using technology_t = handle_type_t;
 	using unit_level_t = handle_type_t;
+	using player_id_t = handle_type_t;
+
+	//- Each player of current session has this central component.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct splayer : ecs::icomponent
+	{
+		DECLARE_COMPONENT(splayer);
+
+		player_id_t m_id;
+
+		RTTR_ENABLE(ecs::icomponent);
+	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum building_slot_type : uint8_t
@@ -316,6 +328,39 @@ namespace technology
 
 namespace professions
 {
+	namespace archetype
+	{
+		struct sworker{};
+		struct smilitary{};
+
+	} //- archetype
+
+	//- both functions have to be defined for a inheriting profession. Input are the resources and amount that is consumed
+	//- when producing and output is what is produced, in terms of per tick/turn.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sprofession
+	{
+		static constexpr std::string_view C_RESOURCE_INPUT_FUNC_NAME = "input_resources";
+		static constexpr std::string_view C_RESOURCE_OUTPUT_FUNC_NAME = "output_resources";
+
+		using input_resources_func_t = std::function<const umap_t<std::string, unsigned>&()>;
+		using output_resources_func_t = std::function<const umap_t<std::string, unsigned>&()>;
+
+		RTTR_ENABLE();
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct swoodcutter : sprofession
+	{
+		RTTR_ENABLE(sprofession);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sspearman : sprofession
+	{
+		RTTR_ENABLE(sprofession);
+	};
+
 	//- each kingdom unit starts life as a citizen, when choosing a profession the citizen component
 	//- is replaced with the other component and the unit becomes i.e. a 'Spearman' and 'gains' new abilities
 	//------------------------------------------------------------------------------------------------------------------------
@@ -323,25 +368,14 @@ namespace professions
 	{
 		DECLARE_COMPONENT(scitizen);
 
+		std::string m_profession;
+
+		core::cuuid m_in_settlement;
+		core::cuuid m_working_building;
+		core::cuuid m_working_resource;
+
 		RTTR_ENABLE(ecs::icomponent);
 	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	struct swoodcutter : scitizen
-	{
-		DECLARE_COMPONENT(swoodcutter);
-
-		RTTR_ENABLE(scitizen);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	struct sspearman : scitizen
-	{
-		DECLARE_COMPONENT(sspearman);
-
-		RTTR_ENABLE(scitizen);
-	};
-
 
 } //- professions
 
@@ -358,14 +392,23 @@ namespace settlement
 			kingdoms::kingdom_race m_race = kingdoms::kingdom_race_none;
 			kingdoms::settlement_type m_type = kingdoms::settlement_type_none;
 
-			vector_t<flecs::entity> m_citizens;
-			vector_t<flecs::entity> m_buildings;
-			vector_t<flecs::entity> m_resources;
+			vector_t<core::cuuid> m_citizens;
+			vector_t<core::cuuid> m_buildings;
+			umap_t<std::string, unsigned> m_resources;
 		};
 
 		sdata m_data;
 
 		RTTR_ENABLE(ecs::icomponent);
+	};
+
+	bool can_settlement_produce_resource(const isettlement& city, const umap_t<std::string, unsigned>& input);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class csettlement_update_system : public ecs::csystem
+	{
+	public:
+		csettlement_update_system(flecs::world& w);
 	};
 
 } //- settlement
