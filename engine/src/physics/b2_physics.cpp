@@ -3,36 +3,36 @@
 namespace physics
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	b2AABB aabb(const core::srect& rect)
+	aabb_t aabb(const core::srect& rect)
 	{
 		return { {rect.x() + rect.w() / 2.0f, rect.y() + rect.h() / 2.0f},
 				{rect.w() / 2.0f, rect.h() / 2.0f} };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	b2AABB aabb(const vec2_t& center, const vec2_t& halfextents)
+	aabb_t aabb(const vec2_t& center, const vec2_t& halfextents)
 	{
-		b2AABB out{ { center.x - halfextents.x, center.y - halfextents.y },
+		aabb_t out{ { center.x - halfextents.x, center.y - halfextents.y },
 					{ center.x + halfextents.x, center.y + halfextents.y } };
 		return out;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	b2AABB aabb(float x, float y, float size)
+	aabb_t aabb(float x, float y, float size)
 	{
 		return aabb({ x + size / 2.0f, y + size / 2.0f },
 			{ size / 2.0f, size / 2.0f });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	b2AABB aabb(float x, float y, float w, float h)
+	aabb_t aabb(float x, float y, float w, float h)
 	{
 		return aabb({ x + w / 2.0f, y + h / 2.0f },
 			{ w / 2.0f, h / 2.0f });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::srect rect(const b2AABB& bbox)
+	core::srect rect(const aabb_t& bbox)
 	{
 		const auto& c = bbox.GetCenter();
 		const auto& he = bbox.GetExtents();

@@ -358,7 +358,11 @@ namespace algorithm
 	template<typename TStructure, typename TType>
 	void erase_first(TStructure& structure, TType value)
 	{
-		structure.erase(value);
+		auto it = structure.find(value);
+		if (it != structure.end())
+		{
+			structure.erase(it);
+		}
 	}
 
 	//- Iterate a data structure and call given function with the iterator as argument.
@@ -505,6 +509,8 @@ namespace core
 			void shutdown();
 			void reset();
 			TType* create(uint64_t* index_out);
+			template<typename... ARGS>
+			TType* create(uint64_t* index_out, ARGS&&... args);
 			TType* replace(uint64_t index);
 			void destroy(uint64_t index);
 			TType* begin();
@@ -1236,6 +1242,44 @@ namespace core
 			object->~TType();
 
 			object = new (object) TType;
+
+			return object;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		template<typename... ARGS>
+		TType* core::detail::cdynamic_pool<TType>::create(uint64_t* index_out, ARGS&&... args)
+		{
+			if (size() == capacity())
+			{
+				resize(m_size * 2, m_alignment);
+			}
+
+			uint64_t index = 0;
+
+			if (!m_fragmentation_indices.empty())
+			{
+				index = m_fragmentation_indices.top();
+
+				m_fragmentation_indices.pop();
+			}
+			else
+			{
+				index = m_top++;
+			}
+
+			TType* object = unsafe(index);
+
+			object = new (object) TType(std::forward<ARGS>(args)...);
+
+			m_initialized_bit[index] = true;
+			++m_size;
+
+			if (index_out)
+			{
+				*index_out = index;
+			}
 
 			return object;
 		}

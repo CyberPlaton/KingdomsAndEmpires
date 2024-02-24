@@ -18,7 +18,8 @@ namespace ecs
 		m_entity_manager(m_world),
 		m_system_manager(m_world),
 		m_module_manager(m_world),
-		m_component_manager(m_world)
+		m_component_manager(m_world),
+		m_query_manager(m_world)
 	{
 		//- initialize common observers
 		m_world.observer()
@@ -45,7 +46,7 @@ namespace ecs
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
 			.event(flecs::OnSet)
-			.each([&](flecs::iter& it, size_t index)
+			.each([&](flecs::iter& it, size_t index, stransform& transform, sidentifier& id)
 				{
 					flecs::entity e = it.entity(index);
 					std::string c = it.event_id().str().c_str();
@@ -78,6 +79,69 @@ namespace ecs
 	void cworld::tick(float dt)
 	{
 		m_world.progress(dt);
+
+		//- process any queries, they will be available for systems on next tick,
+		//- also clearup memory for already taken and processed queries.
+		process_queries();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::process_queries()
+	{
+		for (auto* query = qm().fetch(); query != nullptr; query = qm().fetch())
+		{
+			//- consider using 'unlikely' here, or just consider invalid queries as working
+			if (query->type() == query_type_none ||
+				query->intersection_type() == query_intersection_type_none)
+			{
+				continue;
+			}
+
+			//- prepare query and let it run
+			m_master_query_type = query->type();
+			m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
+
+			if (query->intersection_type() == query_intersection_type_aabb)
+			{
+				Query(this, query->aabb());
+			}
+			else if (query->intersection_type() == query_intersection_type_raycast)
+			{
+				RayCast(this, query->raycast());
+			}
+
+			//- store back the results
+			switch (query->type())
+			{
+			case query_type_any_occurance:
+			{
+				query->m_any = m_master_query_result.m_any;
+				break;
+			}
+			case query_type_entity_array:
+			{
+				query->m_entities = m_master_query_result.m_entity_array;
+				break;
+			}
+			case query_type_entity_count:
+			{
+				query->m_count = m_master_query_result.m_entity_count;
+				break;
+			}
+			default:
+			case query_type_none:
+			{
+				break;
+			}
+			}
+
+			query->finish();
+		}
+
+		qm().tick();
+
+		m_master_query_type = query_type_none;
+		m_master_query_result = sworld_query{};
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -89,13 +153,82 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cworld::QueryCallback(int proxy_id)
 	{
-		return false;
+		bool result = false;
+
+		switch (m_master_query_type)
+		{
+		case query_type_entity_count: {result = true; break;}
+		case query_type_entity_array: {result = true; break;}
+		case query_type_any_occurance: {result = false; break;}
+		default:
+		case query_type_none:
+			return false;
+		}
+
+		//- assign query key to proxy and avaoid duplicate queries
+		auto* id = reinterpret_cast<sidentifier*>(GetUserData(proxy_id));
+
+		if (id->m_aabb_proxy_query_key == m_master_query_key)
+		{
+			return result;
+		}
+
+		id->m_aabb_proxy_query_key = m_master_query_key;
+
+		//- TODO: apply filter
+
+		switch (m_master_query_type)
+		{
+		case query_type_entity_count: {++m_master_query_result.m_entity_count; break; }
+		case query_type_entity_array: {m_master_query_result.m_entity_array.push_back(id->m_self); break; }
+		case query_type_any_occurance: {m_master_query_result.m_any = true; break; }
+		default:
+		case query_type_none:
+			return false;
+		}
+
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	float cworld::RayCastCallback(const b2RayCastInput& ray_input, int proxy_id)
 	{
-		return 0.0f;
+		//- 0.0f signals to stop and 1.0f signals to continue
+		float result = 0.0f;
+
+		switch (m_master_query_type)
+		{
+		case query_type_entity_count: {result = 1.0f; break; }
+		case query_type_entity_array: {result = 1.0f; break; }
+		case query_type_any_occurance: {result = 0.0f; break; }
+		default:
+		case query_type_none:
+			return false;
+		}
+
+		//- assign query key to proxy and avaoid duplicate queries
+		auto* id = reinterpret_cast<sidentifier*>(GetUserData(proxy_id));
+
+		if (id->m_aabb_proxy_query_key == m_master_query_key)
+		{
+			return result;
+		}
+
+		id->m_aabb_proxy_query_key = m_master_query_key;
+
+		//- TODO: apply filter
+
+		switch (m_master_query_type)
+		{
+		case query_type_entity_count: {++m_master_query_result.m_entity_count; break; }
+		case query_type_entity_array: {m_master_query_result.m_entity_array.push_back(id->m_self); break; }
+		case query_type_any_occurance: {m_master_query_result.m_any = true; break; }
+		default:
+		case query_type_none:
+			return false;
+		}
+
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

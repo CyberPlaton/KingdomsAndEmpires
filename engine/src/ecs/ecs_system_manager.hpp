@@ -8,13 +8,6 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	class csystem_manager final : public iworld_context_holder
 	{
-		struct ssystem_info
-		{
-			std::string m_system;
-			vector_t<ssystem_info> m_dependencies;
-			vector_t<ssystem_info> m_subsystems;
-		};
-
 	public:
 		csystem_manager(flecs::world& w);
 		~csystem_manager();
@@ -23,14 +16,6 @@ namespace ecs
 		ref_t<csystem> create_system();
 
 		flecs::system system(stringview_t name) const;
-		ssystem_info system_info(stringview_t name) const;
-
-	private:
-		umap_t<unsigned, ssystem_info> m_system_info;
-		umap_t<unsigned, ref_t<csystem>> m_systems;
-		
-	private:
-		void store_system_info(ref_t<csystem> system);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -41,11 +26,7 @@ namespace ecs
 
 		auto s = std::make_shared<TSystem>(world());
 
-		auto h = algorithm::hash(s->name());
-
-		store_system_info(s);
-
-		return m_systems[h] = std::move(s);
+		return s;
 	}
 
 } //- ecs

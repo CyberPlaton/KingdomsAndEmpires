@@ -29,11 +29,26 @@
 
 namespace physics
 {
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sray
+	{
+		operator b2RayCastInput() const
+		{
+			return {{m_origin.x, m_origin.y}, {m_direction.x, m_direction.y}, m_max_fraction};
+		}
 
-	b2AABB aabb(const core::srect& rect);
-	b2AABB aabb(const vec2_t& center, const vec2_t& halfextents);
-	b2AABB aabb(float x, float y, float size);
-	b2AABB aabb(float x, float y, float w, float h);
-	core::srect rect(const b2AABB& bbox);
+		vec2_t m_origin;
+		vec2_t m_direction;
+		float m_max_fraction = 1.0f;
+	};
+
+	using aabb_t = b2AABB;
+	using ray_t = sray;
+
+	aabb_t aabb(const core::srect& rect);
+	aabb_t aabb(const vec2_t& center, const vec2_t& halfextents);
+	aabb_t aabb(float x, float y, float size);
+	aabb_t aabb(float x, float y, float w, float h);
+	core::srect rect(const aabb_t& bbox);
 
 } //- physics

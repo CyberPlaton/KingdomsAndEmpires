@@ -4,6 +4,7 @@
 #include "ecs_system_manager.hpp"
 #include "ecs_module_manager.hpp"
 #include "ecs_component_manager.hpp"
+#include "ecs_query_manager.hpp"
 #include "../physics/b2_physics.hpp"
 
 namespace ecs
@@ -23,9 +24,6 @@ namespace ecs
 
 		flecs::snapshot snapshot() const;
 
-		bool QueryCallback(int proxy_id);
-		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
-
 		bool load(const core::cpath& path);
 		void save(const core::cpath& path);
 
@@ -44,14 +42,33 @@ namespace ecs
 		const ccomponent_manager& cm() const { return m_component_manager; }
 		ccomponent_manager& cm() { return m_component_manager; }
 
+		const cquery_manager& qm() const { return m_query_manager; }
+		cquery_manager& qm() { return m_query_manager; }
+
+		bool QueryCallback(int proxy_id);
+		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
+
 	private:
-		centity_manager m_entity_manager;
+		cquery_manager m_query_manager;
 		csystem_manager m_system_manager;
-		cmodule_manager m_module_manager;
 		ccomponent_manager m_component_manager;
+		cmodule_manager m_module_manager;
+		centity_manager m_entity_manager;
 
 		stringview_t m_name;
 		flecs::world m_world;
+
+		struct sworld_query
+		{
+			vector_t<flecs::entity> m_entity_array;
+			unsigned m_entity_count;
+			bool m_any;
+		};
+
+		static constexpr unsigned C_MASTER_QUERY_KEY_MAX = cquery_manager::C_QUERY_COUNT_MAX;
+		query_type m_master_query_type;
+		unsigned m_master_query_key;
+		sworld_query m_master_query_result;
 
 	private:
 		void deserialize_entity(const simdjson::dom::object& json);
@@ -60,6 +77,7 @@ namespace ecs
 		void destroy_proxy(flecs::entity e);
 		void create_proxy(flecs::entity e);
 		bool has_proxy(flecs::entity e);
+		void process_queries();
 	};
 
 } //- ecs
