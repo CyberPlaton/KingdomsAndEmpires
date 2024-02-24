@@ -8,6 +8,7 @@ namespace ecs
 
 	namespace detail
 	{
+		//- utility function to serialize component of an entity to json
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TComponent>
 		inline static void serialize_component(const flecs::entity& e, nlohmann::json& json)
@@ -21,17 +22,62 @@ namespace ecs
 			}
 		}
 
+		//- utility functin to add a component from a variant to an entity
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TComponent>
+		inline static void set_component(flecs::entity& e, const rttr::variant& var)
+		{
+			e.set<TComponent>(std::move(var.get_value<TComponent>()));
+		}
+
+		//- utility function to serialize a singleton component of a world to json
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TComponent>
+		inline static void serialize_singleton(const flecs::world& w, nlohmann::json& json)
+		{
+			if (const auto* c = w.get<TComponent>(); c)
+			{
+				const auto type_name = rttr::type::get<TComponent>().get_name().data();
+				json = nlohmann::json::object();
+				json[core::io::C_OBJECT_TYPE_NAME] = type_name;
+				json[type_name] = core::io::to_json_object(*c);
+			}
+		}
+
+		//- utility function to add a singleton component from a variant to a world
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TComponent>
+		inline static void set_singleton(flecs::world& w, const rttr::variant& var)
+		{
+			w.set<TComponent>(std::move(var.get_value<TComponent>()));
+		}
+
 	} //- detail
 
 } //- ecs
 
-//- use this macro for defining a simple component. Simple means that
-//- it does not inherit from a complex component hierarchy.
+//- use this macro for defining a component
 #define DECLARE_COMPONENT(c) \
 static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; } \
 static void serialize(flecs::entity e, nlohmann::json& json) \
 { \
 	ecs::detail::serialize_component<c>(e, json); \
+} \
+static void set(flecs::entity e, const rttr::variant& var) \
+{ \
+	ecs::detail::set_component<c>(e, var); \
+}
+
+//- use this macro for defining a singleton component
+#define DECLARE_SINGLETON(c) \
+static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; } \
+static void serialize(const flecs::world& w, nlohmann::json& json) \
+{ \
+	ecs::detail::serialize_singleton<c>(w, json); \
+} \
+static void set(flecs::world& w, const rttr::variant& var) \
+{\
+	ecs::detail::set_singleton<c>(w, var); \
 }
 
 namespace ecs
@@ -41,6 +87,15 @@ namespace ecs
 	struct icomponent
 	{
 		static stringview_t name() { static constexpr stringview_t C_NAME = "icomponent"; return C_NAME; };
+
+		RTTR_ENABLE();
+	};
+
+	//- base class for all singletons
+	//------------------------------------------------------------------------------------------------------------------------
+	struct isingleton
+	{
+		static stringview_t name() { static constexpr stringview_t C_NAME = "isingleton"; return C_NAME; };
 
 		RTTR_ENABLE();
 	};
@@ -137,12 +192,16 @@ namespace ecs
 
 namespace ecs
 {
+	//- TODO we do not want to have to define serialize and set etc methods for each component,
+	//- this should be done automatically, for which we require a 'RTTR Object' concept and
+	//- specializations for components, visualizers etc.
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(sidentifier)
 	{
 		rttr::registration::class_<sidentifier>("sidentifier")
 			.property("m_uuid", &sidentifier::m_uuid)
 			.method("serialize", &sidentifier::serialize)
+			.method("set", &sidentifier::set)
 			;
 
 		rttr::default_constructor<sidentifier>();

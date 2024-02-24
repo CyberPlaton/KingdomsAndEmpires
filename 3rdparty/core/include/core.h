@@ -326,6 +326,13 @@ namespace algorithm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType, typename TIterator>
+	TIterator find_at(TIterator begin, TIterator end, const TType& value)
+	{
+		return stl::find(begin, end, value);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType, typename TIterator>
 	TType& get(TIterator begin, TIterator end, const TType& value)
 	{
 		auto it = stl::find(begin, end, value);
@@ -352,6 +359,13 @@ namespace algorithm
 	void erase_at_index(TStructure& structure, unsigned index)
 	{
 		structure.erase(structure.begin() + index);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TStructure, typename TIterator>
+	void erase_at(TStructure& structure, TIterator it)
+	{
+		structure.erase(it);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

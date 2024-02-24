@@ -19,7 +19,8 @@ namespace ecs
 		m_system_manager(m_world),
 		m_module_manager(m_world),
 		m_component_manager(m_world),
-		m_query_manager(m_world)
+		m_query_manager(m_world),
+		m_singleton_manager(m_world)
 	{
 		m_world.observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
@@ -67,7 +68,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::process_queries()
 	{
-		for (auto* query = qm().fetch(); query != nullptr; query = qm().fetch())
+		for (auto* query = querym().fetch(); query != nullptr; query = querym().fetch())
 		{
 			//- consider using 'unlikely' here, or just consider invalid queries as working
 			if (query->type() == query_type_none ||
@@ -117,7 +118,7 @@ namespace ecs
 			query->finish();
 		}
 
-		qm().tick();
+		querym().tick();
 
 		m_master_query_type = query_type_none;
 		m_master_query_result = sworld_query{};
@@ -260,7 +261,7 @@ namespace ecs
 		json[C_ENTITIES_PROP] = nlohmann::json::array();
 
 		auto i = 0;
-		for (const auto e : em().entities())
+		for (const auto& e : enttm().entities())
 		{
 			serialize_entity(e, json[C_ENTITIES_PROP][i++]);
 		}

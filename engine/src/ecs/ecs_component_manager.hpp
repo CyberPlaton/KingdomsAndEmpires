@@ -1,6 +1,7 @@
 #pragma once
 #include <core.h>
 #include "ecs_world_context_holder.hpp"
+#include "ecs_component.hpp"
 
 namespace ecs
 {
@@ -12,10 +13,12 @@ namespace ecs
 
 		void on_component_added(flecs::entity e, const std::string& component);
 		void on_component_removed(flecs::entity e, const std::string& component);
-		const vector_t<std::string>& components(flecs::entity e) const;
+		const vector_t<std::string>& all(flecs::entity e) const;
+		const vector_t<std::string>& components() const;
 
 	private:
-		umap_t<unsigned, vector_t<std::string>> m_components;
+		vector_t<std::string> m_registered_components;
+		umap_t<uint64_t, vector_t<std::string>> m_components;
 	};
 
 } //- ecs

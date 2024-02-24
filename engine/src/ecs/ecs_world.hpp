@@ -1,10 +1,10 @@
 #pragma once
-#include <core.h>
 #include "ecs_entity_manager.hpp"
 #include "ecs_system_manager.hpp"
 #include "ecs_module_manager.hpp"
 #include "ecs_component_manager.hpp"
 #include "ecs_query_manager.hpp"
+#include "ecs_singleton_manager.hpp"
 #include "../physics/b2_physics.hpp"
 
 namespace ecs
@@ -30,20 +30,23 @@ namespace ecs
 		const flecs::world& world() const { return m_world; }
 		flecs::world& world() { return m_world; }
 
-		const centity_manager& em() const { return m_entity_manager; }
-		centity_manager& em() { return m_entity_manager; }
+		const centity_manager& enttm() const { return m_entity_manager; }
+		centity_manager& enttm() { return m_entity_manager; }
 
-		const csystem_manager& sm() const { return m_system_manager; }
-		csystem_manager& sm() { return m_system_manager; }
+		const csystem_manager& sysm() const { return m_system_manager; }
+		csystem_manager& sysm() { return m_system_manager; }
 
-		const cmodule_manager& mm() const { return m_module_manager; }
-		cmodule_manager& mm() { return m_module_manager; }
+		const cmodule_manager& modm() const { return m_module_manager; }
+		cmodule_manager& modm() { return m_module_manager; }
 
-		const ccomponent_manager& cm() const { return m_component_manager; }
-		ccomponent_manager& cm() { return m_component_manager; }
+		const ccomponent_manager& compm() const { return m_component_manager; }
+		ccomponent_manager& compm() { return m_component_manager; }
 
-		const cquery_manager& qm() const { return m_query_manager; }
-		cquery_manager& qm() { return m_query_manager; }
+		const cquery_manager& querym() const { return m_query_manager; }
+		cquery_manager& querym() { return m_query_manager; }
+
+		const csingleton_manager& singlm() const { return m_singleton_manager; }
+		csingleton_manager& singlm() { return m_singleton_manager; }
 
 		bool QueryCallback(int proxy_id);
 		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
@@ -53,6 +56,7 @@ namespace ecs
 		csystem_manager m_system_manager;
 		ccomponent_manager m_component_manager;
 		cmodule_manager m_module_manager;
+		csingleton_manager m_singleton_manager;
 		centity_manager m_entity_manager;
 
 		stringview_t m_name;
