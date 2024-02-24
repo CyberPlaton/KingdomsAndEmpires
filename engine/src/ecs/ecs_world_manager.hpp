@@ -12,6 +12,7 @@ namespace ecs
 
 		bool create(stringview_t name);
 		bool set_active(stringview_t name);
+		void tick(float dt, rttr::instance phase);
 		const cworld& active() const;
 		cworld& active();
 

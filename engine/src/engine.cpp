@@ -131,25 +131,38 @@ namespace engine
 				sm::ctx().on_resize(raylib::GetScreenWidth(), raylib::GetScreenHeight());
 			}
 
+
+			//- update
 			cservice_manager::on_update(0.016f);
+
+			ecs::cworld_manager::instance().tick(0.016f, ecs::ssystem_phases::C_ON_UPDATE_PHASE);
 
 			m_layers.on_update(0.016f);
 
+
+			//- world space rendering
 			auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
 
 			sm::begin_drawing(camera_manager->active_camera());
+
+			ecs::cworld_manager::instance().tick(0.016f, ecs::ssystem_phases::C_ON_WORLD_RENDER_PHASE);
 
 			m_layers.on_world_render();
 
 			sm::end_frame();
 
+
+			//- ui (screen space) rendering
 			sm::ui_frame();
+
+			ecs::cworld_manager::instance().tick(0.016f, ecs::ssystem_phases::C_ON_UI_RENDER_PHASE);
 
 			m_layers.on_ui_render();
 
 			ImGui::ShowDemoWindow();
 
 			sm::end_ui_frame();
+
 
 			sm::end_drawing();
 		}

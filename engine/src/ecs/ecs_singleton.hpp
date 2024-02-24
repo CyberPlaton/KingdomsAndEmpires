@@ -58,4 +58,52 @@ namespace ecs
 		RTTR_ENABLE();
 	};
 
+	//- singleton contains all defined phases for systems to run on.
+	//- Does not need to be serializable, as its initialized on each world start.
+	//- Note: to register a system that should run on update tick do
+	//- .kind<ecs::ssystem_phases::son_update>()
+	//- in flecs system builder (system definition/creation).
+	//------------------------------------------------------------------------------------------------------------------------
+	struct ssystem_phases : isingleton
+	{
+		DECLARE_SINGLETON(ssystem_phases);
+
+		struct son_update {};
+		struct son_world_render {};
+		struct son_ui_render {};
+
+		inline static const rttr::type C_ON_UPDATE_PHASE = rttr::type::get<son_update>();
+		inline static const rttr::type C_ON_WORLD_RENDER_PHASE = rttr::type::get<son_world_render>();
+		inline static const rttr::type C_ON_UI_RENDER_PHASE = rttr::type::get<son_ui_render>();
+
+		RTTR_ENABLE(isingleton);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct stools_and_visualizers : isingleton
+	{
+		DECLARE_SINGLETON(stools_and_visualizers);
+
+		umap_t<std::string, bool> m_activated_table;
+
+		RTTR_ENABLE(isingleton);
+	};
+
+} //- ecs
+
+namespace ecs
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(stools_and_visualizers)
+	{
+		rttr::registration::class_<stools_and_visualizers>("stools_and_visualizers")
+			.property("m_activated_table", &stools_and_visualizers::m_activated_table)
+			.method("serialize", &stools_and_visualizers::serialize)
+			.method("set", &stools_and_visualizers::set)
+			;
+
+		rttr::default_constructor<stools_and_visualizers>();
+		rttr::default_constructor<umap_t<std::string, bool>>();
+	};
+
 } //- ecs

@@ -30,6 +30,15 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cworld_manager::tick(float dt, rttr::instance phase)
+	{
+		if (m_current != 0)
+		{
+			active().tick(dt, phase);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	const cworld& cworld_manager::active() const
 	{
 		ASSERT(m_current != 0, "Active world was not set for world manager!");

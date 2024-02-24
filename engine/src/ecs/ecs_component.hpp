@@ -150,7 +150,7 @@ namespace ecs
 
 namespace ecs
 {
-	//- TODO we do not want to have to define serialize and set etc methods for each component,
+	//- TODO: we do not want to have to define serialize and set etc methods for each component,
 	//- this should be done automatically, for which we require a 'RTTR Object' concept and
 	//- specializations for components, visualizers etc.
 	//------------------------------------------------------------------------------------------------------------------------

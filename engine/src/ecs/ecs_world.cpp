@@ -56,13 +56,35 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld::tick(float dt)
+	void cworld::tick(float dt, rttr::instance phase)
 	{
+		//- configure pipeline to run
+		auto& builder = world().pipeline().with(flecs::System);
+
+		if (phase.get_type() == ssystem_phases::C_ON_UPDATE_PHASE)
+		{
+			builder.with<ssystem_phases::son_update>();
+		}
+		else if (phase.get_type() == ssystem_phases::C_ON_WORLD_RENDER_PHASE)
+		{
+			builder.with<ssystem_phases::son_world_render>();
+		}
+		else if (phase.get_type() == ssystem_phases::C_ON_UI_RENDER_PHASE)
+		{
+			builder.with<ssystem_phases::son_ui_render>();
+		}
+
+		auto pipeline = builder.build();
+
+		world().set_pipeline(pipeline);
+
 		m_world.progress(dt);
 
 		//- process any queries, they will be available for systems on next tick,
 		//- also clearup memory for already taken and processed queries.
 		process_queries();
+
+		pipeline.destruct();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

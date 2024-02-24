@@ -21,6 +21,7 @@ namespace module_example
 			subsystem([&](flecs::world& w) -> subsystem_registrator_return_t
 				{
 					auto sys = w.system<stargeting_component>("Targeting System")
+						.kind<ecs::ssystem_phases::son_update>()
 						.each([](flecs::entity e, stargeting_component& target)
 							{
 								//- check for first start of the system or

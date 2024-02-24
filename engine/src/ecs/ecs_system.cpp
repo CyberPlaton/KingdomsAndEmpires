@@ -1,6 +1,7 @@
 #include "ecs_system.hpp"
 #include "ecs_component.hpp"
 #include "ecs_world_manager.hpp"
+#include "ecs_singleton.hpp"
 
 namespace ecs
 {

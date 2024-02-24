@@ -20,7 +20,7 @@ namespace ecs
 		cworld(stringview_t name);
 		~cworld();
 
-		void tick(float dt);
+		void tick(float dt, rttr::instance phase);
 
 		flecs::snapshot snapshot() const;
 
