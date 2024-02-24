@@ -133,7 +133,7 @@ namespace sm
 		static ivec2_t monitor_dimension();
 		static unsigned monitor_refresh_rate();
 
-		cwindow(const sconfig& cfg);
+		cwindow(sconfig& cfg);
 		~cwindow();
 
 		void enter_fullscreen();

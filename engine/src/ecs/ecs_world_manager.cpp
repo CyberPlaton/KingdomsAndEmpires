@@ -9,7 +9,7 @@ namespace ecs
 
 		if (m_worlds.find(h) == m_worlds.end())
 		{
-			m_worlds[h] = std::move(std::make_shared<cworld>(name));
+			m_worlds.emplace(h, name);
 			m_current = h;
 			return true;
 		}
@@ -33,14 +33,16 @@ namespace ecs
 	const cworld& cworld_manager::active() const
 	{
 		ASSERT(m_current != 0, "Active world was not set for world manager!");
-		return *m_worlds.at(m_current).get();
+
+		return m_worlds.at(m_current);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cworld& cworld_manager::active()
 	{
 		ASSERT(m_current != 0, "Active world was not set for world manager!");
-		return *m_worlds.at(m_current).get();
+
+		return m_worlds.at(m_current);
 	}
 
 } //- ecs

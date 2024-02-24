@@ -21,27 +21,6 @@ namespace ecs
 		m_component_manager(m_world),
 		m_query_manager(m_world)
 	{
-		//- initialize common observers
-		m_world.observer()
-			.event(flecs::OnAdd)
-			.event(flecs::OnRemove)
-			.each([&](flecs::iter& it, size_t index)
-				{
-					flecs::entity e = it.entity(index);
-					std::string c = it.event_id().str().c_str();
-
-					if (it.event() == flecs::OnAdd)
-					{
-						//- propagate fact of added component to entity to other managers
-						m_component_manager.on_component_added(e, c);
-					}
-					else if (it.event() == flecs::OnRemove)
-					{
-						//- propagate fact of removed component from entity to other managers
-						m_component_manager.on_component_removed(e, c);
-					}
-				});
-
 		m_world.observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)

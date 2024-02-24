@@ -17,7 +17,7 @@ namespace ecs
 
 	private:
 		unsigned m_current = 0;
-		umap_t<unsigned, ref_t<cworld>> m_worlds;
+		umap_t<unsigned, cworld> m_worlds;
 	};
 
 } //- ecs
