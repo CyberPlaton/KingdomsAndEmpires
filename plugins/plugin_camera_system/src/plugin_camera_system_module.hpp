@@ -21,7 +21,7 @@ namespace camera_system
 
 		void pop(stringview_t name);
 
-		sm::ccamera* default_camera() override final;
+		sm::ccamera* default_camera() const override final;
 
 		sm::ccamera* active_camera() const override final;
 
@@ -29,7 +29,7 @@ namespace camera_system
 
 	private:
 		umap_t<unsigned, ptr_t<sm::ccamera>> m_cameras;
-		sm::ccamera m_default;
+		ptr_t<sm::ccamera> m_default;
 		unsigned m_active_camera = 0;
 
 		RTTR_ENABLE(sm::icamera_manager);

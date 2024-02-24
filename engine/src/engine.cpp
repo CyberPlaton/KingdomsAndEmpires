@@ -21,6 +21,32 @@ namespace engine
 
 	} //- unnamed
 
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::clayers::on_update(float dt)
+	{
+		for (const auto& m : m_layer_update)
+		{
+			m.invoke({}, dt);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::clayers::on_world_render()
+	{
+		for (const auto& m : m_layer_world_render)
+		{
+			m.invoke({});
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::clayers::on_ui_render()
+	{
+		for (const auto& m : m_layer_ui_render)
+		{
+			m.invoke({});
+		}
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cengine::~cengine()
@@ -89,7 +115,7 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	engine_run_result cengine::run() const
+	engine_run_result cengine::run()
 	{
 		if (m_result != engine_run_result_ok)
 		{
@@ -107,20 +133,19 @@ namespace engine
 
 			cservice_manager::on_update(0.016f);
 
+			m_layers.on_update(0.016f);
+
 			auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
-			
-			if(camera_manager->has_active_camera())
-			{
-				sm::begin_drawing(camera_manager->active_camera());
-			}
-			else
-			{
-				sm::begin_drawing(camera_manager->default_camera());
-			}
+
+			sm::begin_drawing(camera_manager->active_camera());
+
+			m_layers.on_world_render();
 
 			sm::end_frame();
 
 			sm::ui_frame();
+
+			m_layers.on_ui_render();
 
 			ImGui::ShowDemoWindow();
 
@@ -130,6 +155,34 @@ namespace engine
 		}
 
 		return m_result;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cengine::push_layer(const std::string& name)
+	{
+		if (auto type = rttr::type::get_by_name(name); type.is_valid())
+		{
+			//- check that at least one function is present
+			auto update_method = type.get_method(clayers::C_LAYER_UPDATE_FUNC_NAME.data());
+			auto world_render_method = type.get_method(clayers::C_LAYER_WORLD_RENDER_FUNC_NAME.data());
+			auto ui_render_method = type.get_method(clayers::C_LAYER_UI_RENDER_FUNC_NAME.data());
+
+			if (update_method.is_valid())
+			{
+				m_layers.m_layer_update.emplace_back(update_method);
+			}
+			if (world_render_method.is_valid())
+			{
+				m_layers.m_layer_world_render.emplace_back(world_render_method);
+			}
+			if (ui_render_method.is_valid())
+			{
+				m_layers.m_layer_ui_render.emplace_back(ui_render_method);
+			}
+
+			return update_method.is_valid() || world_render_method.is_valid() || ui_render_method.is_valid();
+		}
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

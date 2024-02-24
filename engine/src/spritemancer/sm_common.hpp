@@ -314,7 +314,7 @@ namespace sm
 	{
 	public:
 		virtual ccamera* active_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
-		virtual ccamera* default_camera() { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
+		virtual ccamera* default_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
 		virtual bool has_active_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return false; }
 
 		RTTR_ENABLE(core::cservice);

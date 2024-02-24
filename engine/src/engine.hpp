@@ -22,7 +22,7 @@ namespace engine
 
 	//- Central entry point of the application (not counting main). Configures the application to be executed,
 	//- configures self and registers services etc. Does create a window and a rendering context and provides the main loop.
-	//- Constructile from cengine::instance() only to ensure correct functioning.
+	//- Constructible from cengine::instance() only to ensure correct functioning.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cengine final : core::cnon_copyable
 	{
@@ -41,13 +41,35 @@ namespace engine
 
 		engine_run_result configure(sconfig cfg, int argc = 0, char* argv[] = {});
 		engine_run_result configure(const core::cpath& cfg, int argc = 0, char* argv[] = {});
-		engine_run_result run() const;
+		engine_run_result run();
+
+		bool push_layer(const std::string& name);
 
 	private:
 		cengine() = default;
 
+		class clayers
+		{
+		public:
+			using layer_update_func_t = std::function<void(float)>;
+			using layer_render_func_t = std::function<void()>;
+
+			static constexpr std::string_view C_LAYER_UPDATE_FUNC_NAME = "on_update";
+			static constexpr std::string_view C_LAYER_WORLD_RENDER_FUNC_NAME = "on_world_render";
+			static constexpr std::string_view C_LAYER_UI_RENDER_FUNC_NAME = "on_ui_render";
+
+			void on_update(float dt);
+			void on_world_render();
+			void on_ui_render();
+
+			vector_t<rttr::method> m_layer_update;
+			vector_t<rttr::method> m_layer_world_render;
+			vector_t<rttr::method> m_layer_ui_render;
+		};
+
 	private:
 		sconfig m_config;
+		clayers m_layers;
 		engine_run_result m_result;
 
 		void handle_arguments(argparse::ArgumentParser& args, int argc, char* argv[]);
