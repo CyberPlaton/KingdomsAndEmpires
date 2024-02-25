@@ -22,6 +22,51 @@ namespace ecs
 		m_query_manager(m_world),
 		m_singleton_manager(m_world)
 	{
+		//- setup phases
+		m_world_update_system = world().system<ssystem_phases::OnUpdate>("OnUpdate")
+			.run([](flecs::iter_t* it)
+				{
+					while (ecs_iter_next(it)) {
+						it->callback(it);
+					}
+				})
+			.each([&](flecs::entity e, ssystem_phases::OnUpdate)
+			{
+					flecs::system s = flecs::system(world(), e);
+
+					s.run(0.016f);
+			});
+
+		m_world_render_system = world().system<ssystem_phases::OnWorldRender>("OnWorldRender")
+			.run([](flecs::iter_t* it)
+				{
+					while (ecs_iter_next(it)) {
+						it->callback(it);
+					}
+				})
+			.each([&](flecs::entity e, ssystem_phases::OnWorldRender)
+				{
+					flecs::system s = flecs::system(world(), e);
+
+					s.run(0.016f);
+				});
+
+		m_world_ui_render_system = world().system<ssystem_phases::OnUiRender>("OnUiRender")
+			.run([](flecs::iter_t* it)
+				{
+					while (ecs_iter_next(it)) {
+						it->callback(it);
+					}
+				})
+			.each([&](flecs::entity e, ssystem_phases::OnUiRender)
+				{
+					flecs::system s = flecs::system(world(), e);
+
+					s.run(0.016f);
+				});
+
+
+		//- setup observers
 		m_world.observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
@@ -56,35 +101,36 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld::tick(float dt, rttr::instance phase)
+	void cworld::tick(float dt, system_running_phase p)
 	{
-		//- configure pipeline to run
-		auto& builder = world().pipeline().with(flecs::System);
-
-		if (phase.get_type() == ssystem_phases::C_ON_UPDATE_PHASE)
+		switch (p)
 		{
-			builder.with<ssystem_phases::son_update>();
-		}
-		else if (phase.get_type() == ssystem_phases::C_ON_WORLD_RENDER_PHASE)
+		case system_running_phase_on_update:
 		{
-			builder.with<ssystem_phases::son_world_render>();
+			m_world_update_system.run(dt);
+			break;
 		}
-		else if (phase.get_type() == ssystem_phases::C_ON_UI_RENDER_PHASE)
+		case system_running_phase_on_world_render:
 		{
-			builder.with<ssystem_phases::son_ui_render>();
+			m_world_render_system.run(dt);
+			break;
+		}
+		case system_running_phase_on_ui_render:
+		{
+			m_world_ui_render_system.run(dt);
+			break;
+		}
+		default:
+		case system_running_phase_none:
+			return;
 		}
 
-		auto pipeline = builder.build();
 
-		world().set_pipeline(pipeline);
-
-		m_world.progress(dt);
+		//world().progress(dt);
 
 		//- process any queries, they will be available for systems on next tick,
 		//- also clearup memory for already taken and processed queries.
 		process_queries();
-
-		pipeline.destruct();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -14,6 +14,9 @@ namespace ecs
 		flecs::entity m_module_entity;
 		vector_t<smodule_info> m_dependencies;
 
+		vector_t<flecs::system> m_systems;
+		vector_t<std::string> m_components;
+
 		RTTR_ENABLE();
 	};
 
@@ -71,6 +74,8 @@ namespace ecs
 		//- create and register system into current world
 		TSystem sys(world());
 
+		m_info.m_systems.emplace_back(sys.self());
+
 		return *reinterpret_cast<TModule*>(this);
 	}
 
@@ -94,6 +99,8 @@ namespace ecs
 		//static_assert(std::is_base_of<icomponent, TComponent>::value, "TComponent must be derived from icomponent");
 
 		world().component<TComponent>();
+
+		m_info.m_components.emplace_back(rttr::type::get<TComponent>().get_name().data());
 
 		return *reinterpret_cast<TModule*>(this);
 	}

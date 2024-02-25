@@ -19,6 +19,11 @@ namespace module_example
 			ecs::csystem<stargeting_component>
 			(w, "Targeting System")
 		{
+
+			run_on(ecs::system_running_phase_on_update);
+			run_on(ecs::system_running_phase_on_world_render);
+			run_on(ecs::system_running_phase_on_ui_render);
+
 			build([&](flecs::entity e, stargeting_component& target)
 				{
 								//- check for first start of the system or

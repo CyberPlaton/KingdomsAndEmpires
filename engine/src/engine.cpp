@@ -135,7 +135,7 @@ namespace engine
 			//- update
 			cservice_manager::on_update(0.016f);
 
-			ecs::cworld_manager::instance().tick(0.016f, ecs::ssystem_phases::C_ON_UPDATE_PHASE);
+			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_update);
 
 			m_layers.on_update(0.016f);
 
@@ -145,7 +145,7 @@ namespace engine
 
 			sm::begin_drawing(camera_manager->active_camera());
 
-			ecs::cworld_manager::instance().tick(0.016f, ecs::ssystem_phases::C_ON_WORLD_RENDER_PHASE);
+			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_world_render);
 
 			m_layers.on_world_render();
 
@@ -155,7 +155,7 @@ namespace engine
 			//- ui (screen space) rendering
 			sm::ui_frame();
 
-			ecs::cworld_manager::instance().tick(0.016f, ecs::ssystem_phases::C_ON_UI_RENDER_PHASE);
+			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_ui_render);
 
 			m_layers.on_ui_render();
 

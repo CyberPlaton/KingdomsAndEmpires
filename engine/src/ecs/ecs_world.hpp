@@ -20,7 +20,7 @@ namespace ecs
 		cworld(stringview_t name);
 		~cworld();
 
-		void tick(float dt, rttr::instance phase);
+		void tick(float dt, system_running_phase p);
 
 		flecs::snapshot snapshot() const;
 
@@ -61,6 +61,10 @@ namespace ecs
 
 		stringview_t m_name;
 		flecs::world m_world;
+
+		flecs::system m_world_update_system;
+		flecs::system m_world_render_system;
+		flecs::system m_world_ui_render_system;
 
 		struct sworld_query
 		{

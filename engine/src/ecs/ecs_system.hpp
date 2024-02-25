@@ -33,6 +33,10 @@ namespace ecs
 	//-
 	//- TCallable system function should be as in system_function_prototype_t, i.e.
 	//- entity first and then your used components as described above.
+	//-
+	//- Note: it is possible to force a system to run on more than one phase, i.e.
+	//- run_on(system_running_phase_on_update | system_running_phase_on_ui_render);
+	//- just make sure you know what you are doing.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... TComps>
 	class csystem : public isystem,
@@ -45,7 +49,11 @@ namespace ecs
 			iworld_context_holder(world),
 			m_builder(world.system<TComps...>(name.c_str()))
 		{
-			run_on(system_running_phase_on_update);
+			m_builder.run([](flecs::iter_t* it) {
+					while (ecs_iter_next(it)) {
+						it->callback(it);
+					}
+				});
 		}
 
 		flecs::entity self() const override final { return m_self; }
@@ -71,46 +79,39 @@ namespace ecs
 			kind(world().lookup(kind_entity_name.c_str()));
 		}
 
-		void run_on(system_running_phase p)
+		void run_on(int bitwise_phase)
 		{
-			switch (p)
+			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_update))
 			{
-			default:
-			case system_running_phase_on_update:
-			{
-				m_builder.kind<ssystem_phases::son_update>();
-				m_phase = system_running_phase_on_update;
-				break;
+				m_builder.kind<ssystem_phases::OnUpdate>();
+				m_phase |= system_running_phase_on_update;
 			}
-			case system_running_phase_on_world_render:
+			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_world_render))
 			{
-				m_builder.kind<ssystem_phases::son_world_render>();
-				m_phase = system_running_phase_on_world_render;
-				break;
+				m_builder.kind<ssystem_phases::OnWorldRender>();
+				m_phase |= system_running_phase_on_world_render;
 			}
-			case system_running_phase_on_ui_render:
+			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_ui_render))
 			{
-				m_builder.kind<ssystem_phases::son_ui_render>();
-				m_phase = system_running_phase_on_ui_render;
-				break;
-			}
+				m_builder.kind<ssystem_phases::OnUiRender>();
+				m_phase |= system_running_phase_on_ui_render;
 			}
 		}
 
 		template<typename TCallable>
 		void build(TCallable&& func)
 		{
-			m_self = m_builder.each(func);
-		}
-		void build(system_function_prototype_t func)
-		{
+			if (m_phase == 0)
+			{
+				run_on(system_running_phase_on_update);
+			}
 			m_self = m_builder.each(func);
 		}
 
 	private:
 		flecs::system m_self;
 		flecs::system_builder<TComps...> m_builder;
-		system_running_phase m_phase;
+		int m_phase = 0;
 	};
 
 } //- ecs

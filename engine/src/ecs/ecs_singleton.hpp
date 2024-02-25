@@ -68,13 +68,9 @@ namespace ecs
 	{
 		DECLARE_SINGLETON(ssystem_phases);
 
-		struct son_update {};
-		struct son_world_render {};
-		struct son_ui_render {};
-
-		inline static const rttr::type C_ON_UPDATE_PHASE = rttr::type::get<son_update>();
-		inline static const rttr::type C_ON_WORLD_RENDER_PHASE = rttr::type::get<son_world_render>();
-		inline static const rttr::type C_ON_UI_RENDER_PHASE = rttr::type::get<son_ui_render>();
+		struct OnUpdate{};
+		struct OnWorldRender{};
+		struct OnUiRender{};
 
 		RTTR_ENABLE(isingleton);
 	};

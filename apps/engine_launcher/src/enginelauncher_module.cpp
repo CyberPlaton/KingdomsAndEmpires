@@ -94,28 +94,43 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	//- set core io callback
 	core::serror_reporter::instance().m_callback = core_io_error_function;
 
-	flecs::world w;
-
-	//- create some entities for tests
-	w.entity("Josef").add<ecs::stransform>().add<ecs::sidentifier>();
-	w.entity("Walther").add<ecs::stransform>().add<ecs::sidentifier>();
-	w.entity("Manfred").add<ecs::stransform>().add<ecs::sidentifier>();
-	w.entity("Hans").add<ecs::stransform>().add<ecs::sidentifier>();
-	w.entity("Adolf").add<ecs::stransform>().add<ecs::sidentifier>();
-
-	auto sys = w.system<ecs::stransform, ecs::sidentifier>("Default System")
-		.each([](flecs::entity e, const ecs::stransform& tr, ecs::sidentifier& id)
-			{
-				logging::log_info(fmt::format("each\t Default System '{}'", e.name().c_str()));
-			});
-
-	w.progress();
-	w.progress();
-	w.progress();
-	w.progress();
+// 	flecs::world w;
+// 
+// 	//- create some entities for tests
+// 	w.entity("Josef").add<ecs::stransform>().add<ecs::sidentifier>();
+// 	w.entity("Walther").add<ecs::stransform>().add<ecs::sidentifier>();
+// 	w.entity("Manfred").add<ecs::stransform>().add<ecs::sidentifier>();
+// 	w.entity("Hans").add<ecs::stransform>().add<ecs::sidentifier>();
+// 	w.entity("Adolf").add<ecs::stransform>().add<ecs::sidentifier>();
+// 
+// 	auto sys = w.system<ecs::stransform, ecs::sidentifier>("Default System")
+// 		.each([](flecs::entity e, const ecs::stransform& tr, ecs::sidentifier& id)
+// 			{
+// 				logging::log_info(fmt::format("each\t Default System '{}'", e.name().c_str()));
+// 			});
+// 
+// 	w.progress();
+// 	w.progress();
+// 	w.progress();
+// 	w.progress();
 
 	ecs::cworld _w("World");
 	_w.modm().import_module<module_example::cmy_module>();
+
+	_w.world().entity("Jonathan").add<module_example::stargeting_component>();
+	_w.world().entity("Walther").add<module_example::stargeting_component>();
+	_w.world().entity("Adolf").add<module_example::stargeting_component>();
+
+	using namespace std::chrono_literals;
+	for (auto i = 0; i < 10000; ++i)
+	{
+		std::this_thread::sleep_for(1ms);
+		_w.tick(0.016f, ecs::system_running_phase_on_update);
+		_w.tick(0.016f, ecs::system_running_phase_on_world_render);
+		_w.tick(0.016f, ecs::system_running_phase_on_ui_render);
+	}
+	Sleep(10);
+	return 0;
 
 	engine::cengine::sconfig cfg;
 
