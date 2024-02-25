@@ -19,8 +19,6 @@ namespace module_example
 	struct sreplicable_component : public ecs::icomponent
 	{
 		DECLARE_COMPONENT(sreplicable_component);
-
-		bool placeholder = true;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

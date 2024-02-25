@@ -663,7 +663,7 @@ namespace core
 		vec2_t in_range_vec2(float minimum, float maximum);
 
 	private:
-		static inline std::mt19937 C_RANDOM_ENGINE;
+		inline static std::mt19937 C_RANDOM_ENGINE;
 		std::uniform_int_distribution<std::mt19937::result_type> m_distribution;
 	};
 

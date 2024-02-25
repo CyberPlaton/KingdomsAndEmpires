@@ -34,7 +34,8 @@ namespace module_example
 									target.m_next_target = core::cuuid();
 									target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
 
-									logging::log_info(fmt::format("[Targeting System] Changing Target '{}'", target.m_next_target.string()).data());
+									logging::log_info(fmt::format("[Targeting System] Changing Target '{}' for '{}';\n Self size '{}'",
+										target.m_next_target.string(), e.name().c_str(), sizeof(cmy_system)));
 								}
 								target.m_cooldown -= C_DT;
 				});
@@ -57,14 +58,15 @@ namespace module_example
 
 			build([&](flecs::entity e, stransform_component& tr)
 				{
-					static core::crandom rand;
 					static core::ctimer transform_timer(false);
 
 					if (transform_timer.secs() > 5)
 					{
-						tr.x = rand.random_float();
-						tr.y = rand.random_float();
-						tr.rotation = rand.random_float();
+						core::crandom rand;
+
+						tr.x = rand.in_range_float(0.0f, 10.0f);
+						tr.y = rand.in_range_float(0.0f, 10.0f);
+						tr.rotation = rand.in_range_float(0.0f, 365.0f);
 
 						logging::log_debug(fmt::format("[{}][Transform] Updating transform [{}:{}:{}]",
 							logging::app_runtime_ms(), tr.x, tr.y, tr.rotation));
@@ -83,6 +85,8 @@ namespace module_example
 			ecs::csystem<sreplicable_component, stransform_component, sidentifier_component>
 			(w, "Replication System")
 		{
+			depends_on<cexample_transform_system>(w);
+
 			auto update_phase = w.entity("Replication Update Phase")
 				.add(flecs::Phase)
 				.depends_on(w.lookup("Transform Update Phase"));
@@ -107,7 +111,7 @@ namespace module_example
 						}
 
 						//- example: showing firstly that entity name is equal to his uuid.
-						logging::log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{} ()\":\n\t[{}:{}:{}]",
+						logging::log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{} ({})\":\n\t[{}:{}:{}]",
 							logging::app_runtime_ms(), n, id.uuid.string(), e.name(), trans.x, trans.y, trans.rotation));
 
 						network_timer.start();

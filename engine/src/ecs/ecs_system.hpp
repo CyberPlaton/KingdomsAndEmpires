@@ -10,7 +10,8 @@ namespace ecs
 		system_running_phase_none = 0,
 		system_running_phase_on_update,
 		system_running_phase_on_world_render,
-		system_running_phase_on_ui_render
+		system_running_phase_on_ui_render,
+		system_running_phase_on_post_update, //- Note: fixed dt. After all rendering is done.
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -55,6 +56,7 @@ namespace ecs
 					}
 				});
 		}
+		~csystem() = default;
 
 		flecs::entity self() const override final { return m_self; }
 		stringview_t name() const override final { return m_self.name().c_str(); }

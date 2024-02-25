@@ -115,11 +115,32 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 // 	w.progress();
 
 	ecs::cworld _w("World");
-	_w.modm().import_module<module_example::cmy_module>();
+	_w.modm().import_module<module_example::cmy_third_module>();
 
-	_w.world().entity("Jonathan").add<module_example::stargeting_component>();
-	_w.world().entity("Walther").add<module_example::stargeting_component>();
-	_w.world().entity("Adolf").add<module_example::stargeting_component>();
+	auto Jonathan = _w.world().entity("Jonathan").add<module_example::stransform_component>()
+		.add<module_example::sreplicable_component>()
+		.add<module_example::sidentifier_component>();
+	auto Walther = _w.world().entity("Walther").add<module_example::stransform_component>()
+		.add<module_example::sreplicable_component>()
+		.add<module_example::sidentifier_component>();
+	auto Adolf = _w.world().entity("Adolf").add<module_example::stransform_component>()
+		.add<module_example::sreplicable_component>()
+		.add<module_example::sidentifier_component>();
+
+	auto* t = Adolf.get_mut<module_example::stransform_component>();
+	t->x = 10;
+	t->y = 22;
+	t->rotation = 1;
+
+	t = Walther.get_mut<module_example::stransform_component>();
+	t->x = 918;
+	t->y = 1;
+	t->rotation = 32;
+
+	t = Jonathan.get_mut<module_example::stransform_component>();
+	t->x = 53;
+	t->y = 108;
+	t->rotation = 0;
 
 	using namespace std::chrono_literals;
 	for (auto i = 0; i < 10000; ++i)
