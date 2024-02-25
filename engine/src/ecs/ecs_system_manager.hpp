@@ -13,17 +13,15 @@ namespace ecs
 		~csystem_manager();
 
 		template<class TSystem>
-		ref_t<csystem> create_system();
+		ref_t<isystem> create_system();
 
 		flecs::system system(stringview_t name) const;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TSystem>
-	ref_t<csystem> ecs::csystem_manager::create_system()
+	ref_t<isystem> ecs::csystem_manager::create_system()
 	{
-		static_assert(std::is_base_of<csystem, TSystem>::Value, "TSystem must be derived from csystem base class");
-
 		auto s = std::make_shared<TSystem>(world());
 
 		return s;

@@ -66,7 +66,7 @@ namespace ecs
 	template<class TModule, class TSystem>
 	TModule& ecs::imodule::subsystem()
 	{
-		static_assert(std::is_base_of<csystem, TSystem>::value, "TSystem must be derived from csystem");
+		//static_assert(std::is_base_of<csystem, TSystem>::value, "TSystem must be derived from csystem");
 
 		//- create and register system into current world
 		TSystem sys(world());
@@ -91,7 +91,7 @@ namespace ecs
 	template<class TModule, class TComponent>
 	TModule& ecs::imodule::comp()
 	{
-		static_assert(std::is_base_of<icomponent, TComponent>::value, "TComponent must be derived from icomponent");
+		//static_assert(std::is_base_of<icomponent, TComponent>::value, "TComponent must be derived from icomponent");
 
 		world().component<TComponent>();
 
