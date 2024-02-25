@@ -62,9 +62,12 @@ namespace ecs
 		stringview_t m_name;
 		flecs::world m_world;
 
+		float m_world_tick_dt;
+		float m_world_tick_fixed_dt = 0.016f;
 		flecs::system m_world_update_system;
 		flecs::system m_world_render_system;
 		flecs::system m_world_ui_render_system;
+		flecs::system m_world_post_update_system;
 
 		struct sworld_query
 		{

@@ -71,6 +71,7 @@ namespace ecs
 		struct OnUpdate{};
 		struct OnWorldRender{};
 		struct OnUiRender{};
+		struct OnPostUpdate{};
 
 		RTTR_ENABLE(isingleton);
 	};

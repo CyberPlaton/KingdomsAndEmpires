@@ -34,7 +34,7 @@ namespace ecs
 			{
 					flecs::system s = flecs::system(world(), e);
 
-					s.run(0.016f);
+					s.run(m_world_tick_dt);
 			});
 
 		m_world_render_system = world().system<ssystem_phases::OnWorldRender>("OnWorldRender")
@@ -48,7 +48,7 @@ namespace ecs
 				{
 					flecs::system s = flecs::system(world(), e);
 
-					s.run(0.016f);
+					s.run(m_world_tick_dt);
 				});
 
 		m_world_ui_render_system = world().system<ssystem_phases::OnUiRender>("OnUiRender")
@@ -62,7 +62,21 @@ namespace ecs
 				{
 					flecs::system s = flecs::system(world(), e);
 
-					s.run(0.016f);
+					s.run(m_world_tick_dt);
+				});
+
+		m_world_post_update_system = world().system<ssystem_phases::OnPostUpdate>("OnPostUpdate")
+			.run([](flecs::iter_t* it)
+				{
+					while (ecs_iter_next(it)) {
+						it->callback(it);
+					}
+				})
+			.each([&](flecs::entity e, ssystem_phases::OnPostUpdate)
+				{
+					flecs::system s = flecs::system(world(), e);
+
+					s.run(m_world_tick_fixed_dt);
 				});
 
 
@@ -103,6 +117,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::tick(float dt, system_running_phase p)
 	{
+		m_world_tick_dt = dt;
 		switch (p)
 		{
 		case system_running_phase_on_update:
@@ -120,13 +135,16 @@ namespace ecs
 			m_world_ui_render_system.run(dt);
 			break;
 		}
+		case system_running_phase_on_post_update:
+		{
+			m_world_post_update_system.run(dt);
+			break;
+		}
 		default:
 		case system_running_phase_none:
 			return;
 		}
 
-
-		//world().progress(dt);
 
 		//- process any queries, they will be available for systems on next tick,
 		//- also clearup memory for already taken and processed queries.

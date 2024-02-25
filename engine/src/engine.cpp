@@ -131,14 +131,13 @@ namespace engine
 				sm::ctx().on_resize(raylib::GetScreenWidth(), raylib::GetScreenHeight());
 			}
 
-
+			//- TODO: implement ctimestep class for variable or fixed delta time
 			//- update
 			cservice_manager::on_update(0.016f);
 
 			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_update);
 
 			m_layers.on_update(0.016f);
-
 
 			//- world space rendering
 			auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
@@ -151,7 +150,6 @@ namespace engine
 
 			sm::end_frame();
 
-
 			//- ui (screen space) rendering
 			sm::ui_frame();
 
@@ -163,8 +161,10 @@ namespace engine
 
 			sm::end_ui_frame();
 
-
 			sm::end_drawing();
+
+			//- post update with fixed timestep
+			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_post_update);
 		}
 
 		return m_result;

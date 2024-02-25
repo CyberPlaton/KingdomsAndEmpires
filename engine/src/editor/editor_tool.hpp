@@ -5,6 +5,7 @@
 
 namespace editor
 {
+	//- Base tool class. Requires a component type as input.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... TComps>
 	class ctool : public ecs::csystem<TComps...>

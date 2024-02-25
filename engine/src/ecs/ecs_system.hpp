@@ -98,6 +98,11 @@ namespace ecs
 				m_builder.kind<ssystem_phases::OnUiRender>();
 				m_phase |= system_running_phase_on_ui_render;
 			}
+			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_post_update))
+			{
+				m_builder.kind<ssystem_phases::OnPostUpdate>();
+				m_phase |= system_running_phase_on_post_update;
+			}
 		}
 
 		template<typename TCallable>
