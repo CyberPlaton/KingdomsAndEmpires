@@ -85,23 +85,3 @@ int main(int argc, char* argv[])
 	return 0;
 }
 #endif
-
-void ceditor::on_update(float dt)
-{
-
-}
-
-void ceditor::on_world_render()
-{
-
-}
-
-void ceditor::on_ui_render()
-{
-
-}
-
-void ceditor::on_post_update(float dt)
-{
-
-}

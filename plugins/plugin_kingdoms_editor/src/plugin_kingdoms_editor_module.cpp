@@ -1,0 +1,21 @@
+#include "plugin_kingdoms_editor_module.hpp"
+
+void ceditor::on_update(float dt)
+{
+
+}
+
+void ceditor::on_world_render()
+{
+
+}
+
+void ceditor::on_ui_render()
+{
+
+}
+
+void ceditor::on_post_update(float dt)
+{
+
+}
