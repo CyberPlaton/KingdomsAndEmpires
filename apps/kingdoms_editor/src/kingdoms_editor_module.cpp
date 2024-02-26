@@ -52,7 +52,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	cfg.m_layer_cfg.emplace_back("cgame");
 	cfg.m_layer_cfg.emplace_back("ceditor");
 
-	cfg.m_window_cfg.m_title = "Kingdoms Editor";
+	cfg.m_window_cfg.m_title = "Kingdoms & Empires Editor";
 	cfg.m_window_cfg.m_width = 1280;
 	cfg.m_window_cfg.m_height = 1024;
 	cfg.m_window_cfg.m_target_fps = 0;
