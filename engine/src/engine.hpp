@@ -32,8 +32,9 @@ namespace engine
 	public:
 		struct sconfig
 		{
-			cservice_manager::sconfig m_service_cfg;
 			sm::cwindow::sconfig m_window_cfg;
+			cservice_manager::sconfig m_service_cfg;
+			vector_t<std::string> m_layer_cfg;
 
 			RTTR_ENABLE();
 		};
@@ -84,9 +85,11 @@ namespace engine
 		rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
 			.property("m_service_cfg", &cengine::sconfig::m_service_cfg)
 			.property("m_window_cfg", &cengine::sconfig::m_window_cfg)
+			.property("m_layer_cfg", &cengine::sconfig::m_layer_cfg)
 			;
 
 		rttr::default_constructor<cengine::sconfig>();
+		rttr::default_constructor<vector_t<std::string>>();
 	}
 
 } //- engine

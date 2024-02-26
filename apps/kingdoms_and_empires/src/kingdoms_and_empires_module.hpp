@@ -1,0 +1,10 @@
+#pragma once
+#include <engine.h>
+#include <plugin_logging.h>
+#include <plugin_module_example.h>
+#include <plugin_kingdoms_core.h>
+#include <plugin_camera_system.h>
+#include <plugin_race_human.h>
+#include <plugin_kingdoms_and_empires.h>
+#include <lua.h>
+#include <luabridge.h>
