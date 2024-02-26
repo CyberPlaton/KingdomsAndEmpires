@@ -6,6 +6,7 @@
 #include "services/service_manager.hpp"
 #include "editor/editor_tool.hpp"
 #include "editor/editor_visualizer.hpp"
+#include "layer.hpp"
 #include <argparse.h>
 
 namespace engine
@@ -53,20 +54,15 @@ namespace engine
 		class clayers
 		{
 		public:
-			using layer_update_func_t = std::function<void(float)>;
-			using layer_render_func_t = std::function<void()>;
-
-			static constexpr std::string_view C_LAYER_UPDATE_FUNC_NAME = "on_update";
-			static constexpr std::string_view C_LAYER_WORLD_RENDER_FUNC_NAME = "on_world_render";
-			static constexpr std::string_view C_LAYER_UI_RENDER_FUNC_NAME = "on_ui_render";
-
 			void on_update(float dt);
 			void on_world_render();
 			void on_ui_render();
+			void on_post_update(float dt);
 
 			vector_t<rttr::method> m_layer_update;
 			vector_t<rttr::method> m_layer_world_render;
 			vector_t<rttr::method> m_layer_ui_render;
+			vector_t<rttr::method> m_layer_post_update;
 		};
 
 	private:

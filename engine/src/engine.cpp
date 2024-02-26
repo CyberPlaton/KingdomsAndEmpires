@@ -49,6 +49,15 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::clayers::on_post_update(float dt)
+	{
+		for (const auto& m : m_layer_post_update)
+		{
+			m.invoke({}, dt);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cengine::~cengine()
 	{
 	}
@@ -176,9 +185,10 @@ namespace engine
 		if (auto type = rttr::type::get_by_name(name); type.is_valid())
 		{
 			//- check that at least one function is present
-			auto update_method = type.get_method(clayers::C_LAYER_UPDATE_FUNC_NAME.data());
-			auto world_render_method = type.get_method(clayers::C_LAYER_WORLD_RENDER_FUNC_NAME.data());
-			auto ui_render_method = type.get_method(clayers::C_LAYER_UI_RENDER_FUNC_NAME.data());
+			auto update_method = type.get_method(slayer::C_LAYER_UPDATE_FUNC_NAME.data());
+			auto world_render_method = type.get_method(slayer::C_LAYER_WORLD_RENDER_FUNC_NAME.data());
+			auto ui_render_method = type.get_method(slayer::C_LAYER_UI_RENDER_FUNC_NAME.data());
+			auto post_update_method = type.get_method(slayer::C_LAYER_POST_UPDATE_FUNC_NAME.data());
 
 			if (update_method.is_valid())
 			{
@@ -192,8 +202,12 @@ namespace engine
 			{
 				m_layers.m_layer_ui_render.emplace_back(ui_render_method);
 			}
+			if (post_update_method.is_valid())
+			{
+				m_layers.m_layer_post_update.emplace_back(post_update_method);
+			}
 
-			return update_method.is_valid() || world_render_method.is_valid() || ui_render_method.is_valid();
+			return update_method.is_valid() || world_render_method.is_valid() || ui_render_method.is_valid() || post_update_method.is_valid();
 		}
 		return false;
 	}

@@ -41,7 +41,7 @@ namespace ecs
 	};
 
 
-	//- Note: context holds pinter in order to make the class move constructible,
+	//- Note: context holds pointer in order to make the class move constructible,
 	//- this is required by flecs.
 	//------------------------------------------------------------------------------------------------------------------------
 	class iworld_context_holder
