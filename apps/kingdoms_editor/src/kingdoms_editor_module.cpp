@@ -49,8 +49,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	engine::cengine::sconfig cfg;
 	cfg.m_service_cfg.m_services.emplace_back("ccamera_manager");
 
-	cfg.m_layer_cfg.emplace_back("cgame");
-	cfg.m_layer_cfg.emplace_back("ceditor");
+	cfg.m_layer_cfg.m_layers.emplace_back("cgame");
+	cfg.m_layer_cfg.m_layers.emplace_back("ceditor");
 
 	cfg.m_window_cfg.m_title = "Kingdoms & Empires Editor";
 	cfg.m_window_cfg.m_width = 1280;

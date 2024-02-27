@@ -14,10 +14,7 @@ namespace ecs
 		template<class TModuleType>
 		cmodule_manager& import_module();
 
-		const vector_t<smodule_info>& active_modules() const;
-
 	private:
-		vector_t<smodule_info> m_active_modules;
 	};
 
 	//-------------------------------------------------------------------------------------------------------------------------
@@ -25,8 +22,6 @@ namespace ecs
 	cmodule_manager& ecs::cmodule_manager::import_module()
 	{
 		TModuleType m(world());
-
-		m_active_modules.emplace_back(m.info());
 
 		return *this;
 	}

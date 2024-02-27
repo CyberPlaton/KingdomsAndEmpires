@@ -10,14 +10,18 @@ namespace engine
 	struct slayer final
 	{
 	public:
-		static constexpr std::string_view C_LAYER_UPDATE_FUNC_NAME = "on_update";
-		static constexpr std::string_view C_LAYER_WORLD_RENDER_FUNC_NAME = "on_world_render";
-		static constexpr std::string_view C_LAYER_UI_RENDER_FUNC_NAME = "on_ui_render";
+		static constexpr std::string_view C_LAYER_UPDATE_FUNC_NAME		= "on_update";
+		static constexpr std::string_view C_LAYER_WORLD_RENDER_FUNC_NAME= "on_world_render";
+		static constexpr std::string_view C_LAYER_UI_RENDER_FUNC_NAME	= "on_ui_render";
 		static constexpr std::string_view C_LAYER_POST_UPDATE_FUNC_NAME = "on_post_update";
+		static constexpr std::string_view C_LAYER_INIT_FUNC_NAME		= "init";
+		static constexpr std::string_view C_LAYER_SHUTDOWN_FUNC_NAME	= "shutdown";
 
-		static void on_update(float){}
-		static void on_world_render(){}
-		static void on_ui_render(){}
+		static bool init() {return false;}
+		static void shutdown() {}
+		static void on_update(float) {}
+		static void on_world_render() {}
+		static void on_ui_render() {}
 		static void on_post_update(float) {}
 
 		RTTR_ENABLE();
@@ -30,8 +34,9 @@ namespace engine
 			.method("on_update",		&slayer::on_update)
 			.method("on_world_render",	&slayer::on_world_render)
 			.method("on_ui_render",		&slayer::on_ui_render)
-			.method("on_ui_render",		&slayer::on_ui_render)
 			.method("on_post_update",	&slayer::on_post_update)
+			.method("init",				&slayer::init)
+			.method("shutdown",			&slayer::shutdown)
 			;
 
 		rttr::default_constructor<slayer>();

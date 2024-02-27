@@ -22,6 +22,24 @@ namespace engine
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::clayers::init()
+	{
+		for (const auto& m : m_layer_init)
+		{
+			m.invoke({});
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::clayers::shutdown()
+	{
+		for (const auto& m : m_layer_shutdown)
+		{
+			m.invoke({});
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cengine::clayers::on_update(float dt)
 	{
 		for (const auto& m : m_layer_update)
@@ -88,6 +106,14 @@ namespace engine
 			{
 				m_result = engine_run_result_failed_starting_spritemancer;
 			}
+
+			//- initialize layers
+			if (!init_layers(m_config.m_layer_cfg))
+			{
+				m_result = engine_run_result_failed_pushing_layers;
+			}
+
+			m_layers.init();
 		}
 
 		return m_result;
@@ -176,40 +202,13 @@ namespace engine
 			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_post_update);
 		}
 
+		m_layers.shutdown();
+
+		sm::shutdown();
+
+		cservice_manager::shutdown();
+
 		return m_result;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool cengine::push_layer(const std::string& name)
-	{
-		if (auto type = rttr::type::get_by_name(name); type.is_valid())
-		{
-			//- check that at least one function is present
-			auto update_method = type.get_method(slayer::C_LAYER_UPDATE_FUNC_NAME.data());
-			auto world_render_method = type.get_method(slayer::C_LAYER_WORLD_RENDER_FUNC_NAME.data());
-			auto ui_render_method = type.get_method(slayer::C_LAYER_UI_RENDER_FUNC_NAME.data());
-			auto post_update_method = type.get_method(slayer::C_LAYER_POST_UPDATE_FUNC_NAME.data());
-
-			if (update_method.is_valid())
-			{
-				m_layers.m_layer_update.emplace_back(update_method);
-			}
-			if (world_render_method.is_valid())
-			{
-				m_layers.m_layer_world_render.emplace_back(world_render_method);
-			}
-			if (ui_render_method.is_valid())
-			{
-				m_layers.m_layer_ui_render.emplace_back(ui_render_method);
-			}
-			if (post_update_method.is_valid())
-			{
-				m_layers.m_layer_post_update.emplace_back(post_update_method);
-			}
-
-			return update_method.is_valid() || world_render_method.is_valid() || ui_render_method.is_valid() || post_update_method.is_valid();
-		}
-		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -256,6 +255,73 @@ namespace engine
 				m_result = engine_run_result_failed_registering_services;
 			}
 		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cengine::init_layers(const clayers::sconfig& cfg)
+	{
+		logging::log_info("Initializing layers...");
+
+		bool result = true;
+
+		const auto try_push_layer = [this](std::string_view name) -> bool
+			{
+				if (auto type = rttr::type::get_by_name(name.data()); type.is_valid())
+				{
+					//- check that at least one function is present
+					auto update_method = type.get_method(slayer::C_LAYER_UPDATE_FUNC_NAME.data());
+					auto world_render_method = type.get_method(slayer::C_LAYER_WORLD_RENDER_FUNC_NAME.data());
+					auto ui_render_method = type.get_method(slayer::C_LAYER_UI_RENDER_FUNC_NAME.data());
+					auto post_update_method = type.get_method(slayer::C_LAYER_POST_UPDATE_FUNC_NAME.data());
+					auto init_method = type.get_method(slayer::C_LAYER_INIT_FUNC_NAME.data());
+					auto shutdown_method = type.get_method(slayer::C_LAYER_SHUTDOWN_FUNC_NAME.data());
+
+					if (update_method.is_valid())
+					{
+						m_layers.m_layer_update.emplace_back(update_method);
+					}
+					if (world_render_method.is_valid())
+					{
+						m_layers.m_layer_world_render.emplace_back(world_render_method);
+					}
+					if (ui_render_method.is_valid())
+					{
+						m_layers.m_layer_ui_render.emplace_back(ui_render_method);
+					}
+					if (post_update_method.is_valid())
+					{
+						m_layers.m_layer_post_update.emplace_back(post_update_method);
+					}
+					if (init_method.is_valid())
+					{
+						m_layers.m_layer_init.emplace_back(init_method);
+					}
+					if (shutdown_method.is_valid())
+					{
+						m_layers.m_layer_shutdown.emplace_back(shutdown_method);
+					}
+
+					return update_method.is_valid() || world_render_method.is_valid() ||
+						ui_render_method.is_valid() || post_update_method.is_valid() ||
+						init_method.is_valid() || shutdown_method.is_valid();
+				}
+				return false;
+			};
+
+		for (const auto& layer : cfg.m_layers)
+		{
+			if (!try_push_layer(layer))
+			{
+				logging::log_error(fmt::format("\t'{}' failed...", layer));
+
+				result = false;
+			}
+			else
+			{
+				logging::log_info(fmt::format("\t'{}' success...", layer));
+			}
+		}
+		return result;
 	}
 
 } //- engine

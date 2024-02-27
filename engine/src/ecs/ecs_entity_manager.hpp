@@ -1,12 +1,12 @@
 #pragma once
-#include "ecs_entity.hpp"
+#include "ecs_world_context_holder.hpp"
 
 namespace ecs
 {
 	//- manages all entities for a given world. Note that managed world is not necessarily the current active one.
 	//- here we can execute all kind of entity related actions within our world.
 	//------------------------------------------------------------------------------------------------------------------------
-	class centity_manager final
+	class centity_manager final : public iworld_context_holder
 	{
 	public:
 		centity_manager(flecs::world& w);
@@ -21,12 +21,7 @@ namespace ecs
 		const vector_t<flecs::entity>& entities() const;
 
 	private:
-		flecs::world& m_managed_world;
 		vector_t<flecs::entity> m_entities;
-
-	private:
-		flecs::world& w() { return m_managed_world; }
-		const flecs::world& w() const { return m_managed_world; }
 	};
 
 } //- ecs

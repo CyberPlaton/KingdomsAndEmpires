@@ -20,6 +20,7 @@ namespace engine
 		engine_run_result_failed_parsing_invalid_config,
 		engine_run_result_failed_starting_spritemancer,
 		engine_run_result_failed_registering_services,
+		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
 	};
 
@@ -29,12 +30,36 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	class cengine final : core::cnon_copyable
 	{
+	private:
+		class clayers
+		{
+		public:
+			struct sconfig
+			{
+				vector_t<std::string> m_layers;
+			};
+
+			void init();
+			void shutdown();
+			void on_update(float dt);
+			void on_world_render();
+			void on_ui_render();
+			void on_post_update(float dt);
+
+			vector_t<rttr::method> m_layer_update;
+			vector_t<rttr::method> m_layer_world_render;
+			vector_t<rttr::method> m_layer_ui_render;
+			vector_t<rttr::method> m_layer_post_update;
+			vector_t<rttr::method> m_layer_shutdown;
+			vector_t<rttr::method> m_layer_init;
+		};
+
 	public:
 		struct sconfig
 		{
 			sm::cwindow::sconfig m_window_cfg;
 			cservice_manager::sconfig m_service_cfg;
-			vector_t<std::string> m_layer_cfg;
+			clayers::sconfig m_layer_cfg;
 
 			RTTR_ENABLE();
 		};
@@ -47,24 +72,8 @@ namespace engine
 		engine_run_result configure(const core::cpath& cfg, int argc = 0, char* argv[] = {});
 		engine_run_result run();
 
-		bool push_layer(const std::string& name);
-
 	private:
 		cengine() = default;
-
-		class clayers
-		{
-		public:
-			void on_update(float dt);
-			void on_world_render();
-			void on_ui_render();
-			void on_post_update(float dt);
-
-			vector_t<rttr::method> m_layer_update;
-			vector_t<rttr::method> m_layer_world_render;
-			vector_t<rttr::method> m_layer_ui_render;
-			vector_t<rttr::method> m_layer_post_update;
-		};
 
 	private:
 		sconfig m_config;
@@ -73,6 +82,7 @@ namespace engine
 
 		void handle_arguments(argparse::ArgumentParser& args, int argc, char* argv[]);
 		void register_services(argparse::ArgumentParser& args);
+		bool init_layers(const clayers::sconfig& cfg);
 	};
 
 } //- engine

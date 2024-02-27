@@ -1,50 +1,67 @@
-#include "ecs_entity_manager.hpp"
+#include "editor_dock_system.hpp"
 
-namespace ecs
+namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	centity_manager::centity_manager(flecs::world& w) :
-		iworld_context_holder(w)
+	void cdock_system::pop_back()
 	{
+		auto dock = m_docks.back();
+
+		dock->shutdown();
+
+		m_docks.pop_back();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	centity_manager::~centity_manager()
+	void cdock_system::pop_front()
 	{
+		auto dock = m_docks.front();
 
+		dock->shutdown();
+
+		m_docks.pop_front();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity centity_manager::create_entity()
+	void cdock_system::on_update(float dt)
 	{
-		return create_entity(core::cuuid{});
+		for (auto& d : cdock_system::instance().docks())
+		{
+			d->on_update(dt);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity centity_manager::create_entity(const core::cuuid& uuid)
+	void cdock_system::on_world_render()
 	{
-		return create_entity(uuid.string().c_str());
+		for (auto& d : cdock_system::instance().docks())
+		{
+			d->on_world_render();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity centity_manager::create_entity(stringview_t uuid)
+	void cdock_system::on_ui_render()
 	{
-		//- create runtime ecs entity uniquely identifiable by uuid
-		auto e = world().entity(uuid);
-
-		return m_entities.emplace_back(e);
+		for (auto& d : cdock_system::instance().docks())
+		{
+			d->on_ui_render();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity centity_manager::entity(const core::cuuid& uuid) const
+	void cdock_system::on_post_update(float dt)
 	{
-		return world().lookup(uuid.string().c_str());
+		for (auto& d : cdock_system::instance().docks())
+		{
+			d->on_post_update(dt);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	const vector_t<flecs::entity>& centity_manager::entities() const
+	std::deque<ref_t<editor::clayer_base>>& cdock_system::docks()
 	{
-		return m_entities;
+		return m_docks;
 	}
 
-} //- ecs
+} //- editor

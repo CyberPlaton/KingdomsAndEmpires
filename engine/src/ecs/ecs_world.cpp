@@ -16,7 +16,6 @@ namespace ecs
 	cworld::cworld(stringview_t name) :
 		m_name(name),
 		m_entity_manager(m_world),
-		m_system_manager(m_world),
 		m_module_manager(m_world),
 		m_component_manager(m_world),
 		m_query_manager(m_world),
@@ -154,7 +153,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::process_queries()
 	{
-		for (auto* query = querym().fetch(); query != nullptr; query = querym().fetch())
+		for (auto* query = qm().fetch(); query != nullptr; query = qm().fetch())
 		{
 			//- consider using 'unlikely' here, or just consider invalid queries as working
 			if (query->type() == query_type_none ||
@@ -204,7 +203,7 @@ namespace ecs
 			query->finish();
 		}
 
-		querym().tick();
+		qm().tick();
 
 		m_master_query_type = query_type_none;
 		m_master_query_result = sworld_query{};
@@ -347,7 +346,7 @@ namespace ecs
 		json[C_ENTITIES_PROP] = nlohmann::json::array();
 
 		auto i = 0;
-		for (const auto& e : enttm().entities())
+		for (const auto& e : em().entities())
 		{
 			serialize_entity(e, json[C_ENTITIES_PROP][i++]);
 		}
