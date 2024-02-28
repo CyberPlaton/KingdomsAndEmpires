@@ -60,6 +60,28 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	if (engine::cengine::instance().configure(cfg/*"config.json"*/) == engine::engine_run_result_ok)
 	{
+		ecs::cworld_manager::instance().create("World");
+
+		auto& w = ecs::cworld_manager::instance().active();
+
+		w.use_threads(2);
+
+		//- import module with required components
+		w.mm().import_module<module_example::cmy_second_module>();
+
+		//- create several entities for testing
+		auto walther = w.em().create_entity();
+		auto adolf = w.em().create_entity();
+		auto manfred = w.em().create_entity();
+		auto hans = w.em().create_entity();
+		auto peter = w.em().create_entity();
+
+		walther.add<module_example::stargeting_component>();
+		adolf.add<module_example::stargeting_component>();
+		manfred.add<module_example::stargeting_component>();
+		hans.add<module_example::stargeting_component>();
+		peter.add<module_example::stargeting_component>();
+
 		engine::cengine::instance().run();
 	}
 	return 0;

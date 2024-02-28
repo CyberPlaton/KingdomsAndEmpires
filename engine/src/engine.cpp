@@ -152,8 +152,6 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	engine_run_result cengine::run()
 	{
-		ZoneScoped;
-
 		if (m_result != engine_run_result_ok)
 		{
 			return m_result;
@@ -170,38 +168,54 @@ namespace engine
 
 			//- TODO: implement ctimestep class for variable or fixed delta time
 			//- update
-			cservice_manager::on_update(0.016f);
+			{
+				//ZoneScopedN("Update");
 
-			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_update);
+				cservice_manager::on_update(0.016f);
 
-			m_layers.on_update(0.016f);
+				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_update);
+
+				m_layers.on_update(0.016f);
+			}
 
 			//- world space rendering
-			auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
+			{
+				//ZoneScopedN("World Frame");
 
-			sm::begin_drawing(camera_manager->active_camera());
+				auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
 
-			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_world_render);
+				sm::begin_drawing(camera_manager->active_camera());
 
-			m_layers.on_world_render();
+				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_world_render);
 
-			sm::end_frame();
+				m_layers.on_world_render();
+
+				sm::end_frame();
+			}
 
 			//- ui (screen space) rendering
-			sm::ui_frame();
+			{
+				//ZoneScopedN("UI Frame");
 
-			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_ui_render);
+				sm::ui_frame();
 
-			m_layers.on_ui_render();
+				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_ui_render);
 
-			ImGui::ShowDemoWindow();
+				m_layers.on_ui_render();
 
-			sm::end_ui_frame();
+				ImGui::ShowDemoWindow();
 
-			sm::end_drawing();
+				sm::end_ui_frame();
+
+				sm::end_drawing();
+			}
 
 			//- post update with fixed timestep
-			ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_post_update);
+			{
+				//ZoneScopedN("Post Update");
+
+				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_post_update);
+			}
 		}
 
 		m_layers.shutdown();

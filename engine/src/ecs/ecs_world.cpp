@@ -124,6 +124,8 @@ namespace ecs
 		{
 		case system_running_phase_on_update:
 		{
+			ecs_frame_begin(world(), dt);
+
 			m_world_update_system.run(dt);
 			break;
 		}
@@ -140,6 +142,8 @@ namespace ecs
 		case system_running_phase_on_post_update:
 		{
 			m_world_post_update_system.run(dt);
+
+			ecs_frame_end(world());
 			break;
 		}
 		default:
@@ -147,6 +151,15 @@ namespace ecs
 			return;
 		}
 
+		//- TODO: to make flecs work multithreaded 'progress' is necessary, which in turn breaks our architecture.
+		//- what we need to refactor is moving away from runnables and towards flecs phases (flecs::Phase), where we
+		//- define a 'pipeline' from Update->WorldRender->UiRender->PostUpdate and a system instead of defining phase
+		//- as it is now defines it as: m_builder.add(flecs::Phase).depends_on(Update) which will make it run on update tick.
+		//-
+		//- Additionally, spritemancer has to be refactored as a system or module. So that we can control when is sm::begin_drawing() etc
+		//- called and know what happens next. (if not system then see flecs tasks, they do not need any components to match)
+		//-
+		//- world().progress(dt);
 
 		//- process any queries, they will be available for systems on next tick,
 		//- also clearup memory for already taken and processed queries.

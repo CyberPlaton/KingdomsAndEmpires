@@ -7,7 +7,7 @@ namespace module_example
 	struct stargeting_component : public ecs::icomponent
 	{
 		static inline constexpr auto C_TARGET_COOLDOWN_INVALID = -100.0f;
-		static inline constexpr auto C_TARGET_COOLDOWN_TIMER = 3.0f;
+		static inline constexpr auto C_TARGET_COOLDOWN_TIMER = 5.0f;
 
 		DECLARE_COMPONENT(stargeting_component);
 
