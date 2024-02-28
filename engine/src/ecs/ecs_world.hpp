@@ -26,6 +26,9 @@ namespace ecs
 		bool load(const core::cpath& path);
 		void save(const core::cpath& path);
 
+		void use_threads(unsigned count);
+		unsigned used_threads() const;
+
 		const flecs::world& world() const { return m_world; }
 		flecs::world& world() { return m_world; }
 
@@ -75,6 +78,8 @@ namespace ecs
 		query_type m_master_query_type;
 		unsigned m_master_query_key;
 		sworld_query m_master_query_result;
+
+		unsigned m_used_threads;
 
 	private:
 		void deserialize_entity(const simdjson::dom::object& json);

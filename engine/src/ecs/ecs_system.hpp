@@ -81,6 +81,11 @@ namespace ecs
 			kind(world().lookup(kind_entity_name.c_str()));
 		}
 
+		void multithreaded()
+		{
+			m_builder.multi_threaded();
+		}
+
 		void run_on(int bitwise_phase)
 		{
 			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_update))

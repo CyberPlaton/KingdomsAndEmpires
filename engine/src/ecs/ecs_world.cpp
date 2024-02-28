@@ -19,8 +19,11 @@ namespace ecs
 		m_module_manager(m_world),
 		m_component_manager(m_world),
 		m_query_manager(m_world),
-		m_singleton_manager(m_world)
+		m_singleton_manager(m_world),
+		m_used_threads(1)
 	{
+		use_threads(m_used_threads);
+
 		//- setup phases
 		m_world_update_system = world().system<ssystem_phases::OnUpdate>("OnUpdate")
 			.run([](flecs::iter_t* it)
@@ -352,6 +355,19 @@ namespace ecs
 		}
 
 		core::cfile::save_text(path.view(), json.dump(4));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::use_threads(unsigned count)
+	{
+		m_used_threads = count;
+		ecs_set_threads(world(), SCAST(int32_t, m_used_threads));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned cworld::used_threads() const
+	{
+		return m_used_threads;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
