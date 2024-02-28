@@ -22,6 +22,7 @@ namespace stl = std;
 #include <rttr.h>
 #include <nlohmann.h>
 #include <../src/simdjson.h>
+#include <../src/tracy.hpp>
 #include <cstddef>
 #include <memory>
 #include <filesystem>

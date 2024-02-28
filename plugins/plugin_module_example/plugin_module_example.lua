@@ -7,7 +7,7 @@ function plugin_module_example()
 					{"plugin_logging", "test", "test2"},
 					{"rttr", "EASTL", "raylib", "spdlog", "core", "mimalloc", "flecs"},
 					{},
-					{"nlohmann", "magic_enum", "taskflow", "argparse", "glm"},
+					{"nlohmann", "magic_enum", "taskflow", "argparse", "glm", "Tracy"},
 					{},
 					true)
 end

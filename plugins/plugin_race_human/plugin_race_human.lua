@@ -7,7 +7,7 @@ function plugin_race_human()
 					{"plugin_logging", "plugin_kingdoms_core"},
 					{"rttr", "EASTL", "spdlog", "core", "mimalloc", "flecs"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "raylib"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "raylib", "Tracy"},
 					{},
 					true)
 end

@@ -81,9 +81,18 @@ namespace ecs
 			kind(world().lookup(kind_entity_name.c_str()));
 		}
 
+		//- Marks the system as available for threading
 		void multithreaded()
 		{
 			m_builder.multi_threaded();
+		}
+
+		//- Changes made by this system are visible immediately. Normally,
+		//- any structural changes are inserted into a command buffer and synced
+		//- before next tick. Enabling this makes the system single threaded.
+		void immediate()
+		{
+			m_builder.no_readonly();
 		}
 
 		void run_on(int bitwise_phase)

@@ -9,7 +9,7 @@ function engine_launcher()
 					{"Lua", "EASTL", "spdlog", "rttr", "core", "mimalloc", "flecs"},
 					{"test", "test2", "plugin_logging", "plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib", "Tracy"},
 					{}
 					)
 end

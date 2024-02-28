@@ -11,7 +11,7 @@ function kingdoms_editor()
 					"plugin_camera_system", "plugin_race_human", "plugin_kingdoms_and_empires",
 					"plugin_kingdoms_editor"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib", "Tracy"},
 					{}
 					)
 end

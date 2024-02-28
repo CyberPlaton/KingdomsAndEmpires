@@ -152,6 +152,8 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	engine_run_result cengine::run()
 	{
+		ZoneScoped;
+
 		if (m_result != engine_run_result_ok)
 		{
 			return m_result;

@@ -8,7 +8,7 @@ function engine()
 		{"rttr", "Lua", "EASTL", "spdlog", "core", "mimalloc", "raylib", "flecs"}, -- thirdparty_deps
 		"c++",
 		{}, -- plugin_headeronly_deps
-		{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge"}, -- thirdparty_headeronly_deps
+		{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"}, -- thirdparty_headeronly_deps
 		{"src/physics"}) -- additional_includes
 end
 engine()

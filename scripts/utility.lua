@@ -2,12 +2,16 @@
 function set_basic_defines()
 	filter{"system:windows"}
 		buildoptions{"/bigobj"}
+		editandcontinue "Off"
 	filter{"configurations:debug"}
-		defines{"DEBUG=1"}
+		defines{"DEBUG=1", "TRACY_ENABLE"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1"}
+		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE"}
 	filter{}
-	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"}
+	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
+			"_CRT_SECURE_NO_WARNINGS",
+			"__STDC_FORMAT_MACROS",
+			"_CRT_SECURE_NO_DEPRECATE"}
 end
 
 ------------------------------------------------------------------------------------------------------------------------

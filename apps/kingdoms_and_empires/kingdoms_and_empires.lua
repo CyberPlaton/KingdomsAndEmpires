@@ -9,7 +9,7 @@ function kingdoms_and_empires()
 					{"Lua", "EASTL", "spdlog", "rttr", "core", "mimalloc", "flecs"},
 					{"test", "test2", "plugin_logging", "plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human", "plugin_kingdoms_and_empires"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib", "Tracy"},
 					{}
 					)
 end
