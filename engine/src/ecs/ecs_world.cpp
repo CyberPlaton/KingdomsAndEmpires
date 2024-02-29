@@ -15,75 +15,31 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	cworld::cworld(stringview_t name) :
 		m_name(name),
-		m_entity_manager(m_world),
-		m_module_manager(m_world),
-		m_component_manager(m_world),
-		m_query_manager(m_world),
-		m_singleton_manager(m_world),
+		m_entity_manager(world()),
+		m_module_manager(world()),
+		m_component_manager(world()),
+		m_query_manager(world()),
+		m_singleton_manager(world()),
 		m_used_threads(1)
 	{
 		use_threads(m_used_threads);
 
 		//- setup phases
-		m_world_update_system = world().system<ssystem_phases::OnUpdate>("OnUpdate")
-			.run([](flecs::iter_t* it)
-				{
-					while (ecs_iter_next(it)) {
-						it->callback(it);
-					}
-				})
-			.each([&](flecs::entity e, ssystem_phases::OnUpdate)
-			{
-					flecs::system s = flecs::system(world(), e);
+		auto* phases = world().template get_mut<ssystem_phases>();
+		auto previous_phase = flecs::OnUpdate;
+		for (auto i = 0u; i < ssystem_phases::C_COUNT; ++i)
+		{
+			auto p = world().entity();
 
-					s.run(m_world_tick_dt);
-			});
+			p.add(flecs::Phase).depends_on(previous_phase);
 
-		m_world_render_system = world().system<ssystem_phases::OnWorldRender>("OnWorldRender")
-			.run([](flecs::iter_t* it)
-				{
-					while (ecs_iter_next(it)) {
-						it->callback(it);
-					}
-				})
-			.each([&](flecs::entity e, ssystem_phases::OnWorldRender)
-				{
-					flecs::system s = flecs::system(world(), e);
+			phases->m_phases.push_back(p);
 
-					s.run(m_world_tick_dt);
-				});
-
-		m_world_ui_render_system = world().system<ssystem_phases::OnUiRender>("OnUiRender")
-			.run([](flecs::iter_t* it)
-				{
-					while (ecs_iter_next(it)) {
-						it->callback(it);
-					}
-				})
-			.each([&](flecs::entity e, ssystem_phases::OnUiRender)
-				{
-					flecs::system s = flecs::system(world(), e);
-
-					s.run(m_world_tick_dt);
-				});
-
-		m_world_post_update_system = world().system<ssystem_phases::OnPostUpdate>("OnPostUpdate")
-			.run([](flecs::iter_t* it)
-				{
-					while (ecs_iter_next(it)) {
-						it->callback(it);
-					}
-				})
-			.each([&](flecs::entity e, ssystem_phases::OnPostUpdate)
-				{
-					flecs::system s = flecs::system(world(), e);
-
-					s.run(m_world_tick_fixed_dt);
-				});
-
+			previous_phase = p;
+		}
 
 		//- setup observers
-		m_world.observer<stransform, sidentifier>()
+		world().observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
 			.event(flecs::OnSet)
@@ -119,38 +75,6 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::tick(float dt, system_running_phase p)
 	{
-		m_world_tick_dt = dt;
-		switch (p)
-		{
-		case system_running_phase_on_update:
-		{
-			ecs_frame_begin(world(), dt);
-
-			m_world_update_system.run(dt);
-			break;
-		}
-		case system_running_phase_on_world_render:
-		{
-			m_world_render_system.run(dt);
-			break;
-		}
-		case system_running_phase_on_ui_render:
-		{
-			m_world_ui_render_system.run(dt);
-			break;
-		}
-		case system_running_phase_on_post_update:
-		{
-			m_world_post_update_system.run(dt);
-
-			ecs_frame_end(world());
-			break;
-		}
-		default:
-		case system_running_phase_none:
-			return;
-		}
-
 		//- TODO: to make flecs work multithreaded 'progress' is necessary, which in turn breaks our architecture.
 		//- what we need to refactor is moving away from runnables and towards flecs phases (flecs::Phase), where we
 		//- define a 'pipeline' from Update->WorldRender->UiRender->PostUpdate and a system instead of defining phase
@@ -159,7 +83,7 @@ namespace ecs
 		//- Additionally, spritemancer has to be refactored as a system or module. So that we can control when is sm::begin_drawing() etc
 		//- called and know what happens next. (if not system then see flecs tasks, they do not need any components to match)
 		//-
-		//- world().progress(dt);
+		world().progress(dt);
 
 		//- process any queries, they will be available for systems on next tick,
 		//- also clearup memory for already taken and processed queries.

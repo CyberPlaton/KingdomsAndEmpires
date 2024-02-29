@@ -12,7 +12,7 @@ namespace editor
 	{
 	public:
 		ctool(flecs::world& world, const std::string& name) :
-			ecs::csystem(world, name)
+			ecs::csystem<TComps...>(world, name)
 		{
 		}
 

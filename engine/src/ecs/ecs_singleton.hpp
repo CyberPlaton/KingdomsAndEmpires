@@ -68,10 +68,18 @@ namespace ecs
 	{
 		DECLARE_SINGLETON(ssystem_phases);
 
-		struct OnUpdate{};
-		struct OnWorldRender{};
-		struct OnUiRender{};
-		struct OnPostUpdate{};
+		inline static unsigned C_BEGIN_FRAME = 0;
+		inline static unsigned C_ON_UPDATE = 1;
+		inline static unsigned C_ON_WORLD_RENDER = 2;
+		inline static unsigned C_END_FRAME = 3;
+		inline static unsigned C_BEGIN_UI_FRAME = 4;
+		inline static unsigned C_ON_UI_RENDER = 5;
+		inline static unsigned C_END_UI_FRAME = 6;
+		inline static unsigned C_END_RENDER = 7;
+		inline static unsigned C_ON_POST_UPDATE = 8;
+		inline static unsigned C_COUNT = C_ON_POST_UPDATE + 1;
+
+		vector_t<flecs::entity> m_phases;
 
 		RTTR_ENABLE(isingleton);
 	};

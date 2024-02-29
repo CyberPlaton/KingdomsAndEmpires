@@ -87,7 +87,7 @@ namespace module_example
 				.add(flecs::Phase)
 				.depends_on(flecs::OnUpdate);
 
-			kind(update_phase);
+			run_after(update_phase);
 
 			build([&](flecs::entity e, stransform_component& tr)
 				{
@@ -127,7 +127,7 @@ namespace module_example
 			//- Note: another possibility should be to write:
 			//- kind("Transform Update Phase");
 			//- without the need to create a new phase as above.
-			kind("Replication Update Phase");
+			run_after("Replication Update Phase");
 
 			build([&](flecs::entity e, sreplicable_component& rep, const stransform_component& trans,
 				const sidentifier_component& id)

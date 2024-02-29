@@ -69,18 +69,6 @@ namespace ecs
 			TSystem system(world);
 		}
 
-		void kind(const flecs::entity& e)
-		{
-			m_builder.kind(e);
-		}
-
-		void kind(const std::string& kind_entity_name)
-		{
-			//- TODO: should we not have by default kind(flecs::OnUpdate) ?
-			//- and how does this all intertwine with out custom pipeline in engine for ecs world.
-			kind(world().lookup(kind_entity_name.c_str()));
-		}
-
 		//- Marks the system as available for threading
 		void multithreaded()
 		{
@@ -95,44 +83,63 @@ namespace ecs
 			m_builder.no_readonly();
 		}
 
-		void run_on(int bitwise_phase)
+		void run_on(system_running_phase p)
 		{
-			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_update))
-			{
-				m_builder.kind<ssystem_phases::OnUpdate>();
-				m_phase |= system_running_phase_on_update;
-			}
-			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_world_render))
-			{
-				m_builder.kind<ssystem_phases::OnWorldRender>();
-				m_phase |= system_running_phase_on_world_render;
-			}
-			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_ui_render))
-			{
-				m_builder.kind<ssystem_phases::OnUiRender>();
-				m_phase |= system_running_phase_on_ui_render;
-			}
-			if (algorithm::bit_on(bitwise_phase, system_running_phase_on_post_update))
-			{
-				m_builder.kind<ssystem_phases::OnPostUpdate>();
-				m_phase |= system_running_phase_on_post_update;
-			}
+			m_builder.kind(emplace_phase(p));
+		}
+
+		void run_after(flecs::entity e)
+		{
+			m_builder.kind(e);
+		}
+
+		void run_after(stringview_t name)
+		{
+			run_after(world().lookup(name));
 		}
 
 		template<typename TCallable>
 		void build(TCallable&& func)
 		{
-			if (m_phase == 0)
-			{
-				run_on(system_running_phase_on_update);
-			}
 			m_self = m_builder.each(func);
 		}
 
 	private:
 		flecs::system m_self;
 		flecs::system_builder<TComps...> m_builder;
-		int m_phase = 0;
+
+	private:
+		flecs::entity emplace_phase(system_running_phase p)
+		{
+			const auto* phases = world().template get<ssystem_phases>();
+
+			switch (p)
+			{
+			case system_running_phase::system_running_phase_on_update:
+			{
+				return phases->m_phases[ssystem_phases::C_ON_UPDATE];
+			}
+			case system_running_phase::system_running_phase_on_world_render:
+			{
+				return phases->m_phases[ssystem_phases::C_ON_WORLD_RENDER];
+			}
+			case system_running_phase::system_running_phase_on_ui_render:
+			{
+				return phases->m_phases[ssystem_phases::C_ON_UI_RENDER];
+			}
+			case system_running_phase::system_running_phase_on_post_update:
+			{
+				return phases->m_phases[ssystem_phases::C_ON_POST_UPDATE];
+			}
+			default:
+			case system_running_phase::system_running_phase_none:
+			{
+				CORE_ASSERT(false, "Invalid operation. Phase is not valid");
+				break;
+			}
+			}
+			return {};
+		}
 	};
 
 } //- ecs
