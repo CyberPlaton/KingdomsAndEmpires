@@ -322,7 +322,7 @@ namespace ecs
 		e.each([&](flecs::id c)
 			{
 				//- retrieve usable name of component without namespaces etc
-				std::string name = c.str();
+				std::string name = c.str().c_str();
 				core::string_utils::split(name, '.', names);
 
 				if (auto component_type = rttr::type::get_by_name(names[names.size() - 1]); component_type.is_valid())

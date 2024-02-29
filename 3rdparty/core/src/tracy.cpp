@@ -11,7 +11,7 @@
 
 // Define TRACY_ENABLE to enable profiler.
 #include "tracy.hpp"
-#include <tracy/common/TracySystem.cpp>
+#include <Tracy/common/TracySystem.cpp>
 
 #ifdef TRACY_ENABLE
 
@@ -19,32 +19,32 @@
 #  pragma warning(push, 0)
 #endif
 
-#include <tracy/common/tracy_lz4.cpp>
-#include <tracy/client/TracyProfiler.cpp>
-#include <tracy/client/TracyCallstack.cpp>
-#include <tracy/client/TracySysPower.cpp>
-#include <tracy/client/TracySysTime.cpp>
-#include <tracy/client/TracySysTrace.cpp>
-#include <tracy/common/TracySocket.cpp>
-#include <tracy/client/tracy_rpmalloc.cpp>
-#include <tracy/client/TracyDxt1.cpp>
-#include <tracy/client/TracyAlloc.cpp>
-#include <tracy/client/TracyOverride.cpp>
+#include <Tracy/common/tracy_lz4.cpp>
+#include <Tracy/client/TracyProfiler.cpp>
+#include <Tracy/client/TracyCallstack.cpp>
+#include <Tracy/client/TracySysPower.cpp>
+#include <Tracy/client/TracySysTime.cpp>
+#include <Tracy/client/TracySysTrace.cpp>
+#include <Tracy/common/TracySocket.cpp>
+#include <Tracy/client/tracy_rpmalloc.cpp>
+#include <Tracy/client/TracyDxt1.cpp>
+#include <Tracy/client/TracyAlloc.cpp>
+#include <Tracy/client/TracyOverride.cpp>
 
 #if TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 || TRACY_HAS_CALLSTACK == 6
-#  include <tracy/libbacktrace/alloc.cpp>
-#  include <tracy/libbacktrace/dwarf.cpp>
-#  include <tracy/libbacktrace/fileline.cpp>
-#  include <tracy/libbacktrace/mmapio.cpp>
-#  include <tracy/libbacktrace/posix.cpp>
-#  include <tracy/libbacktrace/sort.cpp>
-#  include <tracy/libbacktrace/state.cpp>
+#  include <Tracy/libbacktrace/alloc.cpp>
+#  include <Tracy/libbacktrace/dwarf.cpp>
+#  include <Tracy/libbacktrace/fileline.cpp>
+#  include <Tracy/libbacktrace/mmapio.cpp>
+#  include <Tracy/libbacktrace/posix.cpp>
+#  include <Tracy/libbacktrace/sort.cpp>
+#  include <Tracy/libbacktrace/state.cpp>
 #  if TRACY_HAS_CALLSTACK == 4
-#    include <tracy/libbacktrace/macho.cpp>
+#    include <Tracy/libbacktrace/macho.cpp>
 #  else
-#    include <tracy/libbacktrace/elf.cpp>
+#    include <Tracy/libbacktrace/elf.cpp>
 #  endif
-#  include <tracy/common/TracyStackFrames.cpp>
+#  include <Tracy/common/TracyStackFrames.cpp>
 #endif
 
 #ifdef _MSC_VER

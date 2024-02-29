@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	engine::cengine::sconfig cfg;
 	cfg.m_service_cfg.m_services.emplace_back("ccamera_manager");
 
-	cfg.m_layer_cfg.emplace_back("cgame");
+	cfg.m_layer_cfg.m_layers.emplace_back("cgame");
 
 	cfg.m_window_cfg.m_title = "Kingdoms & Empires";
 	cfg.m_window_cfg.m_width = 1280;
