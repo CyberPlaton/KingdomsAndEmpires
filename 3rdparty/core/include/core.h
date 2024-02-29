@@ -14,7 +14,9 @@ namespace stl = eastl;
 #include <queue>
 namespace stl = std;
 #endif
+#include <new>
 #include <mimalloc.h>
+#include <mimalloc/track.h>
 #include <glm.h>
 #include <magic_enum.h>
 #include <taskflow.h>
@@ -31,7 +33,6 @@ namespace stl = std;
 #include <future>
 #include <chrono>
 #include <any>
-#include <new>
 #include <fstream>
 #include <string>
 
@@ -63,6 +64,16 @@ namespace stl = std;
 #define CORE_CALLOC(n, size)	mi_calloc(n, size)
 #define CORE_REALLOC(p, size)	mi_realloc(p, size)
 #define CORE_FREE(p)			mi_free(p)
+
+#if defined(core_EXPORTS)
+	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
+void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
+void operator delete(void* p){TracyFree(p); CORE_FREE(p); }
+	#elif !CORE_PLATFORM_WINDOWS
+void* operator new(unsigned long long n) { return CORE_MALLOC(n); }
+void operator delete(void* p) { CORE_FREE(p); }
+	#endif
+#endif
 
 template<class T>
 using ref_t = std::shared_ptr<T>;
@@ -612,7 +623,7 @@ namespace core
 		cuuid(const cuuid& other);
 		~cuuid() = default;
 
-		std::string string() const;
+		std::string string() const { return generate_string(); }
 		unsigned hash() const { return algorithm::hash(string().c_str()); }
 		bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
 		bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }

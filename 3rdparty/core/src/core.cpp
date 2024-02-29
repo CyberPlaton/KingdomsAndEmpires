@@ -1008,15 +1008,6 @@ namespace core
 		copy_from(other);
 	}
 
-	std::string cuuid::string() const
-	{
-		std::string out;
-
-		write_string(m_data, out);
-
-		return out;
-	}
-
 	//------------------------------------------------------------------------------------------------------------------------
 	void cuuid::generate(size_t seed)
 	{

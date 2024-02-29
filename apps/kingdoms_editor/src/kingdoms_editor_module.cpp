@@ -64,23 +64,30 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 		auto& w = ecs::cworld_manager::instance().active();
 
-		w.use_threads(2);
+		w.use_threads(4);
 
 		//- import module with required components
 		w.mm().import_module<module_example::cmy_second_module>();
 
-		//- create several entities for testing
-		auto walther = w.em().create_entity();
-		auto adolf = w.em().create_entity();
-		auto manfred = w.em().create_entity();
-		auto hans = w.em().create_entity();
-		auto peter = w.em().create_entity();
+		for (auto i = 0u; i < 5000; ++i)
+		{
+			auto e = w.em().create_entity();
 
-		walther.add<module_example::stargeting_component>();
-		adolf.add<module_example::stargeting_component>();
-		manfred.add<module_example::stargeting_component>();
-		hans.add<module_example::stargeting_component>();
-		peter.add<module_example::stargeting_component>();
+			e.add<module_example::stargeting_component>();
+		}
+
+		//- create several entities for testing
+// 		auto walther = w.em().create_entity();
+// 		auto adolf = w.em().create_entity();
+// 		auto manfred = w.em().create_entity();
+// 		auto hans = w.em().create_entity();
+// 		auto peter = w.em().create_entity();
+// 
+// 		walther.add<module_example::stargeting_component>();
+// 		adolf.add<module_example::stargeting_component>();
+// 		manfred.add<module_example::stargeting_component>();
+// 		hans.add<module_example::stargeting_component>();
+// 		peter.add<module_example::stargeting_component>();
 
 		engine::cengine::instance().run();
 	}
