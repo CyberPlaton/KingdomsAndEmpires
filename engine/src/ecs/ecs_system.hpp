@@ -58,7 +58,7 @@ namespace ecs
 
 	protected:
 		template<class TSystem>
-		void depends_on(flecs::world& world);
+		void depends_on();
 
 		//- Marks the system as available for threading. Note that a system using ImGui UI
 		//- is not eligible for multithreading.
@@ -89,10 +89,10 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... TComps>
 	template<class TSystem>
-	void csystem<TComps...>::depends_on(flecs::world& world)
+	void csystem<TComps...>::depends_on()
 	{
 		//- Note: registers a system we depend on AFTER we are registered to flecs
-		TSystem system(world);
+		TSystem system(world());
 	}
 
 	//- Marks the system as available for threading. Note that a system using ImGui UI
@@ -180,6 +180,112 @@ namespace ecs
 	void csystem<TComps...>::build(TCallable&& func)
 	{
 		m_self = m_builder.each(func);
+	}
+
+	//- A free system is similar to a normal system, only that it does not match any components and thus no entities.
+	//- If entities are required they can be retrieved through the world or a query.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cfree_system : public isystem,
+		public iworld_context_holder
+	{
+	public:
+		using system_function_prototype_t = std::function<void(flecs::iter&)>;
+
+		cfree_system(flecs::world& world, const std::string& name) :
+			iworld_context_holder(world),
+			m_builder(world.system(name.c_str()))
+		{
+		}
+		~cfree_system() = default;
+
+		flecs::entity self() const override final { return m_self; }
+		stringview_t name() const override final { return m_self.name().c_str(); }
+
+		template<class TSystem>
+		void depends_on();
+
+		void run_on(system_running_phase p);
+
+		void run_after(flecs::entity e);
+
+		void run_after(stringview_t name);
+
+		template<typename TCallable>
+		void build(TCallable&& callback);
+
+	private:
+		flecs::system m_self;
+		system_running_phase m_phase;
+		flecs::system_builder<> m_builder;
+	};
+
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TCallable>
+	void cfree_system::build(TCallable&& callback)
+	{
+		m_self = m_builder.iter(callback);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TSystem>
+	void cfree_system::depends_on()
+	{
+		//- Note: registers a system we depend on AFTER we are registered to flecs
+		TSystem system(world());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfree_system::run_on(system_running_phase p)
+	{
+		const auto* phases = world().template get<ssystem_phases>();
+
+		switch (p)
+		{
+		case system_running_phase_on_update:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UPDATE])
+				.kind<ssystem_phases::son_update>();
+			break;
+		}
+		case system_running_phase_on_world_render:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_WORLD_RENDER])
+				.kind<ssystem_phases::son_world_render>();
+			break;
+		}
+		case system_running_phase_on_ui_render:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UI_RENDER])
+				.kind<ssystem_phases::son_ui_render>();
+			break;
+		}
+		case system_running_phase_on_post_update:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_POST_UPDATE])
+				.kind<ssystem_phases::son_post_update>();
+			break;
+		}
+		default:
+		case system_running_phase_none:
+		{
+			CORE_ASSERT(false, "Invalid operation. Phase is not valid");
+			break;
+		}
+		}
+		m_phase = p;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfree_system::run_after(flecs::entity e)
+	{
+		m_builder.kind(e);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfree_system::run_after(stringview_t name)
+	{
+		run_after(world().lookup(name));
 	}
 
 } //- ecs

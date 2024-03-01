@@ -19,4 +19,17 @@ namespace editor
 	private:
 	};
 
+	//- Base visualizer class. Does not require a component as input and runs once per world tick.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cfree_visualizer : public ecs::cfree_system
+	{
+	public:
+		cfree_visualizer(flecs::world& world, const std::string& name) :
+			ecs::cfree_system(world, name)
+		{
+		}
+
+	private:
+	};
+
 } //- editor
