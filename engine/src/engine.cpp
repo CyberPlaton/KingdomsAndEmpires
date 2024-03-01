@@ -157,6 +157,8 @@ namespace engine
 			return m_result;
 		}
 
+		const auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
+
 		//- enter engine main loop
 		while (!raylib::WindowShouldClose())
 		{
@@ -173,6 +175,8 @@ namespace engine
 
 				cservice_manager::on_update(0.016f);
 
+				ecs::cworld_manager::instance().prepare(camera_manager->active_camera()->world_visible_area());
+
 				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_update);
 
 				m_layers.on_update(0.016f);
@@ -181,8 +185,6 @@ namespace engine
 			//- world space rendering
 			{
 				ZoneScopedN("system_running_phase_on_world_render");
-
-				auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
 
 				sm::begin_drawing(camera_manager->active_camera());
 

@@ -21,6 +21,8 @@ namespace ecs
 
 
 		void tick(float dt, system_running_phase p);
+		[[nodiscard]] decltype(auto) visible_entities() const {return m_visible_entities;}
+		void prepare(const core::srect& area);
 
 		flecs::snapshot snapshot() const;
 
@@ -79,6 +81,8 @@ namespace ecs
 		query_type m_master_query_type;
 		unsigned m_master_query_key;
 		sworld_query m_master_query_result;
+
+		vector_t<flecs::entity> m_visible_entities;
 
 		unsigned m_used_threads;
 

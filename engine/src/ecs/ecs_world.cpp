@@ -142,6 +142,18 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::prepare(const core::srect& area)
+	{
+		auto aabb = physics::aabb(area);
+		m_master_query_type = query_type_entity_array;
+		m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
+
+		Query(this, aabb);
+
+		m_visible_entities = std::move(m_master_query_result.m_entity_array);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::process_queries()
 	{
 		for (auto* query = qm().fetch(); query != nullptr; query = qm().fetch())

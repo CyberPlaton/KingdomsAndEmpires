@@ -5,6 +5,59 @@
 
 namespace ecs
 {
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfree_system::run_on(system_running_phase p)
+	{
+		const auto* phases = world().template get<ssystem_phases>();
+
+		switch (p)
+		{
+		case system_running_phase_on_update:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UPDATE])
+				.kind<ssystem_phases::son_update>();
+			break;
+		}
+		case system_running_phase_on_world_render:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_WORLD_RENDER])
+				.kind<ssystem_phases::son_world_render>();
+			break;
+		}
+		case system_running_phase_on_ui_render:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UI_RENDER])
+				.kind<ssystem_phases::son_ui_render>();
+			break;
+		}
+		case system_running_phase_on_post_update:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_POST_UPDATE])
+				.kind<ssystem_phases::son_post_update>();
+			break;
+		}
+		default:
+		case system_running_phase_none:
+		{
+			CORE_ASSERT(false, "Invalid operation. Phase is not valid");
+			break;
+		}
+		}
+		m_phase = p;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfree_system::run_after(flecs::entity e)
+	{
+		m_builder.kind(e);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cfree_system::run_after(stringview_t name)
+	{
+		run_after(world().lookup(name));
+	}
+
 } //- ecs
 
 namespace ecs::example

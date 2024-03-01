@@ -154,7 +154,7 @@ namespace module_example
 			ecs::csystem<sreplicable_component, stransform_component, sidentifier_component>
 			(w, "Replication System")
 		{
-			depends_on<cexample_transform_system>(w);
+			depends_on<cexample_transform_system>();
 
 			auto update_phase = w.entity("Replication Update Phase")
 				.add(flecs::Phase)
