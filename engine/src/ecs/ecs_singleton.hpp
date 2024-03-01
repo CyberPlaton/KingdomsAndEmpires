@@ -68,6 +68,11 @@ namespace ecs
 	{
 		DECLARE_SINGLETON(ssystem_phases);
 
+		struct son_update{};
+		struct son_world_render {};
+		struct son_ui_render {};
+		struct son_post_update {};
+
 		inline static unsigned C_BEGIN_FRAME = 0;
 		inline static unsigned C_ON_UPDATE = 1;
 		inline static unsigned C_ON_WORLD_RENDER = 2;

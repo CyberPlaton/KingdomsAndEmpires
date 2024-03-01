@@ -50,11 +50,6 @@ namespace ecs
 			iworld_context_holder(world),
 			m_builder(world.system<TComps...>(name.c_str()))
 		{
-			m_builder.run([](flecs::iter_t* it) {
-					while (ecs_iter_next(it)) {
-						it->callback(it);
-					}
-				});
 		}
 		~csystem() = default;
 
@@ -63,83 +58,128 @@ namespace ecs
 
 	protected:
 		template<class TSystem>
-		void depends_on(flecs::world& world)
-		{
-			//- Note: registers a system we depend on AFTER we are registered to flecs
-			TSystem system(world);
-		}
+		void depends_on(flecs::world& world);
 
-		//- Marks the system as available for threading
-		void multithreaded()
-		{
-			m_builder.multi_threaded();
-		}
+		//- Marks the system as available for threading. Note that a system using ImGui UI
+		//- is not eligible for multithreading.
+		void multithreaded();
 
 		//- Changes made by this system are visible immediately. Normally,
 		//- any structural changes are inserted into a command buffer and synced
 		//- before next tick. Enabling this makes the system single threaded.
-		void immediate()
-		{
-			m_builder.no_readonly();
-		}
+		//- Note: Structural changes are for example adding or removing components from an entity.
+		void immediate();
 
-		void run_on(system_running_phase p)
-		{
-			m_builder.kind(emplace_phase(p));
-		}
+		void run_on(system_running_phase p);
 
-		void run_after(flecs::entity e)
-		{
-			m_builder.kind(e);
-		}
+		void run_after(flecs::entity e);
 
-		void run_after(stringview_t name)
-		{
-			run_after(world().lookup(name));
-		}
+		void run_after(stringview_t name);
 
 		template<typename TCallable>
-		void build(TCallable&& func)
-		{
-			m_self = m_builder.each(func);
-		}
+		void build(TCallable&& func);
 
 	private:
 		flecs::system m_self;
 		flecs::system_builder<TComps...> m_builder;
-
-	private:
-		flecs::entity emplace_phase(system_running_phase p)
-		{
-			const auto* phases = world().template get<ssystem_phases>();
-
-			switch (p)
-			{
-			case system_running_phase::system_running_phase_on_update:
-			{
-				return phases->m_phases[ssystem_phases::C_ON_UPDATE];
-			}
-			case system_running_phase::system_running_phase_on_world_render:
-			{
-				return phases->m_phases[ssystem_phases::C_ON_WORLD_RENDER];
-			}
-			case system_running_phase::system_running_phase_on_ui_render:
-			{
-				return phases->m_phases[ssystem_phases::C_ON_UI_RENDER];
-			}
-			case system_running_phase::system_running_phase_on_post_update:
-			{
-				return phases->m_phases[ssystem_phases::C_ON_POST_UPDATE];
-			}
-			default:
-			case system_running_phase::system_running_phase_none:
-			{
-				CORE_ASSERT(false, "Invalid operation. Phase is not valid");
-				break;
-			}
-			}
-			return {};
-		}
+		system_running_phase m_phase;
+		bool m_multithreaded = false;
 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	template<class TSystem>
+	void csystem<TComps...>::depends_on(flecs::world& world)
+	{
+		//- Note: registers a system we depend on AFTER we are registered to flecs
+		TSystem system(world);
+	}
+
+	//- Marks the system as available for threading. Note that a system using ImGui UI
+	//- is not eligible for multithreading.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	void csystem<TComps...>::multithreaded()
+	{
+		CORE_ASSERT(m_phase != system_running_phase_on_ui_render,
+			"Invalid operation. A UI system can not be multithreaded");
+
+		m_builder.multi_threaded();
+		m_multithreaded = true;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	void csystem<TComps...>::immediate()
+	{
+		m_builder.no_readonly();
+		m_multithreaded = false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	void csystem<TComps...>::run_on(system_running_phase p)
+	{
+		const auto* phases = world().template get<ssystem_phases>();
+
+		switch (p)
+		{
+		case system_running_phase_on_update:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UPDATE])
+				.kind<ssystem_phases::son_update>();
+			break;
+		}
+		case system_running_phase_on_world_render:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_WORLD_RENDER])
+				.kind<ssystem_phases::son_world_render>();
+			break;
+		}
+		case system_running_phase_on_ui_render:
+		{
+			CORE_ASSERT(!m_multithreaded, "Invalid operation. A UI system can not be multithreaded");
+
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UI_RENDER])
+				.kind<ssystem_phases::son_ui_render>();
+			break;
+		}
+		case system_running_phase_on_post_update:
+		{
+			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_POST_UPDATE])
+				.kind<ssystem_phases::son_post_update>();
+			break;
+		}
+		default:
+		case system_running_phase_none:
+		{
+			CORE_ASSERT(false, "Invalid operation. Phase is not valid");
+			break;
+		}
+		}
+		m_phase = p;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	void csystem<TComps...>::run_after(flecs::entity e)
+	{
+		m_builder.kind(e);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	void csystem<TComps...>::run_after(stringview_t name)
+	{
+		run_after(world().lookup(name));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	template<typename TCallable>
+	void csystem<TComps...>::build(TCallable&& func)
+	{
+		m_self = m_builder.each(func);
+	}
 
 } //- ecs

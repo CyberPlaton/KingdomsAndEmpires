@@ -169,7 +169,7 @@ namespace engine
 			//- TODO: implement ctimestep class for variable or fixed delta time
 			//- update
 			{
-				//ZoneScopedN("Update");
+				ZoneScopedN("system_running_phase_on_update");
 
 				cservice_manager::on_update(0.016f);
 
@@ -180,7 +180,7 @@ namespace engine
 
 			//- world space rendering
 			{
-				//ZoneScopedN("World Frame");
+				ZoneScopedN("system_running_phase_on_world_render");
 
 				auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
 
@@ -195,7 +195,7 @@ namespace engine
 
 			//- ui (screen space) rendering
 			{
-				//ZoneScopedN("UI Frame");
+				ZoneScopedN("system_running_phase_on_ui_render");
 
 				sm::ui_frame();
 
@@ -212,7 +212,7 @@ namespace engine
 
 			//- post update with fixed timestep
 			{
-				//ZoneScopedN("Post Update");
+				ZoneScopedN("system_running_phase_on_post_update");
 
 				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_post_update);
 			}

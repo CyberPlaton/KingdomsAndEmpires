@@ -147,6 +147,11 @@ namespace sm
 
 	} //- detail
 
+	//- TODO: judging by the sm API this class should be made private and every rendering
+	//- interaction should be through public sm functions.
+	//- 
+	//- Alternatively, if we want to create a 'context' for submitting rendering commands, i.e. command buffer like,
+	//- the we have to redesign the renderer class as its not usable as it is now.
 	//------------------------------------------------------------------------------------------------------------------------
 	class crenderer
 	{

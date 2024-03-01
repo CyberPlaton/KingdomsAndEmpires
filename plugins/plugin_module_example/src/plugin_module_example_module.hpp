@@ -34,6 +34,7 @@ namespace module_example
 				.comp<cmy_second_module, stargeting_component>()
 				.subsystem<cmy_second_module, cmy_system>()
 				.subsystem<cmy_second_module, cmy_second_system>()
+				.subsystem<cmy_second_module, cmy_third_system>()
 			.end<cmy_second_module>();
 
 			//- this is not the intended way to create entities

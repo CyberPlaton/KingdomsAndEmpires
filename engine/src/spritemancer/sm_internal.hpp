@@ -38,16 +38,6 @@ namespace sm
 			void begin_render_target(render_target_t& texture);
 			void end_render_target(raylib::Shader combine_technique = {0});
 
-			//- utility
-			bool is_platform_windows() const;
-			bool is_platform_linux() const;
-			bool is_platform_macosx() const;
-			bool is_platform_ios() const;
-			bool is_platform_android() const;
-			bool is_platform_xboxone() const;
-			bool is_platform_ps() const;
-			bool is_platform_nx() const;
-
 		private:
 			raylib::RenderTexture2D m_default_rendertarget;
 			raylib::Shader m_msaa_rendertarget_technique;

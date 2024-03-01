@@ -75,6 +75,42 @@ namespace module_example
 		}
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class cmy_third_system : public ecs::csystem<stargeting_component>
+	{
+	public:
+		cmy_third_system(flecs::world& w) :
+			ecs::csystem<stargeting_component>
+			(w, "Targeting System #3")
+		{
+			run_on(ecs::system_running_phase_on_ui_render);
+			//multithreaded();
+			build([&](flecs::entity e, stargeting_component& target)
+				{
+					ZoneScopedN("Targeting System #3");
+
+					ImGui::Begin("Window");
+					ImGui::End();
+
+					//- check for first start of the system or
+					//- end of cooldown and restart
+					if (target.m_cooldown == stargeting_component::C_TARGET_COOLDOWN_INVALID ||
+						target.m_cooldown <= 0.0f);
+					{
+						target.m_next_target = core::cuuid();
+						target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
+
+						//logging::log_warn(fmt::format("[Targeting System #2] Changing Target '{}' for '{}'",
+						//	target.m_next_target.string(), e.name().c_str()));
+					}
+
+					core::crandom rand;
+
+					target.m_cooldown -= C_DT * rand.in_range_float(0.0f, 1.75f);
+				});
+		}
+	};
+
 	//- 
 	//------------------------------------------------------------------------------------------------------------------------
 	class cexample_transform_system : public ecs::csystem<stransform_component>

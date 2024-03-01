@@ -38,6 +38,23 @@ namespace ecs
 			previous_phase = p;
 		}
 
+		//- setup pipelines
+		m_update_pipeline = world().pipeline()
+			.with(flecs::System)
+			.with<ssystem_phases::son_update>().build();
+
+		m_world_render_pipeline = world().pipeline()
+			.with(flecs::System)
+			.with<ssystem_phases::son_world_render>().build();
+
+		m_ui_render_pipeline = world().pipeline()
+			.with(flecs::System)
+			.with<ssystem_phases::son_ui_render>().build();
+
+		m_post_update_pipeline = world().pipeline()
+			.with(flecs::System)
+			.with<ssystem_phases::son_post_update>().build();
+
 		//- setup observers
 		world().observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
@@ -83,11 +100,45 @@ namespace ecs
 		//- Additionally, spritemancer has to be refactored as a system or module. So that we can control when is sm::begin_drawing() etc
 		//- called and know what happens next. (if not system then see flecs tasks, they do not need any components to match)
 		//-
-		world().progress(dt);
+		switch (p)
+		{
+		case system_running_phase_on_update:
+		{
+			world().set_pipeline(m_update_pipeline);
+			break;
+		}
+		case system_running_phase_on_world_render:
+		{
+			world().set_pipeline(m_world_render_pipeline);
+			break;
+		}
+		case system_running_phase_on_ui_render:
+		{
+			world().set_pipeline(m_ui_render_pipeline);
+			break;
+		}
+		case system_running_phase_on_post_update:
+		{
+			world().set_pipeline(m_post_update_pipeline);
+			break;
+		}
+		default:
+		case system_running_phase_none:
+		{
+			CORE_ASSERT(false, "Invalid operation. Invalid system phase provided");
+			return;
+		}
+		}
 
-		//- process any queries, they will be available for systems on next tick,
-		//- also clearup memory for already taken and processed queries.
-		process_queries();
+		{
+			ZoneScoped;
+
+			world().progress(dt);
+
+			//- process any queries, they will be available for systems on next tick,
+			//- also clearup memory for already taken and processed queries.
+			process_queries();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
