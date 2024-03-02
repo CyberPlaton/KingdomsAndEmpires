@@ -5,6 +5,44 @@ namespace sm
 {
 	class crenderer;
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccommand_buffer
+	{
+	public:
+		struct sdraw_command
+		{
+			struct stransform
+			{
+				float m_x, m_y, m_w, m_h, m_rotation;
+			};
+		
+			core::srect m_rect;
+			core::scolor m_color;
+			stransform m_transform;
+			material_t m_material;
+			technique_t m_technique;
+			texture_t m_texture;
+			renderlayer_t m_layer;
+		};
+		
+		ccommand_buffer() = default;
+		~ccommand_buffer() = default;
+		
+		void push(core::srect rect, core::scolor color, sdraw_command::stransform transform,
+			material_t material, technique_t technique, texture_t texture, renderlayer_t layer)
+		{
+			m_commands.emplace_back(rect, color, transform, material, technique, texture, layer);
+		}
+
+		[[nodiscard]] decltype(auto) take() const
+		{
+			return std::move(m_commands);
+		}
+		
+	private:
+		vector_t<sdraw_command> m_commands;
+	};
+
 	namespace detail
 	{
 		//------------------------------------------------------------------------------------------------------------------------

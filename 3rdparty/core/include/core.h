@@ -101,6 +101,7 @@ using texture_t = handle_type_t;
 using uniform_t = handle_type_t;
 using material_t = handle_type_t;
 using spriteatlas_t = handle_type_t;
+using renderlayer_t = handle_type_t;
 using subtexture_t = handle_type_t;
 using render_target_t = handle_type_t;
 using entity_proxy_t = int;
