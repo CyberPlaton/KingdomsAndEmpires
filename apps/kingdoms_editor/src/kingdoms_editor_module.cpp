@@ -65,7 +65,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 		auto& w = ecs::cworld_manager::instance().active();
 
-		//- can�t use more than what was configured as foreground threads
+		//- can´t use more than what was configured as foreground threads
 		w.use_threads(engine::cthread_service::hardware_threads() / 2);
 
 		//- import module with required components
@@ -102,6 +102,7 @@ int main(int argc, char* argv[])
 
 	engine::cengine::sconfig cfg;
 	cfg.m_service_cfg.m_services.emplace_back("ccamera_manager");
+	cfg.m_service_cfg.m_services.emplace_back("cthread_service");
 
 	cfg.m_layer_cfg.m_layers.emplace_back("cgame");
 	cfg.m_layer_cfg.m_layers.emplace_back("ceditor");
@@ -118,7 +119,8 @@ int main(int argc, char* argv[])
 
 		auto& w = ecs::cworld_manager::instance().active();
 
-		w.use_threads(2);
+		//- can´t use more than what was configured as foreground threads
+		w.use_threads(engine::cthread_service::hardware_threads() / 2);
 
 		//- import module with required components
 		w.mm().import_module<module_example::cmy_second_module>();

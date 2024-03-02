@@ -70,7 +70,7 @@ namespace stl = std;
 void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
 void operator delete(void* p){TracyFree(p); CORE_FREE(p); }
 	#elif !CORE_PLATFORM_WINDOWS
-void* operator new(unsigned long long n) { return CORE_MALLOC(n); }
+void* operator new(size_t n) { return CORE_MALLOC(n); }
 void operator delete(void* p) { CORE_FREE(p); }
 	#endif
 #endif

@@ -127,13 +127,13 @@ namespace ecs
 		case system_running_phase_on_update:
 		{
 			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UPDATE])
-				.kind<ssystem_phases::son_update>();
+			.template kind<ssystem_phases::son_update>();
 			break;
 		}
 		case system_running_phase_on_world_render:
 		{
 			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_WORLD_RENDER])
-				.kind<ssystem_phases::son_world_render>();
+				.template kind<ssystem_phases::son_world_render>();
 			break;
 		}
 		case system_running_phase_on_ui_render:
@@ -141,13 +141,13 @@ namespace ecs
 			CORE_ASSERT(!m_multithreaded, "Invalid operation. A UI system can not be multithreaded");
 
 			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UI_RENDER])
-				.kind<ssystem_phases::son_ui_render>();
+				.template kind<ssystem_phases::son_ui_render>();
 			break;
 		}
 		case system_running_phase_on_post_update:
 		{
 			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_POST_UPDATE])
-				.kind<ssystem_phases::son_post_update>();
+				.template kind<ssystem_phases::son_post_update>();
 			break;
 		}
 		default:
