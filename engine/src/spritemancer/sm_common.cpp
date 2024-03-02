@@ -340,7 +340,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void csprite_atlas::reset()
 	{
-		m_texture = 0;
+		m_texture = invalid_handle_t;
 		m_subtextures.clear();
 	}
 

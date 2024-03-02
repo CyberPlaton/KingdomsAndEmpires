@@ -194,10 +194,84 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		ccontext::ccontext() :
+			m_spriteatlas_manager(*this),
+			m_technique_manager(*this),
+			m_material_manager(*this),
+			m_texture_manager(*this)
+		{
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		ccontext::~ccontext()
+		{
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		void ccontext::end_default_render_target()
 		{
 			raylib::EndTextureMode();
 		}
 
-	}
-}
+		//------------------------------------------------------------------------------------------------------------------------
+		spriteatlas_t cspriteatlas_manager::create(stringview_t spriteatlasname, stringview_t texturepath, const vec2_t& frames)
+		{
+			spriteatlas_t handle = invalid_handle_t;
+
+			auto construct_atlas = [&](texture_t texture, csprite_atlas& atlas)
+				{
+					const auto texturesize = ctx().tm().texture_size(texture);
+					const vec2_t framesize = { texturesize.x / frames.x, texturesize.y / frames.y };
+
+					atlas.begin(texture);
+
+					for (auto y = 0u; y < frames.y; ++y)
+					{
+						for (auto x = 0u; x < frames.x; ++x)
+						{
+							atlas.subtexture({ x * framesize.x / texturesize.x,
+								y * framesize.y / texturesize.y,
+								framesize.x / texturesize.x,
+								framesize.y / texturesize.y });
+						}
+					}
+
+					atlas.end();
+				};
+
+
+			if (auto texture = ctx().tm().create(fmt::format("{}_texture", spriteatlasname).c_str(), texturepath);
+				algorithm::is_valid_handle(texture))
+			{
+				if (fragmented())
+				{
+					if (const auto slot = fragmentation_slot(); slot != std::numeric_limits<unsigned>().max())
+					{
+						//- manually construct a sprite atlas
+						auto& atlas = m_resources[slot].m_resource;
+
+						construct_atlas(texture, atlas);
+
+						m_resources[slot].m_removed = false;
+						decrement();
+						handle = slot;
+					}
+				}
+				else
+				{
+					const auto h = algorithm::hash(spriteatlasname);
+
+					handle = increment();
+					m_lookup.emplace(h, handle);
+					auto& wrapper = m_resources.emplace_back();
+
+					construct_atlas(texture, wrapper.m_resource);
+				}
+			}
+			return handle;
+		}
+
+	} //- internal
+
+} //- sm

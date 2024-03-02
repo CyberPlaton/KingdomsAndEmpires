@@ -338,6 +338,13 @@ namespace algorithm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TCallable, typename TIterator>
+	TIterator find_if(TIterator begin, TIterator end, TCallable&& callable)
+	{
+		return stl::find_if(begin, end, callable);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType, typename TIterator>
 	TIterator find_at(TIterator begin, TIterator end, const TType& value)
 	{

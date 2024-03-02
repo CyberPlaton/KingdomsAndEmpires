@@ -1,5 +1,6 @@
 #pragma once
 #include "sm_renderer.hpp"
+#include "sm_resource_managers.hpp"
 #include "sm_ui.hpp"
 
 namespace sm
@@ -11,9 +12,7 @@ namespace sm
 		{
 		public:
 			STATIC_INSTANCE(ccontext, s_ccontext);
-			ccontext() = default;
-			~ccontext() = default;
-
+			
 			bool init(cwindow::sconfig& cfg);
 			void shutdown();
 
@@ -38,7 +37,24 @@ namespace sm
 			void begin_render_target(render_target_t& texture);
 			void end_render_target(raylib::Shader combine_technique = {0});
 
+			cspriteatlas_manager& am() {return m_spriteatlas_manager;}
+			const cspriteatlas_manager& am() const {return m_spriteatlas_manager;}
+
+			ctechnique_manager& sm() { return m_technique_manager; }
+			const ctechnique_manager& sm() const { return m_technique_manager; }
+
+			cmaterial_manager& mm() { return m_material_manager; }
+			const cmaterial_manager& mm() const { return m_material_manager; }
+
+			ctexture_manager& tm() { return m_texture_manager; }
+			const ctexture_manager& tm() const { return m_texture_manager; }
+
 		private:
+			cspriteatlas_manager m_spriteatlas_manager;
+			ctechnique_manager m_technique_manager;
+			cmaterial_manager m_material_manager;
+			ctexture_manager m_texture_manager;
+
 			raylib::RenderTexture2D m_default_rendertarget;
 			raylib::Shader m_msaa_rendertarget_technique;
 
@@ -51,11 +67,15 @@ namespace sm
 			ccamera* m_frame_camera = nullptr;
 
 		private:
+			ccontext();
+			~ccontext();
+
 			void end_default_render_target();
 		};
-	}
 
+	} //- internal
 
 	//- shortcut
 	internal::ccontext& ctx();
-}
+
+} //- sm
