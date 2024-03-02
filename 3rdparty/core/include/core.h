@@ -367,6 +367,13 @@ namespace algorithm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	template<class TStructure>
+	void swap(TStructure& swap_to, TStructure& swap_from)
+	{
+		stl::swap(swap_to, swap_from);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TStructure>
 	void erase_at_index(TStructure& structure, unsigned index)
 	{

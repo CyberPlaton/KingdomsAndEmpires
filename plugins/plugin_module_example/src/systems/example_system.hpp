@@ -100,7 +100,7 @@ namespace module_example
 						target.m_next_target = core::cuuid();
 						target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
 
-						//logging::log_warn(fmt::format("[Targeting System #2] Changing Target '{}' for '{}'",
+						//logging::log_debug(fmt::format("[Targeting System #3] Changing Target '{}' for '{}'",
 						//	target.m_next_target.string(), e.name().c_str()));
 					}
 

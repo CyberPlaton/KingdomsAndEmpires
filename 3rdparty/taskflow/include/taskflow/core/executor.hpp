@@ -1034,6 +1034,8 @@ class Executor {
   >
   auto dependent_async(const std::string& name, F&& func, I first, I last);
 
+  inline std::vector<std::thread>& worker_threads() {return _threads;}
+
   private:
     
   const size_t _MAX_STEALS;
