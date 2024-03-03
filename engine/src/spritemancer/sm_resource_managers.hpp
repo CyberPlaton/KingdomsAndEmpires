@@ -4,11 +4,10 @@
 
 namespace sm
 {
-	constexpr material_t C_DEFAULT_MATERIAL = 0;
-
 	namespace internal
 	{
 		class ccontext;
+		class irenderer;
 
 		//- Base resource manager. Handles common storage types, like retrieving a handle or unloading.
 		//- Note: as of now the implementing resource manager has to respect correct creation behavior:
@@ -19,6 +18,7 @@ namespace sm
 		class cresource_manager
 		{
 			friend class ccontext;
+			friend class irenderer;
 		public:
 			cresource_manager(ccontext& ctx) : m_context(ctx), m_count(0), m_fragmentations(0) {};
 			virtual ~cresource_manager();
@@ -29,6 +29,7 @@ namespace sm
 		private:
 			struct swrapper
 			{
+				swrapper() = default;
 				swrapper(TNativeResourceType resource) : m_resource(std::move(resource)) {}
 
 				TNativeResourceType m_resource;
@@ -48,12 +49,12 @@ namespace sm
 			const TNativeResourceType& native_resource(TResourceHandleType handle) const;
 			inline bool fragmented() const { return m_fragmentations > 0; }
 			inline TResourceHandleType increment() { auto out = SCAST(TResourceHandleType, m_count++); return out; }
-			inline void decrement() { m_fragmentations = (m_fragmentations - 1 < 0) ? 0 m_fragmentations - 1; }
+			inline void decrement() { m_fragmentations = (m_fragmentations - 1 < 0) ? 0 : m_fragmentations - 1; }
 			unsigned fragmentation_slot();
 			ccontext& ctx() {return m_context;}
 
 			virtual void on_resource_unload(TNativeResourceType& resource) {};
-
+			virtual bool init() {return false;}
 		};
 
 		//- Manager responsible for sprite atlases, aka texture atlases
@@ -61,6 +62,8 @@ namespace sm
 		class cspriteatlas_manager :
 			public cresource_manager<spriteatlas_t, csprite_atlas>
 		{
+			friend class ccontext;
+			friend class irenderer;
 		public:
 			cspriteatlas_manager(ccontext& ctx) : cresource_manager<spriteatlas_t, csprite_atlas>(ctx) {}
 
@@ -69,6 +72,7 @@ namespace sm
 
 		protected:
 			void on_resource_unload(csprite_atlas& resource) override final;
+			bool init() override final;
 		};
 
 		//- Manager responsible for techniques, aka shaders
@@ -76,6 +80,8 @@ namespace sm
 		class ctechnique_manager :
 			public cresource_manager<technique_t, raylib::Shader>
 		{
+			friend class ccontext;
+			friend class irenderer;
 		public:
 			ctechnique_manager(ccontext& ctx) : cresource_manager<technique_t, raylib::Shader>(ctx) {}
 
@@ -84,6 +90,7 @@ namespace sm
 
 		protected:
 			void on_resource_unload(raylib::Shader& resource) override final;
+			bool init() override final;
 		};
 
 		//- Manager responsible for materials
@@ -91,6 +98,9 @@ namespace sm
 		class cmaterial_manager :
 			public cresource_manager<material_t, cmaterial>
 		{
+			friend class ccontext;
+			friend class irenderer;
+			friend class ctechnique_manager;
 		public:
 			cmaterial_manager(ccontext& ctx) : cresource_manager<material_t, cmaterial>(ctx) {}
 
@@ -102,6 +112,7 @@ namespace sm
 
 		protected:
 			void on_resource_unload(cmaterial& resource) override final;
+			bool init() override final;
 
 		private:
 			bool create_default(technique_t technique, blending_mode mode = blending_mode_alpha, blending_equation equation = blending_equation_blend_color,
@@ -113,6 +124,8 @@ namespace sm
 		class ctexture_manager :
 			public cresource_manager<texture_t, raylib::Texture2D>
 		{
+			friend class ccontext;
+			friend class irenderer;
 		public:
 			ctexture_manager(ccontext& ctx) : cresource_manager<texture_t, raylib::Texture2D>(ctx) {}
 
@@ -122,20 +135,21 @@ namespace sm
 
 		protected:
 			void on_resource_unload(raylib::Texture2D& resource) override final;
+			bool init() override final;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TResourceHandleType, typename TNativeResourceType>
 		unsigned cresource_manager<TResourceHandleType, TNativeResourceType>::fragmentation_slot()
 		{
-			if (auto it = algorithm::find_if(m_resources.begin(), m_resources.end(),
-				[this](const TNativeResourceType& resource)
-				{
-					return resource.m_removed;
-				}); it != m_resources.end())
+			for (auto i = 0u; i < m_resources.size(); ++i)
 			{
-				return *it;
+				if (m_resources[i].m_removed)
+				{
+					return i;
+				}
 			}
+
 			return std::numeric_limits<unsigned>().max();
 		}
 
@@ -153,7 +167,7 @@ namespace sm
 			auto& wrapper = m_resources[handle];
 
 			//- handle underlying unload of resource specific to manager
-			on_resource_unload(wrapper);
+			on_resource_unload(wrapper.m_resource);
 
 			algorithm::erase_if(m_lookup, [&](auto it)
 				{
@@ -170,7 +184,7 @@ namespace sm
 		{
 			while (!m_resources.empty())
 			{
-				on_resource_unload(m_resources.back());
+				on_resource_unload(m_resources.back().m_resource);
 
 				m_resources.pop_back();
 			}
@@ -180,10 +194,11 @@ namespace sm
 		template<typename TResourceHandleType, typename TNativeResourceType>
 		TResourceHandleType cresource_manager<TResourceHandleType, TNativeResourceType>::get(stringview_t name) const
 		{
-			if (auto it = algorithm::find_at(m_lookup.begin(), m_lookup.end(), algorithm::hash(name));
-				it != m_lookup.end())
+			auto h = algorithm::hash(name);
+
+			if (auto iter = m_lookup.find(h); iter != m_lookup.end())
 			{
-				return *it;
+				return iter->second;
 			}
 			return invalid_handle_t;
 		}

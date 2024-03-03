@@ -1,5 +1,5 @@
 #pragma once
-#include "sm_internal.hpp"
+#include "sm_renderer.hpp"
 
 namespace sm
 {
@@ -22,26 +22,6 @@ namespace sm
 	void end_blend_mode();
 	void begin_render_target(render_target_t& texture);
 	void end_render_target(raylib::Shader combine_technique = { 0 });
-
-
-	//- sprite rendering
-	void draw_sprite(unsigned char layer, const mat4_t& transform, texture_t texture, material_t material, const core::srect& rect, const core::scolor& color, bool flipx, bool flipy);
-	void draw_sprite(unsigned char layer, const mat4_t& transform, texture_t texture, material_t material, const core::srect& rect, const core::scolor& color);
-	void draw_sprite(unsigned char layer, const mat4_t& transform, texture_t texture, material_t material, const core::srect& rect);
-	void draw_sprite(unsigned char layer, const mat4_t& transform, texture_t texture, material_t material);
-	void draw_sprite(unsigned char layer, const mat4_t& transform, texture_t texture);
-
-	void draw_sprite(unsigned char layer, const vec2_t& position, texture_t texture, material_t material, float rotation, const vec2_t& scale, const core::srect& rect, const core::scolor& color, bool flipx, bool flipy);
-	void draw_sprite(unsigned char layer, const vec2_t& position, texture_t texture, material_t material, float rotation, const vec2_t& scale, const core::srect& rect, const core::scolor& color);
-	void draw_sprite(unsigned char layer, const vec2_t& position, texture_t texture, material_t material, float rotation, const vec2_t& scale, const core::srect& rect);
-	void draw_sprite(unsigned char layer, const vec2_t& position, texture_t texture, material_t material, float rotation, const vec2_t& scale);
-	void draw_sprite(unsigned char layer, const vec2_t& position, texture_t texture, material_t material, float rotation);
-	void draw_sprite(unsigned char layer, const vec2_t& position, texture_t texture, material_t material);
-	void draw_sprite(unsigned char layer, const vec2_t& position, texture_t texture);
-
-	//- sprite atlas rendering
-	void draw_sprite_atlas_sprite(unsigned char layer, const vec2_t& position, float rotation, const vec2_t& scale, spriteatlas_t atlas, subtexture_t subtexture, const core::scolor& color, bool flipx, bool flipy);
-	void draw_sprite_atlas_sprite(unsigned char layer, const mat4_t& transform, spriteatlas_t atlas, subtexture_t subtexture, const core::scolor& color, bool flipx, bool flipy);
 
 	//- texture and shader program management
 	technique_t create_technique(const std::string& technique_name, const std::string& vs_path, const std::string& ps_path);
@@ -68,5 +48,7 @@ namespace sm
 	namespace internal
 	{
 		ccontext& ctx();
-	}
-}
+
+	} //- internal
+
+} //- sm

@@ -583,6 +583,40 @@ namespace sm
 		}
 	}
 
+	namespace internal
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		sdrawcommand::sdrawcommand(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h, float r,
+			material_t material, texture_t texture, renderlayer_t layer) :
+			m_rect(rect), m_color(color), m_position(x, y), m_dimension(w, h), m_rotation(r),
+			m_material(material), m_texture(texture), m_layer(layer)
+		{
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		sdrawcommand::sdrawcommand(const core::srect& rect, const core::scolor& color, const vec2_t& position, const vec2_t& dimension, float r,
+			material_t material, texture_t texture, renderlayer_t layer) :
+			m_rect(rect), m_color(color), m_position(position), m_dimension(dimension), m_rotation(r),
+			m_material(material), m_texture(texture), m_layer(layer)
+		{
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccommand_buffer::push(const core::srect& rect, const core::scolor& color, const vec2_t& position, const vec2_t& dimension,
+			float r, material_t material, texture_t texture, renderlayer_t layer)
+		{
+			m_commands.emplace_back(rect, color, position, dimension, r, material, texture, layer);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccommand_buffer::push(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h, float r,
+			material_t material, texture_t texture, renderlayer_t layer)
+		{
+			m_commands.emplace_back(rect, color, x, y, w, h, r, material, texture, layer);
+		}
+
+	} //- internal
+
 } //- sm
 
 namespace raylib

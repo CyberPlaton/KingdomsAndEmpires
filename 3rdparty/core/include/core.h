@@ -110,6 +110,7 @@ using ivec2_t = glm::lowp_u32vec2;
 using vec2_t = glm::vec2;
 using vec3_t = glm::vec3;
 using vec4_t = glm::vec4;
+using mat2_t = glm::mat2;
 using mat3_t = glm::mat3x3;
 using mat4_t = glm::mat4x4;
 
@@ -177,7 +178,6 @@ namespace rttr
 	}
 
 } //- rttr
-
 
 namespace core
 {
@@ -267,6 +267,11 @@ namespace core
 
 namespace math
 {
+	namespace
+	{
+		constexpr mat2_t C_MATRIX_ID = mat2_t(1.0f);
+
+	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
@@ -275,16 +280,26 @@ namespace math
 		return glm::distance(glm::abs<TType>(x), glm::abs<TType>(y)) < glm::epsilon<TType>();
 	}
 
-} //- math
+	[[nodiscard]] mat2_t translate(const vec2_t& v, const mat2_t& m = C_MATRIX_ID);
+	[[nodiscard]] mat2_t rotate(float angle, const mat2_t& m = C_MATRIX_ID);
+	[[nodiscard]] mat2_t scale(const vec2_t& v, const mat2_t& m = C_MATRIX_ID);
 
-namespace algorithm
-{
+	vec2_t decompose_translation(const mat2_t& transform);
+	void decompose_translation(const mat2_t& transform, vec2_t& out);
+	vec2_t decompose_scale(const mat2_t& transform);
+	void decompose_scale(const mat2_t& transform, vec2_t& out);
+
 	vec3_t decompose_rotation(const mat4_t& transform);
 	vec3_t decompose_translation(const mat4_t& transform);
 	vec3_t decompose_scale(const mat4_t& transform);
 	void decompose_rotation(const mat4_t& transform, vec3_t& out);
 	void decompose_translation(const mat4_t& transform, vec3_t& out);
 	void decompose_scale(const mat4_t& transform, vec3_t& out);
+
+} //- math
+
+namespace algorithm
+{
 	unsigned hash(stringview_t string);
 	unsigned percentage(float total_value, float part_value);
 	float percent_value(unsigned p, float total_value);

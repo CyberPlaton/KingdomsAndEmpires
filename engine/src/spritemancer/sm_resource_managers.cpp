@@ -75,6 +75,12 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		bool ctexture_manager::init()
+		{
+			return true;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		technique_t ctechnique_manager::create(stringview_t name, stringview_t vspath, stringview_t pspath)
 		{
 			technique_t handle = invalid_handle_t;
@@ -179,6 +185,12 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		bool cmaterial_manager::init()
+		{
+			return true;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		bool cmaterial_manager::create_default(technique_t technique, blending_mode mode /*= blending_mode_alpha*/,
 			blending_equation equation /*= blending_equation_blend_color*/, blending_factor src /*= blending_factor_src_color*/,
 			blending_factor dst /*= blending_factor_one_minus_src_alpha*/)
@@ -208,6 +220,12 @@ namespace sm
 		void cspriteatlas_manager::on_resource_unload(csprite_atlas& resource)
 		{
 			resource.reset();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cspriteatlas_manager::init()
+		{
+			return true;
 		}
 
 	} //- internal

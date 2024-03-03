@@ -10,6 +10,10 @@ namespace sm
 	constexpr auto C_MATERIAL_RESERVE_COUNT	= 2048;
 	constexpr auto C_TEXTURE_RESERVE_COUNT	= 2048;
 	constexpr auto C_TECHNIQUE_RESERVE_COUNT= 512;
+	constexpr material_t C_DEFAULT_MATERIAL = 0;
+	inline static const core::scolor C_COLOR_WHITE = { 255, 255, 255, 255 };
+	inline static const core::srect C_DEFAULT_RECT = { 0.0f, 0.0f, 1.0f, 1.0f };
+	inline static const vec2_t C_DEFAULT_SCALE = {1.0f, 1.0f};
 	
 	//- @reference: BC_* formats: https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-block-compression#bc3
 	//------------------------------------------------------------------------------------------------------------------------
@@ -319,6 +323,48 @@ namespace sm
 
 		RTTR_ENABLE(core::cservice);
 	};
+
+	namespace internal
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sdrawcommand
+		{
+			sdrawcommand(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h, float r,
+				material_t material, texture_t texture, renderlayer_t layer);
+
+			sdrawcommand(const core::srect& rect, const core::scolor& color, const vec2_t& position, const vec2_t& dimension, float r,
+				material_t material, texture_t texture, renderlayer_t layer);
+
+			core::srect m_rect;
+			core::scolor m_color;
+			vec2_t m_position;
+			vec2_t m_dimension;
+			float m_rotation;
+			material_t m_material;
+			texture_t m_texture;
+			renderlayer_t m_layer;
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		class ccommand_buffer
+		{
+		public:
+			ccommand_buffer() = default;
+			~ccommand_buffer() = default;
+
+			void push(const core::srect& rect, const core::scolor& color, const vec2_t& position, const vec2_t& dimension, float r,
+				material_t material, texture_t texture, renderlayer_t layer);
+
+			void push(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h, float r,
+				material_t material, texture_t texture, renderlayer_t layer);
+
+			[[nodiscard]] decltype(auto) take() { return std::move(m_commands); }
+
+		private:
+			vector_t<sdrawcommand> m_commands;
+		};
+
+	} //- internal
 
 } //- sm
 
