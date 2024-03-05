@@ -1,14 +1,13 @@
 #pragma once
-#include <core.h>
-#include <engine.h> 
+#include "../context/editor_context.hpp"
 
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class clayer_base
+	class clayer_base : public ccontext_holder
 	{
 	public:
-		clayer_base() = default;
+		clayer_base(ccontext& ctx) : ccontext_holder(ctx) {};
 		virtual ~clayer_base() {}
 
 		virtual bool init() {return false;}

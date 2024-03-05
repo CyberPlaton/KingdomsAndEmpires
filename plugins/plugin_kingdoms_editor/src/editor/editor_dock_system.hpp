@@ -1,6 +1,6 @@
 #pragma once
 #include <core.h>
-#include "docks/editor_dock_base.hpp"
+#include "docks/editor_main_menu_dock.hpp"
 #include "docks/editor_dock_bottom_panel.hpp"
 #include "docks/editor_dock_left_panel.hpp"
 #include "docks/editor_dock_right_panel.hpp"
@@ -8,7 +8,7 @@
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cdock_system
+	class cdock_system : public ccontext
 	{
 	public:
 		STATIC_INSTANCE(cdock_system, s_cdock_system);
@@ -46,7 +46,7 @@ namespace editor
 	{
 		static_assert(std::is_base_of_v<clayer_base, TDock>, "TDock must be derived from clayer_base class");
 
-		auto dock = std::make_shared<TDock>();
+		auto dock = std::make_shared<TDock>(*this);
 
 		if (dock->init())
 		{
@@ -63,7 +63,7 @@ namespace editor
 	{
 		static_assert(std::is_base_of_v<clayer_base, TDock>, "TDock must be derived from clayer_base class");
 
-		auto dock = std::make_shared<TDock>();
+		auto dock = std::make_shared<TDock>(*this);
 
 		if (dock->init())
 		{
@@ -80,7 +80,7 @@ namespace editor
 	{
 		static_assert(std::is_base_of_v<clayer_base, TDock>, "TDock must be derived from clayer_base class");
 
-		auto dock = std::make_shared<TDock>(std::forward<ARGS>(args)...);
+		auto dock = std::make_shared<TDock>(*this, std::forward<ARGS>(args)...);
 
 		if (dock->init())
 		{
@@ -97,7 +97,7 @@ namespace editor
 	{
 		static_assert(std::is_base_of_v<clayer_base, TDock>, "TDock must be derived from clayer_base class");
 
-		auto dock = std::make_shared<TDock>(std::forward<ARGS>(args)...);
+		auto dock = std::make_shared<TDock>(*this, std::forward<ARGS>(args)...);
 
 		if (dock->init())
 		{

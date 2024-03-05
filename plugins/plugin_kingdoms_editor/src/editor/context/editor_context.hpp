@@ -1,0 +1,36 @@
+#pragma once
+#include <core.h>
+#include <engine.h>
+
+namespace editor
+{
+	//- Central access to editor for all deeper seated layers. Values inside are modified by the root editor layer.
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccontext : core::cnon_copyable
+	{
+	public:
+		ccontext() = default;
+		~ccontext() = default;
+
+	protected:
+
+	private:
+	};
+
+	//- Access to context.
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccontext_holder
+	{
+	public:
+		ccontext_holder(ccontext& ctx) : m_ctx(ctx) {}
+		virtual ~ccontext_holder() {}
+
+	protected:
+		inline const ccontext& ctx() const {return m_ctx;}
+		inline ccontext& ctx() {return m_ctx;}
+
+	private:
+		ccontext& m_ctx;
+	};
+
+} //- editor

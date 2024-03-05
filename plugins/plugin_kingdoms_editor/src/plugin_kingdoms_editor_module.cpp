@@ -9,7 +9,10 @@ namespace editor
 
 		bool result = true;
 
+		result &= docks.push_back<cmain_menu>();
 		result &= docks.push_back<cbottom_panel>();
+		result &= docks.push_back<cleft_panel>();
+		result &= docks.push_back<cright_panel>();
 
 		return result;
 	}

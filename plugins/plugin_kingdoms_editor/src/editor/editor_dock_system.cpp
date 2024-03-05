@@ -5,7 +5,7 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cdock_system::pop_back()
 	{
-		auto dock = m_docks.back();
+		const auto& dock = m_docks.back();
 
 		dock->shutdown();
 
@@ -59,7 +59,7 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::deque<ref_t<editor::clayer_base>>& cdock_system::docks()
+	std::deque<ref_t<clayer_base>>& cdock_system::docks()
 	{
 		return m_docks;
 	}

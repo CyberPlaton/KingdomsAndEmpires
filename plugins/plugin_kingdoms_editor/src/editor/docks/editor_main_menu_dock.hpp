@@ -4,11 +4,11 @@
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cbottom_panel final : public clayer_base
+	class cmain_menu final : public clayer_base
 	{
 	public:
-		cbottom_panel(ccontext& ctx) : clayer_base(ctx) {};
-		~cbottom_panel() = default;
+		cmain_menu(ccontext& ctx) : clayer_base(ctx) {};
+		~cmain_menu() = default;
 
 		bool init() override;
 		void shutdown() override;
