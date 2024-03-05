@@ -4,8 +4,15 @@
 
 namespace ecs
 {
-	constexpr std::string_view C_COMPONENT_SERIALIZE_FUNC_NAME = "serialize";
-	constexpr std::string_view C_COMPONENT_SET_FUNC_NAME = "set";
+	namespace meta
+	{
+		constexpr std::string_view C_COMPONENT_NOT_EDITABLE = "NOT_EDITABLE";
+		constexpr std::string_view C_COMPONENT_NOT_VISIBLE	= "NOT_VISIBLE";
+
+	} //- meta
+
+	constexpr std::string_view C_COMPONENT_SERIALIZE_FUNC_NAME	= "serialize";
+	constexpr std::string_view C_COMPONENT_SET_FUNC_NAME		= "set";
 
 	namespace detail
 	{
@@ -90,6 +97,7 @@ namespace ecs
 
 		vector_t<core::spair<texture_t, material_t>> m_materials;
 
+		core::scolor m_tint		= core::scolor(core::common_color_neutral1000);
 		//- represents a rectangle in actual texture pixel size
 		unsigned short m_sourcex= 0;
 		unsigned short m_sourcey= 0;
@@ -97,7 +105,6 @@ namespace ecs
 		unsigned short m_sourceh= 0;
 		float m_originx			= 0.0f;
 		float m_originy			= 0.0f;
-		core::scolor m_tint		= core::scolor(core::common_color_neutral1000);
 		bool m_visible			= true;
 		bool m_flipx			= false;
 		bool m_flipy			= false;
@@ -154,10 +161,19 @@ namespace ecs
 	//- this should be done automatically, for which we require a 'RTTR Object' concept and
 	//- specializations for components, visualizers etc.
 	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(icomponent)
+	{
+		rttr::registration::class_<icomponent>("icomponent")
+			.method("name", &icomponent::name)
+			;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(sidentifier)
 	{
 		rttr::registration::class_<sidentifier>("sidentifier")
 			.property("m_uuid", &sidentifier::m_uuid)
+			.method("name", &sidentifier::name)
 			.method("serialize", &sidentifier::serialize)
 			.method("set", &sidentifier::set)
 			;
@@ -174,6 +190,7 @@ namespace ecs
 			.property("m_w", &stransform::m_w)
 			.property("m_h", &stransform::m_h)
 			.property("m_rotation", &stransform::m_rotation)
+			.method("name", &stransform::name)
 			.method("serialize", &stransform::serialize)
 			;
 
@@ -195,6 +212,7 @@ namespace ecs
 			.property("m_sourcex", &ssprite::m_sourcex)
 			.property("m_sourcey", &ssprite::m_sourcey)
 			.property("m_tint", &ssprite::m_tint)
+			.method("name", &ssprite::name)
 			.method("serialize", &ssprite::serialize)
 			;
 
@@ -217,6 +235,7 @@ namespace ecs
 			.property("m_frame_height", &sanimation::m_frame_height)
 			.property("m_frame_width", &sanimation::m_frame_width)
 			.property("m_keyframes", &sanimation::m_keyframes)
+			.method("name", &sanimation::name)
 			.method("serialize", &sanimation::serialize)
 			;
 
@@ -229,6 +248,7 @@ namespace ecs
 		rttr::registration::class_<shierarchy>("shierarchy")
 			.property("m_parent", &shierarchy::m_parent)
 			.property("m_children", &shierarchy::m_children)
+			.method("name", &shierarchy::name)
 			.method("serialize", &shierarchy::serialize)
 			;
 
