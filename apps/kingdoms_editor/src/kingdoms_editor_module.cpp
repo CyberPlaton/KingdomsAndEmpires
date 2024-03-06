@@ -76,6 +76,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			auto e = w.em().create_entity();
 
 			e.add<module_example::stargeting_component>();
+			e.add<ecs::sidentifier>();
+			e.add<ecs::stransform>();
 		}
 
 		//- create several entities for testing

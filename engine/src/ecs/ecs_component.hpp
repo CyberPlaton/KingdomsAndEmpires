@@ -11,8 +11,9 @@ namespace ecs
 
 	} //- meta
 
-	constexpr std::string_view C_COMPONENT_SERIALIZE_FUNC_NAME	= "serialize";
-	constexpr std::string_view C_COMPONENT_SET_FUNC_NAME		= "set";
+	constexpr rttr::string_view C_COMPONENT_SERIALIZE_FUNC_NAME	= "serialize";
+	constexpr rttr::string_view C_COMPONENT_SET_FUNC_NAME		= "set";
+	constexpr rttr::string_view C_COMPONENT_SHOW_UI_FUNC_NAME	= "show_ui";
 
 	namespace detail
 	{
@@ -70,6 +71,8 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(sidentifier);
 
+		static void show_ui(flecs::entity e);
+
 		flecs::entity m_self;
 		core::cuuid m_uuid;
 		
@@ -85,6 +88,8 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(stransform);
 
+		static void show_ui(flecs::entity e);
+
 		float m_x = 0.0f, m_y = 0.0f, m_w = 0.0f, m_h = 0.0f, m_rotation = 0.0f;
 
 		RTTR_ENABLE(icomponent);
@@ -94,6 +99,8 @@ namespace ecs
 	struct ssprite final : public icomponent
 	{
 		DECLARE_COMPONENT(ssprite);
+
+		static void show_ui(flecs::entity e);
 
 		vector_t<core::spair<texture_t, material_t>> m_materials;
 
@@ -117,6 +124,8 @@ namespace ecs
 	struct sanimation final : public icomponent
 	{
 		DECLARE_COMPONENT(sanimation);
+
+		static void show_ui(flecs::entity e);
 
 		using keyframe_t = core::spair<unsigned char, unsigned char>;
 
@@ -147,6 +156,8 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(shierarchy);
 
+		static void show_ui(flecs::entity e);
+
 		core::cuuid m_parent;
 		vector_t<core::cuuid> m_children;
 
@@ -174,8 +185,9 @@ namespace ecs
 		rttr::registration::class_<sidentifier>("sidentifier")
 			.property("m_uuid", &sidentifier::m_uuid)
 			.method("name", &sidentifier::name)
-			.method("serialize", &sidentifier::serialize)
-			.method("set", &sidentifier::set)
+			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &sidentifier::serialize)
+			.method(C_COMPONENT_SET_FUNC_NAME, &sidentifier::set)
+			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &sidentifier::show_ui)
 			;
 
 		rttr::default_constructor<sidentifier>();
@@ -190,8 +202,9 @@ namespace ecs
 			.property("m_w", &stransform::m_w)
 			.property("m_h", &stransform::m_h)
 			.property("m_rotation", &stransform::m_rotation)
-			.method("name", &stransform::name)
-			.method("serialize", &stransform::serialize)
+			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &stransform::serialize)
+			.method(C_COMPONENT_SET_FUNC_NAME, &stransform::set)
+			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &stransform::show_ui)
 			;
 
 		rttr::default_constructor<stransform>();
@@ -212,8 +225,9 @@ namespace ecs
 			.property("m_sourcex", &ssprite::m_sourcex)
 			.property("m_sourcey", &ssprite::m_sourcey)
 			.property("m_tint", &ssprite::m_tint)
-			.method("name", &ssprite::name)
-			.method("serialize", &ssprite::serialize)
+			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &ssprite::serialize)
+			.method(C_COMPONENT_SET_FUNC_NAME, &ssprite::set)
+			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &ssprite::show_ui)
 			;
 
 		rttr::default_constructor<ssprite>();
@@ -235,8 +249,9 @@ namespace ecs
 			.property("m_frame_height", &sanimation::m_frame_height)
 			.property("m_frame_width", &sanimation::m_frame_width)
 			.property("m_keyframes", &sanimation::m_keyframes)
-			.method("name", &sanimation::name)
-			.method("serialize", &sanimation::serialize)
+			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &sanimation::serialize)
+			.method(C_COMPONENT_SET_FUNC_NAME, &sanimation::set)
+			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &sanimation::show_ui)
 			;
 
 		rttr::default_constructor<sanimation>();
@@ -248,8 +263,9 @@ namespace ecs
 		rttr::registration::class_<shierarchy>("shierarchy")
 			.property("m_parent", &shierarchy::m_parent)
 			.property("m_children", &shierarchy::m_children)
-			.method("name", &shierarchy::name)
-			.method("serialize", &shierarchy::serialize)
+			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &shierarchy::serialize)
+			.method(C_COMPONENT_SET_FUNC_NAME, &shierarchy::set)
+			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &shierarchy::show_ui)
 			;
 
 		rttr::default_constructor<shierarchy>();
