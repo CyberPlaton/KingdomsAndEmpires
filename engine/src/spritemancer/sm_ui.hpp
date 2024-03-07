@@ -13,6 +13,7 @@ namespace ui
 {
 	namespace scope
 	{
+		//------------------------------------------------------------------------------------------------------------------------
 		class cwrap_text
 		{
 		public:
@@ -21,6 +22,7 @@ namespace ui
 			~cwrap_text() {ImGui::PopTextWrapPos();}
 		};
 
+		//------------------------------------------------------------------------------------------------------------------------
 		class cdisabled
 		{
 		public:
@@ -36,9 +38,12 @@ namespace ui
 
 	} //- scope
 
+	class ccontrol;
+
 	//------------------------------------------------------------------------------------------------------------------------
 	class icontrol
 	{
+		friend class ccontrol;
 	public:
 		icontrol();
 		virtual ~icontrol() {};
@@ -74,6 +79,20 @@ namespace ui
 			}
 		}
 	};
+	
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccontrol : public icontrol
+	{
+	public:
+		virtual ~ccontrol() {}
+		
+	protected:
+		decltype(auto) id(stringview_t _id){m_id = _id; return *this;}
+		decltype(auto) title(stringview_t _title){m_title = _title; return *this;}
+		decltype(auto) tooltip(stringview_t _tooltip){m_tooltip = _tooltip; return *this;}
+		decltype(auto) icon(stringview_t _icon){m_icon = _icon; return *this;}
+		decltype(auto) icon_color(core::scolor _color){m_color = _color; return *this;}
+	}
 
 } //- ui
 
