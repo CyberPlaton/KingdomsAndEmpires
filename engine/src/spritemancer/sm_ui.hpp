@@ -1,6 +1,6 @@
 #pragma once
-#include "sm_common.hpp"
-#include "imgui_integration/imgui_integration.hpp"
+#include "ui/controls/button.hpp"
+#include "ui/controls/standard_dialog.hpp"
 
 namespace ImNodes = ax::NodeEditor;
 namespace ImGui
@@ -8,93 +8,6 @@ namespace ImGui
 	bool BufferingBar(const char* label, float value, const ImVec2& size_arg, const ImU32& bg_col, const ImU32& fg_col);
 	bool Spinner(const char* label, float radius, int thickness, const ImU32& color);
 }
-
-namespace ui
-{
-	namespace scope
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		class cwrap_text
-		{
-		public:
-			cwrap_text(size_t text_length) { ImGui::PushTextWrapPos(ImGui::GetFontSize() * text_length);}
-			cwrap_text(const std::string& text) { ImGui::PushTextWrapPos(ImGui::GetFontSize() * text.length());}
-			~cwrap_text() {ImGui::PopTextWrapPos();}
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		class cdisabled
-		{
-		public:
-			cdisabled()
-			{
-				ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
-			}
-			~cdisabled()
-			{
-				ImGui::PopStyleColor();
-			}
-		};
-
-	} //- scope
-
-	class ccontrol;
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class icontrol
-	{
-		friend class ccontrol;
-	public:
-		icontrol();
-		virtual ~icontrol() {};
-
-		bool show()
-		{
-			const auto result = show_ui();
-			show_tooltip();
-			return result;
-		}
-		operator bool() {return show();}
-
-	protected:
-		virtual bool show_ui() = 0;
-
-	private:
-		std::string m_id;
-		std::string m_title;
-		std::string m_tooltip;
-		std::string m_icon;
-		core::scolor m_icon_color;
-		bool m_active;
-
-	private:
-		void show_tooltip()
-		{
-			if (!m_tooltip.empty() && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			{
-				ImGui::BeginTooltip();
-				scope::cwrap_text wrap(m_tooltip.length());
-				ImGui::TextUnformatted(m_tooltip.data());
-				ImGui::EndTooltip();
-			}
-		}
-	};
-	
-	//------------------------------------------------------------------------------------------------------------------------
-	class ccontrol : public icontrol
-	{
-	public:
-		virtual ~ccontrol() {}
-		
-	protected:
-		decltype(auto) id(stringview_t _id){m_id = _id; return *this;}
-		decltype(auto) title(stringview_t _title){m_title = _title; return *this;}
-		decltype(auto) tooltip(stringview_t _tooltip){m_tooltip = _tooltip; return *this;}
-		decltype(auto) icon(stringview_t _icon){m_icon = _icon; return *this;}
-		decltype(auto) icon_color(core::scolor _color){m_color = _color; return *this;}
-	}
-
-} //- ui
 
 namespace sm
 {
