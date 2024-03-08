@@ -4,34 +4,6 @@ namespace ui
 {
 	namespace detail
 	{
-		//------------------------------------------------------------------------------------------------------------------------
-		ibutton::ibutton() :
-			m_active(true)
-		{
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bool ibutton::show()
-		{
-			auto result = show_ui();
-			show_tooltip();
-			return result;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void ibutton::show_tooltip()
-		{
-			if (!m_tooltip.empty() && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			{
-				ImGui::BeginTooltip();
-				{
-					scope::cwrap_text wrap(m_tooltip.length());
-					ImGui::TextUnformatted(m_tooltip.c_str());
-				}
-				ImGui::EndTooltip();
-			}
-		}
-
 	} //- detail
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -65,9 +37,7 @@ namespace ui
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cbutton::show_ui()
 	{
-		const auto id = m_id.empty() ? ui::generate_id(m_title, m_icon) : ui::generate_id(m_id);
-
-		scope::cid id_scope(id);
+		scope::cid id_scope(imgui_id());
 
 		const auto result = ImGui::SmallButton(m_icon.empty() ? m_title.data() : fmt::format("{} {}", m_icon, m_title).data());
 		return result;

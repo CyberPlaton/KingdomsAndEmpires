@@ -19,6 +19,8 @@ namespace editor
 	{
 		if (ImGui::BeginMainMenuBar())
 		{
+			ctx().m_mainmenu_height = ImGui::GetWindowSize().y;
+
 			if (ImGui::BeginMenu("Menu"))
 			{
 				if (ImGui::MenuItem("Exit"))
@@ -36,6 +38,10 @@ namespace editor
 			}
 			if (ImGui::BeginMenu("Project"))
 			{
+				if (ImGui::MenuItem("Docks", nullptr, &ctx().m_docks_enabled))
+				{
+				}
+
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Debug"))

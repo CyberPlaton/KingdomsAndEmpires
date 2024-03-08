@@ -63,7 +63,6 @@ namespace ui
 		//------------------------------------------------------------------------------------------------------------------------
 		class icontrol
 		{
-			friend class ccontrol;
 		public:
 			icontrol();
 			virtual ~icontrol() {};
@@ -73,8 +72,9 @@ namespace ui
 
 		protected:
 			virtual bool show_ui() = 0;
+			ImGuiID imgui_id() const;
 
-		private:
+		protected:
 			std::string m_id;
 			std::string m_title;
 			std::string m_tooltip;

@@ -72,6 +72,7 @@ namespace ui
 		bool icontrol::show()
 		{
 			auto result = false;
+			if(m_active)
 			{
 				result = show_ui();
 			}
@@ -89,6 +90,12 @@ namespace ui
 				ImGui::TextUnformatted(m_tooltip.data());
 				ImGui::EndTooltip();
 			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		ImGuiID icontrol::imgui_id() const
+		{
+			return m_id.empty() ? ui::generate_id(m_title, m_icon) : ui::generate_id(m_id);
 		}
 
 	} //- detail

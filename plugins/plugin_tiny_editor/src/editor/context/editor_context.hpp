@@ -12,9 +12,12 @@ namespace editor
 		ccontext() = default;
 		~ccontext() = default;
 
-	protected:
+		float window_width();
+		float window_height();
 
-	private:
+	public:
+		float m_mainmenu_height;
+		bool m_docks_enabled = true;
 	};
 
 	//- Access to context.

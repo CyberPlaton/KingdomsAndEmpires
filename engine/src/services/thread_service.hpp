@@ -96,8 +96,6 @@ namespace engine
 				rttr::policy::ctor::as_raw_ptr
 			)
 			;
-
-		rttr::default_constructor<cthread_service>();
 	}
 
 } //- engine
