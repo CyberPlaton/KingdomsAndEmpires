@@ -15,13 +15,15 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cbottom_panel::init()
 	{
-		return true;
+		m_browser = std::make_shared<casset_browser>(ctx());
+		return m_browser->init();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cbottom_panel::shutdown()
 	{
-
+		m_browser->shutdown();
+		m_browser.reset();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -38,6 +40,7 @@ namespace editor
 		ImGui::SetNextWindowSize(size, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
 		ImGui::Begin(C_BOTTOM_PANEL_ID.data(), nullptr, C_BOTTOM_PANEL_FLAGS);
+		m_browser->on_ui_render();
 		ImGui::End();
 
 

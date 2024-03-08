@@ -15,13 +15,15 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cleft_panel::init()
 	{
-		return true;
+		m_inspector = std::make_shared<cworld_inspector>(ctx());
+		return m_inspector->init();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cleft_panel::shutdown()
 	{
-
+		m_inspector->shutdown();
+		m_inspector.reset();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -38,6 +40,7 @@ namespace editor
 		ImGui::SetNextWindowSize(size, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
 		ImGui::Begin(C_LEFT_PANEL_ID.data(), nullptr, C_LEFT_PANEL_FLAGS);
+		m_inspector->on_ui_render();
 		ImGui::End();
 	}
 

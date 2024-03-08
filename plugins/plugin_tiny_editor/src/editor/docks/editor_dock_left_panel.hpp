@@ -1,5 +1,6 @@
 #pragma once
 #include "editor_dock_base.hpp"
+#include "world_inspector/world_inspector.hpp"
 
 namespace editor
 {
@@ -15,7 +16,7 @@ namespace editor
 		void on_ui_render() override;
 
 	private:
-
+		ref_t<cworld_inspector> m_inspector;
 	};
 
 } //- editor

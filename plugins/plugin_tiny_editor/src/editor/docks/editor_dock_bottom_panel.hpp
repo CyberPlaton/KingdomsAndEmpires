@@ -1,5 +1,6 @@
 #pragma once
 #include "editor_dock_base.hpp"
+#include "asset_browser/asset_browser.hpp"
 
 namespace editor
 {
@@ -15,7 +16,7 @@ namespace editor
 		void on_ui_render() override;
 
 	private:
-
+		ref_t<casset_browser> m_browser;
 	};
 
 } //- editor
