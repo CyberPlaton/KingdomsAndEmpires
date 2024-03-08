@@ -24,8 +24,6 @@ namespace editor
 		if (button.title("My Button")
 			.icon(ICON_FA_APPLE_WHOLE)
 			.tooltip("While using the archetype you might find yourself in a generational problem")
-			.color(ImGuiCol_Text, core::scolor(core::common_color_pink50))
-			.color(ImGuiCol_Button, core::scolor(core::common_color_pink400))
 			.show())
 		{
 			sm::cui::create_notification("Notification", "My Button was pressed", sm::notification_type_info);

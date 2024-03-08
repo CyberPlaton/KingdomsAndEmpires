@@ -1,10 +1,11 @@
 #pragma once
 #include <engine.h>
 #include <plugin_logging.h>
+//- TODO: our editor should not be including anything from the kingdoms project
 #include <plugin_kingdoms_core.h>
-#include <plugin_camera_system.h>
 #include <plugin_race_human.h>
 #include <plugin_kingdoms_and_empires.h>
+#include <plugin_camera_system.h>
 #include <lua.h>
 #include <luabridge.h>
 

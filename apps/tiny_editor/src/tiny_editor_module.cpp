@@ -1,4 +1,4 @@
-#include "kingdoms_editor_module.hpp"
+#include "tiny_editor_module.hpp"
 #include <iostream>
 
 void core_io_error_function(uint8_t level, const std::string& message)
@@ -53,7 +53,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	cfg.m_layer_cfg.m_layers.emplace_back("cgame");
 	cfg.m_layer_cfg.m_layers.emplace_back("ceditor");
 
-	cfg.m_window_cfg.m_title = "Kingdoms & Empires Editor";
+	cfg.m_window_cfg.m_title = "Tiny Editor";
 	cfg.m_window_cfg.m_width = 1280;
 	cfg.m_window_cfg.m_height = 1024;
 	cfg.m_window_cfg.m_target_fps = 0;
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 	cfg.m_layer_cfg.m_layers.emplace_back("cgame");
 	cfg.m_layer_cfg.m_layers.emplace_back("ceditor");
 
-	cfg.m_window_cfg.m_title = "Kingdoms & Empires Editor";
+	cfg.m_window_cfg.m_title = "Tiny Editor";
 	cfg.m_window_cfg.m_width = 1280;
 	cfg.m_window_cfg.m_height = 1024;
 	cfg.m_window_cfg.m_target_fps = 0;

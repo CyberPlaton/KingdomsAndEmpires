@@ -8,7 +8,7 @@ namespace engine
 		template<typename TCallable>
 		using packaged_task_t = std::packaged_task<TCallable>;
 
-	} //- 
+	} //- detail
 
 	//-
 	//------------------------------------------------------------------------------------------------------------------------
@@ -96,6 +96,8 @@ namespace engine
 				rttr::policy::ctor::as_raw_ptr
 			)
 			;
+
+		rttr::default_constructor<cthread_service>();
 	}
 
 } //- engine

@@ -8,7 +8,7 @@ namespace ui
 	namespace detail
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		class ibutton : protected cui_element
+		class ibutton
 		{
 			friend class cbutton;
 		public:

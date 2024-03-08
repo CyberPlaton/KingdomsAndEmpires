@@ -69,14 +69,7 @@ namespace ui
 
 		scope::cid id_scope(id);
 
-		push_color_vars();
-		push_style_vars();
-
 		const auto result = ImGui::SmallButton(m_icon.empty() ? m_title.data() : fmt::format("{} {}", m_icon, m_title).data());
-
-		pop_color_vars();
-		pop_style_vars();
-
 		return result;
 	}
 

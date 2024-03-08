@@ -1,4 +1,4 @@
-#include "plugin_kingdoms_editor_module.hpp"
+#include "plugin_tiny_editor_module.hpp"
 
 namespace editor
 {
