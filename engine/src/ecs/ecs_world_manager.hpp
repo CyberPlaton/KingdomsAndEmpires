@@ -16,6 +16,7 @@ namespace ecs
 		void prepare(const core::srect& area);
 		const cworld& active() const;
 		cworld& active();
+		decltype(auto) has_active() const {return m_current != 0;}
 
 	private:
 		unsigned m_current = 0;

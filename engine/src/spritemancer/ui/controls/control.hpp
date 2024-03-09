@@ -4,8 +4,6 @@
 
 namespace ui
 {
-	class ccontrol;
-
 	namespace scope
 	{
 		//------------------------------------------------------------------------------------------------------------------------
@@ -64,21 +62,32 @@ namespace ui
 		class icontrol
 		{
 		public:
+			enum click_result : int8_t
+			{
+				click_result_none = -1,
+				click_result_lmb = ImGuiMouseButton_Left,
+				click_result_rmb = ImGuiMouseButton_Right,
+				click_result_mmb = ImGuiMouseButton_Middle,
+			};
+
 			icontrol();
 			virtual ~icontrol() {};
 
-			bool show();
-			operator bool() { return show(); }
+			click_result show();
+			operator bool() { return (int8_t)show() >= 0; }
 
 		protected:
-			virtual bool show_ui() = 0;
+			virtual click_result show_ui() = 0;
 			ImGuiID imgui_id() const;
+			void set_image(stringview_t name);
+			click_result mousebutton_state();
 
 		protected:
 			std::string m_id;
 			std::string m_title;
 			std::string m_tooltip;
 			std::string m_icon;
+			const raylib::Texture2D* m_image;
 			bool m_active;
 
 		private:
@@ -89,16 +98,21 @@ namespace ui
 
 	//- base class for implementing controls like drag control, string input control etc.
 	//------------------------------------------------------------------------------------------------------------------------
+	template<class TControlType>
 	class ccontrol : public detail::icontrol
 	{
 	public:
 		virtual ~ccontrol() {}
 
 	protected:
-		decltype(auto) id(stringview_t _id) { m_id = _id; return *this; }
-		decltype(auto) title(stringview_t _title) { m_title = _title; return *this; }
-		decltype(auto) tooltip(stringview_t _tooltip) { m_tooltip = _tooltip; return *this; }
-		decltype(auto) icon(stringview_t _icon) { m_icon = _icon; return *this; }
+		decltype(auto) id(stringview_t _id) { m_id = _id; return _this(); }
+		decltype(auto) title(stringview_t _title) { m_title = _title; return _this(); }
+		decltype(auto) tooltip(stringview_t _tooltip) { m_tooltip = _tooltip; return _this(); }
+		decltype(auto) icon(stringview_t _icon) { m_icon = _icon; return _this(); }
+		decltype(auto) image(stringview_t _texture) { m_image = _texture; return _this(); }
+
+	private:
+		decltype(auto) _this() {return *SCAST(TControlType, this);}
 	};
 
 } //- ui

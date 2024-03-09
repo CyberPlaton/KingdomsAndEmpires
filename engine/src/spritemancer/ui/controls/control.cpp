@@ -1,4 +1,5 @@
 #include "control.hpp"
+#include "../../sm_internal.hpp"
 
 namespace ui
 {
@@ -64,14 +65,14 @@ namespace ui
 	{
 		//------------------------------------------------------------------------------------------------------------------------
 		icontrol::icontrol() :
-			m_active(true)
+			m_active(true), m_image(nullptr)
 		{
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool icontrol::show()
+		icontrol::click_result icontrol::show()
 		{
-			auto result = false;
+			auto result = click_result_none;
 			if(m_active)
 			{
 				result = show_ui();
@@ -96,6 +97,31 @@ namespace ui
 		ImGuiID icontrol::imgui_id() const
 		{
 			return m_id.empty() ? ui::generate_id(m_title, m_icon) : ui::generate_id(m_id);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void icontrol::set_image(stringview_t name)
+		{
+			m_image = sm::ctx().tm().native(name);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		icontrol::click_result icontrol::mousebutton_state()
+		{
+			auto result = click_result_none;
+			if (ImGui::IsMouseDown(click_result_lmb))
+			{
+				result = click_result_lmb;
+			}
+			else if (ImGui::IsMouseDown(click_result_rmb))
+			{
+				result = click_result_rmb;
+			}
+			else if (ImGui::IsMouseDown(click_result_mmb))
+			{
+				result = click_result_mmb;
+			}
+			return result;
 		}
 
 	} //- detail

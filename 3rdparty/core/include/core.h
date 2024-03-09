@@ -94,7 +94,7 @@ template<class T, unsigned S>
 using array_t = stl::array<T, S>;
 
 using handle_type_t = uint16_t;
-#define invalid_handle_t MAX(uint16_t);
+#define invalid_handle_t MAX(uint16_t)
 using service_type_t = handle_type_t;
 using technique_t = handle_type_t;
 using texture_t = handle_type_t;
