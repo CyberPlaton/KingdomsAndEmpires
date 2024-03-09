@@ -54,10 +54,19 @@ namespace ui
 			~cid();
 		};
 
+		//------------------------------------------------------------------------------------------------------------------------
+		class cindent
+		{
+		public:
+			cindent(unsigned spaces);
+			~cindent();
+		};
+
 	} //- scope
 
 	namespace detail
 	{
+		//- Note: make sure that, when using show() explicitly to check for desired return value.
 		//------------------------------------------------------------------------------------------------------------------------
 		class icontrol
 		{
@@ -68,13 +77,16 @@ namespace ui
 				click_result_lmb = ImGuiMouseButton_Left,
 				click_result_rmb = ImGuiMouseButton_Right,
 				click_result_mmb = ImGuiMouseButton_Middle,
+				click_result_lmb_repeated,
+				click_result_rmb_repeated,
+				click_result_mmb_repeated,
 			};
 
 			icontrol();
 			virtual ~icontrol() {};
 
 			click_result show();
-			operator bool() { return (int8_t)show() >= 0; }
+			operator bool() { return show() != click_result_none; }
 
 		protected:
 			virtual click_result show_ui() = 0;

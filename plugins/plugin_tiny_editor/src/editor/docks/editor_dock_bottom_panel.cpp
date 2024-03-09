@@ -51,8 +51,7 @@ namespace editor
 
 		if (button.title("My Button")
 			.icon(ICON_FA_APPLE_WHOLE)
-			.tooltip("While using the archetype you might find yourself in a generational problem")
-			.show())
+			.tooltip("While using the archetype you might find yourself in a generational problem"))
 		{
 			sm::cui::create_notification("Notification", "My Button was pressed", sm::notification_type_info);
 		}

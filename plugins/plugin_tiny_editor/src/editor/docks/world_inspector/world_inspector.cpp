@@ -4,6 +4,7 @@ namespace editor
 {
 	namespace
 	{
+		constexpr auto C_TREE_NODE_BASE_FLAGS = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
 		constexpr std::string_view C_BOTTOM_PANEL_ID = "##editor_world_inspector";
 		constexpr auto C_WORLD_INSPECTOR_CHILD_FLAGS = ImGuiChildFlags_Border;
 		constexpr auto C_WORLD_INSPECTOR_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
@@ -70,7 +71,16 @@ namespace editor
 				{
 					m_state.m_view_type = world_view_type_layered;
 				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("New"))
+			{
+				if (ImGui::MenuItem("Entity"))
+				{
+					create_default_entity();
 
+					state().m_dirty = true;
+				}
 				ImGui::EndMenu();
 			}
 
@@ -85,11 +95,11 @@ namespace editor
 		//- TODO: how and where do we query for the currently created layers? sm does not care about it, so it should be our
 		//- responsibility to create new ones and name them
 
-		m_state.m_layered_view.clear();
+		state().m_layered_view.clear();
 
 		world.each([&](flecs::entity e, const ecs::ssprite& sprite, const ecs::sidentifier& identifier)
 			{
-				m_state.m_layered_view[sprite.m_layer].push_back(e);
+				state().m_layered_view[sprite.m_layer].push_back(e);
 			});
 	}
 
@@ -97,10 +107,115 @@ namespace editor
 	void cworld_inspector::show_world_hierarchy_view(const flecs::world& world)
 	{
 		//- TODO: use caching and recreate hierarchy view only if something happened
+		if (state().m_dirty)
+		{
+			recreate_snapshot(world);
+		}
 
-		world.each([&](flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
+		for (const auto& e : state().m_snapshot)
+		{
+			show_entity(e);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld_inspector::show_entity(const sentity& e, unsigned depth /*= 0*/)
+	{
+		ui::scope::cindent indent_scope(depth);
+
+		//- TODO: implement tree node class like the button, so we can detect double-clicks etc
+		//- and customize its appearance
+
+		auto flags = C_TREE_NODE_BASE_FLAGS;
+
+		if (e.m_children.empty())
+		{
+			flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
+		}
+
+
+		//- show entity
+		if (ImGui::TreeNodeEx(e.m_uuid.string().c_str(), flags))
+		{
+			//- recursively show children
+			for (const auto& k : e.m_children)
 			{
-			});
+				const auto& kid = get(k);
+
+				show_entity(kid, depth + 1);
+			}
+			ImGui::TreePop();
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld_inspector::create_default_entity()
+	{
+		ecs::cworld_manager::instance().active().em().create_entity()
+			.add<ecs::stransform>()
+			.add<ecs::sidentifier>()
+			.add<ecs::shierarchy>()
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const editor::cworld_inspector::sentity& cworld_inspector::get(unsigned hash)
+	{
+		return state().m_snapshot[state().m_lookup.at(hash)];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld_inspector::recreate_snapshot(const flecs::world& world)
+	{
+		{
+			CORE_NAMED_ZONE("World Inspector recreate snapshot");
+
+			state().m_snapshot.clear();
+			state().m_lookup.clear();
+
+			world.each([&](flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
+				{
+					if (!present_in_snapshot(identifier.m_uuid))
+					{
+						emplace_in_snapshot(e, hierarchy, identifier);
+					}
+				});
+
+			state().m_dirty = false;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cworld_inspector::present_in_snapshot(const core::cuuid& uuid)
+	{
+		auto h = uuid.hash();
+
+		return algorithm::find_if(state().m_lookup.begin(), state().m_lookup.end(),
+			[=](const auto& pair)
+			{
+				return pair.first == h;
+
+			}) != state().m_lookup.end();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld_inspector::emplace_in_snapshot(flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
+	{
+		//- create entity for snapshot
+		sentity entity;
+		entity.m_uuid = identifier.m_uuid;
+		entity.m_name = identifier.m_name;
+		entity.m_parent = identifier.m_uuid.hash();
+		for (const auto& uuid : hierarchy.m_children)
+		{
+			entity.m_children.push_back(uuid.hash());
+		}
+
+		//- store entity in snapshot
+		auto h = identifier.m_uuid.hash();
+		auto index = state().m_snapshot.size();
+		state().m_snapshot.emplace_back(std::move(entity));
+		state().m_lookup[h] = index;
 	}
 
 } //- editor

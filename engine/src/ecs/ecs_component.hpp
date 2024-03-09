@@ -73,6 +73,7 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
+		std::string m_name;
 		flecs::entity m_self;
 		core::cuuid m_uuid;
 		
@@ -184,6 +185,7 @@ namespace ecs
 	{
 		rttr::registration::class_<sidentifier>("sidentifier")
 			.property("m_uuid", &sidentifier::m_uuid)
+			.property("m_name", &sidentifier::m_name)
 			.method("name", &sidentifier::name)
 			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &sidentifier::serialize)
 			.method(C_COMPONENT_SET_FUNC_NAME, &sidentifier::set)

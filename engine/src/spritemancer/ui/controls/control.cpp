@@ -59,6 +59,18 @@ namespace ui
 			ImGui::PopID();
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		cindent::cindent(unsigned spaces)
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, spaces);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		cindent::~cindent()
+		{
+			ImGui::PopStyleVar();
+		}
+
 	} //- scope
 
 	namespace detail
@@ -109,15 +121,27 @@ namespace ui
 		icontrol::click_result icontrol::mousebutton_state()
 		{
 			auto result = click_result_none;
-			if (ImGui::IsMouseDown(click_result_lmb))
+			if (ImGui::IsMouseClicked(click_result_lmb, true))
+			{
+				result = click_result_lmb_repeated;
+			}
+			else if (ImGui::IsMouseClicked(click_result_rmb, true))
+			{
+				result = click_result_rmb_repeated;
+			}
+			else if (ImGui::IsMouseClicked(click_result_mmb, true))
+			{
+				result = click_result_mmb_repeated;
+			}
+			if (ImGui::IsMouseClicked(click_result_lmb, false))
 			{
 				result = click_result_lmb;
 			}
-			else if (ImGui::IsMouseDown(click_result_rmb))
+			else if (ImGui::IsMouseClicked(click_result_rmb, false))
 			{
 				result = click_result_rmb;
 			}
-			else if (ImGui::IsMouseDown(click_result_mmb))
+			else if (ImGui::IsMouseClicked(click_result_mmb, false))
 			{
 				result = click_result_mmb;
 			}

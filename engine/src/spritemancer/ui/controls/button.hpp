@@ -7,7 +7,7 @@ namespace ui
 	{
 	} //- detail
 
-	//- usable base class for a button. Can also be extended.
+	//- usable as is class for a button. Can also be extended.
 	//- Does return a verbose value to indicate which mouse button was pressed on it or
 	//- a boolean value whether any button was pressed on it.
 	//------------------------------------------------------------------------------------------------------------------------

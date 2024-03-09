@@ -69,10 +69,18 @@ namespace stl = std;
 	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
 void operator delete(void* p){TracyFree(p); CORE_FREE(p); }
-	#elif !CORE_PLATFORM_WINDOWS
+#elif !CORE_PLATFORM_WINDOWS
 void* operator new(size_t n) { return CORE_MALLOC(n); }
 void operator delete(void* p) { CORE_FREE(p); }
 	#endif
+#endif
+
+#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
+#define CORE_ZONE ZoneScoped
+#define CORE_NAMED_ZONE(name) ZoneScopedN(name)
+#elif
+#define CORE_ZONE
+#define CORE_NAMED_ZONE(name)
 #endif
 
 template<class T>
@@ -659,6 +667,7 @@ namespace core
 		bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
 		bool is_higher_as(const cuuid& uuid) const { return compare(uuid) > 0; }
 		bool operator==(const cuuid& other) const { return is_equal_to(other); }
+		bool operator!=(const cuuid& other) const { return !is_equal_to(other); };
 
 	private:
 		inline static const auto C_RANDOM_BYTES_COUNT = 4;
