@@ -9,13 +9,14 @@ namespace editor
 	class ccontext : core::cnon_copyable
 	{
 	public:
-		ccontext() = default;
+		ccontext();
 		~ccontext() = default;
 
 		float window_width();
 		float window_height();
 
 	public:
+		core::cuuid m_inspected_entity;
 		float m_mainmenu_height;
 		bool m_docks_enabled = true;
 	};

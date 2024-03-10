@@ -170,8 +170,6 @@ namespace algorithm
 
 namespace core
 {
-	const core::cuuid cuuid::C_INVALID_UUID;
-
 	namespace
 	{
 		constexpr stringview_t C_EMPTY_STRING = "";
@@ -1048,6 +1046,9 @@ namespace core
 
 	} //- detail
 
+	const array_t<unsigned char, 16u> cuuid::C_INVALID_DATA = { 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f' };
+	const core::cuuid cuuid::C_INVALID_UUID = { C_INVALID_DATA };
+
 	//------------------------------------------------------------------------------------------------------------------------
 	cuuid::cuuid()
 	{
@@ -1070,6 +1071,12 @@ namespace core
 	cuuid::cuuid(const cuuid& other)
 	{
 		copy_from(other);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuuid::cuuid(array_t<unsigned char, 16u> data)
+	{
+		std::memcpy(&m_data[0], &data[0], sizeof(unsigned char) * 16);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

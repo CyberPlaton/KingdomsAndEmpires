@@ -156,6 +156,8 @@ namespace editor
 		else if (result == ui::detail::icontrol::click_result_rmb)
 		{
 			sm::cui::create_notification("Notification", "RMB", sm::notification_type_info);
+
+			ctx().m_inspected_entity = e.m_uuid;
 		}
 		else if (result == ui::detail::icontrol::click_result_lmb_repeated)
 		{
@@ -220,6 +222,7 @@ namespace editor
 		sentity entity;
 		entity.m_uuid = identifier.m_uuid;
 		entity.m_name = identifier.m_name;
+		entity.m_entity = e;
 		entity.m_parent = identifier.m_uuid.hash();
 		for (const auto& uuid : hierarchy.m_children)
 		{

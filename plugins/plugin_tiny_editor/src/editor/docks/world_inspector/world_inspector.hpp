@@ -1,5 +1,6 @@
 #pragma once
 #include "../editor_dock_base.hpp"
+#include "../entity_context_menu/entity_context_menu.hpp"
 
 namespace editor
 {
@@ -27,6 +28,7 @@ namespace editor
 		{
 			core::cuuid m_uuid;
 			std::string_view m_name;
+			flecs::entity m_entity;
 			//- hashed uuids of parent and children
 			unsigned m_parent = MAX(unsigned);
 			vector_t<unsigned> m_children;

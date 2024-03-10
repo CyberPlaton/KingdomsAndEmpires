@@ -4,6 +4,7 @@
 #include "docks/editor_dock_bottom_panel.hpp"
 #include "docks/editor_dock_left_panel.hpp"
 #include "docks/editor_dock_right_panel.hpp"
+#include "docks/editor_entity_context_panel.hpp"
 
 namespace editor
 {

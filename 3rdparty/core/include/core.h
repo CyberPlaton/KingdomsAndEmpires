@@ -654,8 +654,10 @@ namespace core
 	{
 	public:
 		static const cuuid C_INVALID_UUID;
+		static const array_t<unsigned char, 16u> C_INVALID_DATA;
 
 		cuuid();
+		cuuid(array_t<unsigned char, 16u> data);
 		cuuid(const std::string& uuid);
 		cuuid(size_t seed);
 		cuuid(const cuuid& other);
@@ -673,7 +675,7 @@ namespace core
 		inline static const auto C_RANDOM_BYTES_COUNT = 4;
 		inline static const unsigned char C_HEX[] = "0123456789abcdef";
 
-		array_t<unsigned char, 16u> m_data;
+		array_t<unsigned char, 16u> m_data = C_INVALID_DATA;
 
 	private:
 		void generate(size_t seed);

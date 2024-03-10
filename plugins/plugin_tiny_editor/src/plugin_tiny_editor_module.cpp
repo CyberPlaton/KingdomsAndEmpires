@@ -13,6 +13,7 @@ namespace editor
 		result &= docks.push_back<cbottom_panel>();
 		result &= docks.push_back<cleft_panel>();
 		result &= docks.push_back<cright_panel>();
+		result &= docks.push_back<centity_context_panel>();
 
 		return result;
 	}
