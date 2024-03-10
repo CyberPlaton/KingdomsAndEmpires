@@ -99,8 +99,9 @@ namespace ui
 			if (!m_tooltip.empty() && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 			{
 				ImGui::BeginTooltip();
-				scope::cwrap_text wrap(m_tooltip.length());
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * m_tooltip.length());
 				ImGui::TextUnformatted(m_tooltip.data());
+				ImGui::PopTextWrapPos();
 				ImGui::EndTooltip();
 			}
 		}
@@ -121,29 +122,32 @@ namespace ui
 		icontrol::click_result icontrol::mousebutton_state()
 		{
 			auto result = click_result_none;
-			if (ImGui::IsMouseClicked(click_result_lmb, true))
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly))
 			{
-				result = click_result_lmb_repeated;
-			}
-			else if (ImGui::IsMouseClicked(click_result_rmb, true))
-			{
-				result = click_result_rmb_repeated;
-			}
-			else if (ImGui::IsMouseClicked(click_result_mmb, true))
-			{
-				result = click_result_mmb_repeated;
-			}
-			if (ImGui::IsMouseClicked(click_result_lmb, false))
-			{
-				result = click_result_lmb;
-			}
-			else if (ImGui::IsMouseClicked(click_result_rmb, false))
-			{
-				result = click_result_rmb;
-			}
-			else if (ImGui::IsMouseClicked(click_result_mmb, false))
-			{
-				result = click_result_mmb;
+				if (ImGui::IsMouseClicked(click_result_lmb))
+				{
+					result = click_result_lmb;
+				}
+				else if (ImGui::IsMouseClicked(click_result_rmb))
+				{
+					result = click_result_rmb;
+				}
+				else if (ImGui::IsMouseClicked(click_result_mmb))
+				{
+					result = click_result_mmb;
+				}
+				if (ImGui::IsMouseDoubleClicked(click_result_lmb))
+				{
+					result = click_result_lmb_repeated;
+				}
+				else if (ImGui::IsMouseDoubleClicked(click_result_rmb))
+				{
+					result = click_result_rmb_repeated;
+				}
+				else if (ImGui::IsMouseDoubleClicked(click_result_mmb))
+				{
+					result = click_result_mmb_repeated;
+				}
 			}
 			return result;
 		}

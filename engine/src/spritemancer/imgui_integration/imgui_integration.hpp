@@ -10,4 +10,4 @@ namespace ui
 	ImGuiID generate_id(const std::string& title, const std::string& icon = "");
 	ImVec4 convert_to_imgui_color(const core::scolor& color);
 
-} //- ImGui
+} //- ui

@@ -135,8 +135,16 @@ namespace editor
 
 
 		//- show entity
-		if (ImGui::TreeNodeEx(e.m_uuid.string().c_str(), flags))
+		ui::ctreenode node;
+		auto result = node.title(e.m_uuid.string().c_str())
+			.tooltip("A hint")
+			.icon(ICON_FA_ANKH)
+			.flags(flags).show();
+
+		if (result == ui::detail::icontrol::click_result_lmb)
 		{
+			sm::cui::create_notification("Notification", "LMB", sm::notification_type_info);
+
 			//- recursively show children
 			for (const auto& k : e.m_children)
 			{
@@ -144,7 +152,14 @@ namespace editor
 
 				show_entity(kid, depth + 1);
 			}
-			ImGui::TreePop();
+		}
+		else if (result == ui::detail::icontrol::click_result_rmb)
+		{
+			sm::cui::create_notification("Notification", "RMB", sm::notification_type_info);
+		}
+		else if (result == ui::detail::icontrol::click_result_lmb_repeated)
+		{
+			sm::cui::create_notification("Notification", "LMB repeated", sm::notification_type_info);
 		}
 	}
 
