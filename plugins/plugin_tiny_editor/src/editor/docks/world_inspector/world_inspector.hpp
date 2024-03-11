@@ -47,6 +47,7 @@ namespace editor
 		};
 
 		sstate m_state;
+		ref_t<centity_context_menu> m_context_menu;
 
 	private:
 		sstate& state() {return m_state;}

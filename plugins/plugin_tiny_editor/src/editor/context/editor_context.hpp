@@ -16,7 +16,6 @@ namespace editor
 		float window_height();
 
 	public:
-		core::cuuid m_inspected_entity;
 		float m_mainmenu_height;
 		bool m_docks_enabled = true;
 	};

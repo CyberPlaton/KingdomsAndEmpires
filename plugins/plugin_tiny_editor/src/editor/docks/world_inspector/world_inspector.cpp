@@ -15,6 +15,7 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cworld_inspector::init()
 	{
+		m_context_menu = std::make_shared<centity_context_menu>(ctx());
 		return true;
 	}
 
@@ -31,6 +32,9 @@ namespace editor
 
 		if(!world_manager.has_active())
 			return;
+
+		//- TODO: it seems that the context menu only has to be one level above to work as expected.
+		m_context_menu->on_ui_render();
 
 		//const auto& entities = world_manager.active().em().entities();
 
@@ -52,7 +56,6 @@ namespace editor
 			break;
 		}
 		}
-
 		ImGui::EndChild();
 	}
 
@@ -156,8 +159,7 @@ namespace editor
 		else if (result == ui::detail::icontrol::click_result_rmb)
 		{
 			sm::cui::create_notification("Notification", "RMB", sm::notification_type_info);
-
-			ctx().m_inspected_entity = e.m_uuid;
+			m_context_menu->open(e.m_entity);
 		}
 		else if (result == ui::detail::icontrol::click_result_lmb_repeated)
 		{

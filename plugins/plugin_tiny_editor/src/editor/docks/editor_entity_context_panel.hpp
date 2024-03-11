@@ -16,7 +16,6 @@ namespace editor
 		void on_ui_render() override;
 
 	private:
-		ref_t<centity_context_menu> m_context_menu;
 	};
 
 } //- editor

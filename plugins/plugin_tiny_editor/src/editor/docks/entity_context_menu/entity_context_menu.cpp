@@ -4,17 +4,16 @@ namespace editor
 {
 	namespace
 	{
-		constexpr std::string_view C_CONTEXT_MENU_POPUP_ID = "##entity_context_menu_popup";
-		constexpr auto C_CONTEXT_MENU_POPUP_WINDOW_FLAGS = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration;
+		constexpr std::string_view C_CONTEXT_MENU_POPUP_ID = "##entity_context_menu";
+		constexpr auto C_CONTEXT_MENU_WINDOW_FLAGS = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration;
 		constexpr auto C_CONTEXT_MENU_POPUP_FLAGS = ImGuiPopupFlags_None;
 
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	centity_context_menu::centity_context_menu(flecs::entity e, ccontext& ctx) :
-		ccontext_holder(ctx), m_entity(e)
+	centity_context_menu::centity_context_menu(ccontext& ctx) :
+		ccontext_holder(ctx)
 	{
-		ImGui::OpenPopup(C_CONTEXT_MENU_POPUP_ID.data(), C_CONTEXT_MENU_POPUP_FLAGS);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -25,20 +24,29 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void centity_context_menu::on_ui_render()
 	{
-		if (ImGui::BeginPopup(C_CONTEXT_MENU_POPUP_ID.data(), C_CONTEXT_MENU_POPUP_WINDOW_FLAGS))
+		if (m_open)
 		{
-			ImGui::Text("Option");
-			ImGui::Text("Option");
-			ImGui::Text("Option");
-			ImGui::Text("Option");
-			ImGui::Text("Option");
-			ImGui::Text("Option");
-			ImGui::Text("Option");
-			ImGui::Text("Option");
-			ImGui::Text("Option");
+			//- 'opening' a popup should be done once
+			ImGui::OpenPopup(C_CONTEXT_MENU_POPUP_ID.data(), C_CONTEXT_MENU_POPUP_FLAGS);
+			m_open = false;
+		}
+
+		if (ImGui::BeginPopup(C_CONTEXT_MENU_POPUP_ID.data(), C_CONTEXT_MENU_WINDOW_FLAGS))
+		{
+			ImGui::TextUnformatted("Hi");
+			ImGui::TextUnformatted("Hi");
+			ImGui::TextUnformatted("Hi");
+			ImGui::TextUnformatted("Hi");
 
 			ImGui::EndPopup();
 		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void centity_context_menu::open(flecs::entity e)
+	{
+		m_entity = e;
+		m_open = true;
 	}
 
 } //- editor

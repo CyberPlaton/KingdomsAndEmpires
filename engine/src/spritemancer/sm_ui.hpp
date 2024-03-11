@@ -1,6 +1,6 @@
 #pragma once
 #include "ui/controls/button.hpp"
-#include "ui/controls/standard_dialog.hpp"
+#include "ui/controls/dialog.hpp"
 #include "ui/controls/tree_node.hpp"
 
 namespace ImNodes = ax::NodeEditor;
