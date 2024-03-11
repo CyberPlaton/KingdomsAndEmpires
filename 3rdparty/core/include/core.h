@@ -195,6 +195,14 @@ namespace core
 
 	//- common enums etc.
 	//------------------------------------------------------------------------------------------------------------------------
+	enum resource_status : uint8_t
+	{
+		resource_status_none = 0,
+		resource_status_loading,
+		resource_status_ready,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	enum file_io_status : uint8_t
 	{
 		file_io_status_none = 0,
@@ -609,6 +617,25 @@ namespace core
 	//- define some common types of pairs
 	//------------------------------------------------------------------------------------------------------------------------
 	using smaterial_pair = spair<texture_t, material_t>;
+
+	//- Base class for a asynchronously loaded resource.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResourceHandleType>
+	class iresource_pointer
+	{
+	public:
+		iresource_pointer() = default;
+		virtual ~iresource_pointer() {}
+
+		decltype(auto) ready() const {return m_status == resource_status_ready;}
+		decltype(auto) path() const {return m_path.data();}
+		TResourceHandleType get() const {return m_handle;}
+
+	protected:
+		std::string m_path;
+		resource_status m_status = resource_status_none;
+		TResourceHandleType m_handle = invalid_handle_t;
+	};
 
 	//- base class for a service
 	//------------------------------------------------------------------------------------------------------------------------

@@ -23,7 +23,7 @@ namespace sm
 	void begin_render_target(render_target_t& texture);
 	void end_render_target(raylib::Shader combine_technique = { 0 });
 
-	//- texture and shader program management
+	//- texture and shader program management shortcuts
 	technique_t create_technique(const std::string& technique_name, const std::string& vs_path, const std::string& ps_path);
 	technique_t create_technique_embedded(const std::string& technique_name, const char* vs, const char* ps);
 	technique_t get_technique(const std::string& technique_name);

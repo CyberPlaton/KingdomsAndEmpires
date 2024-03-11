@@ -12,7 +12,7 @@ namespace sm
 		//- Base resource manager. Handles common storage types, like retrieving a handle or unloading.
 		//- Note: as of now the implementing resource manager has to respect correct creation behavior:
 		//- In m_lookup emplace the name of the resource paired to its handle, whereas the handle is the
-		//- index into m_resources where the underlying resource is stored.
+		//- index into m_resources where the underlying resource is stored. For examples see finished managers below.
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TResourceHandleType, typename TNativeResourceType>
 		class cresource_manager

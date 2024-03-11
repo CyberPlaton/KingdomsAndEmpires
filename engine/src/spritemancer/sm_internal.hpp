@@ -4,6 +4,17 @@
 
 namespace sm
 {
+	//------------------------------------------------------------------------------------------------------------------------
+	class ctexture_pointer final : public core::iresource_pointer<texture_t>
+	{
+	public:
+		ctexture_pointer() = default;
+		~ctexture_pointer();
+
+		core::resource_status load(stringview_t name, stringview_t path);
+	};
+
+
 	namespace internal
 	{
 		class ccontext;

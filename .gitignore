@@ -38,6 +38,7 @@
 *.user
 *.sln
 *.xlsx
+*.project
 
 *.workspace
 *.mk

@@ -9,7 +9,7 @@ THIRDPARTY = {"raylib", "spdlog", "core", "glm", "EASTL", "argparse", "nlohmann"
 			  "rttr", "Tracy"}
 PLUGINS = {"test", "test2", "plugin_logging", "plugin_module_example",
 			"plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human",
-			"plugin_kingdoms_and_empires", "plugin_tiny_editor"}
+			"plugin_status_effects", "plugin_kingdoms_and_empires", "plugin_tiny_editor"}
 EXES = {"engine_launcher", "kingdoms_and_empires", "tiny_editor"}
 PLATFORM = "<undefined>"
 OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"

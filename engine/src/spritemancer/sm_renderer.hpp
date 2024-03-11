@@ -3,6 +3,11 @@
 
 namespace sm
 {
+	//- Deferred renderer class. Can be created to start rendering commands
+	//- that are submitted when renderer goes out of scope. The actual rendering is done on main thread
+	//- when the frame ends.
+	//- Depth fighting is avoided through layers, however rendering multiple sprites on same layer
+	//- and on same position could be an issue (would be an issue on single threaded renderers too). 
 	//------------------------------------------------------------------------------------------------------------------------
 	class crenderer : public internal::irenderer
 	{
