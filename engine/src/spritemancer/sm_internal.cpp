@@ -25,10 +25,10 @@ namespace sm
 		{
 			//- TODO: let resource be loaded async and immediately return
 			//- loading status, when texture is loaded set status accordingly.
-			core::casync([&]()
-				{
-					m_handle = ctx().tm().create(name, path);
-				});
+// 			core::casync([&]()
+// 				{
+// 					m_handle = ctx().tm().create(name, path);
+// 				});
 		}
 	}
 

@@ -4,33 +4,37 @@
 namespace effects
 {
 	//- This is a dummy effect to show how one would be defined.
+	//- You would implement desired functions. Where on_apply is called once when the effect is applied and
+	//- the turn tick start, on_update is invoked on each turn tick and return type false indicates that it should be removed,
+	//- on_remove is called just before the effect is removed.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sstatus_effect final
 	{
-		static constexpr std::string_view C_EFFECT_UPDATE_FUNC_NAME		= "on_update";
+		static constexpr std::string_view C_EFFECT_ON_UPDATE_FUNC_NAME	= "on_update";
 		static constexpr std::string_view C_EFFECT_ON_APPLY_FUNC_NAME	= "on_apply";
 		static constexpr std::string_view C_EFFECT_ON_REMOVE_FUNC_NAME	= "on_remove";
 
-		static void on_apply(flecs::entity) {}
-		static bool on_update(flecs::entity) {}
-		static void on_remove(flecs::entity) {}
+		void on_apply(flecs::entity) {}
+		bool on_update(flecs::entity) {return false;}
+		void on_remove(flecs::entity) {}
+
+		RTTR_ENABLE();
 	};
 
 	//- Specifies an entity as eligible for applying an effect to.
+	//- m_effect is a status effect class instance that ought to be serializable and reflected.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct saffectable : ecs::icomponent
 	{
 		DECLARE_COMPONENT(saffectable);
 
-		struct seffect_functions
+		struct sdata
 		{
-			rttr::method m_update;
-			rttr::method m_on_apply;
-			rttr::method m_on_remove;
+			rttr::variant m_effect;
 			bool m_entered = true;
 		}; 
 
-		vector_t<seffect_functions> m_effects;
+		vector_t<sdata> m_active_effects;
 
 		RTTR_ENABLE(ecs::icomponent);
 	};
@@ -40,7 +44,7 @@ namespace effects
 	{
 	public:
 		cstatus_effects_system(flecs::world& w) :
-			ecs::csystem<stargeting_component>
+			ecs::csystem<saffectable>
 			(w, "Status Effect System")
 		{
 			run_on(ecs::system_running_phase_on_update);
@@ -51,29 +55,46 @@ namespace effects
 
 					vector_t<unsigned> to_be_removed;
 
-					for(auto i = 0u; i < affectable.size(); ++i)
+					for (auto i = 0u; i < affectable.m_active_effects.size(); ++i)
 					{
-						auto& effect = affectable.m_effects[i];
+						auto& effect = affectable.m_active_effects[i];
 
-						if(effect.m_entered)
+						auto type = effect.m_effect.get_type();
+
+						//- enter newly applied effects
+						if (effect.m_entered)
 						{
-							effect.m_on_apply.invoke({}, e);
+							//- find required method
+							if (auto apply = type.get_method(sstatus_effect::C_EFFECT_ON_APPLY_FUNC_NAME.data()); apply.is_valid())
+							{
+								apply.invoke(effect.m_effect, e);
+							}
 							effect.m_entered = false;
 						}
 
-						if(!effect.m_on_update.invoke({}, e))
+						//- regular effects update
+						if (auto update = type.get_method(sstatus_effect::C_EFFECT_ON_UPDATE_FUNC_NAME.data()); update.is_valid())
 						{
-							to_be_removed.push_back(i);
+							if (auto var = update.invoke(effect.m_effect, e); !var.to_bool())
+							{
+								to_be_removed.push_back(i);
+							}
 						}
 					}
 
-					for(auto i = 0u; i < to_be_removed.size(); ++i)
+					//- remove effects that are completed
+					for (auto i : to_be_removed)
 					{
-						auto& effect = affectable.m_effects[to_be_removed[i]];
+						auto& effect = affectable.m_active_effects[to_be_removed[i]];
 
-						effect.m_on_remove.invoke({}, e);
+						auto type = effect.m_effect.get_type();
 
-						algorithm::erase_at_index(affectable.m_effects, to_be_removed[i]);
+						if (auto remove = type.get_method(sstatus_effect::C_EFFECT_ON_REMOVE_FUNC_NAME.data()); remove.is_valid())
+						{
+							remove.invoke(effect.m_effect, e);
+						}
+
+						algorithm::erase_at_index(affectable.m_active_effects, to_be_removed[i]);
 					}
 				});
 		}
@@ -99,24 +120,25 @@ namespace effects
 namespace effects
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(shuman)
+	REFLECT_INLINE(sstatus_effect)
 	{
-		rttr::registration::class_<shuman>("shuman")
-			.method("serialize", &shuman::serialize)
+		rttr::registration::class_<sstatus_effect>("sstatus_effect")
+			.method("on_apply", &sstatus_effect::on_apply)
+			.method("on_update", &sstatus_effect::on_update)
+			.method("on_remove", &sstatus_effect::on_remove)
 			;
 
-		rttr::default_constructor<shuman>();
+		rttr::default_constructor<sstatus_effect>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(chuman_race_module)
+	REFLECT_INLINE(saffectable)
 	{
-		rttr::registration::class_<chuman_race_module>("chuman_race_module")
-			.constructor<flecs::world&>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
+		rttr::registration::class_<saffectable>("saffectable")
+			.property("m_active_effects", &saffectable::m_active_effects)
 			;
+
+		rttr::default_constructor<saffectable>();
 	}
 
 } //- effects

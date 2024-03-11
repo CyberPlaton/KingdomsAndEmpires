@@ -70,6 +70,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 		//- import module with required components
 		w.mm().import_module<module_example::cmy_second_module>();
+		w.mm().import_module<effects::cstatus_effects_module>();
 
 		for (auto i = 0u; i < 250; ++i)
 		{
@@ -78,6 +79,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			e.add<module_example::stargeting_component>();
 			e.add<ecs::sidentifier>();
 			e.add<ecs::stransform>();
+
+			if(i < 150)
+			{
+				e.add<effects::saffectable>();
+			}
 		}
 
 		//- create several entities for testing
