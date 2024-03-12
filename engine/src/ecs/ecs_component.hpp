@@ -105,18 +105,15 @@ namespace ecs
 
 		vector_t<core::spair<texture_t, material_t>> m_materials;
 
-		core::scolor m_tint		= core::scolor(core::common_color_neutral1000);
+		core::scolor m_tint				= core::scolor(core::common_color_neutral1000);
 		//- represents a rectangle in actual texture pixel size
-		unsigned short m_sourcex= 0;
-		unsigned short m_sourcey= 0;
-		unsigned short m_sourcew= 0;
-		unsigned short m_sourceh= 0;
-		float m_originx			= 0.0f;
-		float m_originy			= 0.0f;
-		bool m_visible			= true;
-		bool m_flipx			= false;
-		bool m_flipy			= false;
-		unsigned char m_layer	= 0;
+		core::srect m_source_rectangle	= {0.0f, 0.0f, 0.0f, 0.0f};
+		float m_originx					= 0.0f;
+		float m_originy					= 0.0f;
+		bool m_visible					= true;
+		bool m_flipx					= false;
+		bool m_flipy					= false;
+		unsigned char m_layer			= 0;
 
 		RTTR_ENABLE(icomponent);
 	};
@@ -222,10 +219,7 @@ namespace ecs
 			.property("m_layer", &ssprite::m_layer)
 			.property("m_originx", &ssprite::m_originx)
 			.property("m_originy", &ssprite::m_originy)
-			.property("m_sourceh", &ssprite::m_sourceh)
-			.property("m_sourcew", &ssprite::m_sourcew)
-			.property("m_sourcex", &ssprite::m_sourcex)
-			.property("m_sourcey", &ssprite::m_sourcey)
+			.property("m_source_rectangle", &ssprite::m_source_rectangle)
 			.property("m_tint", &ssprite::m_tint)
 			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &ssprite::serialize)
 			.method(C_COMPONENT_SET_FUNC_NAME, &ssprite::set)

@@ -97,7 +97,7 @@ namespace module_example
 			.constructor<flecs::world&>()
 			(
 				rttr::policy::ctor::as_raw_ptr
-				)
+			)
 			;
 	}
 
@@ -108,7 +108,7 @@ namespace module_example
 			.constructor<flecs::world&>()
 			(
 				rttr::policy::ctor::as_raw_ptr
-				)
+			)
 			;
 	}
 

@@ -23,7 +23,7 @@ namespace effects
 		RTTR_ENABLE();
 	};
 
-	//- An actual implementation of an effect as an example. Should not be used in client as it showcases how to use it.
+	//- An actual implementation of an effect as an example. Should not be used in client as it showcases how to make one.
 	//- Note that the effect is component-like and should be default constructible.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sexample_effect final : seffect_tag
@@ -37,6 +37,7 @@ namespace effects
 		int m_turns = 4;
 		unsigned m_radius = 3;
 
+		//- internal
 		material_t m_material_handle;
 		texture_t m_texture_handle;
 		int m_index;

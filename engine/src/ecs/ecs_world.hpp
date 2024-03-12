@@ -24,8 +24,6 @@ namespace ecs
 		[[nodiscard]] decltype(auto) visible_entities() const {return m_visible_entities;}
 		void prepare(const core::srect& area);
 
-		flecs::snapshot snapshot() const;
-
 		bool load(const core::cpath& path);
 		void save(const core::cpath& path);
 

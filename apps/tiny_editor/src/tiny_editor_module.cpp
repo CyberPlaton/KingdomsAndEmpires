@@ -71,6 +71,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		//- import module with required components
 		w.mm().import_module<module_example::cmy_second_module>();
 		w.mm().import_module<effects::cstatus_effects_module>();
+		w.mm().import_module<render_system::cscene_render_module>();
+		w.mm().import_module<render_system::canimation_module>();
 
 		for (auto i = 0u; i < 250; ++i)
 		{
