@@ -80,11 +80,23 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			e.add<ecs::sidentifier>();
 			e.add<ecs::stransform>();
 
-			if(i < 150)
+			e.add<effects::saffectable>();
+			auto* c = e.get_mut<effects::saffectable>();
+
+			if (i < 100)
 			{
-				e.add<effects::saffectable>();
+				effects::apply_effect_to_entity<effects::sexample_effect>(e);
+			}
+
+			if (i == 0)
+			{
+				//- we have to add at least once, because we check if entities have that component
+				//- in the example effect
+				e.add<ecs::ssprite>();
 			}
 		}
+
+		w.save("MyWorld.world");
 
 		//- create several entities for testing
 // 		auto walther = w.em().create_entity();

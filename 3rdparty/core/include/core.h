@@ -273,6 +273,10 @@ namespace core
 	template<typename TKey, typename TValue>
 	struct spair
 	{
+		spair() = default;
+		~spair() = default;
+		spair(TKey k, TValue v) : first(k), second(v) {}
+
 		TKey first;
 		TValue second;
 
@@ -1590,6 +1594,10 @@ namespace core
 	{
 		rttr::registration::class_<smaterial_pair>("smaterial_pair")
 			.constructor<>()
+			(
+				rttr::policy::ctor::as_object
+			)
+			.constructor<texture_t, material_t>()
 			(
 				rttr::policy::ctor::as_object
 			)
