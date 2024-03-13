@@ -80,7 +80,7 @@ namespace engine
 		}
 		else
 		{
-			logging::log_error(fmt::format("\tCan´t emplace service '{}'. Maximum number of services reached, increase value in 'core' library",
+			logging::log_error(fmt::format("\tCan not emplace service '{}'. Maximum number of services reached, increase value in 'core' library",
 				service_type.get_name().data()));
 		}
 		return false;

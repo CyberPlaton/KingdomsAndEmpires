@@ -641,6 +641,15 @@ namespace core
 		TResourceHandleType m_handle = invalid_handle_t;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class cresource_manager
+	{
+	public:
+		static constexpr unsigned C_MANAGER_COUNT_MAX = 64;
+
+		virtual void on_update(float) = 0;
+	}
+
 	//- base class for a service
 	//------------------------------------------------------------------------------------------------------------------------
 	class cservice

@@ -29,11 +29,8 @@ namespace engine
 
 		static bool emplace(rttr::type service_type);
 
-		template<class TService>
-		static void release();
-
 	private:
-		inline static handle_type_t s_service_count = 0;
+		inline static int s_service_count = 0;
 		inline static service_type_t s_next_type = 0;
 		inline static umap_t<size_t, service_type_t> s_service_types;
 		inline static array_t<rttr::variant, core::cservice::C_SERVICE_COUNT_MAX> s_services;
@@ -87,21 +84,6 @@ namespace engine
 		ASSERT(false, "Invalid operation. Service does not exist");
 
 		return nullptr;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<class TService>
-	void cservice_manager::release()
-	{
-		auto id = rttr::type::get<TService>().get_id();
-
-		if (s_service_types.find(id) != s_service_types.end())
-		{
-			const auto t = s_service_types[id];
-			s_services[t].clear();
-			s_service_types.erase(id);
-			s_service_count = s_service_count - 1 < 0 ? 0 : s_service_count - 1;
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
