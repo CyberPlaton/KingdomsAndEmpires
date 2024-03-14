@@ -8,65 +8,6 @@ namespace sm
 	{
 		class ccontext;
 		class irenderer;
-		class ctexture_manager;
-		class ctexture_resource;
-
-		using texture_ref = ref_t<ctexture_resource>;
-
-		//------------------------------------------------------------------------------------------------------------------------
-		class ctexture_resource final : public core::cresource<raylib::Texture2D, texture_t>
-		{
-		public:
-			ctexture_resource(texture_t handle) :
-				m_texture(handle)
-			{
-			}
-
-			~ctexture_resource()
-			{
-			}
-
-			raylib::Texture2D* native() const override final;
-			texture_t handle() const override final;
-
-		private:
-			texture_t m_texture;
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		class ctexture_manager final : public core::cresource_manager<ctexture_resource>
-		{
-		public:
-
-
-
-		protected:
-			texture_ref load_resource(stringview_t path) override final
-			{
-				texture_t handle = algorithm::hash(path);
-
-				//- check whether resource is loaded already
-				if (m_textures.find(handle) != m_textures.end())
-				{
-					return std::make_shared<ctexture_resource>(m_textures.at(handle));
-				}
-
-				//- load texture
-				if (const auto texture = raylib::LoadTexture(path); raylib::IsTextureReady(texture))
-				{
-					const auto ref = std::make_shared<ctexture_resource>(texture, handle);
-
-					m_textures.emplace(handle, ref);
-
-					return ref;
-				}
-				return nullptr;
-			}
-
-		private:
-			std::unordered_set<ctexture_resource, string_hash, std::equal_to<>> m_textures;
-			umap_t<texture_t, ctexture_resource> m_textures;
-		};
 
 		//- Base resource manager. Handles common storage types, like retrieving a handle or unloading.
 		//- Note: as of now the implementing resource manager has to respect correct creation behavior:
@@ -76,10 +17,9 @@ namespace sm
 		template<typename TResourceHandleType, typename TNativeResourceType>
 		class cresource_manager : public core::cresource_manager
 		{
-			friend class ccontext;
 			friend class irenderer;
 		public:
-			cresource_manager(ccontext& ctx) : m_context(ctx), m_count(0), m_fragmentations(0) {};
+			cresource_manager() : m_count(0), m_fragmentations(0) {};
 			virtual ~cresource_manager();
 
 			TResourceHandleType get(stringview_t name) const;
@@ -96,7 +36,6 @@ namespace sm
 			};
 
 		protected:
-			ccontext& m_context;
 			vector_t<swrapper> m_resources;
 			umap_t<unsigned, TResourceHandleType> m_lookup;
 
@@ -110,7 +49,6 @@ namespace sm
 			inline TResourceHandleType increment() { auto out = SCAST(TResourceHandleType, m_count++); return out; }
 			inline void decrement() { m_fragmentations = (m_fragmentations - 1 < 0) ? 0 : m_fragmentations - 1; }
 			unsigned fragmentation_slot();
-			ccontext& ctx() {return m_context;}
 
 			virtual void on_resource_unload(TNativeResourceType& resource) {};
 			virtual bool init() {return false;}

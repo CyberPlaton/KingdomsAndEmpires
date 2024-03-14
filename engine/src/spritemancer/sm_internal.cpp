@@ -15,23 +15,6 @@ namespace sm
 
 	} //- unnamed
 
-	core::resource_status ctexture_pointer::load(stringview_t name, stringview_t path)
-	{
-		if(ready())
-		{
-			return core::resource_status_ready;
-		}
-		else
-		{
-			//- TODO: let resource be loaded async and immediately return
-			//- loading status, when texture is loaded set status accordingly.
-// 			core::casync([&]()
-// 				{
-// 					m_handle = ctx().tm().create(name, path);
-// 				});
-		}
-	}
-
 	//------------------------------------------------------------------------------------------------------------------------
 	internal::ccontext& ctx()
 	{
@@ -264,11 +247,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		ccontext::ccontext() :
-			m_spriteatlas_manager(*this),
-			m_technique_manager(*this),
-			m_material_manager(*this),
-			m_texture_manager(*this)
+		ccontext::ccontext()
 		{
 		}
 

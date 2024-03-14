@@ -636,28 +636,6 @@ namespace core
 			bool initialized_at_index(uint64_t index) const;
 		};
 
-		//------------------------------------------------------------------------------------------------------------------------
-		class iresource : public cnon_copyable
-		{
-		public:
-			iresource(const rttr::type& type) : m_type(type) {}
-			virtual ~iresource() {}
-
-		private:
-			std::string m_path;
-			rttr::type m_type;
-			future_status m_status = future_status_none;
-			handle_type_t m_handle;
-		};
-
-		using resource_ref = ref_t<iresource>;
-
-		//------------------------------------------------------------------------------------------------------------------------
-		class iresource_manager
-		{
-		public:
-		};
-
 	} //- detail
 
 	//- define some common types of pairs
@@ -728,35 +706,6 @@ namespace core
 		}
 		return m_status == future_status_ready;
 	}
-
-	//- Base class for a resource, such as a texture, material, technique, script...
-	//- Contains also basic information.
-	//------------------------------------------------------------------------------------------------------------------------
-	template<class TResourceType, typename TResourceHandleType>
-	class cresource : public detail::iresource
-	{
-	public:
-		cresource() : detail::iresource(rttr::type::get<TResourceType>()) {}
-		virtual ~cresource() {}
-
-		virtual TResourceType* native() const = 0;
-		virtual TResourceHandleType handle() const = 0;
-	};
-
-	//- Base class for a resource manager responsible for loading and unloading a resource.
-	//------------------------------------------------------------------------------------------------------------------------
-	template<class TResourceType>
-	class cresource_manager : public detail::iresource_manager
-	{
-	public:
-
-		//- TODO: decide whether we should separate into two functions,
-		//- for 'load' and 'find'.
-		ref_t<TResourceType> load(stringview_t path) { return load_resource(path); }
-
-	protected:
-		virtual ref_t<TResourceType> load_resource(stringview_t path) = 0;
-	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	class casync final
