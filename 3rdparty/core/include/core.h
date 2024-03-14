@@ -195,6 +195,15 @@ namespace core
 
 	//- common enums etc.
 	//------------------------------------------------------------------------------------------------------------------------
+	enum future_status
+	{
+		future_status_none = 0,
+		future_status_pending,	//- result is not ready yet
+		future_status_ready,	//- ready, result can be retrieved
+		future_status_deferred, //- result will be available when explicitly requested
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	enum resource_status : uint8_t
 	{
 		resource_status_none = 0,
@@ -281,6 +290,17 @@ namespace core
 		TValue second;
 
 		RTTR_ENABLE();
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cnon_copyable
+	{
+	public:
+		cnon_copyable() = default;
+		~cnon_copyable() = default;
+	private:
+		cnon_copyable& operator=(const cnon_copyable&) = delete;
+		cnon_copyable(const cnon_copyable&) = delete;
 	};
 
 } //- core
@@ -616,39 +636,33 @@ namespace core
 			bool initialized_at_index(uint64_t index) const;
 		};
 
+		//------------------------------------------------------------------------------------------------------------------------
+		class iresource : public cnon_copyable
+		{
+		public:
+			iresource(const rttr::type& type) : m_type(type) {}
+			virtual ~iresource() {}
+
+		private:
+			std::string m_path;
+			rttr::type m_type;
+			future_status m_status = future_status_none;
+			handle_type_t m_handle;
+		};
+
+		using resource_ref = ref_t<iresource>;
+
+		//------------------------------------------------------------------------------------------------------------------------
+		class iresource_manager
+		{
+		public:
+		};
+
 	} //- detail
 
 	//- define some common types of pairs
 	//------------------------------------------------------------------------------------------------------------------------
 	using smaterial_pair = spair<texture_t, material_t>;
-
-	//- Base class for a asynchronously loaded resource.
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResourceHandleType>
-	class iresource_pointer
-	{
-	public:
-		iresource_pointer() = default;
-		virtual ~iresource_pointer() {}
-
-		decltype(auto) ready() const {return m_status == resource_status_ready;}
-		decltype(auto) path() const {return m_path.data();}
-		TResourceHandleType get() const {return m_handle;}
-
-	protected:
-		std::string m_path;
-		resource_status m_status = resource_status_none;
-		TResourceHandleType m_handle = invalid_handle_t;
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cresource_manager
-	{
-	public:
-		static constexpr unsigned C_MANAGER_COUNT_MAX = 64;
-
-		virtual void on_update(float) = 0;
-	}
 
 	//- base class for a service
 	//------------------------------------------------------------------------------------------------------------------------
@@ -667,6 +681,81 @@ namespace core
 		virtual void on_update(float) {}
 
 		RTTR_ENABLE();
+	};
+
+	//- Class wrapping a future type.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	class cfuture_type
+	{
+	public:
+		cfuture_type(std::future<TType> task) :m_task(std::move(task)) m_status(future_status_pending) {}
+		cfuture_type() = default;
+		~cfuture_type() = default;
+
+		bool ready() const;
+		[[nodiscard]] TType get() const { ASSERT(ready(), "Invalid operation. You can use 'get' only if future is ready"); return m_task.get(); }
+
+	private:
+		std::future<TType> m_task;
+		future_status m_status = future_status_none;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	bool core::cfuture_type<TType>::ready() const
+	{
+		using namespace std::chrono_literals;
+
+		switch (m_task.wait_for(1us))
+		{
+		case std::future_status::ready:
+		{
+			m_status = future_status_ready
+			break;
+		}
+		case std::future_status::deferred:
+		{
+			m_status = future_status_deferred;
+			break;
+		}
+		default:
+		case std::future_status::timeout:
+		{
+			m_status = future_status_pending;
+			break;
+		}
+		}
+		return m_status == future_status_ready;
+	}
+
+	//- Base class for a resource, such as a texture, material, technique, script...
+	//- Contains also basic information.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TResourceType, typename TResourceHandleType>
+	class cresource : public detail::iresource
+	{
+	public:
+		cresource() : detail::iresource(rttr::type::get<TResourceType>()) {}
+		virtual ~cresource() {}
+
+		virtual TResourceType* native() const = 0;
+		virtual TResourceHandleType handle() const = 0;
+	};
+
+	//- Base class for a resource manager responsible for loading and unloading a resource.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TResourceType>
+	class cresource_manager : public detail::iresource_manager
+	{
+	public:
+
+		//- TODO: decide whether we should separate into two functions,
+		//- for 'load' and 'find'.
+		ref_t<TResourceType> load(stringview_t path) { return load_resource(path); }
+
+	protected:
+		virtual ref_t<TResourceType> load_resource(stringview_t path) = 0;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -834,17 +923,6 @@ namespace core
 		float m_x, m_y, m_w, m_h;
 
 		RTTR_ENABLE();
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cnon_copyable
-	{
-	public:
-		cnon_copyable() = default;
-		~cnon_copyable() = default;
-	private:
-		cnon_copyable& operator=(const cnon_copyable&) = delete;
-		cnon_copyable(const cnon_copyable&) = delete;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -16,7 +16,7 @@ namespace engine
 		};
 
 		cresource_management_service() = default;
-		~cresource_management_service();
+		~cresource_management_service() = default;
 
 		bool on_start() override final;
 		void on_shutdown() override final;
@@ -43,22 +43,6 @@ namespace engine
 	private:
 		static core::cresource_manager* get_base_manager(rttr::variant& var);
 	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<class TManagerType>
-	void cresource_management_service::release()
-	{
-		auto id = rttr::type::get<TManagerType>().get_id();
-
-		if (m_manager_types.find(id) != m_manager_types.end())
-		{
-			const auto t = m_manager_types[id];
-			m_managers[t].clear();
-			m_manager_types.erase(id);
-			m_manager_count = m_manager_count - 1 < 0 ? 0 : m_manager_count - 1;
-		}
-	}
-		
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TManagerType>

@@ -8,6 +8,65 @@ namespace sm
 	{
 		class ccontext;
 		class irenderer;
+		class ctexture_manager;
+		class ctexture_resource;
+
+		using texture_ref = ref_t<ctexture_resource>;
+
+		//------------------------------------------------------------------------------------------------------------------------
+		class ctexture_resource final : public core::cresource<raylib::Texture2D, texture_t>
+		{
+		public:
+			ctexture_resource(texture_t handle) :
+				m_texture(handle)
+			{
+			}
+
+			~ctexture_resource()
+			{
+			}
+
+			raylib::Texture2D* native() const override final;
+			texture_t handle() const override final;
+
+		private:
+			texture_t m_texture;
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		class ctexture_manager final : public core::cresource_manager<ctexture_resource>
+		{
+		public:
+
+
+
+		protected:
+			texture_ref load_resource(stringview_t path) override final
+			{
+				texture_t handle = algorithm::hash(path);
+
+				//- check whether resource is loaded already
+				if (m_textures.find(handle) != m_textures.end())
+				{
+					return std::make_shared<ctexture_resource>(m_textures.at(handle));
+				}
+
+				//- load texture
+				if (const auto texture = raylib::LoadTexture(path); raylib::IsTextureReady(texture))
+				{
+					const auto ref = std::make_shared<ctexture_resource>(texture, handle);
+
+					m_textures.emplace(handle, ref);
+
+					return ref;
+				}
+				return nullptr;
+			}
+
+		private:
+			std::unordered_set<ctexture_resource, string_hash, std::equal_to<>> m_textures;
+			umap_t<texture_t, ctexture_resource> m_textures;
+		};
 
 		//- Base resource manager. Handles common storage types, like retrieving a handle or unloading.
 		//- Note: as of now the implementing resource manager has to respect correct creation behavior:
@@ -15,7 +74,7 @@ namespace sm
 		//- index into m_resources where the underlying resource is stored. For examples see finished managers below.
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TResourceHandleType, typename TNativeResourceType>
-		class cresource_manager
+		class cresource_manager : public core::cresource_manager
 		{
 			friend class ccontext;
 			friend class irenderer;
@@ -85,6 +144,7 @@ namespace sm
 		public:
 			ctechnique_manager(ccontext& ctx) : cresource_manager<technique_t, raylib::Shader>(ctx) {}
 
+			void on_update(float dt) override final;
 			technique_t create(stringview_t name, stringview_t vspath, stringview_t pspath);
 			technique_t create_embedded(stringview_t name, stringview_t vsdata, stringview_t psdata);
 

@@ -20,9 +20,11 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	void cresource_management_service::on_update(float dt)
 	{
-		for(auto i = 0; i < m_service_count; ++i)
+		for(auto i = 0; i < managers(); ++i)
 		{
-			m_managers[i]->on_update(dt);
+			auto* manager = get_base_manager(m_managers[i]);
+
+			manager->on_update(dt);
 		}
 	}
 
@@ -36,7 +38,7 @@ namespace engine
 			if (var.is_valid())
 			{
 				auto id = manager_type.get_id();
-				auto t = s_next_type++;
+				auto t = m_next_type++;
 				m_manager_types[id] = t;
 				m_managers[t] = std::move(var);
 				++m_manager_count;
