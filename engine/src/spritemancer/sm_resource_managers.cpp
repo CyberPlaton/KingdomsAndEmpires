@@ -4,24 +4,6 @@ namespace sm
 {
 	namespace internal
 	{
-		namespace
-		{
-			//------------------------------------------------------------------------------------------------------------------------
-			template<typename TResourceWrapper, typename TResource>
-			void store_resource(vector_t<TResourceWrapper>& structure, TResource& what, unsigned where = std::numeric_limits<unsigned>().max())
-			{
-				if (where == std::numeric_limits<unsigned>().max())
-				{
-					structure.emplace_back(std::move(what));
-				}
-				else
-				{
-					structure[where].m_resource = std::move(what);
-				}
-			}
-
-		} //- unnamed
-
 		//------------------------------------------------------------------------------------------------------------------------
 		texture_t ctexture_manager::create(stringview_t name, stringview_t path)
 		{

@@ -113,6 +113,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 // 		hans.add<module_example::stargeting_component>();
 // 		peter.add<module_example::stargeting_component>();
 
+		//- TODO: individual resource managers should either be thread safe or
+		//- we have to synchronize access otherwise, as the access will be across threads.
+		auto* rms = engine::cengine::service<engine::cresource_management_service>();
+		auto* tm = engine::cengine::resource_manager<sm::internal::ctexture_manager>();
+		//- return type should be adjusted for async too, and allow immediate and async loading.
+		//- e.g. core::cfuture_type<texture_t> result
+		auto texture = tm->create("Dude", "some/path/to/Dude.png");
+
 		engine::cengine::instance().run();
 	}
 	return 0;

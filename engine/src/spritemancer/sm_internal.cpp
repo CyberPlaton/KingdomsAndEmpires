@@ -134,9 +134,9 @@ namespace sm
 			{
 				for (const auto& command : pair.second)
 				{
-					const auto& material = mm().native_resource(command.m_material);
-					const auto& shader = sm().native_resource(material.get_shader());
-					const auto& texture = tm().native_resource(command.m_texture);
+					const auto& material = mm().raw(command.m_material);
+					const auto& shader = sm().raw(material.get_shader());
+					const auto& texture = tm().raw(command.m_texture);
 
 					material.bind_dynamic_uniforms(shader);
 					material.bind_shader(shader);
@@ -355,7 +355,7 @@ namespace sm
 		void irenderer::draw_spriteatlas_sprite(renderlayer_t layer, const vec2_t& position, float rotation, const vec2_t& scale,
 			spriteatlas_t atlas, subtexture_t subtexture, const core::scolor& color, bool flipx, bool flipy)
 		{
-			const auto& __atlas = ctx().am().native_resource(atlas);
+			const auto& __atlas = ctx().am().raw(atlas);
 
 			draw_sprite(layer, position, rotation, scale, __atlas.atlas(), C_DEFAULT_MATERIAL,
 				__atlas.subtexture(subtexture), color, flipx, flipy);

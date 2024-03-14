@@ -1172,6 +1172,150 @@ namespace core
 		snode m_root;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class iresource_manager
+	{
+	public:
+		static constexpr unsigned C_MANAGER_COUNT_MAX = 64;
+
+		virtual bool on_start() = 0;
+		virtual void on_update(float) = 0;
+		virtual void on_shutdown() = 0;
+
+	private:
+		RTTR_ENABLE();
+	};
+
+	//- Base resource manager. Handles common storage types, like retrieving a handle or unloading.
+	//- Note: as of now the implementing resource manager has to respect correct creation behavior:
+	//- In m_lookup emplace the name of the resource paired to its handle, whereas the handle is the
+	//- index into m_resources where the underlying resource is stored. For examples see finished managers below.
+	//-
+	//- Goal of this manager is providing acceptable lookup times using a string and constant lookup time using the resource handle.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResourceHandleType, typename TNativeResourceType>
+	class cresource_manager : public iresource_manager
+	{
+	public:
+		template<typename TResourceWrapper, typename TResource>
+		static void store_resource(vector_t<TResourceWrapper>& structure, TResource& what, unsigned where = std::numeric_limits<unsigned>().max())
+		{
+			if (where == std::numeric_limits<unsigned>().max())
+			{
+				structure.emplace_back(std::move(what));
+			}
+			else
+			{
+				structure[where].m_resource = std::move(what);
+			}
+		}
+
+		cresource_manager() : m_count(0), m_fragmentations(0) {};
+		virtual ~cresource_manager();
+
+		virtual bool on_start() {return false;};
+		virtual void on_update(float dt) {};
+		virtual void on_shutdown() {};
+
+
+		TResourceHandleType get(stringview_t name) const;
+		const TNativeResourceType& raw(TResourceHandleType handle) const;
+		void unload(TResourceHandleType handle);
+
+	private:
+		struct swrapper
+		{
+			swrapper() = default;
+			swrapper(TNativeResourceType resource) : m_resource(std::move(resource)) {}
+
+			TNativeResourceType m_resource;
+			bool m_removed = false;
+		};
+
+	protected:
+		vector_t<swrapper> m_resources;
+		umap_t<unsigned, TResourceHandleType> m_lookup;
+
+	private:
+		unsigned m_count;
+		unsigned m_fragmentations;
+
+	protected:
+		inline bool fragmented() const { return m_fragmentations > 0; }
+		inline TResourceHandleType increment() { auto out = SCAST(TResourceHandleType, m_count++); return out; }
+		inline void decrement() { m_fragmentations = (m_fragmentations - 1 < 0) ? 0 : m_fragmentations - 1; }
+		unsigned fragmentation_slot();
+
+		virtual void on_resource_unload(TNativeResourceType& resource) {};
+		virtual bool init() { return false; }
+
+		RTTR_ENABLE(iresource_manager);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResourceHandleType, typename TNativeResourceType>
+	unsigned cresource_manager<TResourceHandleType, TNativeResourceType>::fragmentation_slot()
+	{
+		for (auto i = 0u; i < m_resources.size(); ++i)
+		{
+			if (m_resources[i].m_removed)
+			{
+				return i;
+			}
+		}
+
+		return std::numeric_limits<unsigned>().max();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResourceHandleType, typename TNativeResourceType>
+	const TNativeResourceType& cresource_manager<TResourceHandleType, TNativeResourceType>::raw(TResourceHandleType handle) const
+	{
+		return m_resources[handle].m_resource;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResourceHandleType, typename TNativeResourceType>
+	void cresource_manager<TResourceHandleType, TNativeResourceType>::unload(TResourceHandleType handle)
+	{
+		auto& wrapper = m_resources[handle];
+
+		//- handle underlying unload of resource specific to manager
+		on_resource_unload(wrapper.m_resource);
+
+		algorithm::erase_if(m_lookup, [&](auto it)
+			{
+				return it->second == handle;
+			});
+
+		--m_count;
+		++m_fragmentations;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResourceHandleType, typename TNativeResourceType>
+	cresource_manager<TResourceHandleType, TNativeResourceType>::~cresource_manager()
+	{
+		while (!m_resources.empty())
+		{
+			on_resource_unload(m_resources.back().m_resource);
+
+			m_resources.pop_back();
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResourceHandleType, typename TNativeResourceType>
+	TResourceHandleType cresource_manager<TResourceHandleType, TNativeResourceType>::get(stringview_t name) const
+	{
+		auto h = algorithm::hash(name);
+
+		if (auto iter = m_lookup.find(h); iter != m_lookup.end())
+		{
+			return iter->second;
+		}
+		return invalid_handle_t;
+	}
 
 } //- core
 

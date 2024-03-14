@@ -8,6 +8,7 @@
 #include "editor/editor_visualizer.hpp"
 #include "layer.hpp"
 #include "services/thread_service.hpp"
+#include "services/resource_management_service.hpp"
 #include <argparse.h>
 
 namespace engine
@@ -21,6 +22,7 @@ namespace engine
 		engine_run_result_failed_parsing_invalid_config,
 		engine_run_result_failed_starting_spritemancer,
 		engine_run_result_failed_registering_services,
+		engine_run_result_failed_registering_resource_managers,
 		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
 	};
@@ -61,11 +63,18 @@ namespace engine
 			sm::cwindow::sconfig m_window_cfg;
 			cservice_manager::sconfig m_service_cfg;
 			clayers::sconfig m_layer_cfg;
+			cresource_management_service::sconfig m_resources_cfg;
 
 			RTTR_ENABLE();
 		};
 
 	public:
+		template<class TService>
+		static auto service();
+
+		template<class TResourceManager>
+		static auto resource_manager();
+
 		STATIC_INSTANCE(cengine, s_cengine);
 		~cengine();
 
@@ -83,8 +92,24 @@ namespace engine
 
 		void handle_arguments(argparse::ArgumentParser& args, int argc, char* argv[]);
 		void register_services(argparse::ArgumentParser& args);
+		void register_resource_managers(argparse::ArgumentParser& args);
 		bool init_layers(const clayers::sconfig& cfg);
 	};
+
+	//- Shortcuts for common operations
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TService>
+	auto engine::cengine::service()
+	{
+		return cservice_manager::find<TService>();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TResourceManager>
+	auto engine::cengine::resource_manager()
+	{
+		return service<cresource_management_service>()->find<TResourceManager>();
+	}
 
 } //- engine
 
@@ -97,6 +122,7 @@ namespace engine
 			.property("m_service_cfg", &cengine::sconfig::m_service_cfg)
 			.property("m_window_cfg", &cengine::sconfig::m_window_cfg)
 			.property("m_layer_cfg", &cengine::sconfig::m_layer_cfg)
+			.property("m_resources_cfg", &cengine::sconfig::m_resources_cfg)
 			;
 
 		rttr::default_constructor<cengine::sconfig>();

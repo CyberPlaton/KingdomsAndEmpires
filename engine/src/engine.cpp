@@ -98,6 +98,7 @@ namespace engine
 		if (m_result == engine_run_result_ok)
 		{
 			register_services(args);
+			register_resource_managers(args);
 
 			//- default service init
 			cservice_manager::init();
@@ -259,7 +260,7 @@ namespace engine
 		//- register common engine services
 		for (const auto& name : m_config.m_service_cfg.m_services)
 		{
-			auto type = rttr::type::get_by_name(name.c_str());
+			const auto type = rttr::type::get_by_name(name.c_str());
 
 			if (type.is_valid() && cservice_manager::emplace(type))
 			{
@@ -271,6 +272,33 @@ namespace engine
 
 				//- fail configuration but let all try to register so we know all that are bugous
 				m_result = engine_run_result_failed_registering_services;
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::register_resource_managers(argparse::ArgumentParser& args)
+	{
+		if (m_result != engine_run_result_ok)
+		{
+			return;
+		}
+
+		if (auto* rms = service<cresource_management_service>(); rms)
+		{
+			for (const auto& name : m_config.m_resources_cfg.m_managers)
+			{
+				if (const auto type = rttr::type::get_by_name(name.c_str()); type.is_valid() && rms->emplace(type))
+				{
+					logging::log_info(fmt::format("Registered resource manager: '{}'", type.get_name().data()));
+				}
+				else
+				{
+					logging::log_critical(fmt::format("Failed registering resource manager: '{}'", type.get_name().data()));
+
+					//- fail configuration but let all try to register so we know all that are bugous
+					m_result = engine_run_result_failed_registering_resource_managers;
+				}
 			}
 		}
 	}

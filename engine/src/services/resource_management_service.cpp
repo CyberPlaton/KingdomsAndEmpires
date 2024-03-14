@@ -6,8 +6,6 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cresource_management_service::on_start()
 	{
-		//- TODO: decide how to handle default engine resources.
-
 		return true;
 	}
 	
@@ -20,18 +18,12 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	void cresource_management_service::on_update(float dt)
 	{
-		for(auto i = 0; i < managers(); ++i)
-		{
-			auto* manager = get_base_manager(m_managers[i]);
-
-			manager->on_update(dt);
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cresource_management_service::emplace(rttr::type manager_type)
 	{
-		if (m_next_type < core::cresource_manager::C_MANAGER_COUNT_MAX && manager_type.is_valid())
+		if (m_next_type < core::iresource_manager::C_MANAGER_COUNT_MAX && manager_type.is_valid())
 		{
 			auto var = manager_type.create({});
 
@@ -60,9 +52,9 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cresource_manager* cresource_management_service::get_base_manager(rttr::variant& var)
+	core::iresource_manager* cresource_management_service::get_base_manager(rttr::variant& var)
 	{
-		return var.get_value<core::cresource_manager*>();
+		return var.get_value<core::iresource_manager*>();
 	}
 
 } //- engine

@@ -4,6 +4,7 @@
 namespace engine
 {
 	//- Central class for loading and unloading (i.e. managing) resources.
+	//- TODO: handle default engine/editor resources.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cresource_management_service final : public core::cservice
 	{
@@ -22,7 +23,7 @@ namespace engine
 		void on_shutdown() override final;
 		void on_update(float dt) override final;
 
-		decltype(auto) managers() const {return m_manager_count;}
+		auto managers() const {return m_manager_count;}
 
 		template<class TManagerType>
 		TManagerType* find();
@@ -36,12 +37,12 @@ namespace engine
 		int m_manager_count = 0;
 		handle_type_t m_next_type = 0;
 		umap_t<size_t, handle_type_t> m_manager_types;
-		array_t<rttr::variant, core::cresource_manager::C_MANAGER_COUNT_MAX> m_managers;
+		array_t<rttr::variant, core::iresource_manager::C_MANAGER_COUNT_MAX> m_managers;
 
 		RTTR_ENABLE(core::cservice);
 
 	private:
-		static core::cresource_manager* get_base_manager(rttr::variant& var);
+		static core::iresource_manager* get_base_manager(rttr::variant& var);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
