@@ -142,7 +142,7 @@ namespace sm
 			{
 				if (const auto slot = fragmentation_slot(); slot != std::numeric_limits<unsigned>().max())
 				{
-					store_resource(m_resources, std::move(cmaterial(technique, mode, equation, src, dst)), slot);
+					store_resource(m_resources, cmaterial(technique, mode, equation, src, dst), slot);
 					m_resources[slot].m_removed = false;
 					decrement();
 					handle = slot;
@@ -154,7 +154,7 @@ namespace sm
 
 				handle = increment();
 				m_lookup.emplace(h, handle);
-				store_resource(m_resources, std::move(cmaterial(technique, mode, equation, src, dst)));
+				store_resource(m_resources, cmaterial(technique, mode, equation, src, dst));
 			}
 
 			return handle;

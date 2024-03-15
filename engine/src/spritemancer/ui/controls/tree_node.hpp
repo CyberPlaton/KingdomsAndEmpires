@@ -7,7 +7,7 @@ namespace ui
 	class ctreenode : public detail::icontrol
 	{
 	public:
-		ctreenode() = default;
+		ctreenode() {};
 		~ctreenode() {}
 
 		ctreenode& id(stringview_t _id);

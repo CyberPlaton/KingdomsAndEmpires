@@ -69,12 +69,12 @@ namespace engine
 	template<class TManagerType>
 	TManagerType* cresource_management_service::emplace()
 	{
-		if (s_next_type < core::cresource_manager::C_MANAGER_COUNT_MAX)
+		if (m_next_type < core::iresource_manager::C_MANAGER_COUNT_MAX)
 		{
 			auto type = rttr::type::get<TManagerType>();
 			auto id = type.get_id();
 
-			auto t = s_next_type++;
+			auto t = m_next_type++;
 			m_managers[t] = type.create({});
 			m_manager_types[id] = t;
 			m_manager_count++;

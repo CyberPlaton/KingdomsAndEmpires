@@ -5,9 +5,9 @@ function plugin_camera_system()
 					{},
 					{},
 					{"plugin_logging"},
-					{"rttr", "EASTL", "raylib", "spdlog", "core", "mimalloc", "flecs"},
+					{"Lua", "EASTL", "spdlog", "rttr", "core", "mimalloc", "flecs"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy", "raylib"},
 					{},
 					true)
 end

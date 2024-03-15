@@ -78,7 +78,7 @@ void operator delete(void* p) { CORE_FREE(p); }
 #if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 #define CORE_ZONE ZoneScoped
 #define CORE_NAMED_ZONE(name) ZoneScopedN(name)
-#elif
+#else
 #define CORE_ZONE
 #define CORE_NAMED_ZONE(name)
 #endif
@@ -667,11 +667,11 @@ namespace core
 	class cfuture_type
 	{
 	public:
-		cfuture_type(std::future<TType> task) :m_task(std::move(task)) m_status(future_status_pending) {}
+		cfuture_type(std::future<TType> task) : m_task(std::move(task)), m_status(future_status_pending) {}
 		cfuture_type() = default;
 		~cfuture_type() = default;
 
-		bool ready() const;
+		bool ready();
 		[[nodiscard]] TType get() const { ASSERT(ready(), "Invalid operation. You can use 'get' only if future is ready"); return m_task.get(); }
 
 	private:
@@ -681,7 +681,7 @@ namespace core
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
-	bool core::cfuture_type<TType>::ready() const
+	bool core::cfuture_type<TType>::ready()
 	{
 		using namespace std::chrono_literals;
 
@@ -689,7 +689,7 @@ namespace core
 		{
 		case std::future_status::ready:
 		{
-			m_status = future_status_ready
+			m_status = future_status_ready;
 			break;
 		}
 		case std::future_status::deferred:
@@ -1198,7 +1198,7 @@ namespace core
 	{
 	public:
 		template<typename TResourceWrapper, typename TResource>
-		static void store_resource(vector_t<TResourceWrapper>& structure, TResource& what, unsigned where = std::numeric_limits<unsigned>().max())
+		static void store_resource(vector_t<TResourceWrapper>& structure, TResource what, unsigned where = std::numeric_limits<unsigned>().max())
 		{
 			if (where == std::numeric_limits<unsigned>().max())
 			{
