@@ -1,17 +1,34 @@
 ------------------------------------------------------------------------------------------------------------------------
 function set_basic_defines()
 	filter{"system:windows"}
+		filter "action:vs*"
+			buildoptions{"/Zc:__cplusplus"}
+		filter{}
 		buildoptions{"/bigobj"}
 		editandcontinue "Off"
 	filter{"configurations:debug"}
-		defines{"DEBUG=1", "TRACY_ENABLE"}
+		defines{"DEBUG=1", "TRACY_ENABLE", "BX_CONFIG_DEBUG"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE"}
+		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE", "BX_CONFIG_RELEASE"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
 			"__STDC_FORMAT_MACROS",
 			"_CRT_SECURE_NO_DEPRECATE"}
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_bx_includes()
+	includedirs{path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
+	if PLATFORM == "windows" then
+		includedirs{path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
+	elseif PLATFORM == "linux" then
+		includedirs{path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
+	elseif PLATFORM == "macosx" then
+		includedirs{path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
+	else
+		print("Unknown platform!")
+	end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -60,7 +77,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language,
-	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes)
+	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes, requires_bx_includes)
 	if VERBOSE == true then
 		print("\tstatic library: " .. name)
 	end
@@ -85,6 +102,10 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
+
+		if requires_bx_includes == true then
+			set_bx_includes()
+		end
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -294,7 +315,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_app(name, build_options, define_flags, thirdparty_deps, plugin_deps, plugin_headeronly_deps,
-	thirdparty_headeronly_deps, additional_includes)
+	thirdparty_headeronly_deps, additional_includes, requires_bx_includes)
 	if VERBOSE == true then
 		print("\tapplication: " .. name)
 	end
@@ -344,6 +365,11 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		elseif PLATFORM == "linux" then
 			links{path.join(VENDOR_DIR, OUTDIR, "libraylib.a")}
 		else
+		end
+
+		-- TODO: when we are done with raylib. Remove it from automatic linking
+		if requires_bx_includes == true then
+			set_bx_includes()
 		end
 
 		filter{"configurations:debug"}
