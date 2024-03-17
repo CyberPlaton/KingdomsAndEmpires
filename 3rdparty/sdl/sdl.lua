@@ -8,13 +8,11 @@ function sdl()
 
 		kind ("StaticLib")
 
-		includedirs{path.join("SDL", "include", "SDL3"),
-					path.join("SDL", "include"),
-					path.join("SDL", "src")}
+		includedirs{"SDL/include",
+					"SDL/src"}
 
 	files {
 		-- All platforms.
-		"SDL/include/SDL3/*.h",
 		"SDL/src/audio/disk/*.h",                               "SDL/src/atomic/*.c",
 		"SDL/src/audio/dummy/*.h",						        "SDL/src/audio/disk/*.c",
 		"SDL/src/audio/*.h",								    "SDL/src/audio/dummy/*.c",

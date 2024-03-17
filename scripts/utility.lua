@@ -32,6 +32,12 @@ function set_bx_includes()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+function set_sdl_includes()
+	includedirs{path.join(WORKSPACE_DIR, "3rdparty", "sdl", "SDL", "include")}
+end
+
+
+------------------------------------------------------------------------------------------------------------------------
 function load_project(project, dir)
 	include(path.join(dir, project) .. ".lua")
 end
@@ -105,6 +111,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 
 		if requires_bx_includes == true then
 			set_bx_includes()
+			set_sdl_includes()
 		end
 
 		-- include and link deps from other plugins and thirdparty
@@ -370,6 +377,7 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		-- TODO: when we are done with raylib. Remove it from automatic linking
 		if requires_bx_includes == true then
 			set_bx_includes()
+			set_sdl_includes()
 		end
 
 		filter{"configurations:debug"}

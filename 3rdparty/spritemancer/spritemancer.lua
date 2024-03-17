@@ -4,7 +4,7 @@ function spritemancer()
 	add_target_static_library("spritemancer",
 					{},
 					{},
-					{},
+					{"plugin_logging"},
 					{"rttr", "EASTL", "spdlog", "core", "mimalloc", "sdl", "bgfx", "bx", "bimg"},
 					"c++",
 					{}, -- plugin_headeronly_deps
