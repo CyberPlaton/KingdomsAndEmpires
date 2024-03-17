@@ -40,10 +40,7 @@ namespace sdl
 		SDL_Event e;
 		while (SDL_PollEvent(&e) == SDL_TRUE)
 		{
-			switch (e.type)
-			{
-				case 
-			}
+		m_event_map[(eventtype)e.type].push({e});
 		}
 	}
 
