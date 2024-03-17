@@ -40,7 +40,12 @@ namespace sdl
 		SDL_Event e;
 		while (SDL_PollEvent(&e) == SDL_TRUE)
 		{
-		m_event_map[(eventtype)e.type].push({e});
+			const auto type = (eventtype)e.type;
+			auto& queue = m_event_map[type];
+
+			while (queue.size() > C_EVENT_COUNT_MAX){ queue.pop(); }
+
+			m_event_map[(eventtype)e.type].push({e});
 		}
 	}
 

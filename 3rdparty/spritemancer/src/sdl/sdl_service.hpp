@@ -24,50 +24,51 @@ namespace sdl
 	//------------------------------------------------------------------------------------------------------------------------
 	enum eventtype : uint32_t
 	{
-		eventtype_none = 0,
-		eventtype_display = SDL_DISPLAYEVENT,
-		eventtype_window = SDL_WINDOWEVENT,
-		eventtype_keyup = SDL_KEYDOWN,
-		eventtype_keydown = SDL_KEYUP,
-		eventtype_textedit = SDL_TEXTEDITING,
-		eventtype_textinput = SDL_TEXTINPUT,
-		eventtype_mousemotion = SDL_MOUSEMOTION,
-		eventtype_mousebuttonup = SDL_MOUSEBUTTONUP,
-		eventtype_mousebuttondown = SDL_MOUSEBUTTONDOWN,
-		eventtype_mousewheel = SDL_MOUSEWHEEL,
-		eventtype_joystickaxismotion = SDL_JOYAXISMOTION,
-		eventtype_joystickballmotion = SDL_JOYBALLMOTION,
-		eventtype_joystickhatmotion = SDL_JOYHATMOTION,
-		eventtype_joystickbuttonup = SDL_JOYBUTTONUP,
-		eventtype_joystickbuttondown = SDL_JOYBUTTONDOWN,
-		eventtype_joystickdeviceadded = SDL_JOYDEVICEADDED,
-		eventtype_joystickdeviceremoved = SDL_JOYDEVICEREMOVED,
-		eventtype_joystickbattery = SDL_JOYBATTERYUPDATED,
-		eventtype_controlleraxismotion = SDL_CONTROLLERAXISMOTION,
-		eventtype_controllerbuttonup = SDL_CONTROLLERBUTTONUP,
-		eventtype_controllerbuttondown = SDL_CONTROLLERBUTTONDOWN,
-		eventtype_controllerdeviceadded = SDL_CONTROLLERDEVICEADDED,
-		eventtype_controllerdeviceremoved = SDL_CONTROLLERDEVICEREMOVED,
-		eventtype_audiodeviceadded = SDL_AUDIODEVICEADDED,
-		eventtype_audiodeviceremoved = SDL_AUDIODEVICEREMOVED,
-		eventtype_quit = SDL_QUIT,
-		eventtype_user = SDL_USEREVENT,
-		eventtype_syswm = SDL_SYSWMEVENT,
-		eventtype_touchfingerup = SDL_FINGERUP,
-		eventtype_touchfingerdown = SDL_FINGERDOWN,
-		eventtype_touchfingermotion = SDL_FINGERMOTION,
-		eventtype_gesturemulti = SDL_MULTIGESTURE,
-		eventtype_gesturedollar = SDL_DOLLARGESTURE,
-		eventtype_dropfile = SDL_DROPFILE,
-		eventtype_droptext = SDL_DROPTEXT,
-		eventtype_dropbegin = SDL_DROPBEGIN,
-		eventtype_dropcomplete = SDL_DROPCOMPLETE,
+		eventtype_none						= 0,
+		eventtype_display					= SDL_DISPLAYEVENT,
+		eventtype_window					= SDL_WINDOWEVENT,
+		eventtype_keyup						= SDL_KEYDOWN,
+		eventtype_keydown					= SDL_KEYUP,
+		eventtype_textedit					= SDL_TEXTEDITING,
+		eventtype_textinput					= SDL_TEXTINPUT,
+		eventtype_mousemotion				= SDL_MOUSEMOTION,
+		eventtype_mousebuttonup				= SDL_MOUSEBUTTONUP,
+		eventtype_mousebuttondown			= SDL_MOUSEBUTTONDOWN,
+		eventtype_mousewheel				= SDL_MOUSEWHEEL,
+		eventtype_joystickaxismotion		= SDL_JOYAXISMOTION,
+		eventtype_joystickballmotion		= SDL_JOYBALLMOTION,
+		eventtype_joystickhatmotion			= SDL_JOYHATMOTION,
+		eventtype_joystickbuttonup			= SDL_JOYBUTTONUP,
+		eventtype_joystickbuttondown		= SDL_JOYBUTTONDOWN,
+		eventtype_joystickdeviceadded		= SDL_JOYDEVICEADDED,
+		eventtype_joystickdeviceremoved		= SDL_JOYDEVICEREMOVED,
+		eventtype_joystickbattery			= SDL_JOYBATTERYUPDATED,
+		eventtype_controlleraxismotion		= SDL_CONTROLLERAXISMOTION,
+		eventtype_controllerbuttonup		= SDL_CONTROLLERBUTTONUP,
+		eventtype_controllerbuttondown		= SDL_CONTROLLERBUTTONDOWN,
+		eventtype_controllerdeviceadded		= SDL_CONTROLLERDEVICEADDED,
+		eventtype_controllerdeviceremoved	= SDL_CONTROLLERDEVICEREMOVED,
+		eventtype_audiodeviceadded			= SDL_AUDIODEVICEADDED,
+		eventtype_audiodeviceremoved		= SDL_AUDIODEVICEREMOVED,
+		eventtype_quit						= SDL_QUIT,
+		eventtype_user						= SDL_USEREVENT,
+		eventtype_syswm						= SDL_SYSWMEVENT,
+		eventtype_touchfingerup				= SDL_FINGERUP,
+		eventtype_touchfingerdown			= SDL_FINGERDOWN,
+		eventtype_touchfingermotion			= SDL_FINGERMOTION,
+		eventtype_gesturemulti				= SDL_MULTIGESTURE,
+		eventtype_gesturedollar				= SDL_DOLLARGESTURE,
+		eventtype_dropfile					= SDL_DROPFILE,
+		eventtype_droptext					= SDL_DROPTEXT,
+		eventtype_dropbegin					= SDL_DROPBEGIN,
+		eventtype_dropcomplete				= SDL_DROPCOMPLETE,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sevent
 	{
 		SDL_Event m_event;
+		bool m_handled = false;
 	};
 
 	//- SDL service responsible for window management, inputs and event management.
@@ -75,6 +76,8 @@ namespace sdl
 	class csdl_service final : public core::cservice
 	{
 	public:
+		static constexpr uint8_t C_EVENT_COUNT_MAX = 32;
+
 		struct sconfig
 		{
 			int m_subsystems = subsystem_none;
@@ -109,9 +112,11 @@ namespace sdl
 		auto& queue = m_event_map[type];
 		while(!queue.empty())
 		{
-			const auto& e = queue.front();
-			callback(e);
-			queue.pop();
+			auto& e = queue.front();
+			if (!e.m_handled && callback(e))
+			{
+				e.m_handled = true;
+			}
 		}
 	}
 
@@ -127,6 +132,17 @@ namespace sdl
 			;
 
 		rttr::default_constructor<csdl_service::sconfig>();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(csdl_service)
+	{
+		rttr::registration::class_<csdl_service>("csdl_service")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			;
 	}
 
 } //- sdl
