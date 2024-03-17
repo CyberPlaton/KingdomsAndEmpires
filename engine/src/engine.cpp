@@ -101,7 +101,7 @@ namespace engine
 			register_resource_managers(args);
 
 			//- default service init
-			cservice_manager::init();
+			core::cservice_manager::init();
 
 			if (!sm::init(m_config.m_window_cfg))
 			{
@@ -158,7 +158,7 @@ namespace engine
 			return m_result;
 		}
 
-		const auto* camera_manager = cservice_manager::find<sm::icamera_manager>("ccamera_manager");
+		const auto* camera_manager = core::cservice_manager::find<sm::icamera_manager>("ccamera_manager");
 
 		//- enter engine main loop
 		while (!raylib::WindowShouldClose())
@@ -174,7 +174,7 @@ namespace engine
 			{
 				ZoneScopedN("system_running_phase_on_update");
 
-				cservice_manager::on_update(0.016f);
+				core::cservice_manager::on_update(0.016f);
 
 				ecs::cworld_manager::instance().prepare(camera_manager->active_camera()->world_visible_area());
 
@@ -225,7 +225,7 @@ namespace engine
 
 		sm::shutdown();
 
-		cservice_manager::shutdown();
+		core::cservice_manager::shutdown();
 
 		return m_result;
 	}
@@ -262,7 +262,7 @@ namespace engine
 		{
 			const auto type = rttr::type::get_by_name(name.c_str());
 
-			if (type.is_valid() && cservice_manager::emplace(type))
+			if (type.is_valid() && core::cservice_manager::emplace(type))
 			{
 				logging::log_info(fmt::format("Registered service: '{}'", type.get_name().data()));
 			}

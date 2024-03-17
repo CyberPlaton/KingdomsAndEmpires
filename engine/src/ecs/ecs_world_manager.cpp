@@ -1,6 +1,5 @@
 #include "ecs_world_manager.hpp"
 #include "../services/thread_service.hpp"
-#include "../services/service_manager.hpp"
 
 namespace ecs
 {
@@ -9,7 +8,7 @@ namespace ecs
 		//------------------------------------------------------------------------------------------------------------------------
 		ecs_os_thread_t thread_new(ecs_os_thread_callback_t callback, void* arg)
 		{
-			auto* thread_service = engine::cservice_manager::find<engine::cthread_service>();
+			auto* thread_service = core::cservice_manager::find<engine::cthread_service>();
 
 			auto future = thread_service->push_foreground_job("", [=]()
 				{
