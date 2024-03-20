@@ -101,9 +101,18 @@ namespace sm
 		keyboardkey_right = SDLK_RIGHT,
 		keyboardkey_left = SDLK_LEFT,
 		keyboardkey_down = SDLK_DOWN,
-		keyboardkey_up = SDLK_UP,
+		keyboardkey_up = SDLK_UP
+	};
 
-		keyboardkey_count = 94
+	//------------------------------------------------------------------------------------------------------------------------
+	enum mousebutton : uint8_t
+	{
+		mousebutton_none	= 0,
+		mousebutton_left	= SDL_BUTTON_LEFT,
+		mousebutton_right	= SDL_BUTTON_RIGHT,
+		mousebutton_middle	= SDL_BUTTON_MIDDLE,
+		mousebutton_extra1	= SDL_BUTTON_X1,
+		mousebutton_extra2	= SDL_BUTTON_X2,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -121,13 +130,37 @@ namespace sm
 		bool is_key_released(keyboardkey k);
 		bool is_key_held(keyboardkey k);
 
+		bool is_mouse_pressed(mousebutton b);
+		bool is_mouse_released(mousebutton b);
+		bool is_mouse_held(mousebutton b);
+
 	private:
 		using keyboard_state_t = vector_t<bool>;
+		using mouse_state_t = array_t<bool, 6>;
 
-		keyboard_state_t m_current;
-		keyboard_state_t m_previous;
+		struct skeyboard
+		{
+			keyboard_state_t m_current;
+			keyboard_state_t m_previous;
+		};
+
+		struct smouse
+		{
+			int m_x = 0, m_y = 0;
+			mouse_state_t m_current;
+			mouse_state_t m_previous;
+		};
+
+		skeyboard m_keyboard_state;
+		core::cmutex m_mutex;
+		smouse m_mouse_state;
 
 		RTTR_ENABLE(core::cservice);
+
+	private:
+		void update_keyboard();
+		void update_mouse();
+
 	};
 
 } //- sm
