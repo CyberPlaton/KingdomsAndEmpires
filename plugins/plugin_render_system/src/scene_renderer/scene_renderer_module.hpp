@@ -13,6 +13,7 @@ namespace render_system
 		{
 			run_on(ecs::system_running_phase_on_world_render);
 			multithreaded();
+			exclude<ecs::tag::sinvisible>();
 			build([&](flecs::entity e, const ecs::stransform& transform, const ecs::ssprite& sprite)
 				{
 					ZoneScopedN("Scene Render System");

@@ -70,6 +70,9 @@ namespace ecs
 		//- Note: Structural changes are for example adding or removing components from an entity.
 		void immediate();
 
+		template<typename... TComponent>
+		void exclude();
+
 		void run_on(system_running_phase p);
 
 		void run_after(flecs::entity e);
@@ -93,6 +96,16 @@ namespace ecs
 	{
 		//- Note: registers a system we depend on AFTER we are registered to flecs
 		TSystem system(world());
+	}
+
+	//- Excludes one or more components from matching table, i.e. retrieves entities that
+	//- do not have those components.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	template<typename... TComponent>
+	void csystem<TComps...>::exclude()
+	{
+		m_builder.without<TComponent...>();
 	}
 
 	//- Marks the system as available for threading. Note that a system using ImGui UI

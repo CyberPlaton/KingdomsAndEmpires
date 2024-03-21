@@ -162,6 +162,18 @@ namespace ecs
 		RTTR_ENABLE(icomponent);
 	};
 
+	namespace tag
+	{
+		//- Tag an entity as invisible, i.e. it will not be drawn if it has a sprite component.
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sinvisible final : public icomponent
+		{
+			DECLARE_COMPONENT(sinvisible);
+			RTTR_ENABLE(icomponent);
+		};
+
+	} //- tag
+
 } //- ecs
 
 namespace ecs
@@ -266,5 +278,19 @@ namespace ecs
 
 		rttr::default_constructor<shierarchy>();
 	};
+
+	namespace tag
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		REFLECT_INLINE(sinvisible)
+		{
+			rttr::registration::class_<sinvisible>("sinvisible")
+				.method("name", &sinvisible::name)
+				;
+
+			rttr::default_constructor<sinvisible>();
+		};
+
+	} //- tag
 
 } //- ecs
