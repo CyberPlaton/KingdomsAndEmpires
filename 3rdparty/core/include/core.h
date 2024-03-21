@@ -65,6 +65,11 @@ namespace stl = std;
 #define CORE_REALLOC(p, size)	mi_realloc(p, size)
 #define CORE_FREE(p)			mi_free(p)
 
+#define malloc(size)			CORE_MALLOC(size)
+#define calloc(n, size)			CORE_CALLOC(n, size)
+#define realloc(p, size)		CORE_REALLOC(p, size)
+#define free(p)					CORE_FREE(p)
+
 #if defined(core_EXPORTS)
 	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
