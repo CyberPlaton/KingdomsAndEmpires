@@ -3,7 +3,6 @@
 #include "physics/b2_physics.hpp"
 #include "spritemancer/sm.hpp"
 #include "ecs/ecs.hpp"
-#include "services/service_manager.hpp"
 #include "editor/editor_tool.hpp"
 #include "editor/editor_visualizer.hpp"
 #include "layer.hpp"
@@ -61,7 +60,7 @@ namespace engine
 		struct sconfig
 		{
 			sm::cwindow::sconfig m_window_cfg;
-			cservice_manager::sconfig m_service_cfg;
+			core::cservice_manager::sconfig m_service_cfg;
 			clayers::sconfig m_layer_cfg;
 			cresource_management_service::sconfig m_resources_cfg;
 
@@ -101,7 +100,7 @@ namespace engine
 	template<class TService>
 	auto engine::cengine::service()
 	{
-		return cservice_manager::find<TService>();
+		return core::cservice_manager::find<TService>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
