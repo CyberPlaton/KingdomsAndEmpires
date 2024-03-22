@@ -232,7 +232,6 @@ namespace ecs
 		flecs::system_builder<> m_builder;
 	};
 
-
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TCallable>
 	void cfree_system::build(TCallable&& callback)

@@ -1,6 +1,6 @@
 #include "input_service.hpp"
 
-namespace sm
+namespace engine
 {
 	//------------------------------------------------------------------------------------------------------------------------
 	cinput_service::~cinput_service()
@@ -94,4 +94,4 @@ namespace sm
 		m_mouse_state.m_current[mousebutton_extra2] = mask & SDL_BUTTON_X2MASK;
 	}
 
-} //- sm
+} //- engine

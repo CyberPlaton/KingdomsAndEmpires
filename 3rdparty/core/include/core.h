@@ -120,6 +120,7 @@ using spriteatlas_t = handle_type_t;
 using renderlayer_t = handle_type_t;
 using subtexture_t = handle_type_t;
 using render_target_t = handle_type_t;
+using window_t = handle_type_t;
 using entity_proxy_t = int;
 
 using ivec2_t = glm::lowp_u32vec2;
@@ -240,38 +241,37 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	enum common_color
 	{
-		//- convention: 400 - dark, 200 - normal, 50 - light
-		common_color_red400,
-		common_color_red200,
-		common_color_red50,
+		common_color_red_dark,
+		common_color_red,
+		common_color_red_light,
 
-		common_color_orange400,
-		common_color_orange200,
-		common_color_orange50,
+		common_color_orange_dark,
+		common_color_orange,
+		common_color_orange_light,
 
-		common_color_yellow400,
-		common_color_yellow200,
-		common_color_yellow50,
+		common_color_yellow_dark,
+		common_color_yellow,
+		common_color_yellow_light,
 
-		common_color_green400,
-		common_color_green200,
-		common_color_green50,
+		common_color_green_dark,
+		common_color_green,
+		common_color_green_light,
 
-		common_color_cyan400,
-		common_color_cyan200,
-		common_color_cyan50,
+		common_color_cyan_dark,
+		common_color_cyan,
+		common_color_cyan_light,
 
-		common_color_blue400,
-		common_color_blue200,
-		common_color_blue50,
+		common_color_blue_dark,
+		common_color_blue,
+		common_color_blue_light,
 
-		common_color_magenta400,
-		common_color_magenta200,
-		common_color_magenta50,
+		common_color_magenta_dark,
+		common_color_magenta,
+		common_color_magenta_light,
 
-		common_color_pink400,
-		common_color_pink200,
-		common_color_pink50,
+		common_color_pink_dark,
+		common_color_pink,
+		common_color_pink_light,
 
 		common_color_transparent,
 		common_color_neutral0,		//- black

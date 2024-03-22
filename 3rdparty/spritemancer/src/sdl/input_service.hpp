@@ -1,7 +1,7 @@
 #pragma once
 #include "sdl_service.hpp"
 
-namespace sm
+namespace engine
 {
 	//- mapping most important keys from SDL. Other keys from SDL can be checked directly.
 	//------------------------------------------------------------------------------------------------------------------------
@@ -163,9 +163,9 @@ namespace sm
 
 	};
 
-} //- sm
+} //- engine
 
-namespace sm
+namespace engine
 {
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(cinput_service)
@@ -178,4 +178,4 @@ namespace sm
 			;
 	}
 
-} //- sm
+} //- engine
