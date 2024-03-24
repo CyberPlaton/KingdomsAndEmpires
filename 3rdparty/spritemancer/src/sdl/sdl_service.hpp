@@ -5,6 +5,53 @@
 
 namespace sdl
 {
+	namespace detail
+	{
+		//- Abstract holder of a SDL pointer.
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		class isdl_resource
+		{
+		public:
+			isdl_resource(TType* resource) : m_resource(resource) {}
+
+			const TType* resource() const { return m_resource; }
+			TType* resource() { return m_resource; }
+
+		private:
+			isdl_resource() = default;
+
+			TType* m_resource;
+		};
+
+		//- Wrapper for a SDL window class.
+		//------------------------------------------------------------------------------------------------------------------------
+		class csdl_window : public isdl_resource<SDL_Window>
+		{
+		public:
+			csdl_window(SDL_Window* window) : isdl_resource<SDL_Window>(window) {}
+		};
+
+		using window_ref_t = ref_t<csdl_window>;
+
+	} //- detail
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum window_resolution : uint8_t
+	{
+		window_resolution_custom = 0,
+		window_resolution_switch,
+		window_resolution_steamdeck,
+		window_resolution_sxga,
+		window_resolution_hd,
+		window_resolution_hd_plus,
+		window_resolution_fhd,
+		window_resolution_wuxga,
+		window_resolution_qhd,
+		window_resolution_wqhd,
+		window_resolution_uhd,
+	};
+
 	//------------------------------------------------------------------------------------------------------------------------
 	enum subsystem : uint32_t
 	{
@@ -45,6 +92,65 @@ namespace sdl
 	{
 		SDL_Event m_event;
 		bool m_handled = false;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cwindow
+	{
+	public:
+		struct sconfig
+		{
+			std::string m_title = {};
+			std::string m_window_icon_path = {};
+			window_resolution m_resolution = window_resolution_custom;
+			unsigned m_x = 0;
+			unsigned m_y = 0;
+			unsigned m_width = 0;
+			unsigned m_height = 0;
+			unsigned m_target_fps = 0;
+			int m_flags = 0;
+
+			RTTR_ENABLE();
+		};
+
+		cwindow(sconfig& cfg, window_t handle) :
+			m_window(std::make_shared<detail::csdl_window>(SDL_CreateWindow(cfg.m_title.c_str(), cfg.m_x, cfg.m_y, cfg.m_width, cfg.m_height, cfg.m_flags))),
+			m_handle(handle)
+		{
+			//- set icon if required
+			if (!cfg.m_window_icon_path.empty())
+			{
+
+			}
+		}
+
+		~cwindow()
+		{
+			SDL_DestroyWindow(m_window->resource());
+		}
+
+		bool info(SDL_SysWMinfo* info) const
+		{
+			if (SDL_GetWindowWMInfo(m_window->resource(), info) == SDL_TRUE)
+			{
+				return true;
+			}
+			return false;
+		}
+
+		const SDL_Window* window() const
+		{
+			return m_window->resource();
+		}
+
+		SDL_Window* window()
+		{
+			return m_window->resource();
+		}
+
+	private:
+		detail::window_ref_t m_window;
+		window_t m_handle;
 	};
 
 	//- SDL service responsible for window management, inputs and event management.
