@@ -7,6 +7,37 @@
 
 namespace sdl
 {
+	namespace detail
+	{
+		//- Abstract holder of a SDL pointer.
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		class isdl_resource
+		{
+		public:
+			isdl_resource(TType* resource) : m_resource(resource) {}
+
+			const TType* resource() const { return m_resource; }
+			TType* resource() { return m_resource; }
+
+		private:
+			isdl_resource() = default;
+
+			TType* m_resource;
+		};
+
+		//- Wrapper for a SDL window class.
+		//------------------------------------------------------------------------------------------------------------------------
+		class csdl_window : public isdl_resource<SDL_Window>
+		{
+		public:
+			csdl_window(SDL_Window* window) : isdl_resource<SDL_Window>(window) {}
+		};
+
+		using window_ref_t = ref_t<csdl_window>;
+
+	} //- detail
+
 	//------------------------------------------------------------------------------------------------------------------------
 	enum window_flag
 	{
@@ -39,24 +70,9 @@ namespace sdl
 		window_resolution_uhd,
 	};
 
-	template<class TType>
-	class isdl_resource
-	{
-	public:
-		isdl_resource() = default;
-
-		TType* native() const;
-
-	private:
-		TType* m_handle;
-	};
-
-
 	class cwindow
 	{
 	public:
-		using window_ref_t = ref_t<SDL_Window>;
-
 		struct sconfig
 		{
 			std::string m_title = {};
@@ -74,7 +90,7 @@ namespace sdl
 
 		cwindow(sconfig& cfg)
 		{
-			m_window = std::make_shared<SDL_Window>(SDL_CreateWindow(cfg.m_title.c_str(), cfg.m_x, cfg.m_y, cfg.m_width, cfg.m_height, 0));
+			m_window = std::make_shared<detail::csdl_window>(SDL_CreateWindow(cfg.m_title.c_str(), cfg.m_x, cfg.m_y, cfg.m_width, cfg.m_height, 0));
 		}
 
 		~cwindow()
@@ -84,20 +100,20 @@ namespace sdl
 
 		bool info(SDL_SysWMinfo* info) const
 		{
-			if (SDL_GetWindowWMInfo(m_window.get(), info) == SDL_TRUE)
+			if (SDL_GetWindowWMInfo(m_window.get()->resource(), info) == SDL_TRUE)
 			{
 				return true;
 			}
 			return false;
 		}
 
-		SDL_Window* window() const
+		detail::window_ref_t window() const
 		{
 
 		}
 
 	private:
-		window_ref_t m_window;
+		detail::window_ref_t m_window;
 	};
 
 } //- sdl
