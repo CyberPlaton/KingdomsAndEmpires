@@ -75,6 +75,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		w.mm().import_module<render_system::cscene_render_module>();
 		w.mm().import_module<render_system::canimation_module>();
 
+		auto& human = w.pm().create("Human");
+
 		for (auto i = 0u; i < 250; ++i)
 		{
 			auto e = w.em().create_entity();

@@ -4,11 +4,10 @@ namespace ecs
 {
 	namespace
 	{
-		constexpr auto C_ENTITIES_PROP = "entities";
-		constexpr auto C_SYSTEMS_PROP = "systems";
-		constexpr auto C_MODULES_PROP = "modules";
-		constexpr auto C_COMPONENTS_PROP = "components";
-		constexpr auto C_AVRG_ENTITY_COMPONENT_COUNT = 8;
+		constexpr std::string_view C_ENTITIES_PROP		= "entities";
+		constexpr std::string_view C_SYSTEMS_PROP		= "systems";
+		constexpr std::string_view C_MODULES_PROP		= "modules";
+		constexpr std::string_view C_COMPONENTS_PROP	= "components";
 
 	} //- unnamed
 
@@ -16,10 +15,11 @@ namespace ecs
 	cworld::cworld(stringview_t name) :
 		m_name(name),
 		m_entity_manager(world()),
-		m_module_manager(world()),
 		m_component_manager(world()),
+		m_prefab_manager(world()),
 		m_query_manager(world()),
 		m_singleton_manager(world()),
+		m_module_manager(world()),
 		m_used_threads(1)
 	{
 		use_threads(m_used_threads);
@@ -373,37 +373,23 @@ namespace ecs
 
 		json[C_COMPONENTS_PROP] = nlohmann::json::array();
 
-		vector_t<std::string> names; names.reserve(C_AVRG_ENTITY_COMPONENT_COUNT);
-
 		auto i = 0;
-		e.each([&](flecs::id c)
+		for (const auto& c : em().components(e))
+		{
+			auto type = rttr::type::get_by_name(c);
+
+			if (auto serialize_method = type.get_method(ecs::C_COMPONENT_SERIALIZE_FUNC_NAME.data()); serialize_method.is_valid())
 			{
-				//- retrieve usable name of component without namespaces etc
-				std::string name = c.str().c_str();
-				core::string_utils::split(name, '.', names);
+				logging::log_error(fmt::format("\tserializing component '{}'", c));
 
-				if (auto component_type = rttr::type::get_by_name(names[names.size() - 1]); component_type.is_valid())
-				{
-					if (auto serialize_method = component_type.get_method(ecs::C_COMPONENT_SERIALIZE_FUNC_NAME.data()); serialize_method.is_valid())
-					{
-						logging::log_error(fmt::format("\tserializing component '{}'", name));
-
-						serialize_method.invoke({}, e, json[C_COMPONENTS_PROP][i++]);
-					}
-					else
-					{
-						//- RTTR error, component does not have a serialize function
-						logging::log_error(fmt::format("\tcould not find 'serialize' method for component '{}'", name));
-					}
-				}
-				else
-				{
-					//- RTTR error, component not found with given name
-					logging::log_error(fmt::format("\tcould not find component '{} ({})' with RTTR", names[names.size() - 1], name));
-				}
-
-				names.clear();
-			});
+				serialize_method.invoke({}, e, json[C_COMPONENTS_PROP][i++]);
+			}
+			else
+			{
+				//- RTTR error, component does not have a serialize function
+				logging::log_error(fmt::format("\tcould not find 'serialize' method for component '{}'", c));
+			}
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -463,6 +449,8 @@ namespace ecs
 						if (it.at_key(type_name).get(component_element) == simdjson::SUCCESS)
 						{
 							auto var = core::io::from_json_object(type, component_element);
+
+							//- TODO: emplace component to entity
 
 							if (var.is_valid())
 							{

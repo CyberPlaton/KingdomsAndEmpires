@@ -4,6 +4,7 @@
 #include "ecs_component_manager.hpp"
 #include "ecs_query_manager.hpp"
 #include "ecs_singleton_manager.hpp"
+#include "ecs_prefab_manager.hpp"
 #include "../physics/b2_physics.hpp"
 
 namespace ecs
@@ -48,15 +49,19 @@ namespace ecs
 		const csingleton_manager& sm() const { return m_singleton_manager; }
 		csingleton_manager& sm() { return m_singleton_manager; }
 
+		const cprefab_manager& pm() const { return m_prefab_manager; }
+		cprefab_manager& pm() { return m_prefab_manager; }
+
 		bool QueryCallback(int proxy_id);
 		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
 
 	private:
 		cquery_manager m_query_manager;
 		ccomponent_manager m_component_manager;
-		cmodule_manager m_module_manager;
+		cprefab_manager m_prefab_manager;
 		csingleton_manager m_singleton_manager;
 		centity_manager m_entity_manager;
+		cmodule_manager m_module_manager;
 
 		stringview_t m_name;
 		flecs::world m_world;

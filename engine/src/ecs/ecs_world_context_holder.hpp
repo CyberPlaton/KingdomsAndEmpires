@@ -4,11 +4,14 @@
 
 namespace ecs
 {
+	class cworld;
+
 	//- Note: context holds pointer in order to make the class move constructible,
 	//- this is required by flecs.
 	//------------------------------------------------------------------------------------------------------------------------
 	class iworld_context_holder
 	{
+		friend class cworld;
 	public:
 		iworld_context_holder(flecs::world& w);
 		~iworld_context_holder();
@@ -19,6 +22,8 @@ namespace ecs
 	protected:
 		flecs::world& world();
 		const flecs::world& world() const;
+
+		vector_t<std::string> components(flecs::entity e) const;
 
 		RTTR_ENABLE();
 		RTTR_REFLECTABLE();

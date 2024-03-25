@@ -1,51 +1,55 @@
-#include "ecs_entity_manager.hpp"
-#include "ecs_component.hpp"
+#include "ecs_prefab.hpp"
 
 namespace ecs
 {
+	//- create a prefab entity to be ready for definition
 	//------------------------------------------------------------------------------------------------------------------------
-	centity_manager::centity_manager(flecs::world& w) :
+	cprefab::cprefab(const std::string& name, flecs::world& w) :
 		iworld_context_holder(w)
 	{
+		m_entity = world().prefab(name.data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	centity_manager::~centity_manager()
+	cprefab::~cprefab()
 	{
-
+		m_entity.destruct();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity centity_manager::create_entity()
+	stringview_t cprefab::name() const
 	{
-		return create_entity(core::cuuid{});
+		return m_entity.name().c_str();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity centity_manager::create_entity(const core::cuuid& uuid)
+	stringview_t cprefab::parent_name() const
 	{
-		return create_entity(uuid.string().c_str());
+		if (auto p = m_entity.parent(); p.is_valid())
+		{
+			return p.name().c_str();
+		}
+		return {};
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity centity_manager::create_entity(stringview_t uuid)
+	flecs::entity cprefab::self() const
 	{
-		//- create runtime ecs entity uniquely identifiable by uuid
-		auto e = world().entity(uuid);
-
-		return m_entities.emplace_back(e);
+		return m_entity;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	flecs::entity centity_manager::entity(const core::cuuid& uuid) const
+	ecs::cprefab& cprefab::parent(flecs::entity e)
 	{
-		return world().lookup(uuid.string().c_str());
+		m_entity.child_of(e);
+		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	const vector_t<flecs::entity>& centity_manager::entities() const
+	ecs::cprefab& cprefab::unparent()
 	{
-		return m_entities;
+		m_entity.remove(flecs::ChildOf, m_entity.parent());
+		return *this;
 	}
 
 } //- ecs

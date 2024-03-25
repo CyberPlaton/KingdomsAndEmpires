@@ -5,6 +5,7 @@
 
 namespace ecs
 {
+	//- TODO: currently this manager is not functional and his purpose is not yet decided.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ccomponent_manager : public iworld_context_holder
 	{
