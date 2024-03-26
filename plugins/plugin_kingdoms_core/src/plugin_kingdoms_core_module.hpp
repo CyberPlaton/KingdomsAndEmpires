@@ -260,10 +260,70 @@ namespace building
 		//------------------------------------------------------------------------------------------------------------------------
 		DECLARE_TAG(scolony_buildable);
 
+		//- Tags building entity as eligible for building by a specific race.
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(shuman_buildable);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(sorc_buildable);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(sgoblin_buildable);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(self_buildable);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(sgnome_buildable);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(sdwarf_buildable);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(shigh_troll_buildable);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(sdark_elf_buildable);
+
 	} //- tag
 
-	//- base class for building definitions
+	//- Component for building definitions
 	//------------------------------------------------------------------------------------------------------------------------
+	struct sbuilding final : ecs::icomponent
+	{
+		DECLARE_COMPONENT(sbuilding);
+
+		struct sconstruction_requirements
+		{
+			using resource_pair_t = core::spair<std::string, unsigned>;
+			using technologies_t = vector_t<std::string>;
+
+			vector_t<resource_pair_t> m_cost;
+			//- Note: must match the tags of the building entity/prefab.
+			int m_races = kingdoms::kingdom_race_none;
+			//- Note: must match the tags of the building entity/prefab.
+			int m_settlement_type = kingdoms::settlement_type_none;
+
+			std::string m_previous_building;
+
+			kingdoms::building_slot_type m_slot = kingdoms::building_slot_type_none;
+			technologies_t m_technologies;
+
+			RTTR_ENABLE();
+		};
+
+		struct sdata
+		{
+			using profession_level_pair_t = core::spair<std::string, unsigned>;
+
+			vector_t<profession_level_pair_t> m_profession_level_requirements;
+
+			RTTR_ENABLE();
+		};
+
+
+		RTTR_ENABLE(ecs::icomponent);
+	};
 // 	struct ibuilding : ecs::icomponent
 // 	{
 // 		DECLARE_COMPONENT(ibuilding);
