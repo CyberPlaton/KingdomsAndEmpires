@@ -24,10 +24,11 @@ namespace ecs
 
 	}
 
+	//- Create a new prefab entity with given name.
 	//------------------------------------------------------------------------------------------------------------------------
-	ecs::cprefab& cprefab_manager::create(const std::string& name)
+	ecs::cprefab& cprefab_manager::create(stringview_t name)
 	{
-		auto h = algorithm::hash(name.c_str());
+		auto h = algorithm::hash(name);
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
@@ -42,10 +43,30 @@ namespace ecs
 		return m_prefabs.at(h);
 	}
 
+	//- Convert an entity to prefab, creating merely a new cprefab object.
 	//------------------------------------------------------------------------------------------------------------------------
-	ecs::cprefab& cprefab_manager::find(const std::string& name)
+	ecs::cprefab& cprefab_manager::create(flecs::entity e)
 	{
-		auto h = algorithm::hash(name.c_str());
+		stringview_t name = e.name().c_str();
+		auto h = algorithm::hash(name);
+
+		if (m_prefabs.find(h) == m_prefabs.end())
+		{
+			m_prefabs.try_emplace(h, e);
+		}
+		else
+		{
+			//- report warning
+			logging::log_warn(fmt::format("Trying to create a prefab from entity with a duplicate name '{}'", name));
+		}
+
+		return m_prefabs.at(h);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::cprefab& cprefab_manager::find(stringview_t name)
+	{
+		auto h = algorithm::hash(name);
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
@@ -61,9 +82,9 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cprefab_manager::destroy(const std::string& name)
+	void cprefab_manager::destroy(stringview_t name)
 	{
-		auto h = algorithm::hash(name.c_str());
+		auto h = algorithm::hash(name);
 
 		m_prefabs.erase(h);
 	}
@@ -134,7 +155,7 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cprefab_manager::save(const std::string& name, const core::cpath& path)
+	void cprefab_manager::save(stringview_t name, const core::cpath& path)
 	{
 		auto& prefab = find(name);
 

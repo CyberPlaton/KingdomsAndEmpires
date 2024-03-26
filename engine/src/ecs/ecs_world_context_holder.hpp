@@ -16,14 +16,15 @@ namespace ecs
 		iworld_context_holder(flecs::world& w);
 		~iworld_context_holder();
 
+		bool is_prefab(flecs::entity e) const;
+		vector_t<std::string> components(flecs::entity e) const;
+
 	private:
 		flecs::world* m_world;
 
 	protected:
 		flecs::world& world();
 		const flecs::world& world() const;
-
-		vector_t<std::string> components(flecs::entity e) const;
 
 		RTTR_ENABLE();
 		RTTR_REFLECTABLE();

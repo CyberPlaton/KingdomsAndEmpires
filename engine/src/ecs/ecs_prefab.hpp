@@ -13,6 +13,7 @@ namespace ecs
 	{
 	public:
 		cprefab(const std::string& name, flecs::world& w);
+		cprefab(flecs::entity e, flecs::world& w);
 		~cprefab();
 
 		stringview_t name() const;
@@ -21,6 +22,9 @@ namespace ecs
 
 		cprefab& parent(flecs::entity e);
 		cprefab& unparent();
+
+		cprefab& variant_of(flecs::entity e);
+		cprefab& remove_variant_of(flecs::entity e);
 
 		template<typename TComponent>
 		cprefab& add();
@@ -41,6 +45,7 @@ namespace ecs
 		flecs::entity m_entity;
 	};
 
+	//- Add a shared component to prefab. This component will be shared by all instances of the prefab.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TComponent>
 	cprefab& cprefab::add()
@@ -57,6 +62,7 @@ namespace ecs
 		return *this;
 	}
 
+	//- Add a private component to prefab. Each instance of the prefab will have a private copy of it.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TComponent>
 	cprefab & cprefab::override()
@@ -73,6 +79,7 @@ namespace ecs
 		return *this;
 	}
 
+	//- Remove a component, be it shared or private.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TComponent>
 	cprefab& cprefab::remove()

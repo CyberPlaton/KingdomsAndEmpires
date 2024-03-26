@@ -58,4 +58,10 @@ namespace ecs
 		return out;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	bool iworld_context_holder::is_prefab(flecs::entity e) const
+	{
+		return e.has(flecs::Prefab);
+	}
+
 } //- ecs

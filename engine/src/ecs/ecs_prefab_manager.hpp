@@ -3,7 +3,7 @@
 
 namespace ecs
 {
-	//- responsible for prefab serialization, creation and destruction.
+	//- Class responsible for prefab serialization, creation and destruction.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cprefab_manager final : public iworld_context_holder
 	{
@@ -11,12 +11,14 @@ namespace ecs
 		cprefab_manager(flecs::world& w);
 		~cprefab_manager();
 
-		cprefab& create(const std::string& name);
-		cprefab& find(const std::string& name);
-		void destroy(const std::string& name);
+		cprefab& create(stringview_t name);
+		cprefab& find(stringview_t name);
+		void destroy(stringview_t name);
+
+		cprefab& create(flecs::entity e);
 
 		bool load(const core::cpath& path);
-		void save(const std::string& name, const core::cpath& path);
+		void save(stringview_t name, const core::cpath& path);
 
 	private:
 		umap_t<unsigned, cprefab> m_prefabs;
