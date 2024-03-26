@@ -6,12 +6,12 @@ namespace ecs
 {
 	namespace meta
 	{
-		constexpr std::string_view C_COMPONENT_NOT_EDITABLE = "NOT_EDITABLE";
-		constexpr std::string_view C_COMPONENT_NOT_VISIBLE	= "NOT_VISIBLE";
+		constexpr std::string_view C_COMPONENT_NOT_EDITABLE		= "NOT_EDITABLE";
+		constexpr std::string_view C_COMPONENT_NOT_VISIBLE		= "NOT_VISIBLE";
 
 	} //- meta
 
-	constexpr rttr::string_view C_COMPONENT_SERIALIZE_FUNC_NAME	= "serialize";
+	constexpr rttr::string_view C_COMPONENT_SERIALIZE_FUNC_NAME = "serialize";
 	constexpr rttr::string_view C_COMPONENT_SET_FUNC_NAME		= "set";
 	constexpr rttr::string_view C_COMPONENT_SHOW_UI_FUNC_NAME	= "show_ui";
 
@@ -43,7 +43,8 @@ namespace ecs
 
 } //- ecs
 
-//- use this macro for defining a component
+//- Macro for defining a component
+//- TODO: 'automate' component registration to RTTR or at least make it more seamless.
 #define DECLARE_COMPONENT(c) \
 static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; } \
 static void serialize(flecs::entity e, nlohmann::json& json) \
@@ -53,6 +54,23 @@ static void serialize(flecs::entity e, nlohmann::json& json) \
 static void set(flecs::entity e, const rttr::variant& var) \
 { \
 	ecs::detail::set_component<c>(e, var); \
+}
+
+//- Shortcut macro for defining a 'tag' component. A tag component does not have any data
+//- and is useful in ecs queries and systems.
+//- Declaring a tag does not require registration to RTTR, it is done automatically.
+#define DECLARE_TAG(c) \
+struct c final : public ecs::icomponent \
+{ \
+	DECLARE_COMPONENT(c); \
+	RTTR_ENABLE(ecs::icomponent) \
+}; \
+REFLECT_INLINE(c) \
+{ \
+	rttr::registration::class_<c>(STRING(c)) \
+		.method("name", &c::name) \
+		; \
+	rttr::default_constructor<c>(); \
 }
 
 namespace ecs
@@ -166,11 +184,7 @@ namespace ecs
 	{
 		//- Tag an entity as invisible, i.e. it will not be drawn if it has a sprite component.
 		//------------------------------------------------------------------------------------------------------------------------
-		struct sinvisible final : public icomponent
-		{
-			DECLARE_COMPONENT(sinvisible);
-			RTTR_ENABLE(icomponent);
-		};
+		DECLARE_TAG(sinvisible);
 
 	} //- tag
 
@@ -278,19 +292,5 @@ namespace ecs
 
 		rttr::default_constructor<shierarchy>();
 	};
-
-	namespace tag
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		REFLECT_INLINE(sinvisible)
-		{
-			rttr::registration::class_<sinvisible>("sinvisible")
-				.method("name", &sinvisible::name)
-				;
-
-			rttr::default_constructor<sinvisible>();
-		};
-
-	} //- tag
 
 } //- ecs

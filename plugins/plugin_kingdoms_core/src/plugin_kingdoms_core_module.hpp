@@ -68,17 +68,18 @@ namespace kingdoms
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum settlement_type
+	enum settlement_type : uint8_t
 	{
 		settlement_type_none = BIT(0),
 		settlement_type_city = BIT(1),
 		settlement_type_fort = BIT(2),
+		settlement_type_colony = BIT(3),
 
-		settlement_type_all = settlement_type_city | settlement_type_fort
+		settlement_type_all = settlement_type_city | settlement_type_fort | settlement_type_colony
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum kingdom_race
+	enum kingdom_race : uint16_t
 	{
 		kingdom_race_none		= BIT(0),
 		kingdom_race_human		= BIT(1),
@@ -245,6 +246,22 @@ namespace resource
 
 namespace building
 {
+	namespace tag
+	{
+		//- Tags building entity as eligible for building inside a City.
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(scity_buildable);
+
+		//- Tags building entity as eligible for building inside a Castle.
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(scastle_buildable);
+
+		//- Tags building entity as eligible for building inside a Colony.
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(scolony_buildable);
+
+	} //- tag
+
 	//- base class for building definitions
 	//------------------------------------------------------------------------------------------------------------------------
 // 	struct ibuilding : ecs::icomponent
