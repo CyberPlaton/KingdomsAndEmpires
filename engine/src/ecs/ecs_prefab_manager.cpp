@@ -52,7 +52,7 @@ namespace ecs
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
-			m_prefabs.try_emplace(h, e);
+			m_prefabs.try_emplace(h, e, world());
 		}
 		else
 		{
@@ -99,12 +99,12 @@ namespace ecs
 
 		auto string = core::cfile::load_text(path.view());
 
-		//- TODO: load common prefab data. If prefab has a parent then load it first.
-
-
 		//- loading component overrides
 		if (parser.parse(string.data(), string.length()).get(element) == simdjson::SUCCESS)
 		{
+			//- TODO: load common prefab data. If prefab has a parent then load it first.
+
+			//- load components
 			simdjson::dom::array components_array;
 
 			if (element.at_key(C_COMPONENTS_PROP).get(components_array) == simdjson::SUCCESS)
@@ -151,7 +151,10 @@ namespace ecs
 					}
 				}
 			}
+
+			return true;
 		}
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
