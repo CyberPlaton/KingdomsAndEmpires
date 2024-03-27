@@ -20,7 +20,6 @@ namespace ecs
 		cworld(stringview_t name);
 		~cworld();
 
-
 		void tick(float dt, system_running_phase p);
 		[[nodiscard]] decltype(auto) visible_entities() const {return m_visible_entities;}
 		void prepare(const core::srect& area);

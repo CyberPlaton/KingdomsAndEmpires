@@ -564,6 +564,12 @@ namespace core
 
 namespace rttr
 {
+	namespace detail
+	{
+		struct no_default {};
+
+	} //- detail
+
 	//- Utility class for RTTR registration. Adds a default constructor.
 	//- Intended for classes. Use the class_() function to register metas etc.
 	//- We do not check for duplicate registrations as those might be a side-effect of REFLECT_INLINE() usage.
@@ -572,6 +578,7 @@ namespace rttr
 	//-		- rttr::detail::as_object
 	//-		- rttr::detail::as_std_shared_ptr
 	//-		- rttr::detail::as_raw_pointer
+	//-		- rttr::detail::no_default (omits registering a default constructor, useful when you do not want one)
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TClass, typename TPolicy = rttr::detail::as_object>
 	class cregistrator
@@ -585,7 +592,25 @@ namespace rttr
 		template<typename TProp>
 		cregistrator& prop(rttr::string_view name, TProp property);
 
-		decltype(auto) class_() { return m_object; }
+		template<typename TCustomPolicy, typename... ARGS>
+		cregistrator& ctor()
+		{
+			if constexpr (std::is_same_v<rttr::detail::as_object, TCustomPolicy>)
+			{
+				static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
+
+				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_object);
+			}
+			else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TCustomPolicy>)
+			{
+				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_raw_ptr);
+			}
+			else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TCustomPolicy>)
+			{
+				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_std_shared_ptr);
+			}
+			return *this;
+		}
 
 	private:
 		rttr::registration::class_<TClass> m_object;
@@ -596,31 +621,34 @@ namespace rttr
 	rttr::cregistrator<TClass, TPolicy>::cregistrator(rttr::string_view name) :
 		m_object(name)
 	{
-		//- class should be registered with RTTR by this point
-		if constexpr (std::is_same_v<rttr::detail::as_object, TPolicy>)
+		if constexpr (!std::is_same_v<rttr::detail::no_default, TPolicy>)
 		{
-			static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
+			//- class should be registered with RTTR by this point
+			if constexpr (std::is_same_v<rttr::detail::as_object, TPolicy>)
+			{
+				static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
 
-			m_object.constructor()(rttr::policy::ctor::as_object);
-		}
-		else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TPolicy>)
-		{
-			m_object.constructor()(rttr::policy::ctor::as_raw_ptr);
-		}
-		else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TPolicy>)
-		{
-			m_object.constructor()(rttr::policy::ctor::as_std_shared_ptr);
-		}
-		else
-		{
-			static_assert(false, "Invalid operation. TPolicy must be one of 'rttr::detail::as_object', 'rttr::detail::as_std_shared_ptr' or 'rttr::detail::as_raw_pointer'")
-		}
+				m_object.constructor()(rttr::policy::ctor::as_object);
+			}
+			else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TPolicy>)
+			{
+				m_object.constructor()(rttr::policy::ctor::as_raw_ptr);
+			}
+			else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TPolicy>)
+			{
+				m_object.constructor()(rttr::policy::ctor::as_std_shared_ptr);
+			}
+			else
+			{
+				static_assert(false, "Invalid operation. TPolicy must be one of 'rttr::detail::as_object', 'rttr::detail::as_std_shared_ptr' or 'rttr::detail::as_raw_pointer'")
+			}
 
-		if (core::serror_reporter::instance().m_callback)
-		{
-			core::serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
-				fmt::format("Registering RTTR class '{}' with policy '{}'",
-					rttr::type::get<TClass>().get_name().data(), rttr::type::get<TPolicy>().get_name().data()));
+			if (core::serror_reporter::instance().m_callback)
+			{
+				core::serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+					fmt::format("Registering RTTR class '{}' with policy '{}'",
+						rttr::type::get<TClass>().get_name().data(), rttr::type::get<TPolicy>().get_name().data()));
+			}
 		}
 	}
 

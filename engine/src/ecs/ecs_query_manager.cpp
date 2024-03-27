@@ -122,7 +122,7 @@ namespace ecs
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cquery_manager::cquery_manager(flecs::world& w) :
-		m_managed_world(w)
+		iworld_context_holder(w)
 	{
 		m_queries.init(C_QUERY_COUNT_MAX);
 	}

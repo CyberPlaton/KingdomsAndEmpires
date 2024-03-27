@@ -11,6 +11,8 @@ namespace ecs
 		cprefab_manager(flecs::world& w);
 		~cprefab_manager();
 
+		void on_shutdown() override final;
+
 		cprefab& create(stringview_t name);
 		cprefab& find(stringview_t name);
 		void destroy(stringview_t name);

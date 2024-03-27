@@ -24,6 +24,12 @@ namespace ecs
 
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	void cprefab_manager::on_shutdown()
+	{
+		m_prefabs.clear();
+	}
+
 	//- Create a new prefab entity with given name.
 	//------------------------------------------------------------------------------------------------------------------------
 	ecs::cprefab& cprefab_manager::create(stringview_t name)

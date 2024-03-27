@@ -1,6 +1,7 @@
 #pragma once
 #include <flecs.h>
 #include <core.h>
+#include "ecs_world_context_holder.hpp"
 #include "../physics/b2_physics.hpp"
 
 namespace ecs
@@ -78,7 +79,7 @@ namespace ecs
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cquery_manager
+	class cquery_manager : public iworld_context_holder
 	{
 		friend class cworld;
 	public:
@@ -98,8 +99,6 @@ namespace ecs
 	private:
 		static constexpr unsigned C_QUERY_COUNT_MAX = 256;
 
-		flecs::world& m_managed_world;
-
 		core::detail::cdynamic_pool<cquery> m_queries;
 
 		//- order of queries.
@@ -110,9 +109,6 @@ namespace ecs
 		std::queue<unsigned> m_taken_queries;
 
 	private:
-		flecs::world& w() { return m_managed_world; }
-		const flecs::world& w() const { return m_managed_world; }
-
 		//- Fetch the next query to be processed, return value must not be ignored,
 		//- as the query index will be popped and it wont be processed afterwards
 		[[nodiscard]] cquery* fetch();

@@ -16,6 +16,10 @@ namespace ecs
 		iworld_context_holder(flecs::world& w);
 		~iworld_context_holder();
 
+		//- Called before shutting down the world and while it is still valid.
+		//- Can be used to destroy entities, prefabs etc.
+		virtual void on_shutdown() {}
+
 		bool is_prefab(flecs::entity e) const;
 		vector_t<std::string> components(flecs::entity e) const;
 
@@ -27,7 +31,6 @@ namespace ecs
 		const flecs::world& world() const;
 
 		RTTR_ENABLE();
-		RTTR_REFLECTABLE();
 	};
 
 } //- ecs
@@ -37,11 +40,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(iworld_context_holder)
 	{
-		rttr::registration::class_<iworld_context_holder>("iworld_context_holder")
-			.constructor<flecs::world&>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
+		rttr::cregistrator<iworld_context_holder, rttr::detail::no_default>("iworld_context_holder")
+			.ctor<rttr::detail::as_raw_pointer, flecs::world&>()
 			;
 	}
 
