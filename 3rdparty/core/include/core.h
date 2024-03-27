@@ -13,6 +13,7 @@ namespace stl = eastl;
 #include <unordered_map>
 #include <queue>
 #include <deque>
+#include <bitset>
 namespace stl = std;
 #endif
 #include <new>
@@ -108,6 +109,8 @@ template<class T, unsigned S>
 using array_t = stl::array<T, S>;
 template<class T>
 using deque_t = stl::deque<T>;
+template<std::size TSize>
+using bitset_t = stl::bitset<TSize>;
 
 using handle_type_t = uint16_t;
 #define invalid_handle_t MAX(uint16_t)
@@ -628,7 +631,7 @@ namespace core
 			uint64_t memory_reserved() const;
 
 		private:
-			vector_t<bool> m_initialized_bit;
+			bitset_t<> m_initialized_bit;
 			std::stack<unsigned> m_fragmentation_indices;
 			uint64_t m_top;
 			uint64_t m_size;
