@@ -105,11 +105,11 @@ template<class T>
 using uset_t = stl::unordered_set<T>;
 template<class K, class T>
 using map_t = stl::map<K, T>;
-template<class T, unsigned S>
+template<class T, size_t S>
 using array_t = stl::array<T, S>;
 template<class T>
 using deque_t = stl::deque<T>;
-template<std::size TSize>
+template<size_t TSize>
 using bitset_t = stl::bitset<TSize>;
 
 using handle_type_t = uint16_t;
@@ -142,14 +142,14 @@ using mat4_t = glm::mat4x4;
 //------------------------------------------------------------------------------------------------------------------------
 void* operator new[](size_t size, const char* pName, int flags, unsigned debugFlags, const char* file, int line)
 {
-	return malloc(size);
+	return CORE_MALLOC(size);
 }
 
 //------------------------------------------------------------------------------------------------------------------------
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned debugFlags,
 	const char* file, int line)
 {
-	return malloc(size);
+	return CORE_MALLOC(size);
 }
 #endif
 
@@ -167,24 +167,25 @@ namespace rttr
 
 	} //- detail
 
+	//- Register a default constructor for a class. Can be container types, such as vector_t<> or normal classes.
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TContainer>
+	template<typename TType>
 	static void default_constructor()
 	{
 		//- i.e. vector_t or array_t (c-style arrays are not supported)
-		if constexpr (!std::is_array_v<TContainer>)
+		if constexpr (!std::is_array_v<TType>)
 		{
-			if (const auto type = rttr::type::get<TContainer>(); type.is_valid() && type.get_constructors().empty())
+			if (const auto type = rttr::type::get<TType>(); type.is_valid() && type.get_constructors().empty())
 			{
-				typename rttr::registration::template class_<TContainer> __class(type.get_name());
+				typename rttr::registration::template class_<TType> __class(type.get_name());
 				__class.constructor()(rttr::policy::ctor::as_object);
 			}
 		}
 		//- recursive register default constructor for i.e. map_t or nested containers, i.e. vector_t< map_t<>> etc.
-		if constexpr (detail::sis_container<TContainer>)
+		if constexpr (detail::sis_container<TType>)
 		{
-			using key_t = typename detail::skey_type<TContainer>::type;
-			using value_t = typename detail::svalue_type<TContainer>::type;
+			using key_t = typename detail::skey_type<TType>::type;
+			using value_t = typename detail::svalue_type<TType>::type;
 
 			if constexpr (detail::sis_container<key_t>)
 			{
@@ -549,7 +550,6 @@ namespace engine
 
 namespace core
 {
-	constexpr uint64_t C_LINKED_TREE_DEFAULT_CAPACITY = 512;
 	using error_report_function_t = std::function<void(uint8_t, const std::string&)>;
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -559,6 +559,95 @@ namespace core
 
 		error_report_function_t m_callback = nullptr;
 	};
+
+} //- core
+
+namespace rttr
+{
+	//- Utility class for RTTR registration. Adds a default constructor.
+	//- Intended for classes. Use the class_() function to register metas etc.
+	//- We do not check for duplicate registrations as those might be a side-effect of REFLECT_INLINE() usage.
+	//-
+	//- TPolicy can be one of
+	//-		- rttr::detail::as_object
+	//-		- rttr::detail::as_std_shared_ptr
+	//-		- rttr::detail::as_raw_pointer
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TClass, typename TPolicy = rttr::detail::as_object>
+	class cregistrator
+	{
+	public:
+		cregistrator(rttr::string_view name);
+
+		template<typename TMethod>
+		cregistrator& meth(rttr::string_view name, TMethod method);
+
+		template<typename TProp>
+		cregistrator& prop(rttr::string_view name, TProp property);
+
+		decltype(auto) class_() { return m_object; }
+
+	private:
+		rttr::registration::class_<TClass> m_object;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TClass, typename TPolicy /*= rttr::detail::as_object*/>
+	rttr::cregistrator<TClass, TPolicy>::cregistrator(rttr::string_view name) :
+		m_object(name)
+	{
+		//- class should be registered with RTTR by this point
+		if constexpr (std::is_same_v<rttr::detail::as_object, TPolicy>)
+		{
+			static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
+
+			m_object.constructor()(rttr::policy::ctor::as_object);
+		}
+		else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TPolicy>)
+		{
+			m_object.constructor()(rttr::policy::ctor::as_raw_ptr);
+		}
+		else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TPolicy>)
+		{
+			m_object.constructor()(rttr::policy::ctor::as_std_shared_ptr);
+		}
+		else
+		{
+			static_assert(false, "Invalid operation. TPolicy must be one of 'rttr::detail::as_object', 'rttr::detail::as_std_shared_ptr' or 'rttr::detail::as_raw_pointer'")
+		}
+
+		if (core::serror_reporter::instance().m_callback)
+		{
+			core::serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+				fmt::format("Registering RTTR class '{}' with policy '{}'",
+					rttr::type::get<TClass>().get_name().data(), rttr::type::get<TPolicy>().get_name().data()));
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TClass, typename TPolicy /*= rttr::detail::as_object*/>
+	template<typename TProp>
+	cregistrator<TClass, TPolicy>& rttr::cregistrator<TClass, TPolicy>::prop(rttr::string_view name, TProp property)
+	{
+		m_object.property(name, std::move(property));
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TClass, typename TPolicy /*= rttr::detail::as_object*/>
+	template<typename TMethod>
+	cregistrator<TClass, TPolicy>& rttr::cregistrator<TClass, TPolicy>::meth(rttr::string_view name, TMethod method)
+	{
+		m_object.method(name, std::move(method));
+		return *this;
+	}
+
+} //- rttr
+
+
+namespace core
+{
+	constexpr uint64_t C_LINKED_TREE_DEFAULT_CAPACITY = 512;
 
 	namespace io
 	{
@@ -631,7 +720,7 @@ namespace core
 			uint64_t memory_reserved() const;
 
 		private:
-			bitset_t<> m_initialized_bit;
+			vector_t<bool> m_initialized_bit;
 			std::stack<unsigned> m_fragmentation_indices;
 			uint64_t m_top;
 			uint64_t m_size;

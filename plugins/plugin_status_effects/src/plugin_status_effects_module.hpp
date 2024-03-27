@@ -211,13 +211,9 @@ namespace effects
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(saffectable)
 	{
-		rttr::registration::class_<saffectable>("saffectable")
-			.method(ecs::C_COMPONENT_SERIALIZE_FUNC_NAME, &saffectable::serialize)
-			.method(ecs::C_COMPONENT_SET_FUNC_NAME, &saffectable::set)
-			.property("m_active_effects", &saffectable::m_active_effects)
+		rttr::ccomponent<saffectable>("saffectable")
+			.prop("m_active_effects", &saffectable::m_active_effects)
 			;
-
-		rttr::default_constructor<saffectable>();
 	}
 
 } //- effects

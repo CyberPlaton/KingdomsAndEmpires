@@ -378,7 +378,7 @@ namespace ecs
 		{
 			auto type = rttr::type::get_by_name(c);
 
-			if (auto serialize_method = type.get_method(ecs::C_COMPONENT_SERIALIZE_FUNC_NAME.data()); serialize_method.is_valid())
+			if (auto serialize_method = type.get_method(ecs::detail::C_COMPONENT_SERIALIZE_FUNC_NAME.data()); serialize_method.is_valid())
 			{
 				logging::log_error(fmt::format("\tserializing component '{}'", c));
 

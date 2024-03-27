@@ -11,12 +11,13 @@ namespace ecs
 
 	} //- meta
 
-	constexpr rttr::string_view C_COMPONENT_SERIALIZE_FUNC_NAME = "serialize";
-	constexpr rttr::string_view C_COMPONENT_SET_FUNC_NAME		= "set";
-	constexpr rttr::string_view C_COMPONENT_SHOW_UI_FUNC_NAME	= "show_ui";
-
 	namespace detail
 	{
+		constexpr rttr::string_view C_COMPONENT_NAME_FUNC_NAME		= "name";
+		constexpr rttr::string_view C_COMPONENT_SERIALIZE_FUNC_NAME = "serialize";
+		constexpr rttr::string_view C_COMPONENT_SET_FUNC_NAME		= "set";
+		constexpr rttr::string_view C_COMPONENT_SHOW_UI_FUNC_NAME	= "show_ui";
+
 		//- utility function to serialize component of an entity to json
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TComponent>
@@ -190,6 +191,33 @@ namespace ecs
 
 } //- ecs
 
+namespace rttr
+{
+	//- Utility class for RTTR component registration. Does register default serialize and deserialize functions,
+	//- but not show_ui(), that is defined individually where required.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TComponent>
+	class ccomponent : public cregistrator<TComponent>
+	{
+	public:
+		ccomponent(rttr::string_view name) :
+			cregistrator<TComponent>(name)
+		{
+			register_common_component_functions();
+		}
+
+	private:
+		void register_common_component_functions()
+		{
+			meth(ecs::detail::C_COMPONENT_NAME_FUNC_NAME, &TComponent::name)
+				.meth(ecs::detail::C_COMPONENT_SERIALIZE_FUNC_NAME, &TComponent::serialize)
+				.meth(ecs::detail::C_COMPONENT_SET_FUNC_NAME, &TComponent::set)
+				;
+		}
+	};
+
+} //- rttr
+
 namespace ecs
 {
 	//- TODO: we do not want to have to define serialize and set etc methods for each component,
@@ -206,91 +234,70 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(sidentifier)
 	{
-		rttr::registration::class_<sidentifier>("sidentifier")
-			.property("m_uuid", &sidentifier::m_uuid)
-			.property("m_name", &sidentifier::m_name)
-			.method("name", &sidentifier::name)
-			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &sidentifier::serialize)
-			.method(C_COMPONENT_SET_FUNC_NAME, &sidentifier::set)
-			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &sidentifier::show_ui)
+		rttr::ccomponent<sidentifier>("sidentifier")
+			.prop("m_uuid", &sidentifier::m_uuid)
+			.prop("m_name", &sidentifier::m_name)
+			.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &sidentifier::show_ui)
 			;
-
-		rttr::default_constructor<sidentifier>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(stransform)
 	{
-		rttr::registration::class_<stransform>("stransform")
-			.property("m_x", &stransform::m_x)
-			.property("m_y", &stransform::m_y)
-			.property("m_w", &stransform::m_w)
-			.property("m_h", &stransform::m_h)
-			.property("m_rotation", &stransform::m_rotation)
-			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &stransform::serialize)
-			.method(C_COMPONENT_SET_FUNC_NAME, &stransform::set)
-			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &stransform::show_ui)
+		rttr::ccomponent<stransform>("stransform")
+			.prop("m_x", &stransform::m_x)
+			.prop("m_y", &stransform::m_y)
+			.prop("m_w", &stransform::m_w)
+			.prop("m_h", &stransform::m_h)
+			.prop("m_rotation", &stransform::m_rotation)
+			.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &stransform::show_ui)
 			;
-
-		rttr::default_constructor<stransform>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(ssprite)
 	{
-		rttr::registration::class_<ssprite>("ssprite")
-			.property("m_materials", &ssprite::m_materials)
-			.property("m_flipx", &ssprite::m_flipx)
-			.property("m_flipy", &ssprite::m_flipy)
-			.property("m_layer", &ssprite::m_layer)
-			.property("m_originx", &ssprite::m_originx)
-			.property("m_originy", &ssprite::m_originy)
-			.property("m_source_rectangle", &ssprite::m_source_rectangle)
-			.property("m_tint", &ssprite::m_tint)
-			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &ssprite::serialize)
-			.method(C_COMPONENT_SET_FUNC_NAME, &ssprite::set)
-			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &ssprite::show_ui)
+		rttr::ccomponent<ssprite>("ssprite")
+			.prop("m_materials", &ssprite::m_materials)
+			.prop("m_flipx", &ssprite::m_flipx)
+			.prop("m_flipy", &ssprite::m_flipy)
+			.prop("m_layer", &ssprite::m_layer)
+			.prop("m_originx", &ssprite::m_originx)
+			.prop("m_originy", &ssprite::m_originy)
+			.prop("m_source_rectangle", &ssprite::m_source_rectangle)
+			.prop("m_tint", &ssprite::m_tint)
+			.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ssprite::show_ui)
 			;
-
-		rttr::default_constructor<ssprite>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(sanimation)
 	{
-		rttr::registration::class_<sanimation>("sanimation")
-			.property("m_animation", &sanimation::m_animation)
-			.property("m_animation_state", &sanimation::m_animation_state)
-			.property("m_animation_state_changed", &sanimation::m_animation_state_changed)
-			.property("m_current_keyframe", &sanimation::m_current_keyframe)
-			.property("m_current_keyframe_index", &sanimation::m_current_keyframe_index)
-			.property("m_cursor", &sanimation::m_cursor)
-			.property("m_duration", &sanimation::m_duration)
-			.property("m_frame_countx", &sanimation::m_frame_countx)
-			.property("m_frame_county", &sanimation::m_frame_county)
-			.property("m_frame_height", &sanimation::m_frame_height)
-			.property("m_frame_width", &sanimation::m_frame_width)
-			.property("m_keyframes", &sanimation::m_keyframes)
-			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &sanimation::serialize)
-			.method(C_COMPONENT_SET_FUNC_NAME, &sanimation::set)
-			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &sanimation::show_ui)
+		rttr::ccomponent<sanimation>("sanimation")
+			.prop("m_animation", &sanimation::m_animation)
+			.prop("m_animation_state", &sanimation::m_animation_state)
+			.prop("m_animation_state_changed", &sanimation::m_animation_state_changed)
+			.prop("m_current_keyframe", &sanimation::m_current_keyframe)
+			.prop("m_current_keyframe_index", &sanimation::m_current_keyframe_index)
+			.prop("m_cursor", &sanimation::m_cursor)
+			.prop("m_duration", &sanimation::m_duration)
+			.prop("m_frame_countx", &sanimation::m_frame_countx)
+			.prop("m_frame_county", &sanimation::m_frame_county)
+			.prop("m_frame_height", &sanimation::m_frame_height)
+			.prop("m_frame_width", &sanimation::m_frame_width)
+			.prop("m_keyframes", &sanimation::m_keyframes)
+			.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &sanimation::show_ui)
 			;
-
-		rttr::default_constructor<sanimation>();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(shierarchy)
 	{
-		rttr::registration::class_<shierarchy>("shierarchy")
-			.property("m_parent", &shierarchy::m_parent)
-			.property("m_children", &shierarchy::m_children)
-			.method(C_COMPONENT_SERIALIZE_FUNC_NAME, &shierarchy::serialize)
-			.method(C_COMPONENT_SET_FUNC_NAME, &shierarchy::set)
-			.method(C_COMPONENT_SHOW_UI_FUNC_NAME, &shierarchy::show_ui)
+		rttr::ccomponent<shierarchy>("shierarchy")
+			.prop("m_parent", &shierarchy::m_parent)
+			.prop("m_children", &shierarchy::m_children)
+			.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &shierarchy::show_ui)
 			;
-
-		rttr::default_constructor<shierarchy>();
 	};
 
 } //- ecs
