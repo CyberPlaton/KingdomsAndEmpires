@@ -6,7 +6,7 @@ function engine_launcher()
 	add_target_app("engine_launcher",
 					{},
 					{},
-					{"Lua", "EASTL", "spdlog", "rttr", "core", "mimalloc", "flecs"},
+					{"Lua", "EASTL", "spdlog", "rttr", "core", "mimalloc", "flecs", "slang"},
 					{"test", "test2", "plugin_logging", "plugin_module_example",
 					"plugin_kingdoms_core", "plugin_camera_system",
 					"plugin_status_effects", "plugin_race_human", "plugin_render_system"},

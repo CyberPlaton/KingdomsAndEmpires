@@ -1,5 +1,5 @@
 #pragma once
-#include <core/core_platform.hpp>
+#include <core/platform.hpp>
 #if defined(CORE_USE_EASTL)
 //- Note: if you decide to use EASTL, make sure that you are ready
 //- to integrate all of them used structures to RTTR
