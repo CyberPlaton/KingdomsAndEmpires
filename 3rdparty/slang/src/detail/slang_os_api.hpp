@@ -1,27 +1,25 @@
 #pragma once
 #include "slang_config.hpp"
 
-#include <cstdint>
-
 namespace slang
 {
 	typedef
-	void*(*slang_malloc_t)(size_t);
+	void*(*slang_malloc_t)(std::size_t);
 
 	typedef
 	void(*slang_free_t)(void*);
 
 	typedef
-	void*(*slang_calloc_t)(size_t, size_t);
+	void*(*slang_calloc_t)(std::size_t, std::size_t);
 
 	typedef
-	void*(*slang_realloc_t)(void*, size_t);
+	void*(*slang_realloc_t)(void*, std::size_t);
 
 	typedef
-	void*(*slang_memalign_t)(size_t, size_t);
+	void*(*slang_memalign_t)(std::size_t, std::size_t);
 
 	typedef
-	void*(*slang_valloc_t)(size_t);
+	void*(*slang_valloc_t)(std::size_t);
 
 	typedef
 	void(*slang_logger_t)(uint8_t, const char*);

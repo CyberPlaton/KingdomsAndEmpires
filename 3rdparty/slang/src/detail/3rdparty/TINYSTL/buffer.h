@@ -27,9 +27,9 @@
 #ifndef TINYSTL_BUFFER_H
 #define TINYSTL_BUFFER_H
 
-#include <TINYSTL/allocator.h>
-#include <TINYSTL/new.h>
-#include <TINYSTL/traits.h>
+#include "allocator.h"
+#include "new.h"
+#include "traits.h"
 
 namespace tinystl {
 
