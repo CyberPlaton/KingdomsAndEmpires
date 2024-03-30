@@ -27,9 +27,9 @@
 #ifndef TINYSTL_STRING_H
 #define TINYSTL_STRING_H
 
-#include <TINYSTL/allocator.h>
-#include <TINYSTL/stddef.h>
-#include <TINYSTL/hash.h>
+#include "allocator.h"
+#include "stddef.h"
+#include "hash.h"
 
 namespace tinystl {
 

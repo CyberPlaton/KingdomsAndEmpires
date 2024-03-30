@@ -27,7 +27,7 @@
 #ifndef TINYSTL_STRINGHASH_H
 #define TINYSTL_STRINGHASH_H
 
-#include <TINYSTL/stddef.h>
+#include "stddef.h"
 
 namespace tinystl {
 

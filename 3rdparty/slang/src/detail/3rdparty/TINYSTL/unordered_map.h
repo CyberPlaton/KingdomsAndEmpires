@@ -27,10 +27,10 @@
 #ifndef TINYSTL_UNORDERED_MAP_H
 #define TINYSTL_UNORDERED_MAP_H
 
-#include <TINYSTL/allocator.h>
-#include <TINYSTL/buffer.h>
-#include <TINYSTL/hash.h>
-#include <TINYSTL/hash_base.h>
+#include "allocator.h"
+#include "buffer.h"
+#include "hash.h"
+#include "hash_base.h"
 
 namespace tinystl {
 
@@ -97,7 +97,7 @@ namespace tinystl {
 		buffer_resize<pointer, Alloc>(&m_buckets, nbuckets, 0);
 
 		for (pointer it = *other.m_buckets.first; it; it = it->next) {
-			unordered_hash_node<Key, Value>* newnode = new(placeholder(), Alloc::static_allocate(sizeof(unordered_hash_node<Key, Value>))) unordered_hash_node<Key, Value>(it->first, it->second);
+			unordered_hash_node<Key, Value>* newnode = new(placeholder(), Alloc::malloc(sizeof(unordered_hash_node<Key, Value>))) unordered_hash_node<Key, Value>(it->first, it->second);
 			newnode->next = newnode->prev = 0;
 
 			unordered_hash_node_insert(newnode, hash(it->first), m_buckets.first, nbuckets - 1);
@@ -175,7 +175,7 @@ namespace tinystl {
 		while (it) {
 			const pointer next = it->next;
 			it->~unordered_hash_node<Key, Value>();
-			Alloc::static_deallocate(it, sizeof(unordered_hash_node<Key, Value>));
+			Alloc::free(it, sizeof(unordered_hash_node<Key, Value>));
 
 			it = next;
 		}
@@ -227,7 +227,7 @@ namespace tinystl {
 		if (result.first.node != 0)
 			return result;
 
-		unordered_hash_node<Key, Value>* newnode = new(placeholder(), Alloc::static_allocate(sizeof(unordered_hash_node<Key, Value>))) unordered_hash_node<Key, Value>(p.first, p.second);
+		unordered_hash_node<Key, Value>* newnode = new(placeholder(), Alloc::malloc(sizeof(unordered_hash_node<Key, Value>))) unordered_hash_node<Key, Value>(p.first, p.second);
 		newnode->next = newnode->prev = 0;
 
 		const size_t nbuckets = (size_t)(m_buckets.last - m_buckets.first);
@@ -251,7 +251,7 @@ namespace tinystl {
 			return result;
 
 		const size_t keyhash = hash(p.first);
-		unordered_hash_node<Key, Value>* newnode = new(placeholder(), Alloc::static_allocate(sizeof(unordered_hash_node<Key, Value>))) unordered_hash_node<Key, Value>(static_cast<Key&&>(p.first), static_cast<Value&&>(p.second));
+		unordered_hash_node<Key, Value>* newnode = new(placeholder(), Alloc::malloc(sizeof(unordered_hash_node<Key, Value>))) unordered_hash_node<Key, Value>(static_cast<Key&&>(p.first), static_cast<Value&&>(p.second));
 		newnode->next = newnode->prev = 0;
 
 		const size_t nbuckets = (size_t)(m_buckets.last - m_buckets.first);
@@ -270,7 +270,7 @@ namespace tinystl {
 		unordered_hash_node_erase(where.node, hash(where->first), m_buckets.first, (size_t)(m_buckets.last - m_buckets.first) - 1);
 
 		where->~unordered_hash_node<Key, Value>();
-		Alloc::static_deallocate((void*)where.node, sizeof(unordered_hash_node<Key, Value>));
+		Alloc::free((void*)where.node, sizeof(unordered_hash_node<Key, Value>));
 		--m_size;
 	}
 

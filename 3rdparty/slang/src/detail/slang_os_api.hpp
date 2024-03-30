@@ -32,6 +32,14 @@ namespace slang
 
 		struct sallocator
 		{
+			static void* malloc(std::size_t s);
+			static void free(void* p);
+			static void free(void* p, std::size_t /*bytes*/);
+			static void* calloc(std::size_t n, std::size_t s);
+			static void* realloc(void* p, std::size_t s);
+			static void* memalign(std::size_t n, std::size_t s);
+			static void* valloc(std::size_t s);
+
 			slang_malloc_t m_malloc = nullptr;
 			slang_free_t m_free = nullptr;
 			slang_calloc_t m_calloc = nullptr;

@@ -46,6 +46,47 @@ namespace slang
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void* sos_api::sallocator::malloc(std::size_t s)
+	{
+		return slang_allocator().m_malloc(s);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void sos_api::sallocator::free(void* p)
+	{
+		slang_allocator().m_free(p);
+	}
+
+	void sos_api::sallocator::free(void* p, std::size_t /*bytes*/)
+	{
+		slang_allocator().m_free(p);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void* sos_api::sallocator::calloc(std::size_t n, std::size_t s)
+	{
+		return slang_allocator().m_calloc(n, s);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void* sos_api::sallocator::realloc(void* p, std::size_t s)
+	{
+		return slang_allocator().m_realloc(p, s);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void* sos_api::sallocator::memalign(std::size_t n, std::size_t s)
+	{
+		return slang_allocator().m_memalign(n, s);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void* sos_api::sallocator::valloc(std::size_t s)
+	{
+		return slang_allocator().m_valloc(s);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void slang_init_os_api()
 	{
 		auto& os_api = sos_api::instance();
