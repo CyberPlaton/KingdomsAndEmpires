@@ -94,7 +94,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	slang::slang_logger().init(core_io_slang_error_function, slang::detail::log_level_trace);
 
 	slang::detail::schunk chunk;
-	chunk.m_constants.push_back(slang::svalue::make_value(1.2f, slang::value_type_float));
+	chunk.m_constants.push_back(slang::svalue::create(1.2f, slang::value_type_float));
 	chunk.m_code.push_back(slang::detail::opcode_constant);
 	chunk.m_code.push_back(0);
 

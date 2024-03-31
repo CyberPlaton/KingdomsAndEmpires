@@ -105,21 +105,17 @@ namespace slang
 	//------------------------------------------------------------------------------------------------------------------------
 	struct svalue
 	{
-		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TValue>
-		inline static svalue make_value(TValue value, value_type type)
-		{
-			return { value, type };
-		}
+		static svalue create(TValue value, value_type type);
 
 		template<typename TType>
-		inline bool is() { return std::holds_alternative<TType>(as); }
+		bool is() const;
 
 		template<typename TType>
-		inline TType& get() { return std::get<TType>(as); }
+		TType& get();
 
 		template<typename TType>
-		inline const TType& get() const { return std::get<TType>(as); }
+		const TType& get() const;
 
 		variant_t<int, float, bool, sobject*> as;
 		value_type m_type;
@@ -246,5 +242,37 @@ namespace slang
 		};
 
 	} //- detail
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	const TType& svalue::get() const
+	{
+		SLANG_ASSERT(!as.valueless_by_exception(), "Invalid operation. Value does not hold any data");
+		SLANG_ASSERT(is<TType>(), "Invalid operation. Value does not have requested type");
+		return std::get<TType>(as);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	TType& svalue::get()
+	{
+		SLANG_ASSERT(!as.valueless_by_exception(), "Invalid operation. Value does not hold any data");
+		SLANG_ASSERT(is<TType>(), "Invalid operation. Value does not have requested type");
+		return std::get<TType>(as);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	bool svalue::is() const
+	{
+		return std::holds_alternative<TType>(as);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TValue>
+	svalue svalue::create(TValue value, value_type type)
+	{
+		return { value, type };
+	}
 
 } //- slang
