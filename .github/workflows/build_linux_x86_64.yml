@@ -16,6 +16,6 @@ jobs:
 
       - name: Build on Linux
         run: |
-          premake5 gmake
+          premake5 gmake2
           make
         working-directory: .
