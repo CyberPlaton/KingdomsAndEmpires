@@ -24,7 +24,7 @@
 
 #ifndef MALLOC_270_H
 #define MALLOC_270_H
-
+#define USE_DL_PREFIX
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,11 +50,7 @@ extern "C" {
   a size_t. Requests greater than this value result in failure.
 */
 
-#ifndef USE_DL_PREFIX
-void*  malloc(size_t);
-#else
-void*  dlmalloc(size_t);
-#endif
+void* dlmalloc(size_t);
 
 /*
   free(void* p)
@@ -67,22 +63,14 @@ void*  dlmalloc(size_t);
   when possible, automatically trigger operations that give
   back unused memory to the system, thus reducing program footprint.
 */
-#ifndef USE_DL_PREFIX
-void     free(void*);
-#else
-void     dlfree(void*);
-#endif
+void dlfree(void*);
 
 /*
   calloc(size_t n_elements, size_t element_size);
   Returns a pointer to n_elements * element_size bytes, with all locations
   set to zero.
 */
-#ifndef USE_DL_PREFIX
-void*  calloc(size_t, size_t);
-#else
-void*  dlcalloc(size_t, size_t);
-#endif
+void* dlcalloc(size_t, size_t);
 
 /*
   realloc(void* p, size_t n)
@@ -111,11 +99,7 @@ void*  dlcalloc(size_t, size_t);
   to be used as an argument to realloc is not supported.
 */
 
-#ifndef USE_DL_PREFIX
-void*  realloc(void*, size_t);
-#else
-void*  dlrealloc(void*, size_t);
-#endif
+void* dlrealloc(void*, size_t);
 
 /*
   memalign(size_t alignment, size_t n);
@@ -130,11 +114,7 @@ void*  dlrealloc(void*, size_t);
   Overreliance on memalign is a sure way to fragment space.
 */
 
-#ifndef USE_DL_PREFIX
-void*  memalign(size_t, size_t);
-#else
-void*  dlmemalign(size_t, size_t);
-#endif
+void* dlmemalign(size_t, size_t);
 
 
 /*
@@ -144,11 +124,7 @@ void*  dlmemalign(size_t, size_t);
   size of the system. If the pagesize is unknown, 4096 is used.
 */
 
-#ifndef USE_DL_PREFIX
-void*  valloc(size_t);
-#else
-void*  dlvalloc(size_t);
-#endif
+void* dlvalloc(size_t);
 
 
 /*
@@ -204,11 +180,7 @@ void*  dlvalloc(size_t);
   }
 */
 
-#ifndef USE_DL_PREFIX
-void** independent_calloc(size_t, size_t, void**);
-#else
 void** dlindependent_calloc(size_t, size_t, void**);
-#endif
 
 /*
   independent_comalloc(size_t n_elements, size_t sizes[], void* chunks[]);
@@ -270,11 +242,7 @@ void** dlindependent_calloc(size_t, size_t, void**);
   might be available for some of the elements.
 */
 
-#ifndef USE_DL_PREFIX
-void** independent_comalloc(size_t, size_t*, void**);
-#else
 void** dlindependent_comalloc(size_t, size_t*, void**);
-#endif
 
 
 /*
@@ -283,11 +251,7 @@ void** dlindependent_comalloc(size_t, size_t*, void**);
   round up n to nearest pagesize.
  */
 
-#ifndef USE_DL_PREFIX
-void*  pvalloc(size_t);
-#else
-void*  dlpvalloc(size_t);
-#endif
+void* dlpvalloc(size_t);
 
 /*
   cfree(void* p);
@@ -298,11 +262,7 @@ void*  dlpvalloc(size_t);
   code in the first edition of K&R).
 */
 
-#ifndef USE_DL_PREFIX
-void     cfree(void*);
-#else
-void     dlcfree(void*);
-#endif
+void dlcfree(void*);
 
 
 /*
@@ -330,11 +290,7 @@ void     dlcfree(void*);
   return 0.
 */
 
-#ifndef USE_DL_PREFIX
-int      malloc_trim(size_t);
-#else
-int      dlmalloc_trim(size_t);
-#endif
+int dlmalloc_trim(size_t);
 
 
 /*
@@ -352,11 +308,7 @@ int      dlmalloc_trim(size_t);
   assert(malloc_usable_size(p) >= 256);
 */
 
-#ifndef USE_DL_PREFIX
-size_t   malloc_usable_size(void*);
-#else
-size_t   dlmalloc_usable_size(void*);
-#endif
+size_t dlmalloc_usable_size(void*);
 
 
 /*
@@ -379,72 +331,7 @@ size_t   dlmalloc_usable_size(void*);
   More information can be obtained by calling mallinfo.
 */
 
-#ifndef USE_DL_PREFIX
-void     malloc_stats(void);
-#else
-void     dlmalloc_stats(void);
-#endif
-
-/*
-  mallinfo()
-  Returns (by copy) a struct containing various summary statistics:
-
-  arena:     current total non-mmapped bytes allocated from system 
-  ordblks:   the number of free chunks 
-  smblks:    the number of fastbin blocks (i.e., small chunks that
-               have been freed but not use resused or consolidated)
-  hblks:     current number of mmapped regions 
-  hblkhd:    total bytes held in mmapped regions 
-  usmblks:   the maximum total allocated space. This will be greater
-                than current total if trimming has occurred.
-  fsmblks:   total bytes held in fastbin blocks 
-  uordblks:  current total allocated space (normal or mmapped)
-  fordblks:  total free space 
-  keepcost:  the maximum number of bytes that could ideally be released
-               back to system via malloc_trim. ("ideally" means that
-               it ignores page restrictions etc.)
-
-  The names of some of these fields don't bear much relation with
-  their contents because this struct was defined as standard in
-  SVID/XPG so reflects the malloc implementation that was then used
-  in SystemV Unix.  
-
-  The original SVID version of this struct, defined on most systems
-  with mallinfo, declares all fields as ints. But some others define
-  as unsigned long. If your system defines the fields using a type of
-  different width than listed here, you should #include your system
-  version before including this file.  The struct declaration is
-  suppressed if _MALLOC_H is defined (which is done in most system
-  malloc.h files). You can also suppress it by defining
-  HAVE_USR_INCLUDE_MALLOC_H.
-
-  Because these fields are ints, but internal bookkeeping is done with
-  unsigned longs, the reported values may appear as negative, and may
-  wrap around zero and thus be inaccurate.
-*/
-
-#ifndef HAVE_USR_INCLUDE_MALLOC_H
-#ifndef _MALLOC_H
-struct mallinfo {
-  int arena;    
-  int ordblks;  
-  int smblks;   
-  int hblks;    
-  int hblkhd;   
-  int usmblks;  
-  int fsmblks;  
-  int uordblks; 
-  int fordblks; 
-  int keepcost; 
-};
-#endif
-#endif
-
-#ifndef USE_DL_PREFIX
-struct mallinfo mallinfo(void);
-#else
-struct mallinfo mallinfo(void);
-#endif
+void dlmalloc_stats(void);
 
 /*
   mallopt(int parameter_number, int parameter_value)
@@ -468,11 +355,7 @@ struct mallinfo mallinfo(void);
   M_MMAP_MAX       -4         65536      any   (0 disables use of mmap)
 */
 
-#ifndef USE_DL_PREFIX
-int  mallopt(int, int);
-#else
-int  dlmallopt(int, int);
-#endif
+int dlmallopt(int, int);
 
 /* Descriptions of tuning options */
 

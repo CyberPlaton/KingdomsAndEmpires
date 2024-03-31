@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <cassert>
 #include <variant>
+#include <stdarg.h>
+#include <cstdio>
+#include <cstring>
 
 //- If overriding STL classes define the namespace they are coming from same as below
 //------------------------------------------------------------------------------------------------------------------------
@@ -12,8 +15,18 @@
 #include "3rdparty/TINYSTL/unordered_map.h"
 #include "3rdparty/TINYSTL/string.h"
 #include "3rdparty/TINYSTL/string_view.h"
-namespace stl = tinystl;
+namespace slang
+{
+	namespace stl = tinystl;
+} //- slang
 #endif
+
+//- 
+//------------------------------------------------------------------------------------------------------------------------
+#ifndef SLANG_CUSTOM_ALLOCATOR
+#include "3rdparty/dlmalloc/malloc.h"
+#endif
+
 
 #ifdef DEBUG
 #define __ASSERT__(expression, message) assert(expression && message)
@@ -46,6 +59,8 @@ namespace slang
 	typedef
 	void(*slang_logger_t)(uint8_t, const char*);
 
+	struct sobject;
+
 	namespace detail
 	{
 		struct sallocator;
@@ -74,6 +89,40 @@ namespace slang
 	{
 		compile_result_ok = 0,
 		compile_result_fail = 255,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum value_type : uint8_t
+	{
+		value_type_null = 0,
+		value_type_integer,
+		value_type_float,
+		value_type_boolean,
+		value_type_object,
+	};
+
+	//- Struct holding one of possible primitive value types
+	//------------------------------------------------------------------------------------------------------------------------
+	struct svalue
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TValue>
+		inline static svalue make_value(TValue value, value_type type)
+		{
+			return { value, type };
+		}
+
+		template<typename TType>
+		inline bool is() { return std::holds_alternative<TType>(as); }
+
+		template<typename TType>
+		inline TType& get() { return std::get<TType>(as); }
+
+		template<typename TType>
+		inline const TType& get() const { return std::get<TType>(as); }
+
+		variant_t<int, float, bool, sobject*> as;
+		value_type m_type;
 	};
 
 	namespace detail
@@ -155,12 +204,13 @@ namespace slang
 		struct sallocator
 		{
 			static void* malloc(std::size_t s);
-			static void free(void* p);
 			static void free(void* p, std::size_t /*bytes*/);
 			static void* calloc(std::size_t n, std::size_t s);
 			static void* realloc(void* p, std::size_t s);
 			static void* memalign(std::size_t n, std::size_t s);
 			static void* valloc(std::size_t s);
+
+			void init();
 
 			slang_malloc_t m_malloc		= nullptr;
 			slang_free_t m_free			= nullptr;
@@ -173,7 +223,10 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		struct slogger
 		{
+			void init(slang_logger_t callback, log_level level = log_level_warn);
+
 			slang_logger_t m_log = nullptr;
+			log_level m_level = log_level_none;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -188,7 +241,8 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		struct schunk
 		{
-			vector_t<byte_t, sallocator> m_code;
+			vector_t<svalue> m_constants;
+			vector_t<byte_t> m_code;
 		};
 
 	} //- detail

@@ -70,6 +70,11 @@ void core_io_error_function(uint8_t level, const std::string& message)
 	}
 }
 
+void core_io_slang_error_function(uint8_t level, const char* message)
+{
+	core_io_error_function(level, message);
+}
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
@@ -85,39 +90,49 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
 
-	logging::log_debug("Registered rttr types");
-	for (auto type : rttr::type::get_types())
-	{
-		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
-	}
+	slang::slang_allocator().init();
+	slang::slang_logger().init(core_io_slang_error_function, slang::detail::log_level_trace);
 
-	//- set core io callback
-	core::serror_reporter::instance().m_callback = core_io_error_function;
+	slang::detail::schunk chunk;
+	chunk.m_constants.push_back(slang::svalue::make_value(1.2f, slang::value_type_float));
+	chunk.m_code.push_back(slang::detail::opcode_constant);
+	chunk.m_code.push_back(0);
 
-	engine::cengine::sconfig cfg;
+	slang::print_chunk(chunk);
 
-	//- service registration can be done from json file
-	cfg.m_service_cfg.m_services.emplace_back(rttr::type::get<camera_system::ccamera_manager>().get_name().data());
-
-	cfg.m_window_cfg.m_title = "Kingdoms & Empires";
-	cfg.m_window_cfg.m_width = 1280;
-	cfg.m_window_cfg.m_height = 1024;
-	cfg.m_window_cfg.m_target_fps = 0;
-	cfg.m_window_cfg.m_resolution = sm::window_resolution_steamdeck;
-	cfg.m_window_cfg.m_flags = sm::window_flag_vsync | sm::window_flag_show;
-	
-	{
-		auto cfg_json = core::io::to_json_string(cfg);
-
-		core::cfile::save_text("config.json", cfg_json);
-
-		logging::log_info(fmt::format("cengine::sconfig: '{}'", cfg_json));
-	}
-
-	if (engine::cengine::instance().configure("config.json") == engine::engine_run_result_ok)
-	{
-		engine::cengine::instance().run();
-	}
+// 	logging::log_debug("Registered rttr types");
+// 	for (auto type : rttr::type::get_types())
+// 	{
+// 		logging::log_debug(fmt::format("\t'{}'", type.get_name().data()));
+// 	}
+// 
+// 	//- set core io callback
+// 	core::serror_reporter::instance().m_callback = core_io_error_function;
+// 
+// 	engine::cengine::sconfig cfg;
+// 
+// 	//- service registration can be done from json file
+// 	cfg.m_service_cfg.m_services.emplace_back(rttr::type::get<camera_system::ccamera_manager>().get_name().data());
+// 
+// 	cfg.m_window_cfg.m_title = "Kingdoms & Empires";
+// 	cfg.m_window_cfg.m_width = 1280;
+// 	cfg.m_window_cfg.m_height = 1024;
+// 	cfg.m_window_cfg.m_target_fps = 0;
+// 	cfg.m_window_cfg.m_resolution = sm::window_resolution_steamdeck;
+// 	cfg.m_window_cfg.m_flags = sm::window_flag_vsync | sm::window_flag_show;
+// 	
+// 	{
+// 		auto cfg_json = core::io::to_json_string(cfg);
+// 
+// 		core::cfile::save_text("config.json", cfg_json);
+// 
+// 		logging::log_info(fmt::format("cengine::sconfig: '{}'", cfg_json));
+// 	}
+// 
+// 	if (engine::cengine::instance().configure("config.json") == engine::engine_run_result_ok)
+// 	{
+// 		engine::cengine::instance().run();
+// 	}
 
 	Sleep(10);
 	return 0;

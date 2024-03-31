@@ -230,7 +230,7 @@
 */
 
 /* #define WIN32 */
-
+#define USE_DL_PREFIX
 #if defined(_WIN32) || defined (_WIN64)
 
 #define WIN32_LEAN_AND_MEAN
@@ -1492,7 +1492,7 @@ void     public_mSTATs(void);
   ========================================================================
 */
 
-/* #include "malloc.h" */
+#include "malloc.h"
 
 /* --------------------- public wrappers ---------------------- */
 

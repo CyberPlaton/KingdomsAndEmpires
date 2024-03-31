@@ -7,3 +7,4 @@
 #include <plugin_race_human.h>
 #include <lua.h>
 #include <luabridge.h>
+#include <slang.h>
