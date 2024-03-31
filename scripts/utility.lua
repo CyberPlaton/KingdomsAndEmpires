@@ -1,11 +1,16 @@
 ------------------------------------------------------------------------------------------------------------------------
 function set_basic_defines()
-	filter{"system:windows"}
-		filter "action:vs*"
-			buildoptions{"/Zc:__cplusplus"}
-		filter{}
+	if PLATFORM == "windows" then
 		buildoptions{"/bigobj"}
 		editandcontinue "Off"
+		filter {"action:vs*"}
+			buildoptions{"/Zc:__cplusplus"}
+		filter{}
+	elseif PLATFORM == "linux" then
+	elseif PLATFORM == "macosx" then
+	else
+	end
+
 	filter{"configurations:debug"}
 		defines{"DEBUG=1", "TRACY_ENABLE", "BX_CONFIG_DEBUG"}
 	filter{"configurations:release"}
