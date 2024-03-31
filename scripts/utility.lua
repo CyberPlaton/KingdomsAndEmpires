@@ -1,5 +1,7 @@
 ------------------------------------------------------------------------------------------------------------------------
 function set_basic_defines()
+	externalanglebrackets "On"
+
 	if PLATFORM == "windows" then
 		buildoptions{"/bigobj"}
 		editandcontinue "Off"
@@ -62,6 +64,10 @@ function set_include_path_to_self(name)
 	externalincludedirs {"include"}
 	-- for some thirdparty libraries required, so we set just in case for all
 	externalincludedirs {path.join("include", name)}
+
+	includedirs {"include"}
+	-- for some thirdparty libraries required, so we set just in case for all
+	includedirs {path.join("include", name)}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
