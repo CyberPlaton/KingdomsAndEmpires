@@ -60,6 +60,7 @@ function link_with_engine()
 	links{"engine"}
 end
 
+------------------------------------------------------------------------------------------------------------------------
 function set_include_path_to_self(name)
 	externalincludedirs {"include"}
 	-- for some thirdparty libraries required, so we set just in case for all
