@@ -8,91 +8,54 @@ namespace slang
 		inline static uint64_t s_variable_identifier = 0;
 
 		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TValue>
-		uint64_t emit_constant(TValue value, value_type type, scompiled_data& data)
+		inline static void emit_byte(detail::schunk& code, byte_t byte)
 		{
-			uint64_t i = 0;
-			switch (type)
-			{
-			case value_type_integer:
-			{
-				i = data.m_constants.m_integers.size();
-				data.m_constants.m_integers.emplace_back(value);
-				break;
-			}
-			case value_type_float:
-			{
-				i = data.m_constants.m_floats.size();
-				data.m_constants.m_floats.emplace_back(value);
-				break;
-			}
-			case value_type_boolean:
-			{
-				i = data.m_constants.m_booleans.size();
-				data.m_constants.m_booleans.emplace_back(value);
-				break;
-			}
-			case value_type_string:
-			{
-				i = data.m_constants.m_strings.size();
-				data.m_constants.m_strings.emplace_back(value);
-				break;
-			}
-			default:
-			case value_type_null: return uint64_t(-1);
-			}
-			return i;
+			code.m_code.emplace_back(byte);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TValue>
-		uint64_t emit_variable(TValue value, value_type type, scompiled_data& data)
+		inline static void emit_bytes(detail::schunk& code, byte_t byte1, byte_t byte2)
 		{
-			switch (type)
-			{
-			case value_type_integer:
-			{
-				data.m_variables.m_integers.emplace_back(++s_variable_identifier, value);
-				break;
-			}
-			case value_type_float:
-			{
-				data.m_variables.m_floats.emplace_back(++s_variable_identifier, value);
-				break;
-			}
-			case value_type_boolean:
-			{
-				data.m_variables.m_booleans.emplace_back(++s_variable_identifier, value);
-				break;
-			}
-			case value_type_string:
-			{
-				data.m_variables.m_strings.emplace_back(++s_variable_identifier, value);
-				break;
-			}
-			case value_type_null:
-			{
-				data.m_variables.m_nulls[++s_variable_identifier];
-				break;
-			}
-			default: return uint64_t(-1);
-			}
-			return s_variable_identifier;
+			emit_byte(code, byte1);
+			emit_byte(code, byte2);
 		}
 
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	compile_result ccompiler::compile(std::string_view code, scompiled_data& data_out, sbytecode& code_out)
+	ccompiler::ccompiler()
 	{
-		for (auto i = 0; i < code.length(); ++i)
-		{
-			const auto& c = code[i];
+	}
 
-			//-- scanning
+	//------------------------------------------------------------------------------------------------------------------------
+	compile_result ccompiler::compile(stringview_t code, scompiled_data& data_out, detail::schunk& code_out)
+	{
+		m_code = code;
+
+		for (auto i = 0; i < m_code.size(); ++i)
+		{
+			const auto& c = m_code[i];
+
+			process_token(next_token());
 		}
 
 		return m_result;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	detail::stoken ccompiler::next_token()
+	{
+		m_cursor.m_text.clear();
+
+		auto c = peek();
+
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ccompiler::process_token(const detail::stoken& token)
+	{
+
 	}
 
 } //- slang

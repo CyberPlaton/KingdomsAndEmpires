@@ -134,7 +134,7 @@ namespace tinystl {
 	template<typename allocator>
 	inline basic_string<allocator>::~basic_string() {
 		if (m_first != m_buffer)
-			allocator::static_deallocate(m_first, m_capacity - m_first);
+			allocator::free(m_first, m_capacity - m_first);
 	}
 
 	template<typename allocator>
@@ -167,11 +167,11 @@ namespace tinystl {
 
 		const size_t size = (size_t)(m_last - m_first);
 
-		pointer newfirst = (pointer)allocator::static_allocate(capacity + 1);
+		pointer newfirst = (pointer)allocator::malloc(capacity + 1);
 		for (pointer it = m_first, newit = newfirst, end = m_last; it != end; ++it, ++newit)
 			*newit = *it;
 		if (m_first != m_buffer)
-			allocator::static_deallocate(m_first, m_capacity - m_first);
+			allocator::free(m_first, m_capacity - m_first);
 
 		m_first = newfirst;
 		m_last = newfirst + size;
@@ -219,15 +219,15 @@ namespace tinystl {
 		} else if (m_last == m_first) {
 			const size_t capacity = (size_t)(m_capacity - m_first);
 			if (capacity)
-				allocator::static_deallocate(m_first, capacity+1);
+				allocator::free(m_first, capacity+1);
 			m_capacity = m_first;
 		} else if (m_capacity != m_last) {
 			const size_t size = (size_t)(m_last - m_first);
-			char* newfirst = (pointer)allocator::static_allocate(size+1);
+			char* newfirst = (pointer)allocator::malloc(size+1);
 			for (pointer in = m_first, out = newfirst; in != m_last + 1; ++in, ++out)
 				*out = *in;
 			if (m_first != m_capacity)
-				allocator::static_deallocate(m_first, m_capacity+1-m_first);
+				allocator::free(m_first, m_capacity+1-m_first);
 			m_first = newfirst;
 			m_last = newfirst+size;
 			m_capacity = m_last;
