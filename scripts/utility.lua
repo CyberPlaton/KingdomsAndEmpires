@@ -19,13 +19,13 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function set_bx_includes()
-	includedirs{path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
 	if PLATFORM == "windows" then
-		includedirs{path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
 	elseif PLATFORM == "linux" then
-		includedirs{path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
 	elseif PLATFORM == "macosx" then
-		includedirs{path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
 	else
 		print("Unknown platform!")
 	end
@@ -33,7 +33,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function set_sdl_deps()
-	includedirs{path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
 	links{"SDL2", "SDL2main"}
 end
 
@@ -45,7 +45,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function set_include_path_to_engine()
-	includedirs{path.join(WORKSPACE_DIR, "engine", "include")}
+	externalincludedirs {path.join(WORKSPACE_DIR, "engine", "include")}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -54,18 +54,18 @@ function link_with_engine()
 end
 
 function set_include_path_to_self(name)
-	includedirs{"include"}
+	externalincludedirs {"include"}
 	-- for some thirdparty libraries required, so we set just in case for all
-	includedirs{path.join("include", name)}
+	externalincludedirs {path.join("include", name)}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
 function set_include_path(is_third_party, name)
 
 	if is_third_party == true then
-		includedirs{path.join(WORKSPACE_DIR, "3rdparty", name, "include")}
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", name, "include")}
 	else
-		includedirs{path.join(WORKSPACE_DIR, "plugins", name, "include")}
+		externalincludedirs {path.join(WORKSPACE_DIR, "plugins", name, "include")}
 	end
 
 	if VERBOSE == true then
@@ -103,7 +103,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
-		includedirs{additional_includes}
+		externalincludedirs {additional_includes}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
@@ -224,7 +224,7 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
-		includedirs{additional_includes}
+		externalincludedirs {additional_includes}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
@@ -277,7 +277,7 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
-		includedirs{additional_includes}
+		externalincludedirs {additional_includes}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
@@ -339,8 +339,8 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
-		includedirs{"include"}
-		includedirs{additional_includes}
+		externalincludedirs {"include"}
+		externalincludedirs {additional_includes}
 		set_include_path_to_engine()
 		link_with_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
