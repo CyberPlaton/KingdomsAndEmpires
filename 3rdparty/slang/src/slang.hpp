@@ -1,10 +1,15 @@
 #pragma once
-#include "detail/slang_types.hpp"
 #include "detail/slang_os_api.hpp"
 #include "detail/slang_debug.hpp"
+#include "detail/slang_compiler.hpp"
+#include "detail/slang_vm.hpp"
 
 namespace slang
 {
+	cslang_state* slang_open();
+	compile_result slang_compile(stringview_t code);
+	void slang_close(cslang_state* state);
+
 	//- Holds allocated constant values. They live throughout a VM lifetime and do not change.
 	//- i.e. var value = 1; here '1' is the constant.
 	//------------------------------------------------------------------------------------------------------------------------

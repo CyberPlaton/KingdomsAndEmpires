@@ -98,7 +98,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	chunk.m_code.push_back(slang::detail::opcode_constant);
 	chunk.m_code.push_back(0);
 
-	slang::print_chunk(chunk);
+	auto p = slang::debug::print_chunk(chunk);
+
+	slang::slang_print(slang::detail::log_level_info, true, p.c_str());
 
 // 	logging::log_debug("Registered rttr types");
 // 	for (auto type : rttr::type::get_types())

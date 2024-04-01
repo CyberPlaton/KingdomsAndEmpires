@@ -1,4 +1,5 @@
 #include "slang_debug.hpp"
+#include "slang_object.hpp"
 #define FMT_HEADER_ONLY
 #include "3rdparty/fmt/format.h"
 
@@ -6,7 +7,54 @@ namespace slang
 {
 	namespace
 	{
+		//------------------------------------------------------------------------------------------------------------------------
+		std::string print_constant_instruction(const char* name, const detail::schunk& chunk, uint64_t index)
+		{
+			uint64_t i = chunk.m_code[index + 1];
+
+			return fmt::format("[{}][{}]", name, debug::print_value(chunk.m_constants[i]));
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		std::string print_simple_instruction(const char* name)
+		{
+			return fmt::format("[{}]", name);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		std::string print_function(const sfunction* object)
+		{
+			return fmt::format("[function][{}]", object->m_name.c_str());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		std::string print_struct(const sstruct* object)
+		{
+			return "<not implemented>";
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		std::string print_string(const sstring* object)
+		{
+			return fmt::format("[string][{}]", object->m_string.c_str());
+		}
+
 	} //- unnamed
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void slang_print(detail::log_level level, bool force, const char* fmt)
+	{
+		if (slang_logger().m_log && (slang_logger().m_level < level || force))
+		{
+			slang_logger().m_log(level, fmt);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void slang_log(detail::log_level level, const char* fmt)
+	{
+		slang_print(level, false, fmt);
+	}
 
 	namespace detail
 	{
@@ -38,13 +86,24 @@ namespace slang
 			return {};
 		}
 
+	} //- detail
+
+	namespace debug
+	{
 		//------------------------------------------------------------------------------------------------------------------------
-		std::string print_object(sobject* object)
+		std::string print_chunk(const detail::schunk& chunk)
 		{
-			return {};
+			std::string out;
+			uint64_t index = 0;
+
+			while (index < chunk.m_code.size())
+			{
+				out = fmt::format("{}{}", out, print_instruction((detail::opcode)chunk.m_code[index], chunk, index));
+			}
+
+			return out;
 		}
 
-		//- Using std string for ease of use with fmt
 		//------------------------------------------------------------------------------------------------------------------------
 		std::string print_value(const svalue& value)
 		{
@@ -66,92 +125,75 @@ namespace slang
 			{
 				return print_object(value.get<sobject*>());
 			}
+			default:
+				break;
 			}
 			return {};
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void print_simple_instruction(const char* name)
+		std::string print_object(const sobject* object)
 		{
-			slang_print(detail::log_level_debug, true, fmt::format("[{}]", name).c_str());
+			switch (object->m_type)
+			{
+			case object_type_function:
+			{
+				return print_function(object->as<sfunction>());
+			}
+			}
 		}
 
-		//- Print the instruction along with the value it is pointing to
 		//------------------------------------------------------------------------------------------------------------------------
-		void print_constant_instruction(const char* name, const detail::schunk& chunk, uint64_t index)
+		std::string print_instruction(detail::opcode instruction, const detail::schunk& chunk, uint64_t& index)
 		{
-			uint64_t i = chunk.m_code[index + 1];
+			using namespace detail;
 
-			slang_print(detail::log_level_debug, true, fmt::format("[{}][{}]", name, print_value(chunk.m_constants[i])).c_str());
+			std::string out;
+
+			switch (instruction)
+			{
+			default:
+			case opcode_noop:
+			{
+				++index;
+				break;
+			}
+			case opcode_return:
+			{
+				break;
+			}
+			case opcode_add:
+			{
+				break;
+			}
+			case opcode_subtract:
+			{
+				break;
+			}
+			case opcode_multiply:
+			{
+				break;
+			}
+			case opcode_divide:
+			{
+				break;
+			}
+			case opcode_constant:
+			{
+				out = print_constant_instruction(opcode_name(opcode_constant), chunk, index);
+
+				//- increase one for bytecode and value
+				index += 2;
+				break;
+			}
+			case opcode_variable:
+			{
+				break;
+			}
+			}
+			return out;
 		}
 
-	} //- detail
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void slang_print(detail::log_level level, bool force, const char* fmt)
-	{
-		if (slang_logger().m_log && (slang_logger().m_level < level || force))
-		{
-			slang_logger().m_log(level, fmt);
-		}
-	}
-
-	//- Not a logging or error reporting function, thus ignores log level. However the logging function must have been set
-	//------------------------------------------------------------------------------------------------------------------------
-	void print_chunk(const detail::schunk& chunk)
-	{
-		uint64_t index = 0;
-
-		while (index < chunk.m_code.size())
-		{
-			print_instruction((detail::opcode)chunk.m_code[index], chunk, index);
-		}
-	}
-
-	//- Depending on the instruction the index is increased by a certain amount
-	//------------------------------------------------------------------------------------------------------------------------
-	void print_instruction(detail::opcode instruction, const detail::schunk& chunk, uint64_t& index)
-	{
-		using namespace detail;
-
-		switch (instruction)
-		{
-		default:
-			break;
-		case opcode_noop:
-		{
-			break;
-		}
-		case opcode_return:
-		{
-			break;
-		}
-		case opcode_add:
-		{
-			break;
-		}
-		case opcode_subtract:
-		{
-			break;
-		}
-		case opcode_multiply:
-		{
-			break;
-		}
-		case opcode_divide:
-		{
-			break;
-		}
-		case opcode_constant:
-		{
-			print_constant_instruction(opcode_name(opcode_constant), chunk, index);
-			break;
-		}
-		case opcode_variable:
-		{
-			break;
-		}
-		}
-	}
+	} //- debug
 
 } //- slang

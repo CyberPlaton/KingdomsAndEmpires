@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <cstdio>
 #include <cstring>
+#include <memory>
 
 //- If overriding STL classes define the namespace they are coming from same as below
 //------------------------------------------------------------------------------------------------------------------------
@@ -21,12 +22,29 @@ namespace slang
 } //- slang
 #endif
 
-//- 
 //------------------------------------------------------------------------------------------------------------------------
 #ifndef SLANG_CUSTOM_ALLOCATOR
 #include "3rdparty/dlmalloc/malloc.h"
 #endif
 
+//- @reference: imgui_inernal.h 303 or https://github.com/scottt/debugbreak
+//------------------------------------------------------------------------------------------------------------------------
+#ifndef SLANG_CUSTOM_DEBUGGER
+	#if defined (_MSC_VER)
+		#define SLANG_DEBUG_BREAK() __debugbreak()
+	#elif defined(__clang__)
+		#define SLANG_DEBUG_BREAK() __builtin_debugtrap()
+	#elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
+		#define SLANG_DEBUG_BREAK() __asm__ volatile("int $0x03")
+	#elif defined(__GNUC__) && defined(__thumb__)
+		#define SLANG_DEBUG_BREAK() __asm__ volatile(".inst 0xde01")
+	#elif defined(__GNUC__) && defined(__arm__) && !defined(__thumb__)
+		#define SLANG_DEBUG_BREAK() __asm__ volatile(".inst 0xe7f001f0");
+	#else
+		//- It is expected that you define SLANG_DEBUG_BREAK()!
+		#define SLANG_DEBUG_BREAK() IM_ASSERT(0)
+	#endif
+#endif
 
 #ifdef DEBUG
 #define __ASSERT__(expression, message) assert(expression && message)
@@ -81,6 +99,12 @@ namespace slang
 	template<typename... TTypes>
 	using variant_t = std::variant<TTypes...>;
 
+	template<typename T>
+	using ptr_t = std::unique_ptr<T>;
+
+	template<typename T>
+	using ref_t = std::shared_ptr<T>;
+
 	using byte_t = uint8_t;
 
 	//- Result of compilation from source code to intermediate representation
@@ -101,6 +125,16 @@ namespace slang
 		value_type_object,
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	enum object_type : uint8_t
+	{
+		object_type_none = 0,
+		object_type_null,
+		object_type_string,
+		object_type_function,
+		object_type_struct
+	};
+
 	//- Struct holding one of possible primitive value types
 	//------------------------------------------------------------------------------------------------------------------------
 	struct svalue
@@ -119,6 +153,23 @@ namespace slang
 
 		variant_t<int, float, bool, sobject*> as;
 		value_type m_type;
+	};
+
+	//- Base of a language construct
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sobject
+	{
+		sobject() : m_marked(false), m_type(object_type_none) {}
+		sobject(object_type type) : m_marked(false), m_type(type) {}
+
+		template<typename TObject>
+		TObject* as();
+
+		template<typename TObject>
+		const TObject* as() const;
+
+		bool m_marked;
+		object_type m_type;
 	};
 
 	namespace detail
@@ -206,6 +257,12 @@ namespace slang
 			static void* memalign(std::size_t n, std::size_t s);
 			static void* valloc(std::size_t s);
 
+			template<typename TType>
+			static TType* static_new();
+
+			template<typename TType>
+			static void static_delete(TType* p);
+
 			void init();
 
 			slang_malloc_t m_malloc		= nullptr;
@@ -233,7 +290,7 @@ namespace slang
 			token_type m_type = token_type_null;
 		};
 
-		//- Code chunk, holding compiled instructions
+		//- Code chunk, holding compiled instructions and his constants
 		//------------------------------------------------------------------------------------------------------------------------
 		struct schunk
 		{
@@ -241,7 +298,52 @@ namespace slang
 			vector_t<byte_t> m_code;
 		};
 
+		//- Scoped variables. Mapped to their declared names.
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sscope
+		{
+			//- Is variable declared in current or upward scope
+			bool lookup(stringview_t name);
+
+			//- Constant access to variable
+			const svalue& at(stringview_t name) const;
+
+			//- Get reference to variable if present in current or upward scope, otherwise emplace in current
+			svalue& edit(stringview_t name);
+
+			//- Insert variable in current scope
+			svalue& emplace(stringview_t name);
+
+			umap_t<string_t, svalue> m_values;
+			ref_t<sscope> m_parent = nullptr;
+		};
+
 	} //- detail
+
+	//- Forward declarations of types required by the state
+	//------------------------------------------------------------------------------------------------------------------------
+	namespace detail
+	{
+		class ccompiler;
+		class cvm;
+
+	} //- detail
+
+	//- Constructor and Destructor are implemented in slang.cpp
+	//------------------------------------------------------------------------------------------------------------------------
+	class cslang_state final
+	{
+	public:
+		cslang_state();
+		~cslang_state();
+
+		compile_result compile(stringview_t code);
+
+	private:
+		ptr_t<detail::ccompiler> m_compiler;
+		ptr_t<detail::cvm> m_vm;
+	};
+
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
@@ -273,6 +375,34 @@ namespace slang
 	svalue svalue::create(TValue value, value_type type)
 	{
 		return { value, type };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TObject>
+	TObject* sobject::as()
+	{
+		return static_cast<TObject*>(this);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TObject>
+	const TObject* sobject::as() const
+	{
+		return static_cast<const TObject*>(this);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	TType* detail::sallocator::static_new()
+	{
+		return static_cast<TType*>(malloc(sizeof(TType)));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	void detail::sallocator::static_delete(TType* p)
+	{
+		free(p, sizeof(TType));
 	}
 
 } //- slang

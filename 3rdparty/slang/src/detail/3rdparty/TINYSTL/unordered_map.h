@@ -67,6 +67,7 @@ namespace tinystl {
 		void erase(const_iterator where);
 
 		Value& operator[](const Key& key);
+		const Value& at(const Key& key) const;
 
 		void swap(unordered_map& other);
 
@@ -277,6 +278,11 @@ namespace tinystl {
 	template<typename Key, typename Value, typename Alloc>
 	inline Value& unordered_map<Key, Value, Alloc>::operator[](const Key& key) {
 		return insert(pair<Key, Value>(key, Value())).first->second;
+	}
+
+	template<typename Key, typename Value, typename Alloc>
+	inline const Value& unordered_map<Key, Value, Alloc>::at(const Key& key) const {
+		return find(key)->second;
 	}
 
 	template<typename Key, typename Value, typename Alloc>
