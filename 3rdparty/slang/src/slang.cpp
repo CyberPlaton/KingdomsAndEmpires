@@ -72,35 +72,4 @@ namespace slang
 	{
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	compile_result ccompiler::compile(stringview_t code, scompiled_data& data_out, detail::schunk& code_out)
-	{
-		m_code = code;
-
-		for (auto i = 0; i < m_code.size(); ++i)
-		{
-			const auto& c = m_code[i];
-
-			process_token(next_token());
-		}
-
-		return m_result;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	detail::stoken ccompiler::next_token()
-	{
-		m_cursor.m_text.clear();
-
-		auto c = peek();
-
-		return {};
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccompiler::process_token(const detail::stoken& token)
-	{
-
-	}
-
 } //- slang
