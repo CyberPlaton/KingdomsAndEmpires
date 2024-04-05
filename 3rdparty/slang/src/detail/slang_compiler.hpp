@@ -15,7 +15,7 @@ namespace slang
 			~ccompiler() = default;
 
 			compile_result compile(stringview_t code);
-			[[nodiscard]] inline detail::schunk take() const {return std::move(m_chunk);};
+			[[nodiscard]] inline detail::schunk& chunk() { SLANG_ASSERT(m_result == compile_result_ok, "Invalid operation. Compilation was invalid"); return m_chunk;};
 
 		private:
 			struct scursor
@@ -29,18 +29,29 @@ namespace slang
 			scursor m_cursor;
 			stringview_t m_code;
 			compile_result m_result = compile_result_ok;
+			bool m_panik = false;
 			
 		private:
 			detail::stoken next_token();
 			void process_token(const detail::stoken& token);
-
-			inline char peek(uint32_t lookahead = 0) const
-			{
-				SLANG_ASSERT(m_cursor.m_current + lookahead < m_code.size(), "Invalid operation. Index out of bound");
-				return m_code[m_cursor.m_current + lookahead];
-			}
-
+			char peek(uint32_t lookahead = 0) const;
 			inline char advance() { return m_code[m_cursor.m_current++]; }
+			inline void panik(){ m_panik = true; }
+			inline const bool is_paniking() const { return m_panik; }
+
+			bool is_identifier(char c) const;
+			bool is_eof(char c) const;
+			bool is_digit(char c) const;
+			bool is_whitespace(char c) const;
+			bool is_newline(char c) const;
+			bool is_comment(char c) const;
+			bool is_keyword(stringview_t text, token_type type) const;
+
+			stoken make_identifier();
+			stoken make_number();
+			stoken make_string();
+			stoken make_error(stringview_t text);
+			[[nodiscard]] inline stoken make_token(uint32_t line, stringview_t text, token_type type){ return {line, text.data(), type}; }
 		};
 
 	} //- detail

@@ -92,7 +92,7 @@ namespace slang
 	template<typename TKey, typename TValue, typename TAllocator = detail::sallocator>
 	using umap_t = stl::unordered_map<TKey, TValue, TAllocator>;
 
-	using string_t = stl::string;
+	using string_t = stl::basic_string<detail::sallocator>;
 
 	using stringview_t = stl::string_view;
 
@@ -204,6 +204,8 @@ namespace slang
 			token_type_error,
 
 			token_type_identifier,		//- i.e. variable, function, class names etc.
+			token_type_number,			//- i.e. 1.2, 0, 0.25
+			token_type_string,			//- i.e. "Hello World"
 			token_type_equal,			//- =
 			token_type_exclamation,		//- !
 			token_type_colon,			//- :
@@ -216,6 +218,17 @@ namespace slang
 			token_type_right_brace,		//- }
 			token_type_left_paren,		//- (
 			token_type_right_paren,		//- )
+
+			token_type_minus,			//- -
+			token_type_plus,			//- +
+			token_type_star,			//- *
+			token_type_slash,			//- /
+
+			token_type_smaller,			//- <
+			token_type_greater,			//- >
+			token_type_equality,		//- ==
+			token_type_smaller_equal,	//- <=
+			token_type_greater_equal,	//- >=
 
 			//- keywords
 			token_type_true,			//- true
@@ -293,7 +306,7 @@ namespace slang
 		struct stoken
 		{
 			uint32_t m_line = 0;
-			stringview_t m_text;
+			string_t m_text;
 			token_type m_type = token_type_null;
 		};
 

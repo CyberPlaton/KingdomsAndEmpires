@@ -6,138 +6,225 @@ namespace slang
 	{
 		namespace
 		{
-			static bool isAlpha(char c) {
-  return (c >= 'a' && c <= 'z') ||
-         (c >= 'A' && c <= 'Z') ||
-          c == '_';
-}
-//< is-alpha
-//> is-digit
-static bool isDigit(char c) {
-  return c >= '0' && c <= '9';
-}
-//< is-digit
-//> is-at-end
-static bool isAtEnd() {
-  return *scanner.current == '\0';
-}
-//< is-at-end
-//> advance
-static char advance() {
-  scanner.current++;
-  return scanner.current[-1];
-}
-//< advance
-//> peek
-static char peek() {
-  return *scanner.current;
-}
-//< peek
-//> peek-next
-static char peekNext() {
-  if (isAtEnd()) return '\0';
-  return scanner.current[1];
-}
-//< peek-next
-//> match
-static bool match(char expected) {
-  if (isAtEnd()) return false;
-  if (*scanner.current != expected) return false;
-  scanner.current++;
-  return true;
-}
-//< match
-//> make-token
-static Token makeToken(TokenType type) {
-  Token token;
-  token.type = type;
-  token.start = scanner.start;
-  token.length = (int)(scanner.current - scanner.start);
-  token.line = scanner.line;
-  return token;
-}
-//< make-token
-//> error-token
-static Token errorToken(const char* message) {
-  Token token;
-  token.type = TOKEN_ERROR;
-  token.start = message;
-  token.length = (int)strlen(message);
-  token.line = scanner.line;
-  return token;
-}
-//< error-token
-//> skip-whitespace
-static void skipWhitespace() {
-  for (;;) {
-    char c = peek();
-    switch (c) {
-      case ' ':
-      case '\r':
-      case '\t':
-        advance();
-        break;
-//> newline
-      case '\n':
-        scanner.line++;
-        advance();
-        break;
-//< newline
-//> comment
-      case '/':
-        if (peekNext() == '/') {
-          // A comment goes until the end of the line.
-          while (peek() != '\n' && !isAtEnd()) advance();
-        } else {
-          return;
-        }
-        break;
-//< comment
-      default:
-        return;
-    }
-  }
-}
+			//- TODO: consider moving error messages to a specific file in a namespace, i.e. ::detail::errors{}
+			constexpr stringview_t C_ERROR_UNRECOGNIZED_LITERAL = "An unrecognized literal was encountered";
+			constexpr stringview_t C_ERROR_UNTERMINATED_STRING = "Unterminated string. String declarations must end with '\"'";
+			constexpr stringview_t C_ERROR_MULTILINE_STRING = "Multiline strings are not supported. Make sure the string ends with '\"' on the same line it was declared on";
+
+			constexpr stringview_t C_TOKEN_TRUE		= "true";
+			constexpr stringview_t C_TOKEN_FALSE	= "false";
+			constexpr stringview_t C_TOKEN_NULL		= "null";
+			constexpr stringview_t C_TOKEN_CLASS	= "class";
+			constexpr stringview_t C_TOKEN_DEF		= "def";
+			constexpr stringview_t C_TOKEN_RETURN	= "return";
+
+			constexpr stringview_t C_LITERAL_EQUAL_EQUAL	= "==";
+			constexpr stringview_t C_LITERAL_SMALLER_EQUAL	= "<=";
+			constexpr stringview_t C_LITERAL_GREATER_EQUAL	= ">=";
+
+			constexpr char C_LITERAL_EQUAL			= '=';
+			constexpr char C_LITERAL_EXCLAMATION	= '!';
+			constexpr char C_LITERAL_COLON			= ':';
+			constexpr char C_LITERAL_SEMICOLON		= ';';
+			constexpr char C_LITERAL_COMMA			= ',';
+			constexpr char C_LITERAL_DOT			= '.';
+			constexpr char C_LITERAL_LEFT_BRACKET	= '[';
+			constexpr char C_LITERAL_RIGHT_BRACKET	= ']';
+			constexpr char C_LITERAL_LEFT_BRACE		= '{';
+			constexpr char C_LITERAL_RIGHT_BRACE	= '}';
+			constexpr char C_LITERAL_LEFT_PAREN		= '(';
+			constexpr char C_LITERAL_RIGHT_PAREN	= ')';
+			constexpr char C_LITERAL_MINUS			= '-';
+			constexpr char C_LITERAL_PLUS			= '+';
+			constexpr char C_LITERAL_STAR			= '*';
+			constexpr char C_LITERAL_SLASH			= '/';
+			constexpr char C_LITERAL_SMALLER		= '<';
+			constexpr char C_LITERAL_GREATER		= '>';
+
+			constexpr token_type C_TOKEN_KEYWORD_RANGE_START = token_type_true;
+			constexpr token_type C_TOKEN_KEYWORD_RANGE_END = token_type_return;
+
+			//------------------------------------------------------------------------------------------------------------------------
+			bool check_keyword(stringview_t text, token_type type)
+			{
+				const auto compare = [](stringview_t a, stringview_t b) -> const bool
+					{
+						return a.size() == b.size() && std::memcmp(a.data(), b.data(), a.size()) == 0;
+					};
+
+				switch (type)
+				{
+				case token_type_class: { return compare(text, C_TOKEN_CLASS); }
+				case token_type_false: { return compare(text, C_TOKEN_FALSE); }
+				case token_type_true: { return compare(text, C_TOKEN_TRUE); }
+				case token_type_null: { return compare(text, C_TOKEN_NULL); }
+				case token_type_def: { return compare(text, C_TOKEN_DEF); }
+				case token_type_return: { return compare(text, C_TOKEN_RETURN); }
+				default:
+					break;
+				}
+				return false;
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			std::pair<bool, token_type> check_keywords(stringview_t text)
+			{
+				for (auto i = (uint8_t)C_TOKEN_KEYWORD_RANGE_START; i < (uint8_t)C_TOKEN_KEYWORD_RANGE_END; ++i)
+				{
+					if (check_keyword(text, (token_type)i))
+					{
+						return {true, (token_type)i};
+					}
+				}
+				return {false, token_type_none};
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			static void append_one_char(string_t& string, char c)
+			{
+				string.append(&c, &c);
+			}
+
 		}; //- unnamed
-		
-		bool ccompiler::is_identifier(char c)
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiler::is_identifier(char c) const
 		{
 			return ((c >= 'a' && c <= 'z') ||
 					(c >= 'A' && c <= 'Z') ||
-					 c == '_');
+					c == '_');
 		}
-		
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiler::is_eof(char c) const
+		{
+			return c == '\0';
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiler::is_digit(char c) const
+		{
+			return c >= '0' && c <= '9';
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiler::is_whitespace(char c) const
+		{
+			return (c == '\n' || c == '\t' ||
+					c == '\f' || c == '\r' ||
+					c == ' ');
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiler::is_newline(char c) const
+		{
+			return c == '\n';
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiler::is_comment(char c) const
+		{
+			return c == '#';
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiler::is_keyword(stringview_t text, token_type type) const
+		{
+			return check_keyword(text, type);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		stoken ccompiler::make_identifier()
 		{
-			m_cursor.m_current.m_text.clear();
+			m_cursor.m_text.clear();
 			
 			auto c = peek();
 			
 			while(is_identifier(c))
 			{
-				m_cursor.m_current.m_text.append(c);
-				
+				append_one_char(m_cursor.m_text, c);
+
 				c = advance();
 			}
-		
-			//- identify keywords or return as identifier
-			if()
-			
-		}
-		
-		//------------------------------------------------------------------------------------------------------------------------
-		token_type ccompiler::check_keyword(unsigned start, const string_t& word, token_type type)
-		{
-			auto begin = m_code[m_cursor.m_current - start];
 
-			if (std::memcmp(begin, word, m_cursor.m_current - start) == 0)
+			stringview_t text = m_cursor.m_text.c_str();
+
+			//- identify keywords or return as normal identifier
+			if (const auto [result, type] = check_keywords(text); result)
 			{
-				return type;
+				return make_token(m_cursor.m_line, text, type);
+			}
+			return make_token(m_cursor.m_line, text, token_type_identifier);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		slang::detail::stoken ccompiler::make_number()
+		{
+			m_cursor.m_text.clear();
+
+			auto c = peek();
+
+			while (is_digit(c))
+			{
+				append_one_char(m_cursor.m_text, c);
+
+				c = advance();
 			}
 
-			return token_type::token_type_identifier;
+			//- detect floating point numbers
+			if (c == '.')
+			{
+				append_one_char(m_cursor.m_text, '.');
+
+				//- get the rest of the number
+				c = advance();
+
+				while (is_digit(c))
+				{
+					append_one_char(m_cursor.m_text, c);
+
+					c = advance();
+				}
+			}
+			return make_token(m_cursor.m_line, m_cursor.m_text.c_str(), token_type_number);
 		}
-		
+
+		//------------------------------------------------------------------------------------------------------------------------
+		slang::detail::stoken ccompiler::make_string()
+		{
+			m_cursor.m_text.clear();
+
+			auto c = peek();
+
+			while (c != '"' && !is_eof(c) && !is_newline(c))
+			{
+				append_one_char(m_cursor.m_text, c);
+
+				c = advance();
+			}
+
+			//- strings must be terminated and only be on one line
+			if (is_eof(c))
+			{
+				return make_error(C_ERROR_UNTERMINATED_STRING);
+			}
+			else if (is_newline(c))
+			{
+				return make_error(C_ERROR_MULTILINE_STRING);
+			}
+
+			advance();
+
+			return make_token(m_cursor.m_line, m_cursor.m_text.c_str(), token_type_string);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		slang::detail::stoken ccompiler::make_error(stringview_t text)
+		{
+			panik();
+			return {m_cursor.m_line, text.data(), token_type_error};
+		}
+
 		//------------------------------------------------------------------------------------------------------------------------
 		detail::stoken ccompiler::next_token()
 		{
@@ -145,13 +232,223 @@ static void skipWhitespace() {
 
 			auto c = peek();
 
-			return {};
+			//- ignore whitespaces
+			while (is_whitespace(c))
+			{
+				if (is_newline(c))
+				{
+					++m_cursor.m_line;
+				}
+				c = advance();
+			}
+
+			//- end of file
+			if (is_eof(c))
+			{
+				return make_token(m_cursor.m_line, "\0", token_type_eof);
+			}
+
+			//- numbers
+			if (is_digit(c))
+			{
+				return make_number();
+			}
+
+			//- identifiers
+			if (is_identifier(c))
+			{
+				return make_identifier();
+			}
+
+			//- comments
+			if (is_comment(c))
+			{
+				//- ignore until end of current line
+				c = advance();
+
+				while (!is_newline(c))
+				{
+					c = advance();
+				}
+
+				++m_cursor.m_line;
+
+				//- begin scanning from start
+				return next_token();
+			}
+
+			stringview_t literal;
+			token_type type = token_type_none;
+
+			//- basic literals
+			switch (c)
+			{
+			case C_LITERAL_EQUAL:
+			{
+				//- detect composite equality/inequality
+				if (peek(1) == C_LITERAL_EQUAL)
+				{
+					//- ==
+					literal = C_LITERAL_EQUAL_EQUAL;
+					type = token_type_equality;
+				}
+				else
+				{
+					//- =
+					literal = &C_LITERAL_EQUAL;
+					type = token_type_equal;
+				}
+				break;
+			}
+			case C_LITERAL_EXCLAMATION:
+			{
+				literal = &C_LITERAL_EXCLAMATION;
+				type = token_type_exclamation;
+				break;
+			}
+			case C_LITERAL_COLON:
+			{
+				literal = &C_LITERAL_COLON;
+				type = token_type_colon;
+				break;
+			}
+			case C_LITERAL_SEMICOLON:
+			{
+				literal = &C_LITERAL_SEMICOLON;
+				type = token_type_semicolon;
+				break;
+			}
+			case C_LITERAL_COMMA:
+			{
+				literal = &C_LITERAL_COMMA;
+				type = token_type_comma;
+				break;
+			}
+			case C_LITERAL_DOT:
+			{
+				literal = &C_LITERAL_DOT;
+				type = token_type_dot;
+				break;
+			}
+			case C_LITERAL_LEFT_BRACKET:
+			{
+				literal = &C_LITERAL_LEFT_BRACKET;
+				type = token_type_left_bracket;
+				break;
+			}
+			case C_LITERAL_RIGHT_BRACKET:
+			{
+				literal = &C_LITERAL_RIGHT_BRACKET;
+				type = token_type_right_bracket;
+				break;
+			}
+			case C_LITERAL_LEFT_BRACE:
+			{
+				literal = &C_LITERAL_LEFT_BRACE;
+				type = token_type_left_brace;
+				break;
+			}
+			case C_LITERAL_RIGHT_BRACE:
+			{
+				literal = &C_LITERAL_RIGHT_BRACE;
+				type = token_type_right_brace;
+				break;
+			}
+			case C_LITERAL_LEFT_PAREN:
+			{
+				literal = &C_LITERAL_LEFT_PAREN;
+				type = token_type_left_paren;
+				break;
+			}
+			case C_LITERAL_RIGHT_PAREN:
+			{
+				literal = &C_LITERAL_RIGHT_PAREN;
+				type = token_type_right_paren;
+				break;
+			}
+			case C_LITERAL_MINUS:
+			{
+				literal = &C_LITERAL_MINUS;
+				type = token_type_minus;
+				break;
+			}
+			case C_LITERAL_PLUS:
+			{
+				literal = &C_LITERAL_PLUS;
+				type = token_type_plus;
+				break;
+			}
+			case C_LITERAL_STAR:
+			{
+				literal = &C_LITERAL_STAR;
+				type = token_type_star;
+				break;
+			}
+			case C_LITERAL_SLASH:
+			{
+				literal = &C_LITERAL_SLASH;
+				type = token_type_slash;
+				break;
+			}
+			case C_LITERAL_SMALLER:
+			{
+				//- detect composite equality/inequality
+				if (peek(1) == C_LITERAL_EQUAL)
+				{
+					//- <=
+					literal = C_LITERAL_SMALLER_EQUAL;
+					type = token_type_smaller_equal;
+				}
+				else
+				{
+					//- <
+					literal = &C_LITERAL_SMALLER;
+					type = token_type_smaller;
+				}
+				break;
+			}
+			case C_LITERAL_GREATER:
+			{
+				//- detect composite equality/inequality
+				if (peek(1) == C_LITERAL_EQUAL)
+				{
+					//- >=
+					literal = C_LITERAL_GREATER_EQUAL;
+					type = token_type_greater_equal;
+				}
+				else
+				{
+					//- >
+					literal = &C_LITERAL_GREATER;
+					type = token_type_greater;
+				}
+				break;
+			}
+			default:
+			{
+				//- report error
+				literal = C_ERROR_UNRECOGNIZED_LITERAL;
+				break;
+			}
+			}
+
+			//- ignore processed literal
+			advance();
+
+			return make_token(m_cursor.m_line, literal, type);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void ccompiler::process_token(const detail::stoken& token)
 		{
 
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		char ccompiler::peek(uint32_t lookahead /*= 0*/) const
+		{
+			SLANG_ASSERT(m_cursor.m_current + lookahead < m_code.size(), "Invalid operation. Index out of bound");
+			return m_code[m_cursor.m_current + lookahead];
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
