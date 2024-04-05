@@ -116,6 +116,13 @@ namespace slang
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
+	enum interpret_result : uint8_t
+	{
+		interpret_result_ok = 0,
+		interpret_result_fail = 255,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	enum value_type : uint8_t
 	{
 		value_type_null = 0,
@@ -290,14 +297,6 @@ namespace slang
 			token_type m_type = token_type_null;
 		};
 
-		//- Code chunk, holding compiled instructions and his constants
-		//------------------------------------------------------------------------------------------------------------------------
-		struct schunk
-		{
-			vector_t<svalue> m_constants;
-			vector_t<byte_t> m_code;
-		};
-
 		//- Scoped variables. Mapped to their declared names.
 		//------------------------------------------------------------------------------------------------------------------------
 		struct sscope
@@ -316,6 +315,14 @@ namespace slang
 
 			umap_t<string_t, svalue> m_values;
 			ref_t<sscope> m_parent = nullptr;
+		};
+
+		//- Code chunk, holding compiled instructions and his constants. Basically the intermediate representation for slang
+		//------------------------------------------------------------------------------------------------------------------------
+		struct schunk
+		{
+			vector_t<svalue> m_constants;
+			vector_t<byte_t> m_code;
 		};
 
 	} //- detail
@@ -337,7 +344,11 @@ namespace slang
 		cslang_state();
 		~cslang_state();
 
+		//- compile to IR without executing the code
 		compile_result compile(stringview_t code);
+
+		//- execute compiled IR in order of definition
+		interpret_result run();
 
 	private:
 		ptr_t<detail::ccompiler> m_compiler;

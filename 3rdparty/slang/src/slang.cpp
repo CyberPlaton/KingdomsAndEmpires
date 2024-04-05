@@ -43,6 +43,14 @@ namespace slang
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	interpret_result cslang_state::run()
+	{
+		//- take chunk pointer/reference from compiler
+
+		//- let VM execute chunk
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cslang_state* slang_open()
 	{
 		return detail::sallocator::static_new<cslang_state>();
