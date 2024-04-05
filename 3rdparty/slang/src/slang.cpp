@@ -48,28 +48,26 @@ namespace slang
 		//- take chunk pointer/reference from compiler
 
 		//- let VM execute chunk
+
+		return interpret_result_fail;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cslang_state* slang_open()
 	{
-		return detail::sallocator::static_new<cslang_state>();
+		return new cslang_state();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	compile_result slang_compile(cslang_state* state, const char* file)
+	slang::compile_result slang_compile(cslang_state* state, stringview_t code)
 	{
+		return state->compile(code);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void slang_close(cslang_state* state)
 	{
-		detail::sallocator::static_delete<cslang_state>(state);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ccompiler::ccompiler()
-	{
+		delete state;
 	}
 
 } //- slang

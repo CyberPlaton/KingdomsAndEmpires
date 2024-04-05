@@ -12,36 +12,12 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		void* sallocator::malloc(std::size_t s)
 		{
-			return slang_allocator().m_malloc(s);
+			return SLANG_MALLOC(s);
 		}
 
 		void sallocator::free(void* p, std::size_t /*bytes*/)
 		{
-			slang_allocator().m_free(p);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void* sallocator::calloc(std::size_t n, std::size_t s)
-		{
-			return slang_allocator().m_calloc(n, s);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void* sallocator::realloc(void* p, std::size_t s)
-		{
-			return slang_allocator().m_realloc(p, s);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void* sallocator::memalign(std::size_t n, std::size_t s)
-		{
-			return slang_allocator().m_memalign(n, s);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void* sallocator::valloc(std::size_t s)
-		{
-			return slang_allocator().m_valloc(s);
+			SLANG_FREE(p);
 		}
 
 	} //- detail

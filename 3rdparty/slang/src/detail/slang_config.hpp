@@ -22,9 +22,13 @@ namespace slang
 } //- slang
 #endif
 
+//- Note: to use custom allocators define SLANG_CUSTOM_ALLOCATOR, SLANG_MALLOC() and SLANG_FREE()
 //------------------------------------------------------------------------------------------------------------------------
 #ifndef SLANG_CUSTOM_ALLOCATOR
 #include "3rdparty/dlmalloc/malloc.h"
+	//- TODO: reconsider memory management and allocation
+	#define SLANG_MALLOC(s)	dlmalloc(s)
+	#define SLANG_FREE(p)	dlfree(p)
 #endif
 
 //- @reference: imgui_inernal.h 303 or https://github.com/scottt/debugbreak
@@ -56,24 +60,6 @@ namespace slang
 
 namespace slang
 {
-	typedef
-	void* (*slang_malloc_t)(std::size_t);
-
-	typedef
-	void(*slang_free_t)(void*);
-
-	typedef
-	void* (*slang_calloc_t)(std::size_t, std::size_t);
-
-	typedef
-	void* (*slang_realloc_t)(void*, std::size_t);
-
-	typedef
-	void* (*slang_memalign_t)(std::size_t, std::size_t);
-
-	typedef
-	void* (*slang_valloc_t)(std::size_t);
-
 	typedef
 	void(*slang_logger_t)(uint8_t, const char*);
 
@@ -267,30 +253,13 @@ namespace slang
 			log_level_critical,
 		};
 
+		//- Note: when creating objects make sure to use static_new and static_delete,
+		//- otherwise their constructor/destructor will not be invoked
 		//------------------------------------------------------------------------------------------------------------------------
 		struct sallocator
 		{
 			static void* malloc(std::size_t s);
 			static void free(void* p, std::size_t /*bytes*/);
-			static void* calloc(std::size_t n, std::size_t s);
-			static void* realloc(void* p, std::size_t s);
-			static void* memalign(std::size_t n, std::size_t s);
-			static void* valloc(std::size_t s);
-
-			template<typename TType>
-			static TType* static_new();
-
-			template<typename TType>
-			static void static_delete(TType* p);
-
-			void init();
-
-			slang_malloc_t m_malloc		= nullptr;
-			slang_free_t m_free			= nullptr;
-			slang_calloc_t m_calloc		= nullptr;
-			slang_realloc_t m_realloc	= nullptr;
-			slang_memalign_t m_memalign = nullptr;
-			slang_valloc_t m_valloc		= nullptr;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -308,6 +277,13 @@ namespace slang
 			uint32_t m_line = 0;
 			string_t m_text;
 			token_type m_type = token_type_null;
+		};
+
+		//- Sequenced array of tokens, in order of their encounter or declaration
+		//------------------------------------------------------------------------------------------------------------------------
+		struct stoken_stream
+		{
+			vector_t<stoken> m_stream;
 		};
 
 		//- Scoped variables. Mapped to their declared names.
@@ -413,20 +389,6 @@ namespace slang
 	const TObject* sobject::as() const
 	{
 		return static_cast<const TObject*>(this);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	TType* detail::sallocator::static_new()
-	{
-		return static_cast<TType*>(malloc(sizeof(TType)));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	void detail::sallocator::static_delete(TType* p)
-	{
-		free(p, sizeof(TType));
 	}
 
 } //- slang

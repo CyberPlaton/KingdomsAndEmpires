@@ -25,15 +25,20 @@ namespace slang
 				uint32_t m_line = 0;
 			};
 
-			detail::schunk m_chunk;
+			schunk m_chunk;
 			scursor m_cursor;
+			stoken_stream m_token_stream;
 			stringview_t m_code;
 			compile_result m_result = compile_result_ok;
 			bool m_panik = false;
 			
 		private:
-			detail::stoken next_token();
-			void process_token(const detail::stoken& token);
+			//- compiling part
+
+
+			//- scanning part
+			stoken next_token();
+			void process_token(stoken&& token);
 			char peek(uint32_t lookahead = 0) const;
 			inline char advance() { return m_code[m_cursor.m_current++]; }
 			inline void panik(){ m_panik = true; }

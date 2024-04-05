@@ -90,17 +90,73 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::log_error("Log log_error");
 	logging::log_critical("Log log_critical");
 
-	slang::slang_allocator().init();
 	slang::slang_logger().init(core_io_slang_error_function, slang::detail::log_level_trace);
 
-	slang::detail::schunk chunk;
-	chunk.m_constants.push_back(slang::svalue::create(1.2f, slang::value_type_float));
-	chunk.m_code.push_back(slang::detail::opcode_constant);
-	chunk.m_code.push_back(0);
+	/*
+	class Tree
+	{
+		def init(depth)
+		{
+			this.depth = depth;
+			if (depth > 0)
+			{
+				this.a = Tree(depth - 1);
+				this.b = Tree(depth - 1);
+				this.c = Tree(depth - 1);
+				this.d = Tree(depth - 1);
+				this.e = Tree(depth - 1);
+			}
+		}
 
-	auto p = slang::debug::print_chunk(chunk);
+		def walk()
+		{
+			if (this.depth == 0) return 0;
+			return this.depth
+			+ this.a.walk()
+			+ this.b.walk()
+			+ this.c.walk()
+			+ this.d.walk()
+			+ this.e.walk();
+		}
+	}
 
-	slang::slang_print(slang::detail::log_level_info, true, p.c_str());
+	var tree = Tree(8);
+
+	var start = clock();
+
+	for (var i = 0; i < 100; i = i + 1)
+	{
+		if (tree.walk() != 122068) print "Error";
+	}
+
+	print clock() - start;
+	*/
+
+	const char* code =
+		"class Tree"
+		"{"
+		"	def init(depth)"
+		"	{"
+		"		this.depth = depth;"
+		"	}"
+		"}"
+		""
+		"var tree = Tree(8);"
+		;
+
+	auto* state = slang::slang_open();
+	auto result = slang::slang_compile(state, code);
+	slang::slang_close(state);
+
+
+// 	slang::detail::schunk chunk;
+// 	chunk.m_constants.push_back(slang::svalue::create(1.2f, slang::value_type_float));
+// 	chunk.m_code.push_back(slang::detail::opcode_constant);
+// 	chunk.m_code.push_back(0);
+// 
+// 	auto p = slang::debug::print_chunk(chunk);
+// 
+// 	slang::slang_print(slang::detail::log_level_info, true, p.c_str());
 
 // 	logging::log_debug("Registered rttr types");
 // 	for (auto type : rttr::type::get_types())

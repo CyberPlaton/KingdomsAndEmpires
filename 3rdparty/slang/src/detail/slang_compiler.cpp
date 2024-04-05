@@ -82,7 +82,10 @@ namespace slang
 			//------------------------------------------------------------------------------------------------------------------------
 			static void append_one_char(string_t& string, char c)
 			{
-				string.append(&c, &c);
+				const char* start = &c;
+				const char* end = start + sizeof(char);
+
+				string.append(start, end);
 			}
 
 		}; //- unnamed
@@ -439,9 +442,9 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::process_token(const detail::stoken& token)
+		void ccompiler::process_token(stoken&& token)
 		{
-
+			m_token_stream.m_stream.emplace_back(std::move(token));
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -456,11 +459,18 @@ namespace slang
 		{
 			m_code = code;
 
-			for (auto i = 0; i < m_code.size(); ++i)
+			for (;;)
 			{
-				const auto& c = m_code[i];
+				auto token = next_token();
 
-				process_token(next_token());
+				if (token.m_type == token_type_eof ||
+					token.m_type == token_type_error)
+				{
+					//- end of source or error
+					break;
+				}
+
+				process_token(std::move(token));
 			}
 
 			return m_result;
