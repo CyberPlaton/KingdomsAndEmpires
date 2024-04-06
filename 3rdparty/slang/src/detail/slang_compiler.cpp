@@ -1,4 +1,5 @@
 #include "slang_compiler.hpp"
+#include "slang_debug.hpp"
 
 namespace slang
 {
@@ -11,35 +12,38 @@ namespace slang
 			constexpr stringview_t C_ERROR_UNTERMINATED_STRING = "Unterminated string. String declarations must end with '\"'";
 			constexpr stringview_t C_ERROR_MULTILINE_STRING = "Multiline strings are not supported. Make sure the string ends with '\"' on the same line it was declared on";
 
+			//- TODO: currently we have to duplicate tokens for compiler and for debug,
+			//- consider moving them to one place, i.e. a place of constants
 			constexpr stringview_t C_TOKEN_TRUE		= "true";
 			constexpr stringview_t C_TOKEN_FALSE	= "false";
 			constexpr stringview_t C_TOKEN_NULL		= "null";
 			constexpr stringview_t C_TOKEN_CLASS	= "class";
 			constexpr stringview_t C_TOKEN_DEF		= "def";
 			constexpr stringview_t C_TOKEN_RETURN	= "return";
+			constexpr stringview_t C_TOKEN_VAR		= "var";
+			constexpr stringview_t C_TOKEN_THIS		= "this";
 
 			constexpr stringview_t C_LITERAL_EQUAL_EQUAL	= "==";
 			constexpr stringview_t C_LITERAL_SMALLER_EQUAL	= "<=";
 			constexpr stringview_t C_LITERAL_GREATER_EQUAL	= ">=";
-
-			constexpr char C_LITERAL_EQUAL			= '=';
-			constexpr char C_LITERAL_EXCLAMATION	= '!';
-			constexpr char C_LITERAL_COLON			= ':';
-			constexpr char C_LITERAL_SEMICOLON		= ';';
-			constexpr char C_LITERAL_COMMA			= ',';
-			constexpr char C_LITERAL_DOT			= '.';
-			constexpr char C_LITERAL_LEFT_BRACKET	= '[';
-			constexpr char C_LITERAL_RIGHT_BRACKET	= ']';
-			constexpr char C_LITERAL_LEFT_BRACE		= '{';
-			constexpr char C_LITERAL_RIGHT_BRACE	= '}';
-			constexpr char C_LITERAL_LEFT_PAREN		= '(';
-			constexpr char C_LITERAL_RIGHT_PAREN	= ')';
-			constexpr char C_LITERAL_MINUS			= '-';
-			constexpr char C_LITERAL_PLUS			= '+';
-			constexpr char C_LITERAL_STAR			= '*';
-			constexpr char C_LITERAL_SLASH			= '/';
-			constexpr char C_LITERAL_SMALLER		= '<';
-			constexpr char C_LITERAL_GREATER		= '>';
+			constexpr stringview_t C_LITERAL_EQUAL			= "=";
+			constexpr stringview_t C_LITERAL_EXCLAMATION	= "!";
+			constexpr stringview_t C_LITERAL_COLON			= ":";
+			constexpr stringview_t C_LITERAL_SEMICOLON		= ";";
+			constexpr stringview_t C_LITERAL_COMMA			= ",";
+			constexpr stringview_t C_LITERAL_DOT			= ".";
+			constexpr stringview_t C_LITERAL_LEFT_BRACKET	= "[";
+			constexpr stringview_t C_LITERAL_RIGHT_BRACKET	= "]";
+			constexpr stringview_t C_LITERAL_LEFT_BRACE		= "{";
+			constexpr stringview_t C_LITERAL_RIGHT_BRACE	= "}";
+			constexpr stringview_t C_LITERAL_LEFT_PAREN		= "(";
+			constexpr stringview_t C_LITERAL_RIGHT_PAREN	= ")";
+			constexpr stringview_t C_LITERAL_MINUS			= "-";
+			constexpr stringview_t C_LITERAL_PLUS			= "+";
+			constexpr stringview_t C_LITERAL_STAR			= "*";
+			constexpr stringview_t C_LITERAL_SLASH			= "/";
+			constexpr stringview_t C_LITERAL_SMALLER		= "<";
+			constexpr stringview_t C_LITERAL_GREATER		= ">";
 
 			constexpr token_type C_TOKEN_KEYWORD_RANGE_START = token_type_true;
 			constexpr token_type C_TOKEN_KEYWORD_RANGE_END = token_type_return;
@@ -60,6 +64,8 @@ namespace slang
 				case token_type_null: { return compare(text, C_TOKEN_NULL); }
 				case token_type_def: { return compare(text, C_TOKEN_DEF); }
 				case token_type_return: { return compare(text, C_TOKEN_RETURN); }
+				case token_type_var: { return compare(text, C_TOKEN_VAR); }
+				case token_type_this: { return compare(text, C_TOKEN_THIS); }
 				default:
 					break;
 				}
@@ -229,8 +235,23 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::reset()
+		{
+			m_chunk.m_code.clear();
+			m_chunk.m_constants.clear();
+			m_cursor.m_current = 0;
+			m_cursor.m_text.clear();
+			m_cursor.m_line = 0;
+			m_token_stream.m_stream.clear();
+			m_result = compile_result_ok;
+			m_panik = false;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		detail::stoken ccompiler::next_token()
 		{
+			ZoneScopedN("ccompiler::next_token");
+
 			m_cursor.m_text.clear();
 
 			auto c = peek();
@@ -286,10 +307,10 @@ namespace slang
 			//- basic literals
 			switch (c)
 			{
-			case C_LITERAL_EQUAL:
+			case '=':
 			{
 				//- detect composite equality/inequality
-				if (peek(1) == C_LITERAL_EQUAL)
+				if (peek(1) == '=')
 				{
 					//- ==
 					literal = C_LITERAL_EQUAL_EQUAL;
@@ -298,105 +319,106 @@ namespace slang
 				else
 				{
 					//- =
-					literal = &C_LITERAL_EQUAL;
+					literal = C_LITERAL_EQUAL;
 					type = token_type_equal;
 				}
 				break;
 			}
-			case C_LITERAL_EXCLAMATION:
+			case '!':
 			{
-				literal = &C_LITERAL_EXCLAMATION;
+				literal = C_LITERAL_EXCLAMATION;
 				type = token_type_exclamation;
 				break;
 			}
-			case C_LITERAL_COLON:
+			case ':':
 			{
-				literal = &C_LITERAL_COLON;
+				literal = C_LITERAL_COLON;
 				type = token_type_colon;
 				break;
 			}
-			case C_LITERAL_SEMICOLON:
+			case ';':
 			{
-				literal = &C_LITERAL_SEMICOLON;
+				literal = C_LITERAL_SEMICOLON;
+
 				type = token_type_semicolon;
 				break;
 			}
-			case C_LITERAL_COMMA:
+			case ',':
 			{
-				literal = &C_LITERAL_COMMA;
+				literal = C_LITERAL_COMMA;
 				type = token_type_comma;
 				break;
 			}
-			case C_LITERAL_DOT:
+			case '.':
 			{
-				literal = &C_LITERAL_DOT;
+				literal = C_LITERAL_DOT;
 				type = token_type_dot;
 				break;
 			}
-			case C_LITERAL_LEFT_BRACKET:
+			case '[':
 			{
-				literal = &C_LITERAL_LEFT_BRACKET;
+				literal = C_LITERAL_LEFT_BRACKET;
 				type = token_type_left_bracket;
 				break;
 			}
-			case C_LITERAL_RIGHT_BRACKET:
+			case ']':
 			{
-				literal = &C_LITERAL_RIGHT_BRACKET;
+				literal = C_LITERAL_RIGHT_BRACKET;
 				type = token_type_right_bracket;
 				break;
 			}
-			case C_LITERAL_LEFT_BRACE:
+			case '{':
 			{
-				literal = &C_LITERAL_LEFT_BRACE;
+				literal = C_LITERAL_LEFT_BRACE;
 				type = token_type_left_brace;
 				break;
 			}
-			case C_LITERAL_RIGHT_BRACE:
+			case '}':
 			{
-				literal = &C_LITERAL_RIGHT_BRACE;
+				literal = C_LITERAL_RIGHT_BRACE;
 				type = token_type_right_brace;
 				break;
 			}
-			case C_LITERAL_LEFT_PAREN:
+			case '(':
 			{
-				literal = &C_LITERAL_LEFT_PAREN;
+				literal = C_LITERAL_LEFT_PAREN;
 				type = token_type_left_paren;
 				break;
 			}
-			case C_LITERAL_RIGHT_PAREN:
+			case ')':
 			{
-				literal = &C_LITERAL_RIGHT_PAREN;
+				literal = C_LITERAL_RIGHT_PAREN;
 				type = token_type_right_paren;
 				break;
 			}
-			case C_LITERAL_MINUS:
+			case '-':
 			{
-				literal = &C_LITERAL_MINUS;
+				literal = C_LITERAL_MINUS;
 				type = token_type_minus;
 				break;
 			}
-			case C_LITERAL_PLUS:
+			case '+':
 			{
-				literal = &C_LITERAL_PLUS;
+				literal = C_LITERAL_PLUS;
 				type = token_type_plus;
 				break;
 			}
-			case C_LITERAL_STAR:
+			case '*':
 			{
-				literal = &C_LITERAL_STAR;
+				literal = C_LITERAL_STAR;
 				type = token_type_star;
 				break;
 			}
-			case C_LITERAL_SLASH:
+			case '/':
 			{
-				literal = &C_LITERAL_SLASH;
+				literal = C_LITERAL_SLASH;
 				type = token_type_slash;
 				break;
 			}
-			case C_LITERAL_SMALLER:
+			case '<':
 			{
 				//- detect composite equality/inequality
-				if (peek(1) == C_LITERAL_EQUAL)
+				if (peek(1) == '=')
 				{
 					//- <=
 					literal = C_LITERAL_SMALLER_EQUAL;
@@ -405,15 +427,15 @@ namespace slang
 				else
 				{
 					//- <
-					literal = &C_LITERAL_SMALLER;
+					literal = C_LITERAL_SMALLER;
 					type = token_type_smaller;
 				}
 				break;
 			}
-			case C_LITERAL_GREATER:
+			case '>':
 			{
 				//- detect composite equality/inequality
-				if (peek(1) == C_LITERAL_EQUAL)
+				if (peek(1) == '=')
 				{
 					//- >=
 					literal = C_LITERAL_GREATER_EQUAL;
@@ -422,7 +444,7 @@ namespace slang
 				else
 				{
 					//- >
-					literal = &C_LITERAL_GREATER;
+					literal = C_LITERAL_GREATER;
 					type = token_type_greater;
 				}
 				break;
@@ -450,13 +472,18 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		char ccompiler::peek(uint32_t lookahead /*= 0*/) const
 		{
-			SLANG_ASSERT(m_cursor.m_current + lookahead < m_code.size(), "Invalid operation. Index out of bound");
+			SLANG_ASSERT(m_cursor.m_current + lookahead < m_code.size() + 1, "Invalid operation. Index out of bound");
 			return m_code[m_cursor.m_current + lookahead];
 		}
 
+		//- Compiler expects a null terminated string
 		//------------------------------------------------------------------------------------------------------------------------
 		compile_result ccompiler::compile(stringview_t code)
 		{
+			ZoneScopedN("ccompiler::compile");
+
+			reset();
+
 			m_code = code;
 
 			for (;;)
@@ -471,6 +498,11 @@ namespace slang
 				}
 
 				process_token(std::move(token));
+			}
+
+			if (slang_logger().m_log)
+			{
+				slang_print(log_level_debug, true, debug::print_token_stream(m_token_stream).c_str());
 			}
 
 			return m_result;

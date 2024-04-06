@@ -8,7 +8,7 @@ function slang()
 					{},
 					"c++",
 					{}, -- plugin_headeronly_deps
-					{}, -- thirdparty_headeronly_deps
+					{"Tracy"}, -- thirdparty_headeronly_deps
 					{} -- additional_includes
 					)
 end

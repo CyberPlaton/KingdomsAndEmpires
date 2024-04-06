@@ -50,12 +50,18 @@ namespace slang
 	#endif
 #endif
 
+//------------------------------------------------------------------------------------------------------------------------
 #ifdef DEBUG
 #define __ASSERT__(expression, message) assert(expression && message)
 #define SLANG_ASSERT(expression, ...) __ASSERT__(expression, __VA_ARGS__)
 #else
 #define __ASSERT__(expression, message)
 #define SLANG_ASSERT(expression, ...)
+#endif
+
+//------------------------------------------------------------------------------------------------------------------------
+#ifndef SLANG_NO_TRACY
+#include <Tracy.h>
 #endif
 
 namespace slang
@@ -222,6 +228,8 @@ namespace slang
 			token_type_null,			//- null
 			token_type_class,			//- class
 			token_type_def,				//- def
+			token_type_var,				//- var (variable declaration)
+			token_type_this,			//- this
 			token_type_return,			//- return
 		};
 

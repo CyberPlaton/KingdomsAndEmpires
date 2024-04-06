@@ -16,6 +16,8 @@ namespace slang
 	//------------------------------------------------------------------------------------------------------------------------
 	namespace debug
 	{
+		std::string print_token(const detail::stoken& token);
+		std::string print_token_stream(const detail::stoken_stream& stream);
 		std::string print_chunk(const detail::schunk& chunk);
 		std::string print_value(const svalue& value);
 		std::string print_object(const sobject* object);

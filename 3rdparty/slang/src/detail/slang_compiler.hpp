@@ -33,6 +33,8 @@ namespace slang
 			bool m_panik = false;
 			
 		private:
+			void reset();
+
 			//- compiling part
 
 
@@ -40,7 +42,7 @@ namespace slang
 			stoken next_token();
 			void process_token(stoken&& token);
 			char peek(uint32_t lookahead = 0) const;
-			inline char advance() { return m_code[m_cursor.m_current++]; }
+			inline char advance() { return m_code[++m_cursor.m_current]; }
 			inline void panik(){ m_panik = true; }
 			inline const bool is_paniking() const { return m_panik; }
 

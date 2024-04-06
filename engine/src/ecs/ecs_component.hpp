@@ -137,6 +137,9 @@ namespace ecs
 		RTTR_ENABLE(icomponent);
 	};
 
+	//- TODO: Animations are to be split into 'Frame' based animations as defined here and into 'Skeletal' animations,
+	//- both will have their own systems going with as well as components.
+	//- Thus this component will be moved into plugin_frame_animation.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sanimation final : public icomponent
 	{

@@ -133,15 +133,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	*/
 
 	const char* code =
-		"class Tree"
-		"{"
-		"	def init(depth)"
-		"	{"
-		"		this.depth = depth;"
-		"	}"
-		"}"
-		""
-		"var tree = Tree(8);"
+		";\n"
+		">=\n"
+		"class Tree\n"
+		"{\n"
+		"\t def init(depth)\n"
+		"\t {\n"
+		"\t\t this.depth = depth;\n"
+		"\t }\n"
+		"}\n"
+		"\n"
+		"var tree = Tree(8);\n"
+		"\0"
 		;
 
 	auto* state = slang::slang_open();
