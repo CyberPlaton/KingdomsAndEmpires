@@ -97,7 +97,7 @@ namespace slang
 		}; //- unnamed
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool ccompiler::is_identifier(char c) const
+		bool ccompiler::sscanner::is_identifier(char c) const
 		{
 			return ((c >= 'a' && c <= 'z') ||
 					(c >= 'A' && c <= 'Z') ||
@@ -105,19 +105,19 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool ccompiler::is_eof(char c) const
+		bool ccompiler::sscanner::is_eof(char c) const
 		{
 			return c == '\0';
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool ccompiler::is_digit(char c) const
+		bool ccompiler::sscanner::is_digit(char c) const
 		{
 			return c >= '0' && c <= '9';
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool ccompiler::is_whitespace(char c) const
+		bool ccompiler::sscanner::is_whitespace(char c) const
 		{
 			return (c == '\n' || c == '\t' ||
 					c == '\f' || c == '\r' ||
@@ -125,25 +125,25 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool ccompiler::is_newline(char c) const
+		bool ccompiler::sscanner::is_newline(char c) const
 		{
 			return c == '\n';
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool ccompiler::is_comment(char c) const
+		bool ccompiler::sscanner::is_comment(char c) const
 		{
 			return c == '#';
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool ccompiler::is_keyword(stringview_t text, token_type type) const
+		bool ccompiler::sscanner::is_keyword(stringview_t text, token_type type) const
 		{
 			return check_keyword(text, type);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		stoken ccompiler::make_identifier()
+		stoken ccompiler::sscanner::make_identifier()
 		{
 			m_cursor.m_text.clear();
 			
@@ -167,7 +167,7 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		slang::detail::stoken ccompiler::make_number()
+		slang::detail::stoken ccompiler::sscanner::make_number()
 		{
 			m_cursor.m_text.clear();
 
@@ -199,7 +199,7 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		slang::detail::stoken ccompiler::make_string()
+		slang::detail::stoken ccompiler::sscanner::make_string()
 		{
 			m_cursor.m_text.clear();
 
@@ -228,7 +228,7 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		slang::detail::stoken ccompiler::make_error(stringview_t text)
+		slang::detail::stoken ccompiler::sscanner::make_error(stringview_t text)
 		{
 			panik();
 			return {m_cursor.m_line, text.data(), token_type_error};
@@ -239,16 +239,16 @@ namespace slang
 		{
 			m_chunk.m_code.clear();
 			m_chunk.m_constants.clear();
-			m_cursor.m_current = 0;
-			m_cursor.m_text.clear();
-			m_cursor.m_line = 0;
-			m_token_stream.m_stream.clear();
-			m_result = compile_result_ok;
-			m_panik = false;
+			m_scanner.m_cursor.m_current = 0;
+			m_scanner.m_cursor.m_text.clear();
+			m_scanner.m_cursor.m_line = 0;
+			m_scanner.m_token_stream.m_stream.clear();
+			m_scanner.m_result = compile_result_ok;
+			m_scanner.m_panik = false;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		detail::stoken ccompiler::next_token()
+		detail::stoken ccompiler::sscanner::next_token()
 		{
 			ZoneScopedN("ccompiler::next_token");
 
@@ -464,25 +464,22 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::process_token(stoken&& token)
+		void ccompiler::sscanner::process_token(stoken&& token)
 		{
 			m_token_stream.m_stream.emplace_back(std::move(token));
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		char ccompiler::peek(uint32_t lookahead /*= 0*/) const
+		char ccompiler::sscanner::peek(uint32_t lookahead /*= 0*/) const
 		{
 			SLANG_ASSERT(m_cursor.m_current + lookahead < m_code.size() + 1, "Invalid operation. Index out of bound");
 			return m_code[m_cursor.m_current + lookahead];
 		}
 
-		//- Compiler expects a null terminated string
 		//------------------------------------------------------------------------------------------------------------------------
-		compile_result ccompiler::compile(stringview_t code)
+		slang::compile_result ccompiler::sscanner::compile(stringview_t code)
 		{
 			ZoneScopedN("ccompiler::compile");
-
-			reset();
 
 			m_code = code;
 
@@ -500,14 +497,32 @@ namespace slang
 				process_token(std::move(token));
 			}
 
-			if (slang_logger().m_log)
+			return m_result;
+		}
+
+		//- compiler expects a null terminated string
+		//------------------------------------------------------------------------------------------------------------------------
+		compile_result ccompiler::compile(stringview_t code)
+		{
+			ZoneScopedN("ccompiler::compile");
+
+			reset();
+
+			//- proceed with token compilation if we have scanned successfully
+			if (m_result = m_scanner.compile(code); m_result == compile_result_ok)
 			{
-				slang_print(log_level_debug, true, debug::print_token_stream(m_token_stream).c_str());
+				m_result = m_compiler.compile(m_scanner.m_token_stream);
 			}
+			return m_result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		slang::compile_result ccompiler::scompiler::compile(stoken_stream& stream)
+		{
 
 			return m_result;
 		}
-		
+
 	} //- detail
 
 } //- slang
