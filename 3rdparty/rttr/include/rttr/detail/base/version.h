@@ -1,3 +1,4 @@
+
 /************************************************************************************
 *                                                                                   *
 *   Copyright (c) 2014 - 2018 Axel Menzel <info@rttr.org>                           *
@@ -28,10 +29,10 @@
 #ifndef RTTR_VERSION_H_
 #define RTTR_VERSION_H_
 
-#define RTTR_VERSION_MAJOR @LIBRARY_VERSION_MAJOR@
-#define RTTR_VERSION_MINOR @LIBRARY_VERSION_MINOR@
-#define RTTR_VERSION_PATCH @LIBRARY_VERSION_PATCH@
-#define RTTR_VERSION       @LIBRARY_VERSION_CALC@
-#define RTTR_VERSION_STR   "@LIBRARY_VERSION_STR@"
+#define RTTR_VERSION_MAJOR 0
+#define RTTR_VERSION_MINOR 9
+#define RTTR_VERSION_PATCH 6
+#define RTTR_VERSION       RTTR_VERSION_MAJOR * 1000 + RTTR_VERSION_MINOR * 100 + RTTR_VERSION_PATCH
+#define RTTR_VERSION_STR   "0.9.6"
 
 #endif // RTTR_VERSION_H_
