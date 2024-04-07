@@ -33,8 +33,6 @@ function set_bx_includes()
 		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
 	elseif PLATFORM == "macosx" then
 		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
-	else
-		print("Unknown platform!")
 	end
 end
 
