@@ -16,32 +16,29 @@ namespace slang
 			~ccompiler() = default;
 
 			compile_result compile(stringview_t code);
-			[[nodiscard]] inline schunk& chunk() { SLANG_ASSERT(m_result == compile_result_ok, "Invalid operation. Compilation was invalid"); return m_chunk;};
+			[[nodiscard]] inline schunk& chunk() { SLANG_ASSERT(m_result == compile_result_ok, "Invalid operation. Compilation was invalid"); return m_compiler.m_chunk;};
 
 		private:
-			struct scursor
-			{
-				string_t m_text;
-				uint32_t m_current = 0;
-				uint32_t m_line = 0;
-			};
-
 			//- scanning part
 			struct sscanner
 			{
+				struct scursor
+				{
+					string_t m_text;
+					uint32_t m_current = 0;
+					uint32_t m_line = 0;
+				};
+
 				scursor m_cursor;
 				stoken_stream m_token_stream;
 				stringview_t m_code;
-				bool m_panik = false;
 				compile_result m_result = compile_result_ok;
 
-				compile_result compile(stringview_t code);
+				compile_result scan(stringview_t code);
 				stoken next_token();
 				void process_token(stoken&& token);
 				char peek(uint32_t lookahead = 0) const;
 				inline char advance() { return m_code[++m_cursor.m_current]; }
-				inline void panik() { m_panik = true; }
-				inline const bool is_paniking() const { return m_panik; }
 
 				bool is_identifier(char c) const;
 				bool is_eof(char c) const;
@@ -61,19 +58,34 @@ namespace slang
 			//- compiling part
 			struct scompiler
 			{
+				struct scursor
+				{
+					stoken_stream m_stream;
+					uint32_t m_current = 0;
+				};
+
+				schunk m_chunk;
+				scursor m_cursor;
 				compile_result m_result = compile_result_ok;
 
-				compile_result compile(stoken_stream& stream);
+				compile_result compile(stoken_stream&& stream);
+				void process_token(stoken& token);
+				inline stoken& advance() {return m_cursor.m_stream.m_stream[++m_cursor.m_current];}
+				stoken& peek(uint32_t lookahead = 0);
+				void consume(token_type expected, stringview_t error_message);
+
+				void emit_byte(byte_t byte);
+
+				void emit_error_at_token(const stoken& token);
+				void emit_error(uint32_t line, stringview_t message);
 			};
 
 			sscanner m_scanner;
 			scompiler m_compiler;
-			schunk m_chunk;
 			compile_result m_result = compile_result_fail;
 
 		private:
 			void reset();
-
 		};
 
 	} //- detail

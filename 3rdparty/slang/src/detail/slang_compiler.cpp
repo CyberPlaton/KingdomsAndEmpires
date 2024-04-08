@@ -11,6 +11,7 @@ namespace slang
 			constexpr stringview_t C_ERROR_UNRECOGNIZED_LITERAL = "An unrecognized literal was encountered";
 			constexpr stringview_t C_ERROR_UNTERMINATED_STRING = "Unterminated string. String declarations must end with '\"'";
 			constexpr stringview_t C_ERROR_MULTILINE_STRING = "Multiline strings are not supported. Make sure the string ends with '\"' on the same line it was declared on";
+			constexpr stringview_t C_ERROR_EOF_EXPECTED = "Expected 'end of file' expression";
 
 			//- TODO: currently we have to duplicate tokens for compiler and for debug,
 			//- consider moving them to one place, i.e. a place of constants
@@ -230,21 +231,20 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		slang::detail::stoken ccompiler::sscanner::make_error(stringview_t text)
 		{
-			panik();
+			m_result = compile_result_fail;
 			return {m_cursor.m_line, text.data(), token_type_error};
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void ccompiler::reset()
 		{
-			m_chunk.m_code.clear();
-			m_chunk.m_constants.clear();
+			m_compiler.m_chunk.m_code.clear();
+			m_compiler.m_chunk.m_constants.clear();
 			m_scanner.m_cursor.m_current = 0;
 			m_scanner.m_cursor.m_text.clear();
 			m_scanner.m_cursor.m_line = 0;
 			m_scanner.m_token_stream.m_stream.clear();
 			m_scanner.m_result = compile_result_ok;
-			m_scanner.m_panik = false;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -477,9 +477,9 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		slang::compile_result ccompiler::sscanner::compile(stringview_t code)
+		slang::compile_result ccompiler::sscanner::scan(stringview_t code)
 		{
-			ZoneScopedN("ccompiler::compile");
+			ZoneScopedN("ccompiler::sscanner::scan");
 
 			m_code = code;
 
@@ -490,7 +490,8 @@ namespace slang
 				if (token.m_type == token_type_eof ||
 					token.m_type == token_type_error)
 				{
-					//- end of source or error
+					//- end of source or error. Move the last know token and stop
+					process_token(std::move(token));
 					break;
 				}
 
@@ -509,18 +510,90 @@ namespace slang
 			reset();
 
 			//- proceed with token compilation if we have scanned successfully
-			if (m_result = m_scanner.compile(code); m_result == compile_result_ok)
+			if (m_result = m_scanner.scan(code); m_result == compile_result_ok)
 			{
-				m_result = m_compiler.compile(m_scanner.m_token_stream);
+				m_result = m_compiler.compile(std::move(m_scanner.m_token_stream));
 			}
 			return m_result;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		slang::compile_result ccompiler::scompiler::compile(stoken_stream& stream)
+		slang::compile_result ccompiler::scompiler::compile(stoken_stream&& stream)
 		{
+			ZoneScopedN("ccompiler::scompiler::compile");
+
+			m_cursor.m_stream = std::move(stream);
+
+			//- TODO: maybe reconsider how we should iterate, unsure at this point.
+			//- We do not need to process the last token, it is expected to be 'eof'
+			for (m_cursor.m_current = 0u; m_cursor.m_current < m_cursor.m_stream.m_stream.size() - 1; ++m_cursor.m_current)
+			{
+				auto& token = m_cursor.m_stream.m_stream[m_cursor.m_current];
+
+				slang_print(log_level_debug, true, debug::print_token(token).c_str());
+
+				if (token.m_type == token_type_error)
+				{
+					emit_error_at_token(token);
+					break;
+				}
+
+				process_token(token);
+			}
+
+			//- finalize compilation
+			consume(token_type_eof, C_ERROR_EOF_EXPECTED);
+			emit_byte(opcode_return);
 
 			return m_result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::process_token(stoken& token)
+		{
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		slang::detail::stoken& ccompiler::scompiler::peek(uint32_t lookahead/* = 0*/)
+		{
+			SLANG_ASSERT(m_cursor.m_current + lookahead < m_cursor.m_stream.m_stream.size() + 1, "Invalid operation. Index out of bound");
+			return m_cursor.m_stream.m_stream[m_cursor.m_current + lookahead];
+		}
+
+		//- Consume the next token if it has the expected type, meaning we acknowledge it and just skip,
+		//- if the type is not the expected one, then we raise an error
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::consume(token_type expected, stringview_t error_message)
+		{
+			const auto& token = peek();
+
+			if (token.m_type == expected)
+			{
+				++m_cursor.m_current;
+				return;
+			}
+			emit_error(m_cursor.m_current, error_message);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::emit_byte(byte_t byte)
+		{
+			m_chunk.write(byte, m_cursor.m_current);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::emit_error_at_token(const stoken& token)
+		{
+			emit_error(token.m_line, token.m_text.c_str());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::emit_error(uint32_t line, stringview_t message)
+		{
+			slang_print(log_level_error, true,
+				fmt::format("Error at line {}: '{}'", line, message.data()).c_str());
+			m_result = compile_result_fail;
 		}
 
 	} //- detail

@@ -1,7 +1,5 @@
 #include "slang_debug.hpp"
 #include "slang_object.hpp"
-#define FMT_HEADER_ONLY
-#include "3rdparty/fmt/format.h"
 
 namespace slang
 {

@@ -318,8 +318,11 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		struct schunk
 		{
+			void write(byte_t byte, uint32_t line);
+
 			vector_t<svalue> m_constants;
 			vector_t<byte_t> m_code;
+			vector_t<uint32_t> m_lines;
 		};
 
 	} //- detail

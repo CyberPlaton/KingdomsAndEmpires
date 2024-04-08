@@ -67,6 +67,15 @@ namespace slang
 			return m_values[name.data()];
 		}
 
+		//- line is the associated line in code associated with this op code, makes tracking and understanding of runtime
+		//- errors easier
+		//------------------------------------------------------------------------------------------------------------------------
+		void schunk::write(byte_t byte, uint32_t line)
+		{
+			m_code.emplace_back(byte);
+			m_lines.emplace_back(line);
+		}
+
 	} //- detail
 
 } //- slang
