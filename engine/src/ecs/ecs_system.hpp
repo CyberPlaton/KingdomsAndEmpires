@@ -105,7 +105,7 @@ namespace ecs
 	template<typename... TComponent>
 	void csystem<TComps...>::exclude()
 	{
-		m_builder.without<TComponent...>();
+		m_builder.template without<TComponent...>();
 	}
 
 	//- Marks the system as available for threading. Note that a system using ImGui UI

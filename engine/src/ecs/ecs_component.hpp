@@ -212,7 +212,7 @@ namespace rttr
 	private:
 		void register_common_component_functions()
 		{
-			meth(ecs::detail::C_COMPONENT_NAME_FUNC_NAME, &TComponent::name)
+			this->meth(ecs::detail::C_COMPONENT_NAME_FUNC_NAME, &TComponent::name)
 				.meth(ecs::detail::C_COMPONENT_SERIALIZE_FUNC_NAME, &TComponent::serialize)
 				.meth(ecs::detail::C_COMPONENT_SET_FUNC_NAME, &TComponent::set)
 				;

@@ -61,7 +61,7 @@ namespace slang
 	namespace detail
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		static const char* opcode_name(opcode code)
+		const char* opcode_name(opcode code)
 		{
 			constexpr stringview_t C_NOOP		= "noop";
 			constexpr stringview_t C_RETURN		= "return";

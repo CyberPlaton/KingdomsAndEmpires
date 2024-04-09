@@ -600,15 +600,15 @@ namespace rttr
 			{
 				static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
 
-				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_object);
+				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_object);
 			}
 			else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TCustomPolicy>)
 			{
-				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_raw_ptr);
+				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_raw_ptr);
 			}
 			else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TCustomPolicy>)
 			{
-				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_std_shared_ptr);
+				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_std_shared_ptr);
 			}
 			return *this;
 		}
@@ -629,19 +629,19 @@ namespace rttr
 			{
 				static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
 
-				m_object.constructor()(rttr::policy::ctor::as_object);
+				m_object.template constructor()(rttr::policy::ctor::as_object);
 			}
 			else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TPolicy>)
 			{
-				m_object.constructor()(rttr::policy::ctor::as_raw_ptr);
+				m_object.template constructor()(rttr::policy::ctor::as_raw_ptr);
 			}
 			else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TPolicy>)
 			{
-				m_object.constructor()(rttr::policy::ctor::as_std_shared_ptr);
+				m_object.template constructor()(rttr::policy::ctor::as_std_shared_ptr);
 			}
 			else
 			{
-				static_assert(false, "Invalid operation. TPolicy must be one of 'rttr::detail::as_object', 'rttr::detail::as_std_shared_ptr' or 'rttr::detail::as_raw_pointer'")
+				CORE_ASSERT(false, "Invalid operation. TPolicy must be one of 'rttr::detail::as_object', 'rttr::detail::as_std_shared_ptr' or 'rttr::detail::as_raw_pointer'");
 			}
 
 			if (core::serror_reporter::instance().m_callback)
