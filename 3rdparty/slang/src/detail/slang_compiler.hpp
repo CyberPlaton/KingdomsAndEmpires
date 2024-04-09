@@ -58,10 +58,19 @@ namespace slang
 			//- compiling part
 			struct scompiler
 			{
+				using parse_function_t = std::function<void(scompiler::*)()>;
+
 				struct scursor
 				{
 					stoken_stream m_stream;
 					uint32_t m_current = 0;
+				};
+
+				struct sparse_rule
+				{
+					parse_function_t m_prefix;
+					parse_function_t m_infix;
+					precedence_type m_precedence = precedence_type_none;
 				};
 
 				schunk m_chunk;
@@ -69,15 +78,37 @@ namespace slang
 				compile_result m_result = compile_result_ok;
 
 				compile_result compile(stoken_stream&& stream);
-				void process_token(stoken& token);
+				void process_current_token();
 				inline stoken& advance() {return m_cursor.m_stream.m_stream[++m_cursor.m_current];}
 				stoken& peek(uint32_t lookahead = 0);
 				void consume(token_type expected, stringview_t error_message);
 
-				void emit_byte(byte_t byte);
+				void emit_byte(byte_t byte, uint32_t line);
 
-				void emit_error_at_token(const stoken& token);
+				void emit_error_at_current_token();
 				void emit_error(uint32_t line, stringview_t message);
+
+				//- Production rules making opcodes and data from tokens
+				void parse_precedence(precedence_type type);
+				void grouping();
+				void call();
+				void dot();
+				void unary();
+				void binary();
+				void variable();
+				void string();
+				void number();
+				void literal();
+
+				sparse_rule parse_rule(token_type type);
+
+				void expression();
+
+				template<typename T>
+				void emit_constant(T&& value, uint32_t line);
+
+				template<typename T>
+				byte_t make_constant(T&& value);
 			};
 
 			sscanner m_scanner;
@@ -87,6 +118,29 @@ namespace slang
 		private:
 			void reset();
 		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename T>
+		void ccompiler::scompiler::emit_constant(T&& value, uint32_t line)
+		{
+			emit_byte(opcode_constant, line);
+			emit_byte(make_constant<T>(std::move(value)), line);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename T>
+		byte_t ccompiler::scompiler::make_constant(T&& value)
+		{
+			auto index = m_chunk.m_constants.size();
+
+			m_chunk.m_constants.emplace_back(svalue::create(std::move(value), value_type_number));
+
+			//- TODO: in case this becomes a problem, we need to find a way to encode an index
+			//- in 2 bytes or something similar
+			SLANG_ASSERT(index < std::numeric_limits<byte_t>::max(), "Invalid operation. Constant limit for chunk reached");
+
+			return static_cast<byte_t>(index);
+		}
 
 	} //- detail
 

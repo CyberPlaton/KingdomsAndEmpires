@@ -5,6 +5,7 @@ namespace slang
 {
 	namespace
 	{
+		constexpr stringview_t C_UNDEFINED = "<undefined>";
 		constexpr stringview_t C_EMPTY = "";
 		constexpr stringview_t C_TRUE = "True";
 		constexpr stringview_t C_FALSE = "False";
@@ -71,6 +72,9 @@ namespace slang
 			constexpr stringview_t C_DIV		= "divide";
 			constexpr stringview_t C_CONST		= "constant";
 			constexpr stringview_t C_VAR		= "variable";
+			constexpr stringview_t C_TRUE		= "true";
+			constexpr stringview_t C_FALSE		= "false";
+			constexpr stringview_t C_NULL		= "null";
 
 			switch (code)
 			{
@@ -84,14 +88,18 @@ namespace slang
 			case detail::opcode_divide:		return C_DIV.data();
 			case detail::opcode_constant:	return C_CONST.data();
 			case detail::opcode_variable:	return C_VAR.data();
+			case detail::opcode_true:		return C_TRUE.data();
+			case detail::opcode_false:		return C_FALSE.data();
+			case detail::opcode_null:		return C_NULL.data();
 			}
-			return {};
+
+			SLANG_ASSERT(false, "Invalid operation. Unknown opcode name");
+			return C_UNDEFINED.data();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		static const char* tokentype_name(token_type type)
 		{
-			constexpr stringview_t C_UNDEF		= "<undefined>";
 			constexpr stringview_t C_NONE		= "none";
 			constexpr stringview_t C_EOF		= "eof";
 			constexpr stringview_t C_ERR		= "error";
@@ -119,6 +127,7 @@ namespace slang
 			constexpr stringview_t C_EQUALITY	= "equality";
 			constexpr stringview_t C_SMALLEQUAL = "smallerequal";
 			constexpr stringview_t C_GREATEQUAL = "greaterequal";
+			constexpr stringview_t C_NOTEQUAL	= "notequal";
 			constexpr stringview_t C_TRUE		= "true";
 			constexpr stringview_t C_FALSE		= "false";
 			constexpr stringview_t C_NULL		= "null";
@@ -157,6 +166,7 @@ namespace slang
 			case token_type_equality:		return C_EQUALITY.data();
 			case token_type_smaller_equal:	return C_SMALLEQUAL.data();
 			case token_type_greater_equal:	return C_GREATEQUAL.data();
+			case token_type_not_equality:	return C_NOTEQUAL.data();
 			case token_type_true:			return C_TRUE.data();
 			case token_type_false:			return C_FALSE.data();
 			case token_type_null:			return C_NULL.data();
@@ -168,7 +178,9 @@ namespace slang
 			default:
 				break;
 			}
-			return C_UNDEF.data();
+
+			SLANG_ASSERT(false, "Invalid operation. Unknown token type name");
+			return C_UNDEFINED.data();
 		}
 
 	} //- detail
@@ -229,11 +241,7 @@ namespace slang
 			{
 				return fmt::format("{}", value.get<bool>() ? C_TRUE.data() : C_FALSE.data());
 			}
-			case value_type_integer:
-			{
-				return fmt::format("{}", value.get<int>());
-			}
-			case value_type_float:
+			case value_type_number:
 			{
 				return fmt::format("{}", value.get<float>());
 			}
@@ -244,6 +252,8 @@ namespace slang
 			default:
 				break;
 			}
+
+			SLANG_ASSERT(false, "Invalid operation. Unknown value type");
 			return C_EMPTY.data();
 		}
 
@@ -257,6 +267,9 @@ namespace slang
 				return print_function(object->as<sfunction>());
 			}
 			}
+
+			SLANG_ASSERT(false, "Invalid operation. Unknown object type");
+			return C_EMPTY.data();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -269,15 +282,6 @@ namespace slang
 			switch (instruction)
 			{
 			default:
-			case opcode_noop:
-			{
-				++index;
-				break;
-			}
-			case opcode_return:
-			{
-				break;
-			}
 			case opcode_add:
 			{
 				break;
@@ -298,8 +302,18 @@ namespace slang
 			{
 				out = print_constant_instruction(opcode_name(opcode_constant), chunk, index);
 
-				//- increase one for bytecode and value
+				//- increment one for opcode and one for value
 				index += 2;
+				break;
+			}
+			case opcode_noop:
+			case opcode_return:
+			case opcode_null:
+			case opcode_false:
+			case opcode_true:
+			{
+				out = print_simple_instruction(opcode_name(instruction));
+				++index;
 				break;
 			}
 			case opcode_variable:

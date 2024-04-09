@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include <memory>
+#include <functional>
 
 //- If overriding STL classes define the namespace they are coming from same as below
 //------------------------------------------------------------------------------------------------------------------------
@@ -118,8 +119,7 @@ namespace slang
 	enum value_type : uint8_t
 	{
 		value_type_null = 0,
-		value_type_integer,
-		value_type_float,
+		value_type_number,
 		value_type_boolean,
 		value_type_object,
 	};
@@ -179,13 +179,25 @@ namespace slang
 		{
 			opcode_noop = 0,
 			opcode_return,
+
 			opcode_add,
 			opcode_subtract,
 			opcode_multiply,
 			opcode_divide,
 
-			opcode_constant,
+			opcode_not,
+			opcode_negate,
+			opcode_equal,
+			opcode_greater,
+			opcode_smaller,
+			opcode_smallerequal,
+			opcode_greaterequal,
+
 			opcode_variable,
+			opcode_constant,
+			opcode_true,
+			opcode_false,
+			opcode_null,
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -219,6 +231,7 @@ namespace slang
 			token_type_smaller,			//- <
 			token_type_greater,			//- >
 			token_type_equality,		//- ==
+			token_type_not_equality,	//- !=
 			token_type_smaller_equal,	//- <=
 			token_type_greater_equal,	//- >=
 
@@ -233,6 +246,7 @@ namespace slang
 			token_type_return,			//- return
 		};
 
+		//- Precedence ordered from lowest to highest
 		//------------------------------------------------------------------------------------------------------------------------
 		enum precedence_type : uint8_t
 		{
@@ -318,7 +332,8 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		struct schunk
 		{
-			void write(byte_t byte, uint32_t line);
+			void write_opcode(byte_t byte, uint32_t line);
+			void write_value(svalue&& value);
 
 			vector_t<svalue> m_constants;
 			vector_t<byte_t> m_code;
@@ -337,6 +352,8 @@ namespace slang
 	} //- detail
 
 	//- Constructor and Destructor are implemented in slang.cpp
+	//- TODO: when we have an idea how to serialize runnable bytecode, we want to be able to load it from file
+	//- and run without compilation.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cslang_state final
 	{

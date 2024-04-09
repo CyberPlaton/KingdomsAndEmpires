@@ -133,6 +133,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	*/
 
 	const char* code =
+		"1.2;\n"
+		"true;\n"
+		"99;\n"
+		"false;\n"
 		";\n"
 		">=\n"
 		"class Tree\n"

@@ -1,5 +1,6 @@
 #include "slang_compiler.hpp"
 #include "slang_debug.hpp"
+#include <string.h> //- std::stoi and the like
 
 namespace slang
 {
@@ -27,6 +28,7 @@ namespace slang
 			constexpr stringview_t C_LITERAL_EQUAL_EQUAL	= "==";
 			constexpr stringview_t C_LITERAL_SMALLER_EQUAL	= "<=";
 			constexpr stringview_t C_LITERAL_GREATER_EQUAL	= ">=";
+			constexpr stringview_t C_LITERAL_NOT_EQUAL		= "!=";
 			constexpr stringview_t C_LITERAL_EQUAL			= "=";
 			constexpr stringview_t C_LITERAL_EXCLAMATION	= "!";
 			constexpr stringview_t C_LITERAL_COLON			= ":";
@@ -326,8 +328,19 @@ namespace slang
 			}
 			case '!':
 			{
-				literal = C_LITERAL_EXCLAMATION;
-				type = token_type_exclamation;
+				//- detect composite equality/inequality
+				if (peek(1) == '=')
+				{
+					//- !=
+					literal = C_LITERAL_NOT_EQUAL;
+					type = token_type_not_equality;
+				}
+				else
+				{
+					//- !
+					literal = C_LITERAL_EXCLAMATION;
+					type = token_type_exclamation;
+				}
 				break;
 			}
 			case ':':
@@ -498,6 +511,8 @@ namespace slang
 				process_token(std::move(token));
 			}
 
+			slang_print(log_level_debug, true, debug::print_token_stream(m_token_stream).c_str());
+
 			return m_result;
 		}
 
@@ -528,30 +543,63 @@ namespace slang
 			//- We do not need to process the last token, it is expected to be 'eof'
 			for (m_cursor.m_current = 0u; m_cursor.m_current < m_cursor.m_stream.m_stream.size() - 1; ++m_cursor.m_current)
 			{
-				auto& token = m_cursor.m_stream.m_stream[m_cursor.m_current];
-
-				slang_print(log_level_debug, true, debug::print_token(token).c_str());
-
-				if (token.m_type == token_type_error)
+				if (peek().m_type == token_type_error)
 				{
-					emit_error_at_token(token);
+					emit_error_at_token();
 					break;
 				}
 
-				process_token(token);
+				process_current_token();
 			}
 
 			//- finalize compilation
 			consume(token_type_eof, C_ERROR_EOF_EXPECTED);
-			emit_byte(opcode_return);
+			emit_byte(opcode_return, m_cursor.m_stream.m_stream.back().m_line + 1);
 
 			return m_result;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::scompiler::process_token(stoken& token)
+		void ccompiler::scompiler::process_current_token()
 		{
+			const auto& token = peek();
 
+			switch (token.m_type)
+			{
+			case token_type_number:
+			{
+				number();
+				break;
+			}
+			case token_type_null:
+			case token_type_true:
+			case token_type_false:
+			{
+				literal();
+				break;
+			}
+			//- prefix tokens
+			case token_type_left_bracket:
+			{
+				break;
+			}
+			case token_type_left_brace:
+			{
+				break;
+			}
+			case token_type_left_paren:
+			{
+				break;
+			}
+
+			default:
+			{
+				//- report unknown token type
+				break;
+			}
+			}
+
+			slang_print(log_level_debug, true, debug::print_chunk(m_chunk).c_str());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -576,15 +624,18 @@ namespace slang
 			emit_error(m_cursor.m_current, error_message);
 		}
 
+		//- Writes something into the opcode array, the next write will be on the next index
 		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::scompiler::emit_byte(byte_t byte)
+		void ccompiler::scompiler::emit_byte(byte_t byte, uint32_t line)
 		{
-			m_chunk.write(byte, m_cursor.m_current);
+			m_chunk.write_opcode(byte, line);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::scompiler::emit_error_at_token(const stoken& token)
+		void ccompiler::scompiler::emit_error_at_current_token()
 		{
+			const auto& token = peek();
+
 			emit_error(token.m_line, token.m_text.c_str());
 		}
 
@@ -594,6 +645,120 @@ namespace slang
 			slang_print(log_level_error, true,
 				fmt::format("Error at line {}: '{}'", line, message.data()).c_str());
 			m_result = compile_result_fail;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::number()
+		{
+			const auto& token = peek();
+
+			emit_constant<float>(std::stof(token.m_text.c_str()), token.m_line);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::literal()
+		{
+			const auto& token = peek();
+			auto opcode = opcode_noop;
+
+			switch (token.m_type)
+			{
+			case token_type_true:
+			{
+				opcode = opcode_true;
+				break;
+			}
+			case token_type_false:
+			{
+				opcode = opcode_false;
+				break;
+			}
+			case token_type_null:
+			{
+				opcode = opcode_null;
+				break;
+			}
+			default:
+				break;
+			}
+
+			emit_byte(opcode, token.m_line);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::expression()
+		{
+			parse_precedence(precedence_type_assignment);
+
+			consume(token_type_semicolon, "Expected ';' after expression");
+
+			//- TODO: emit instruction to pop computed value from VM stack
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::binary()
+		{
+			const auto& previous = peek(-1);
+			const auto type = previous.m_type;
+
+		}
+
+		//- Starting from current token, parses expressions at given precedence level or higher
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::parse_precedence(precedence_type type)
+		{
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		ccompiler::scompiler::sparse_rule ccompiler::scompiler::parse_rule(token_type type)
+		{
+			switch (type)
+			{
+				//-									Prefix		Infix		Precedence
+			case token_type_left_paren:		return { nullptr, nullptr, precedence_type_call };
+			case token_type_dot:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_minus:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_plus:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_star:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_slash:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_exclamation:	return { nullptr, nullptr, precedence_type_none };
+			case token_type_not_equality:	return { nullptr, nullptr, precedence_type_none };
+			case token_type_smaller:		return { nullptr, nullptr, precedence_type_none };
+			case token_type_greater:		return { nullptr, nullptr, precedence_type_none };
+			case token_type_equality:		return { nullptr, nullptr, precedence_type_none };
+			case token_type_smaller_equal:	return { nullptr, nullptr, precedence_type_none };
+			case token_type_greater_equal:	return { nullptr, nullptr, precedence_type_none };
+			case token_type_identifier:		return { nullptr, nullptr, precedence_type_none };
+			case token_type_number:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_string:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_true:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_false:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_this:			return { nullptr, nullptr, precedence_type_none };
+
+			case token_type_none:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_eof:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_error:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_equal:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_colon:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_semicolon:		return { nullptr, nullptr, precedence_type_none };
+			case token_type_comma:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_left_bracket:	return { nullptr, nullptr, precedence_type_none };
+			case token_type_right_bracket:	return { nullptr, nullptr, precedence_type_none };
+			case token_type_left_brace:		return { nullptr, nullptr, precedence_type_none };
+			case token_type_right_brace:	return { nullptr, nullptr, precedence_type_none };
+			case token_type_right_paren:	return { nullptr, nullptr, precedence_type_none };
+			case token_type_null:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_class:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_def:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_return:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_var:			return { nullptr, nullptr, precedence_type_none };
+			default:
+				break;
+			}
+
+			SLANG_ASSERT(false, "Invalid operation. Unknown token type");
+			return { nullptr, nullptr, precedence_type_none };
 		}
 
 	} //- detail

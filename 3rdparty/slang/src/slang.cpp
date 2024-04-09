@@ -7,19 +7,6 @@ namespace slang
 	{
 		inline static uint64_t s_variable_identifier = 0;
 
-		//------------------------------------------------------------------------------------------------------------------------
-		inline static void emit_byte(detail::schunk& code, byte_t byte)
-		{
-			code.m_code.emplace_back(byte);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		inline static void emit_bytes(detail::schunk& code, byte_t byte1, byte_t byte2)
-		{
-			emit_byte(code, byte1);
-			emit_byte(code, byte2);
-		}
-
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -27,13 +14,11 @@ namespace slang
 		m_compiler(std::move(std::make_unique<detail::ccompiler>())),
 		m_vm(std::move(std::make_unique<detail::cvm>()))
 	{
-
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cslang_state::~cslang_state()
 	{
-
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

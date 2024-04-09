@@ -600,15 +600,19 @@ namespace rttr
 			{
 				static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
 
-				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_object);
+				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_object);
 			}
 			else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TCustomPolicy>)
 			{
-				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_raw_ptr);
+				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_raw_ptr);
 			}
 			else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TCustomPolicy>)
 			{
-				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_std_shared_ptr);
+				m_object.constructor<ARGS...>()(rttr::policy::ctor::as_std_shared_ptr);
+			}
+			else
+			{
+				CORE_ASSERT(false, "Invalid operation. TCustomPolicy must be one of 'rttr::policy::ctor::as_object', 'rttr::policy::ctor::as_std_shared_ptr' or 'rttr::policy::ctor::as_raw_pointer'");
 			}
 			return *this;
 		}
@@ -629,15 +633,15 @@ namespace rttr
 			{
 				static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
 
-				m_object.template constructor()(rttr::policy::ctor::as_object);
+				m_object.constructor()(rttr::policy::ctor::as_object);
 			}
 			else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TPolicy>)
 			{
-				m_object.template constructor()(rttr::policy::ctor::as_raw_ptr);
+				m_object.constructor()(rttr::policy::ctor::as_raw_ptr);
 			}
 			else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TPolicy>)
 			{
-				m_object.template constructor()(rttr::policy::ctor::as_std_shared_ptr);
+				m_object.constructor()(rttr::policy::ctor::as_std_shared_ptr);
 			}
 			else
 			{
