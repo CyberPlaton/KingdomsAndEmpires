@@ -545,7 +545,7 @@ namespace slang
 			{
 				if (peek().m_type == token_type_error)
 				{
-					emit_error_at_token();
+					emit_error_at_current_token();
 					break;
 				}
 
@@ -575,7 +575,7 @@ namespace slang
 			case token_type_true:
 			case token_type_false:
 			{
-				literal();
+				literal_();
 				break;
 			}
 			//- prefix tokens
@@ -656,7 +656,7 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::scompiler::literal()
+		void ccompiler::scompiler::literal_()
 		{
 			const auto& token = peek();
 			auto opcode = opcode_noop;
@@ -685,6 +685,7 @@ namespace slang
 			emit_byte(opcode, token.m_line);
 		}
 
+
 		//------------------------------------------------------------------------------------------------------------------------
 		void ccompiler::scompiler::expression()
 		{
@@ -703,9 +704,59 @@ namespace slang
 
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::variable()
+		{
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::string()
+		{
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::this_()
+		{
+
+		}
+
 		//- Starting from current token, parses expressions at given precedence level or higher
 		//------------------------------------------------------------------------------------------------------------------------
 		void ccompiler::scompiler::parse_precedence(precedence_type type)
+		{
+			const auto& token = advance();
+
+			auto prefix_rule = parse_rule(token.m_type).m_prefix;
+
+			if (!prefix_rule)
+			{
+				emit_error_at_current_token();
+				return;
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::grouping()
+		{
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::call()
+		{
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::dot()
+		{
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiler::scompiler::unary()
 		{
 
 		}
@@ -716,43 +767,43 @@ namespace slang
 			switch (type)
 			{
 				//-									Prefix		Infix		Precedence
-			case token_type_left_paren:		return { nullptr, nullptr, precedence_type_call };
-			case token_type_dot:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_minus:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_plus:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_star:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_slash:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_exclamation:	return { nullptr, nullptr, precedence_type_none };
-			case token_type_not_equality:	return { nullptr, nullptr, precedence_type_none };
-			case token_type_smaller:		return { nullptr, nullptr, precedence_type_none };
-			case token_type_greater:		return { nullptr, nullptr, precedence_type_none };
-			case token_type_equality:		return { nullptr, nullptr, precedence_type_none };
-			case token_type_smaller_equal:	return { nullptr, nullptr, precedence_type_none };
-			case token_type_greater_equal:	return { nullptr, nullptr, precedence_type_none };
-			case token_type_identifier:		return { nullptr, nullptr, precedence_type_none };
-			case token_type_number:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_string:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_true:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_false:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_this:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_left_paren:		return sparse_rule(&scompiler::grouping,	&scompiler::call,		precedence_type_call );
+			case token_type_dot:			return sparse_rule( nullptr,				&scompiler::dot,		precedence_type_call);
+			case token_type_minus:			return sparse_rule(&scompiler::unary,		&scompiler::binary,		precedence_type_term);
+			case token_type_plus:			return sparse_rule( nullptr,				&scompiler::binary,		precedence_type_term);
+			case token_type_star:			return sparse_rule( nullptr,				&scompiler::binary,		precedence_type_factor);
+			case token_type_slash:			return sparse_rule( nullptr,				&scompiler::binary,		precedence_type_factor);
+			case token_type_exclamation:	return sparse_rule(&scompiler::unary,		nullptr,				precedence_type_none);
+			case token_type_not_equality:	return sparse_rule(nullptr,					&scompiler::binary,		precedence_type_equality);
+			case token_type_smaller:		return sparse_rule(nullptr,					&scompiler::binary,		precedence_type_comparison);
+			case token_type_greater:		return sparse_rule(nullptr,					&scompiler::binary,		precedence_type_comparison);
+			case token_type_equality:		return sparse_rule(nullptr,					&scompiler::binary,		precedence_type_equality);
+			case token_type_smaller_equal:	return sparse_rule(nullptr,					&scompiler::binary,		precedence_type_comparison);
+			case token_type_greater_equal:	return sparse_rule(nullptr,					&scompiler::binary,		precedence_type_comparison);
+			case token_type_identifier:		return sparse_rule(&scompiler::variable,	nullptr,				precedence_type_none);
+			case token_type_number:			return sparse_rule(&scompiler::number,		nullptr,				precedence_type_none);
+			case token_type_string:			return sparse_rule(&scompiler::string,		nullptr,				precedence_type_none);
+			case token_type_true:			return sparse_rule(&scompiler::literal_,	nullptr,				precedence_type_none);
+			case token_type_false:			return sparse_rule(&scompiler::literal_,	nullptr,				precedence_type_none);
+			case token_type_this:			return sparse_rule(&scompiler::this_,		nullptr,				precedence_type_none);
 
-			case token_type_none:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_eof:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_error:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_equal:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_colon:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_semicolon:		return { nullptr, nullptr, precedence_type_none };
-			case token_type_comma:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_left_bracket:	return { nullptr, nullptr, precedence_type_none };
-			case token_type_right_bracket:	return { nullptr, nullptr, precedence_type_none };
-			case token_type_left_brace:		return { nullptr, nullptr, precedence_type_none };
-			case token_type_right_brace:	return { nullptr, nullptr, precedence_type_none };
-			case token_type_right_paren:	return { nullptr, nullptr, precedence_type_none };
-			case token_type_null:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_class:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_def:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_return:			return { nullptr, nullptr, precedence_type_none };
-			case token_type_var:			return { nullptr, nullptr, precedence_type_none };
+			case token_type_none:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_eof:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_error:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_equal:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_colon:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_semicolon:		return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_comma:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_left_bracket:	return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_right_bracket:	return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_left_brace:		return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_right_brace:	return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_right_paren:	return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_null:			return sparse_rule(&scompiler::literal_,	nullptr,				precedence_type_none);
+			case token_type_class:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_def:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_return:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
+			case token_type_var:			return sparse_rule(nullptr,					nullptr,				precedence_type_none);
 			default:
 				break;
 			}

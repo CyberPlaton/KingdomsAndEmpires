@@ -58,7 +58,7 @@ namespace slang
 			//- compiling part
 			struct scompiler
 			{
-				using parse_function_t = std::function<void(scompiler::*)()>;
+				using parse_function_t = void(scompiler::*)();
 
 				struct scursor
 				{
@@ -68,8 +68,12 @@ namespace slang
 
 				struct sparse_rule
 				{
-					parse_function_t m_prefix;
-					parse_function_t m_infix;
+					sparse_rule(parse_function_t prefix, parse_function_t infix, precedence_type prec) :
+						m_prefix(prefix), m_infix(infix), m_precedence(prec)
+					{}
+
+					parse_function_t m_prefix = nullptr;
+					parse_function_t m_infix = nullptr;
 					precedence_type m_precedence = precedence_type_none;
 				};
 
@@ -98,7 +102,8 @@ namespace slang
 				void variable();
 				void string();
 				void number();
-				void literal();
+				void literal_();
+				void this_();
 
 				sparse_rule parse_rule(token_type type);
 
