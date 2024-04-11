@@ -116,6 +116,13 @@ RTTR_INLINE type instance::get_derived_type() const RTTR_NOEXCEPT
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+RTTR_INLINE void* instance::get_instance_pointer() const RTTR_NOEXCEPT
+{
+	return m_data_container.m_type.m_type_data;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 } // end namespace rttr
 
 #endif // RTTR_INSTANCE_IMPL_H_

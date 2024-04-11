@@ -134,6 +134,7 @@ using vec4_t = glm::vec4;
 using mat2_t = glm::mat2;
 using mat3_t = glm::mat3x3;
 using mat4_t = glm::mat4x4;
+using quat_t = glm::quat;
 
 #if defined(core_EXPORTS) && defined(CORE_USE_EASTL)
 //- implementation required for EASTL. The function will be available in any application or plugin

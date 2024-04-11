@@ -146,6 +146,8 @@ public:
      */
     RTTR_INLINE type get_derived_type() const RTTR_NOEXCEPT;
 
+	RTTR_INLINE void* get_instance_pointer() const RTTR_NOEXCEPT;
+
 private:
     instance& operator=(const instance& other) RTTR_NOEXCEPT;
 
