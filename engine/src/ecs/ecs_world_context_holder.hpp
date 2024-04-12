@@ -20,7 +20,11 @@ namespace ecs
 		//- Can be used to destroy entities, prefabs etc.
 		virtual void on_shutdown() {}
 
+		//- TODO: consider moving to entity manager.
 		bool is_prefab(flecs::entity e) const;
+
+		//- TODO: consider moving to component manager, seems to make more sense,
+		//- in case we remove component manager then probably should be in cworld.
 		vector_t<std::string> components(flecs::entity e) const;
 
 	private:

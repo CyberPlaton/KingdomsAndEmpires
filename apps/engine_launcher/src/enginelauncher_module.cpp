@@ -139,20 +139,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 // 	tree.m_nodes.emplace_back(ai::bt::ssequence{});
 // 	tree.m_nodes.emplace_back(ai::bt::saction{});
 
-	tree.emplace_node<ai::bt::scondition>();
-	tree.emplace_node<ai::bt::saction>();
-	tree.emplace_node<ai::bt::ssequence>();
-	tree.emplace_node<ai::bt::sfallback>();
-
-	for (const auto& n : tree.m_nodes)
-	{
-		if (auto m = n.get_type().get_method("do_tick"); m.is_valid())
-		{
-			m.invoke(n);
-		}
-
-		logging::log_debug(fmt::format("Memory location '0x{:x}'", (uint64_t)n.get_instance_pointer()));
- 	}
+	auto i = tree.emplace<ai::bt::cfallback>();
+	auto j = tree.attach_to<ai::bt::caction>(i);
+	auto k = tree.emplace<ai::bt::csequence>();
+	auto l = tree.attach_to<ai::bt::ccondition>(j);
 
 	tree.tick();
 
