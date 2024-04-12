@@ -1,6 +1,29 @@
 #pragma once
 #include "../detail/ai_common.hpp"
 
+//- Utility macro for defining a action or condition node, where only a tick function is required without a custom constructor.
+//------------------------------------------------------------------------------------------------------------------------
+#define DECLARE_LEAF_NODE(c) \
+REFLECT_INLINE(c) \
+{ \
+	rttr::cregistrator<c, rttr::detail::no_default>(STRING(c)) \
+		.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>() \
+		.meth(C_TICK_FUNCTION_NAME.data(), &c::do_tick) \
+		; \
+};
+
+//- Basically the same as above but with custom constructor parameters.
+//- When declaring the constructor provide only the parameters required after the default node ones.
+//------------------------------------------------------------------------------------------------------------------------
+#define DECLARE_LEAF_NODE_EX(c, ...) \
+REFLECT_INLINE(c) \
+{ \
+	rttr::cregistrator<c, rttr::detail::no_default>(STRING(c)) \
+		.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t, __VA_ARGS__>() \
+		.meth(C_TICK_FUNCTION_NAME.data(), &c::do_tick) \
+		; \
+};
+
 namespace ai
 {
 	namespace bt
@@ -28,7 +51,7 @@ namespace ai
 			tick_result_pending,
 		};
 
-		//- One and only base class for a behavior tree node.
+		//- The one and only base class for a behavior tree node.
 		//------------------------------------------------------------------------------------------------------------------------
 		class ibehavior_tree_context_holder
 		{
@@ -53,6 +76,7 @@ namespace ai
 			RTTR_ENABLE();
 		};
 
+		//- Composite node. Executes children until the first returns ok.
 		//------------------------------------------------------------------------------------------------------------------------
 		class cfallback : public ibehavior_tree_context_holder
 		{
@@ -73,6 +97,7 @@ namespace ai
 			RTTR_REFLECTABLE();
 		};
 
+		//- Composite node. Executes children until the first returns fail.
 		//------------------------------------------------------------------------------------------------------------------------
 		class csequence : public ibehavior_tree_context_holder
 		{
@@ -93,6 +118,8 @@ namespace ai
 			RTTR_REFLECTABLE();
 		};
 
+		//- Leaf node. Executes its function and returns result.
+		//- Note: when implementing new kinds of actions, make sure it looks like this class.
 		//------------------------------------------------------------------------------------------------------------------------
 		class caction : public ibehavior_tree_context_holder
 		{
@@ -105,10 +132,12 @@ namespace ai
 			tick_result do_tick();
 
 		private:
-
 			RTTR_ENABLE(ibehavior_tree_context_holder);
 		};
 
+		//- Leaf node. Executes its function and returns result.
+		//- Note: when implementing new kinds of actions, make sure it looks like this class.
+		//- In this context tick_result_ok is true and tick_result_fail is false.
 		//------------------------------------------------------------------------------------------------------------------------
 		class ccondition : public ibehavior_tree_context_holder
 		{
@@ -121,10 +150,10 @@ namespace ai
 			tick_result do_tick();
 
 		private:
-
 			RTTR_ENABLE(ibehavior_tree_context_holder);
 		};
 
+		//- Only relevant internal to behavior tree class.
 		//------------------------------------------------------------------------------------------------------------------------
 		class croot : public ibehavior_tree_context_holder
 		{
@@ -145,6 +174,29 @@ namespace ai
 			RTTR_REFLECTABLE();
 		};
 
+		//- Action node emitting a debug message.
+		//------------------------------------------------------------------------------------------------------------------------
+		class caction_logg : public ibehavior_tree_context_holder
+		{
+		public:
+			caction_logg(cbehavior_tree& context, node_id_t id, stringview_t message) :
+				ibehavior_tree_context_holder(context, id), m_message(message)
+			{
+			}
+
+			tick_result do_tick();
+
+		private:
+			const std::string m_message;
+			RTTR_ENABLE(ibehavior_tree_context_holder);
+		};
+
+		//- Inheritance free (mostly) and virtual functions free behavior tree implementation.
+		//- TODO:
+		//- detaching children from nodes
+		//- attaching a tree as a node to another tree (along with detaching)
+		//- decorator nodes
+		//- blackboards (one global for a Tree and optional local for nodes)
 		//------------------------------------------------------------------------------------------------------------------------
 		class cbehavior_tree
 		{
@@ -164,6 +216,12 @@ namespace ai
 // 					});
 // 			}
 
+			template<typename TNode, typename... ARGS>
+			node_id_t emplace(ARGS&&... args);
+
+			template<typename TNode, typename... ARGS>
+			node_id_t attach_to(node_id_t parent, ARGS&&... args);
+
 			template<typename TNode>
 			node_id_t emplace();
 
@@ -175,6 +233,7 @@ namespace ai
 			tick_result tick_node(uint32_t i);
 
 			tree_id_t id() const;
+			stringview_t name() const;
 
 		private:
 			const std::string m_name;
@@ -190,6 +249,35 @@ namespace ai
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TNode, typename... ARGS>
+		node_id_t cbehavior_tree::emplace(ARGS&&... args)
+		{
+			return attach_to<TNode, ARGS...>((node_id_t)0, args...);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TNode, typename... ARGS>
+		node_id_t cbehavior_tree::attach_to(node_id_t parent, ARGS&&... args)
+		{
+			auto id = generate_node_id();
+
+			auto& node = m_nodes.emplace_back(TNode(*this, id, args...));
+
+			if (id > 0 && !attach_node_to(id, parent))
+			{
+				logging::log_error(fmt::format("[Behavior Tree '{} (#{})'] attaching node '{}' to '{}' failed",
+					m_name, m_id, id, parent));
+			}
+			else if (id == 0 && parent > 0)
+			{
+				logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching root node to '{}' is not allowed",
+					m_name, m_id, parent));
+			}
+
+			return id;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TNode>
 		node_id_t cbehavior_tree::attach_to(node_id_t parent)
 		{
@@ -199,7 +287,13 @@ namespace ai
 
 			if (id > 0 && !attach_node_to(id, parent))
 			{
-				//- report error attaching a child to parent node
+				logging::log_error(fmt::format("[Behavior Tree '{} (#{})'] attaching node '{}' to '{}' failed",
+					m_name, m_id, id, parent));
+			}
+			else if (id == 0 && parent > 0)
+			{
+				logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching root node to '{}' is not allowed",
+					m_name, m_id, parent));
 			}
 
 			return id;
@@ -241,22 +335,10 @@ namespace ai
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
-		REFLECT_INLINE(ccondition)
-		{
-			rttr::cregistrator<ccondition, rttr::detail::no_default>("ccondition")
-				.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>()
-				.meth(C_TICK_FUNCTION_NAME.data(), &ccondition::do_tick)
-				;
-		};
+		DECLARE_LEAF_NODE(ccondition);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		REFLECT_INLINE(caction)
-		{
-			rttr::cregistrator<caction, rttr::detail::no_default>("caction")
-				.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>()
-				.meth(C_TICK_FUNCTION_NAME.data(), &caction::do_tick)
-				;
-		};
+		DECLARE_LEAF_NODE(caction);
 
 		//------------------------------------------------------------------------------------------------------------------------
 		REFLECT_INLINE(csequence)
@@ -279,6 +361,9 @@ namespace ai
 				.prop("m_children", &cfallback::m_children)
 				;
 		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_LEAF_NODE_EX(caction_logg, stringview_t);
 
 	} //- bt
 

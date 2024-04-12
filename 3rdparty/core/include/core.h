@@ -38,6 +38,17 @@ namespace stl = std;
 #include <fstream>
 #include <string>
 
+#if CORE_COMPILER_MSVC
+#define CORE_LIKELY(x) x
+#define CORE_UNLIKELY(x) x
+#elif CORE_COMPILER_GCC || CORE_COMPILER_CLANG
+#define CORE_LIKELY(x) __builtin_expect(!!(x), 1)
+#define CORE_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define CORE_LIKELY(x) x
+#define CORE_UNLIKELY(x) x
+#endif
+
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
 #define SSTRING(s) STRING(s)

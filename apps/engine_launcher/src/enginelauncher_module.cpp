@@ -134,15 +134,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	ai::bt::cbehavior_tree tree("Testing");
 
-// 	tree.m_nodes.emplace_back(ai::bt::scondition{});
-// 	tree.m_nodes.emplace_back(ai::bt::sfallback{});
-// 	tree.m_nodes.emplace_back(ai::bt::ssequence{});
-// 	tree.m_nodes.emplace_back(ai::bt::saction{});
-
 	auto i = tree.emplace<ai::bt::cfallback>();
 	auto j = tree.attach_to<ai::bt::caction>(i);
 	auto k = tree.emplace<ai::bt::csequence>();
 	auto l = tree.attach_to<ai::bt::ccondition>(k);
+	auto m = tree.attach_to<ai::bt::caction_logg>(k, "Hello World 1");
+	auto n = tree.attach_to<ai::bt::caction_logg>(k, "Hello World 2");
+	auto o = tree.attach_to<ai::bt::caction_logg>(k, "Hello World 3");
 
 	tree.tick();
 
