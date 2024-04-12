@@ -142,7 +142,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	auto i = tree.emplace<ai::bt::cfallback>();
 	auto j = tree.attach_to<ai::bt::caction>(i);
 	auto k = tree.emplace<ai::bt::csequence>();
-	auto l = tree.attach_to<ai::bt::ccondition>(j);
+	auto l = tree.attach_to<ai::bt::ccondition>(k);
 
 	tree.tick();
 

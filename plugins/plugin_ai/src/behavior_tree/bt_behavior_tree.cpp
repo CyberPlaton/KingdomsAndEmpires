@@ -20,13 +20,13 @@ namespace ai
 		cbehavior_tree::cbehavior_tree(stringview_t name) :
 			m_name(name), m_id(generate_tree_id()), m_next_id(0)
 		{
-
+			emplace<croot>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		ai::bt::node_id_t cbehavior_tree::generate_node_id()
 		{
-			return ++m_next_id;
+			return m_next_id++;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -112,6 +112,27 @@ namespace ai
 				}
 			}
 			return tick_result_ok;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void croot::do_tick()
+		{
+			logging::log_info("croot");
+
+			for (const auto& i : m_children)
+			{
+				do_tick_child(i);
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void croot::emplace_child(node_id_t id)
+		{
+			logging::log_info(fmt::format("croot adding child '{}'", id));
+
+			ASSERT(id > 0, "Invalid operation. Trying to attach root to itself is not allowed");
+
+			m_children.push_back(id);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

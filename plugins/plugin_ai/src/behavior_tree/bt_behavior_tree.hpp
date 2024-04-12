@@ -126,6 +126,26 @@ namespace ai
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
+		class croot : public ibehavior_tree_context_holder
+		{
+		public:
+			croot(cbehavior_tree& context, node_id_t id) :
+				ibehavior_tree_context_holder(context, id)
+			{
+			}
+
+			void do_tick();
+
+			void emplace_child(node_id_t id);
+
+		private:
+			vector_t<uint32_t> m_children;
+
+			RTTR_ENABLE(ibehavior_tree_context_holder);
+			RTTR_REFLECTABLE();
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
 		class cbehavior_tree
 		{
 		public:
@@ -166,6 +186,7 @@ namespace ai
 			node_id_t generate_node_id();
 
 			bool attach_node_to(node_id_t id, node_id_t parent);
+
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -176,7 +197,7 @@ namespace ai
 
 			auto& node = m_nodes.emplace_back(TNode(*this, id));
 
-			if (parent > 0 && !attach_node_to(id, parent))
+			if (id > 0 && !attach_node_to(id, parent))
 			{
 				//- report error attaching a child to parent node
 			}
@@ -205,6 +226,17 @@ namespace ai
 			rttr::cregistrator<ibehavior_tree_context_holder, rttr::detail::no_default>("ibehavior_tree_context_holder")
 				.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>()
 				.meth(C_ID_FUNCTION_NAME.data(), &ibehavior_tree_context_holder::id)
+				;
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		REFLECT_INLINE(croot)
+		{
+			rttr::cregistrator<croot, rttr::detail::no_default>("croot")
+				.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>()
+				.meth(C_TICK_FUNCTION_NAME.data(), &croot::do_tick)
+				.meth(C_EMPLACE_CHILD_FUNCTION_NAME.data(), &croot::emplace_child)
+				.prop("m_children", &croot::m_children)
 				;
 		};
 
