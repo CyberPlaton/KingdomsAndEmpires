@@ -2,6 +2,7 @@
 #include "../detail/ai_common.hpp"
 
 //- Utility macro for defining a action or condition node, where only a tick function is required without a custom constructor.
+//- Can also be used to declare decorators that too only have a tick function.
 //------------------------------------------------------------------------------------------------------------------------
 #define DECLARE_LEAF_NODE(c) \
 REFLECT_INLINE(c) \
@@ -269,12 +270,17 @@ namespace ai
 		//- Decorator nodes are wrapping exactly one child. They can do something with the tick result of the child or decide
 		//- whether to even run it. Important note: A decorator can wrap a decorator such that the original node is wrapped
 		//- by two decorators.
+		//-
 		//- 
+		//-
 		//- TODO:
 		//- detaching children from nodes
 		//- detaching decorators from nodes
 		//- attaching a tree as a node to another tree (along with detaching)
 		//- blackboards (one global for a Tree and optional local for nodes)
+		//- runtime debugging, i.e. showing order of execution along with returned tick_results
+		//- concept of attaching a Tree to an entity proxy (proxies is a more general concept for whole ai library)
+		//- storing current executing node for later proceed command, listening to interrupt signals and Tree reaction to interruptions
 		//------------------------------------------------------------------------------------------------------------------------
 		class cbehavior_tree
 		{
@@ -334,13 +340,6 @@ namespace ai
 		node_id_t cbehavior_tree::attach_decorator_to(node_id_t node)
 		{
 			m_nodes[node] = std::move(TNode(*this, node, m_nodes[node]));
-
-// 			const auto& child = m_nodes[node];
-// 
-// 			//- construct new decorator wrapping the node
-// 			auto decorator = TNode(*this, node, child);
-// 
-// 			m_nodes[node] = std::move(decorator);
 
 			return node;
 		}
