@@ -141,6 +141,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	auto m = tree.attach_to<ai::bt::caction_logg>(k, "Hello World 1");
 	auto n = tree.attach_to<ai::bt::caction_logg>(k, "Hello World 2");
 	auto o = tree.attach_to<ai::bt::caction_logg>(k, "Hello World 3");
+	auto d = tree.attach_decorator_to<ai::bt::cdecorator>(o);
+	auto e = tree.attach_decorator_to<ai::bt::cdecorator_inverter>(d);
 
 	tree.tick();
 

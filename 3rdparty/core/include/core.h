@@ -510,13 +510,17 @@ namespace algorithm
 		stl::copy_if(from.begin(), from.end(), to, function);
 	}
 
+	//- TODO: There seems to be a problem with the previous implementation. Refactor me.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TIterator>
 	void shuffle(TIterator begin, TIterator end, unsigned seed = time(NULL))
 	{
-		static const std::default_random_engine C_RANDOM_ENGINE(seed);
+		std::random_device device;
+		std::mt19937 generator(device());
 
-		stl::shuffle(begin, end, C_RANDOM_ENGINE);
+		//static const std::default_random_engine C_RANDOM_ENGINE(seed);
+
+		stl::shuffle(begin, end, generator);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

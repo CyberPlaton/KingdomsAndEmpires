@@ -8,7 +8,7 @@ REFLECT_INLINE(c) \
 { \
 	rttr::cregistrator<c, rttr::detail::no_default>(STRING(c)) \
 		.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>() \
-		.meth(C_TICK_FUNCTION_NAME.data(), &c::do_tick) \
+		.meth(detail::C_TICK_FUNCTION_NAME.data(), &c::do_tick) \
 		; \
 };
 
@@ -20,7 +20,7 @@ REFLECT_INLINE(c) \
 { \
 	rttr::cregistrator<c, rttr::detail::no_default>(STRING(c)) \
 		.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t, __VA_ARGS__>() \
-		.meth(C_TICK_FUNCTION_NAME.data(), &c::do_tick) \
+		.meth(detail::C_TICK_FUNCTION_NAME.data(), &c::do_tick) \
 		; \
 };
 
@@ -28,17 +28,18 @@ namespace ai
 {
 	namespace bt
 	{
-		namespace
-		{
-			constexpr std::string_view C_TICK_FUNCTION_NAME			= "do_tick";
-			constexpr std::string_view C_EMPLACE_CHILD_FUNCTION_NAME= "emplace_child";
-			constexpr std::string_view C_ID_FUNCTION_NAME			= "id";
-
-		} //- unnamed
-
+		//- Forward declaring node types.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cdecorator;
+		class cdecorator_inverter;
+		class cfallback;
+		class csequence;
+		class crandom_sequence;
+		class caction;
+		class ccondition;
+		class caction_logg;
 
 		class cbehavior_tree;
-
 		using node_id_t = handle_type_t;
 		using tree_id_t = handle_type_t;
 
@@ -50,6 +51,17 @@ namespace ai
 			tick_result_fail,
 			tick_result_pending,
 		};
+
+		namespace detail
+		{
+			constexpr std::string_view C_TICK_FUNCTION_NAME			= "do_tick";
+			constexpr std::string_view C_EMPLACE_CHILD_FUNCTION_NAME= "emplace_child";
+			constexpr std::string_view C_ID_FUNCTION_NAME			= "id";
+
+			tree_id_t generate_tree_id();
+			tick_result invoke_node_function(const rttr::variant& node, stringview_t function);
+
+		} //- detail
 
 		//- The one and only base class for a behavior tree node.
 		//------------------------------------------------------------------------------------------------------------------------
@@ -76,7 +88,46 @@ namespace ai
 			RTTR_ENABLE();
 		};
 
-		//- Composite node. Executes children until the first returns ok.
+		//- Decorator node. When attaching to a node, the decorator takes the nodes place along with its id.
+		//- This is a dummy decorator that merely executes the child.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cdecorator : public ibehavior_tree_context_holder
+		{
+		public:
+			cdecorator(cbehavior_tree& context, node_id_t id, const rttr::variant& child) :
+				ibehavior_tree_context_holder(context, id), m_child(child)
+			{
+			}
+
+			tick_result do_tick();
+
+		private:
+			rttr::variant m_child;
+
+			RTTR_ENABLE(ibehavior_tree_context_holder);
+			RTTR_REFLECTABLE();
+		};
+
+		//- Decorator node. Inverts the tick result of its child.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cdecorator_inverter : public ibehavior_tree_context_holder
+		{
+		public:
+			cdecorator_inverter(cbehavior_tree& context, node_id_t id, const rttr::variant& child) :
+				ibehavior_tree_context_holder(context, id), m_child(child)
+			{
+			}
+
+			tick_result do_tick();
+
+		private:
+			rttr::variant m_child;
+
+			RTTR_ENABLE(ibehavior_tree_context_holder);
+			RTTR_REFLECTABLE();
+		};
+
+		//- Composite node. Executes children until the first returns ok or all were ticked.
 		//------------------------------------------------------------------------------------------------------------------------
 		class cfallback : public ibehavior_tree_context_holder
 		{
@@ -97,12 +148,33 @@ namespace ai
 			RTTR_REFLECTABLE();
 		};
 
-		//- Composite node. Executes children until the first returns fail.
+		//- Composite node. Executes children until the first returns fail or all were ticked.
 		//------------------------------------------------------------------------------------------------------------------------
 		class csequence : public ibehavior_tree_context_holder
 		{
 		public:
 			csequence(cbehavior_tree& context, node_id_t id) :
+				ibehavior_tree_context_holder(context, id)
+			{
+			}
+
+			tick_result do_tick();
+
+			void emplace_child(node_id_t id);
+
+		private:
+			vector_t<uint32_t> m_children;
+
+			RTTR_ENABLE(ibehavior_tree_context_holder);
+			RTTR_REFLECTABLE();
+		};
+
+		//- Composite node. Executes children in random order until the first returns fail or all were ticked.
+		//------------------------------------------------------------------------------------------------------------------------
+		class crandom_sequence : public ibehavior_tree_context_holder
+		{
+		public:
+			crandom_sequence(cbehavior_tree& context, node_id_t id) :
 				ibehavior_tree_context_holder(context, id)
 			{
 			}
@@ -192,10 +264,16 @@ namespace ai
 		};
 
 		//- Inheritance free (mostly) and virtual functions free behavior tree implementation.
+		//- Ticking the Tree kicks the root node to start, the root in turn ticks only its direct children.
+		//- 
+		//- Decorator nodes are wrapping exactly one child. They can do something with the tick result of the child or decide
+		//- whether to even run it. Important note: A decorator can wrap a decorator such that the original node is wrapped
+		//- by two decorators.
+		//- 
 		//- TODO:
 		//- detaching children from nodes
+		//- detaching decorators from nodes
 		//- attaching a tree as a node to another tree (along with detaching)
-		//- decorator nodes
 		//- blackboards (one global for a Tree and optional local for nodes)
 		//------------------------------------------------------------------------------------------------------------------------
 		class cbehavior_tree
@@ -228,6 +306,9 @@ namespace ai
 			template<typename TNode>
 			node_id_t attach_to(node_id_t parent);
 
+			template<typename TNode>
+			node_id_t attach_decorator_to(node_id_t node);
+
 			void tick();
 
 			tick_result tick_node(uint32_t i);
@@ -247,6 +328,22 @@ namespace ai
 			bool attach_node_to(node_id_t id, node_id_t parent);
 
 		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TNode>
+		node_id_t cbehavior_tree::attach_decorator_to(node_id_t node)
+		{
+			m_nodes[node] = std::move(TNode(*this, node, m_nodes[node]));
+
+// 			const auto& child = m_nodes[node];
+// 
+// 			//- construct new decorator wrapping the node
+// 			auto decorator = TNode(*this, node, child);
+// 
+// 			m_nodes[node] = std::move(decorator);
+
+			return node;
+		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TNode, typename... ARGS>
@@ -319,7 +416,7 @@ namespace ai
 		{
 			rttr::cregistrator<ibehavior_tree_context_holder, rttr::detail::no_default>("ibehavior_tree_context_holder")
 				.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>()
-				.meth(C_ID_FUNCTION_NAME.data(), &ibehavior_tree_context_holder::id)
+				.meth(detail::C_ID_FUNCTION_NAME.data(), &ibehavior_tree_context_holder::id)
 				;
 		};
 
@@ -328,8 +425,8 @@ namespace ai
 		{
 			rttr::cregistrator<croot, rttr::detail::no_default>("croot")
 				.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>()
-				.meth(C_TICK_FUNCTION_NAME.data(), &croot::do_tick)
-				.meth(C_EMPLACE_CHILD_FUNCTION_NAME.data(), &croot::emplace_child)
+				.meth(detail::C_TICK_FUNCTION_NAME.data(), &croot::do_tick)
+				.meth(detail::C_EMPLACE_CHILD_FUNCTION_NAME.data(), &croot::emplace_child)
 				.prop("m_children", &croot::m_children)
 				;
 		};
@@ -345,8 +442,8 @@ namespace ai
 		{
 			rttr::cregistrator<csequence, rttr::detail::no_default>("csequence")
 				.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>()
-				.meth(C_TICK_FUNCTION_NAME.data(), &csequence::do_tick)
-				.meth(C_EMPLACE_CHILD_FUNCTION_NAME.data(), &csequence::emplace_child)
+				.meth(detail::C_TICK_FUNCTION_NAME.data(), &csequence::do_tick)
+				.meth(detail::C_EMPLACE_CHILD_FUNCTION_NAME.data(), &csequence::emplace_child)
 				.prop("m_children", &csequence::m_children)
 				;
 		};
@@ -356,14 +453,20 @@ namespace ai
 		{
 			rttr::cregistrator<cfallback, rttr::detail::no_default>("cfallback")
 				.ctor<rttr::detail::as_object, cbehavior_tree&, node_id_t>()
-				.meth(C_TICK_FUNCTION_NAME.data(), &cfallback::do_tick)
-				.meth(C_EMPLACE_CHILD_FUNCTION_NAME.data(), &cfallback::emplace_child)
+				.meth(detail::C_TICK_FUNCTION_NAME.data(), &cfallback::do_tick)
+				.meth(detail::C_EMPLACE_CHILD_FUNCTION_NAME.data(), &cfallback::emplace_child)
 				.prop("m_children", &cfallback::m_children)
 				;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
 		DECLARE_LEAF_NODE_EX(caction_logg, stringview_t);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_LEAF_NODE_EX(cdecorator, const rttr::variant&);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_LEAF_NODE_EX(cdecorator_inverter, const rttr::variant&);
 
 	} //- bt
 
