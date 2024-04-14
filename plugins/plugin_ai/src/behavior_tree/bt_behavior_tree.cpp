@@ -38,6 +38,12 @@ namespace ai
 		} //- detail
 
 		//------------------------------------------------------------------------------------------------------------------------
+		tick_result ibehavior_tree_context_holder::do_tick_child(uint32_t i)
+		{
+			return tree().tick_node(i);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		cbehavior_tree::cbehavior_tree(stringview_t name) :
 			m_name(name), m_id(detail::generate_tree_id()), m_next_id(0)
 		{
@@ -244,15 +250,20 @@ namespace ai
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void cbehavior_tree::tick()
+		void cbehavior_tree::tick(tf::Taskflow& subflow)
 		{
-			CORE_NAMED_ZONE("cbehavior_tree::tick");
+			subflow.emplace([this]()
+				{
+					CORE_NAMED_ZONE("cbehavior_tree::tick");
 
-			const auto& root = m_nodes[0];
+					const auto& root = m_nodes[0];
 
-			const auto& method = root.get_type().get_method(detail::C_TICK_FUNCTION_NAME.data());
+					const auto& method = root.get_type().get_method(detail::C_TICK_FUNCTION_NAME.data());
 
-			method.invoke(root);
+					method.invoke(root);
+				});
+
+			m_task = engine::cengine::service<engine::cthread_service>()->push_background_taskflow(subflow);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -288,6 +299,33 @@ namespace ai
 		stringview_t cbehavior_tree::name() const
 		{
 			return m_name.data();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::future_status cbehavior_tree::status() const
+		{
+			using namespace std::chrono_literals;
+
+			if (m_task.valid())
+			{
+				switch (m_task.wait_for(0us))
+				{
+				case std::future_status::ready: { return core::future_status_ready; }
+				case std::future_status::deferred: { return core::future_status_deferred; }
+				default:
+				case std::future_status::timeout: { return core::future_status_pending; }
+				}
+			}
+			return core::future_status_none;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cbehavior_tree::cancel()
+		{
+			if (m_task.valid())
+			{
+				m_task.cancel();
+			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

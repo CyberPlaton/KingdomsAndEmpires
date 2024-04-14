@@ -35,6 +35,18 @@ namespace ai
 			tick_result_pending,
 		};
 
+		//- 
+		//------------------------------------------------------------------------------------------------------------------------
+		class cblackboard
+		{
+		public:
+			cblackboard() = default;
+			~cblackboard() = default;
+
+		private:
+		};
+
+
 		namespace debug
 		{
 			//- Event describing a Tree node tick. We assume that the node to be ticked was previously registered.

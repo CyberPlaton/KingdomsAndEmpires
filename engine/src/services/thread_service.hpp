@@ -30,12 +30,12 @@ namespace engine
 		template<typename TCallable>
 		decltype(auto) push_background_job(const std::string& name, TCallable&& callable);
 
-		inline tf::Future<void> push_background_taskflow(tf::Taskflow& taskflow){return m_bg->run(taskflow);}
+		inline tf::Future<void> push_background_taskflow(tf::Taskflow& taskflow) { return m_bg->run(taskflow); }
 
 		template<typename TCallable>
 		decltype(auto) push_foreground_job(const std::string& name, TCallable&& callable);
 
-		inline tf::Future<void> push_foreground_taskflow(tf::Taskflow& taskflow){return m_fg->run(taskflow);}
+		inline tf::Future<void> push_foreground_taskflow(tf::Taskflow& taskflow){ return m_fg->run(taskflow); }
 
 	private:
 		using mainthread_job_t = std::function<void()>;
