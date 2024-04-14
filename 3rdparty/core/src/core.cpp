@@ -2069,4 +2069,367 @@ namespace core
 		return false;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring() :
+		m_first(m_buffer), m_last(m_buffer), m_capacity(m_buffer + C_BUFFER_SIZE)
+	{
+		resize(0);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(const cstring& other) :
+		m_first(m_buffer), m_last(m_buffer), m_capacity(m_buffer + C_BUFFER_SIZE)
+	{
+		reserve(other.size());
+		append(other.m_first, other.m_last);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(cstring&& other)
+	{
+		if (other.m_first == other.m_buffer)
+		{
+			m_first = m_buffer;
+			m_last = m_buffer;
+			m_capacity = m_buffer + C_BUFFER_SIZE;
+			reserve(other.size());
+			append(other.m_first, other.m_last);
+		}
+		else
+		{
+			m_first = other.m_first;
+			m_last = other.m_last;
+			m_capacity = other.m_capacity;
+		}
+		other.m_first = other.m_last = other.m_buffer;
+		other.m_capacity = other.m_buffer + C_BUFFER_SIZE;
+		other.resize(0);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(const char* sz) : m_first(m_buffer), m_last(m_buffer), m_capacity(m_buffer + C_BUFFER_SIZE)
+	{
+		size_t len = 0;
+		for (const char* it = sz; *it; ++it)
+		{
+			++len;
+		}
+
+		reserve(len);
+		append(sz, sz + len);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(const char* sz, size_t len) :
+		m_first(m_buffer), m_last(m_buffer), m_capacity(m_buffer + C_BUFFER_SIZE)
+	{
+		reserve(len);
+		append(sz, sz + len);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::~cstring()
+	{
+		if (m_first != m_buffer)
+		{
+			sallocator::deallocate(m_first, m_capacity - m_first);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring& cstring::operator=(const cstring& other)
+	{
+		cstring(other).swap(*this);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring& cstring::operator=(cstring&& other)
+	{
+		cstring(static_cast<cstring&&>(other)).swap(*this);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const char* cstring::c_str() const
+	{
+		return m_first;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	size_t cstring::size() const
+	{
+		return (size_t)(m_last - m_first);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::reserve(size_t capacity)
+	{
+		if (m_first + capacity + 1 <= m_capacity)
+		{
+			return;
+		}
+
+		const size_t size = (size_t)(m_last - m_first);
+
+		pointer newfirst = (pointer)sallocator::allocate(capacity + 1);
+		for (pointer it = m_first, newit = newfirst, end = m_last; it != end; ++it, ++newit)
+		{
+			*newit = *it;
+		}
+
+		if (m_first != m_buffer)
+		{
+			sallocator::deallocate(m_first, m_capacity - m_first);
+		}
+
+		m_first = newfirst;
+		m_last = newfirst + size;
+		m_capacity = m_first + capacity;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::resize(size_t size)
+	{
+		const size_t prevSize = m_last - m_first;
+		reserve(size);
+		if (size > prevSize)
+		{
+			for (pointer it = m_last, end = m_first + size + 1; it < end; ++it)
+			{
+				*it = 0;
+			}
+		}
+		else if (m_last != m_first)
+		{
+			m_first[size] = 0;
+		}
+
+		m_last = m_first + size;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::clear()
+	{
+		resize(0);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::append(const char* first, const char* last)
+	{
+		const size_t newsize = (size_t)((m_last - m_first) + (last - first) + 1);
+		if (m_first + newsize > m_capacity)
+		{
+			reserve((newsize * 3) / 2);
+		}
+
+		for (; first != last; ++m_last, ++first)
+		{
+			*m_last = *first;
+		}
+		*m_last = 0;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::assign(const char* sz, size_t n)
+	{
+		clear();
+		append(sz, sz + n);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::shrink_to_fit()
+	{
+		if (m_last == m_first)
+		{
+			const size_t capacity = (size_t)(m_capacity - m_first);
+			if (capacity)
+			{
+				sallocator::deallocate(m_first, capacity + 1);
+			}
+			m_capacity = m_first;
+		}
+		else if (m_capacity != m_last)
+		{
+			const size_t size = (size_t)(m_last - m_first);
+			char* newfirst = (pointer)sallocator::allocate(size + 1);
+			for (pointer in = m_first, out = newfirst; in != m_last + 1; ++in, ++out)
+			{
+				*out = *in;
+			}
+			if (m_first != m_capacity)
+			{
+				sallocator::deallocate(m_first, m_capacity + 1 - m_first);
+			}
+			m_first = newfirst;
+			m_last = newfirst + size;
+			m_capacity = m_last;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::swap(cstring& other)
+	{
+		const pointer tfirst = m_first, tlast = m_last, tcapacity = m_capacity;
+		m_first = other.m_first, m_last = other.m_last, m_capacity = other.m_capacity;
+		other.m_first = tfirst, other.m_last = tlast, other.m_capacity = tcapacity;
+
+		char tbuffer[C_BUFFER_SIZE];
+
+		if (m_first == other.m_buffer)
+		{
+			for (pointer it = other.m_buffer, end = m_last, out = tbuffer; it != end; ++it, ++out)
+			{
+				*out = *it;
+			}
+		}
+
+		if (other.m_first == m_buffer)
+		{
+			other.m_last = other.m_last - other.m_first + other.m_buffer;
+			other.m_first = other.m_buffer;
+			other.m_capacity = other.m_buffer + C_BUFFER_SIZE;
+
+			for (pointer it = other.m_first, end = other.m_last, in = m_buffer; it != end; ++it, ++in)
+			{
+				*it = *in;
+			}
+			*other.m_last = 0;
+		}
+
+		if (m_first == other.m_buffer)
+		{
+			m_last = m_last - m_first + m_buffer;
+			m_first = m_buffer;
+			m_capacity = m_buffer + C_BUFFER_SIZE;
+
+			for (pointer it = m_first, end = m_last, in = tbuffer; it != end; ++it, ++in)
+			{
+				*it = *in;
+			}
+			*m_last = 0;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool operator==(const cstring& lhs, const cstring& rhs)
+	{
+		typedef const char* pointer;
+
+		const size_t lsize = lhs.size(), rsize = rhs.size();
+		if (lsize != rsize)
+		{
+			return false;
+		}
+
+		pointer lit = lhs.c_str(), rit = rhs.c_str();
+		pointer lend = lit + lsize;
+		while (lit != lend)
+		{
+			if (*lit++ != *rit++)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::cstringview() :
+		m_str(nullptr), m_size(0)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::cstringview(const char* s, size_type count) :
+		m_str(s), m_size(count)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::cstringview(const char* s) :
+		m_str(s), m_size(strlen(s))
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr const char* cstringview::data() const
+	{
+		return m_str;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr char cstringview::operator[](size_type pos) const
+	{
+		return m_str[pos];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::size_type cstringview::size() const
+	{
+		return m_size;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr bool cstringview::empty() const
+	{
+		return 0 == m_size;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::iterator cstringview::begin() const
+	{
+		return m_str;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::const_iterator cstringview::cbegin() const
+	{
+		return m_str;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::iterator cstringview::end() const
+	{
+		return m_str + m_size;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::const_iterator cstringview::cend() const
+	{
+		return m_str + m_size;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview cstringview::substr(size_type pos, size_type count) const
+	{
+		return cstringview(m_str + pos, npos == count ? m_size - pos : count);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr void cstringview::swap(cstringview& v)
+	{
+		const char* strtmp = m_str;
+		size_type sizetmp = m_size;
+		m_str = v.m_str;
+		m_size = v.m_size;
+		v.m_str = strtmp;
+		v.m_size = sizetmp;
+	}
+
+	//- Required for strignview constexpr length initialization
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr cstringview::size_type cstringview::strlen(const char* s)
+	{
+		for (size_t len = 0; ; ++len)
+		{
+			if (0 == s[len])
+			{
+				return len;
+			}
+		}
+		return 0;
+	}
+
 } //- core

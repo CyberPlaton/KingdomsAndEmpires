@@ -2,5 +2,10 @@
 
 namespace ai
 {
+	namespace bet
+	{
+
+
+	} //- bt
 
 } //- ai

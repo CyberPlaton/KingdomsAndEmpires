@@ -103,25 +103,41 @@ void operator delete(void* p) { CORE_FREE(p); }
 #define CORE_NAMED_ZONE(name)
 #endif
 
+namespace core
+{
+	struct sallocator;
+	class cstring;
+	class cstringview;
+
+} //- core
+
 template<class T>
 using ref_t = std::shared_ptr<T>;
 template<class T>
 using ptr_t = std::unique_ptr<T>;
 using stringview_t = const char*;
+
 template<class T>
 using queue_t = stl::queue<T>;
+
 template<class T>
 using vector_t = stl::vector<T>;
+
 template<class K, class T>
 using umap_t = stl::unordered_map<K, T>;
+
 template<class T>
 using uset_t = stl::unordered_set<T>;
+
 template<class K, class T>
 using map_t = stl::map<K, T>;
+
 template<class T, size_t S>
 using array_t = stl::array<T, S>;
+
 template<class T>
 using deque_t = stl::deque<T>;
+
 template<size_t TSize>
 using bitset_t = stl::bitset<TSize>;
 
@@ -301,6 +317,13 @@ namespace core
 		common_color_neutral600,
 		common_color_neutral800,
 		common_color_neutral1000,	//- white
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sallocator
+	{
+		inline static void* allocate(std::size_t s) { return CORE_MALLOC(s); }
+		inline static void deallocate(void* p, std::size_t /*bytes*/) {return CORE_FREE(p); }
 	};
 
 	//- RTTR aware replacement for std::pair<>
@@ -791,6 +814,87 @@ namespace core
 	//- define some common types of pairs
 	//------------------------------------------------------------------------------------------------------------------------
 	using smaterial_pair = spair<texture_t, material_t>;
+
+	//- Extracted from TINYSTL.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cstring
+	{
+	public:
+		cstring();
+		cstring(const cstring& other);
+		cstring(cstring&& other);
+		cstring(const char* sz);
+		cstring(const char* sz, size_t len);
+		~cstring();
+
+		cstring& operator=(const cstring& other);
+		cstring& operator=(cstring&& other);
+
+		const char* c_str() const;
+		size_t size() const;
+
+		void reserve(size_t size);
+		void resize(size_t size);
+
+		void clear();
+		void append(const char* first, const char* last);
+		void assign(const char* s, size_t n);
+
+		void shrink_to_fit();
+		void swap(cstring& other);
+
+	private:
+		typedef char* pointer;
+		pointer m_first;
+		pointer m_last;
+		pointer m_capacity;
+
+		static constexpr size_t C_BUFFER_SIZE = 12;
+		char m_buffer[12];
+	};
+
+	//- Extracted from TINYSTL.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cstringview
+	{
+	public:
+		typedef char value_type;
+		typedef char* pointer;
+		typedef const char* const_pointer;
+		typedef char& reference;
+		typedef const char& const_reference;
+		typedef const_pointer iterator;
+		typedef const_pointer const_iterator;
+		typedef size_t size_type;
+		typedef ptrdiff_t difference_type;
+
+		static constexpr size_type npos = size_type(-1);
+
+		constexpr cstringview();
+		constexpr cstringview(const char* s, size_type count);
+		constexpr cstringview(const char* s);
+		constexpr cstringview(const cstringview&) = default;
+		cstringview& operator=(const cstringview&) = default;
+
+		constexpr const char* data() const;
+		constexpr char operator[](size_type pos) const;
+		constexpr size_type size() const;
+		constexpr bool empty() const;
+		constexpr iterator begin() const;
+		constexpr const_iterator cbegin() const;
+		constexpr iterator end() const;
+		constexpr const_iterator cend() const;
+		constexpr cstringview substr(size_type pos = 0, size_type count = npos) const;
+		constexpr void swap(cstringview& v);
+
+	private:
+		const char* m_str;
+		size_type m_size;
+
+	private:
+		cstringview(decltype(nullptr)) = delete;
+		static constexpr size_type strlen(const char*);
+	};
 
 	//- base class for a service
 	//------------------------------------------------------------------------------------------------------------------------

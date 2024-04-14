@@ -35,7 +35,7 @@ namespace ai
 			tick_result_pending,
 		};
 
-		//- 
+		//- Simple blackboard for storing data of any type.
 		//------------------------------------------------------------------------------------------------------------------------
 		class cblackboard
 		{
@@ -43,9 +43,31 @@ namespace ai
 			cblackboard() = default;
 			~cblackboard() = default;
 
+			//- Get reference to value stored in blackboard. Crashes when element not present or type does not match.
+			template<typename TType>
+			const TType& operator[](const core::cstringview& name) const;
+
+			//- Get reference to value stored in blackborad. Emplaces new one if not existent, crashes when type does not match.
+			template<typename TType>
+			TType& operator[](const core::cstringview& name);
+
 		private:
+			umap_t<core::cstringview, core::cany> m_storage;
 		};
 
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TType>
+		TType& cblackboard::operator[](const core::cstringview& name)
+		{
+			return m_storage[name].cast_ref<TType>();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TType>
+		const TType& cblackboard::operator[](const core::cstringview& name) const
+		{
+			return m_storage.at(name).cast_ref<TType>();
+		}
 
 		namespace debug
 		{

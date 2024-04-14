@@ -265,7 +265,6 @@ namespace ai
 		//- detaching children from nodes
 		//- detaching decorators from nodes
 		//- attaching a tree as a node to another tree (along with detaching)
-		//- blackboards (one global for a Tree and optional local for nodes)
 		//- runtime debugging, i.e. showing order of execution along with returned tick_results (will probably be a tool or visualizer later on)
 		//- concept of attaching a Tree to an entity proxy (proxies is a more general concept for whole ai library)
 		//- storing current executing node for suspending execution and later picking up where we left
@@ -307,12 +306,16 @@ namespace ai
 
 			tick_result tick_node(uint32_t i);
 
+			inline cblackboard& bb() {return m_blackboard;}
+			inline const cblackboard& bb() const { return m_blackboard; }
+
 			tree_id_t id() const;
 			stringview_t name() const;
 			core::future_status status() const;
 			void cancel();
 
 		private:
+			cblackboard m_blackboard;
 			tf::Future<void> m_task;
 			const std::string m_name;
 			vector_t<rttr::variant> m_nodes;
