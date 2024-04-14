@@ -25,6 +25,16 @@ namespace ai
 				return tick_result_fail;
 			}
 
+			//------------------------------------------------------------------------------------------------------------------------
+			template<typename... ARGS>
+			void invoke_node_function(const rttr::variant& node, stringview_t function, ARGS&&... args)
+			{
+				if (const auto& m = node.get_type().get_method(function); m.is_valid())
+				{
+					return m.invoke(node, args...);
+				}
+			}
+
 		} //- detail
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -41,27 +51,53 @@ namespace ai
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool cbehavior_tree::attach_node_to(node_id_t id, node_id_t parent)
+		void cbehavior_tree::attach_node_to(node_id_t id, node_id_t parent)
 		{
-			if (auto it = algorithm::find_if(m_nodes.begin(), m_nodes.end(),
-				[id = id, parent = parent](const rttr::variant& node)
+			const auto& parent_node = m_nodes.at(parent);
+
+			detail::invoke_node_function(parent_node, detail::C_EMPLACE_CHILD_FUNCTION_NAME.data(), parent, id);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cbehavior_tree::can_emplace_node(node_id_t parent)
+		{
+			//- trying to emplace a root
+			if (m_next_id == 0)
+			{
+				//- make sure parent is a valid identifier
+				if (parent > 0 && parent != invalid_handle_t)
 				{
-					if (const auto& id_func = node.get_type().get_method(detail::C_ID_FUNCTION_NAME.data()); id_func.is_valid() &&
-						id_func.invoke(node).convert<node_id_t>() == parent)
+					return true;
+				}
+				logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching root node to root is not allowed",
+					m_name, m_id));
+			}
+			else
+			{
+				//- make sure parent exists and is a type to take in a child
+				if (const auto it = algorithm::find_if(m_nodes.begin(), m_nodes.end(),
+					[id = id, parent = parent](const rttr::variant& node)
+					{
+						if (const auto& id_func = node.get_type().get_method(detail::C_ID_FUNCTION_NAME.data()); id_func.is_valid() &&
+							id_func.invoke(node).convert<node_id_t>() == parent)
+						{
+							return true;
+						}
+						return false;
+					});
+					it != m_nodes.end())
+				{
+					auto& parent_node = *it;
+
+					const auto& m = parent_node.get_type().get_method(detail::C_EMPLACE_CHILD_FUNCTION_NAME.data());
+
+					if (m.is_valid())
 					{
 						return true;
 					}
-					return false;
-				});
-				it != m_nodes.end())
-			{
-				auto& parent_node = *it;
 
-				//- optimizing here is not really required, emplacing children will not be done on a per-frame basis
-				if (const auto& m = parent_node.get_type().get_method(detail::C_EMPLACE_CHILD_FUNCTION_NAME.data()); m.is_valid())
-				{
-					m.invoke(parent_node, id);
-					return true;
+					logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching node '{}' to '{}' failed, as the parent can not take in children",
+						m_name, m_id, id, parent));
 				}
 			}
 			return false;
@@ -90,7 +126,7 @@ namespace ai
 		{
 			logging::log_debug("cfallback do_tick");
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			for (const auto& i : m_children)
 			{
@@ -123,7 +159,7 @@ namespace ai
 		{
 			logging::log_debug("crandom_sequence do_tick");
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			auto children = m_children;
 
@@ -144,7 +180,7 @@ namespace ai
 		{
 			logging::log_debug("csequence do_tick");
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			for (const auto& i : m_children)
 			{
@@ -161,7 +197,7 @@ namespace ai
 		{
 			logging::log_debug("croot do_tick");
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			for (const auto& i : m_children)
 			{
@@ -192,7 +228,7 @@ namespace ai
 		{
 			logging::log_debug("caction do_tick");
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			return tick_result_ok;
 		}
@@ -202,7 +238,7 @@ namespace ai
 		{
 			logging::log_debug("ccondition do_tick");
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			return tick_result_ok;
 		}
@@ -259,7 +295,7 @@ namespace ai
 		{
 			logging::log_debug(fmt::format("[Behavior Tree '{} (#{})'] '{}'", tree().name(), tree().id(), m_message));
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			return tick_result_ok;
 		}
@@ -269,7 +305,7 @@ namespace ai
 		{
 			logging::log_debug("cdecorator do_tick");
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			return detail::invoke_node_function(m_child, detail::C_TICK_FUNCTION_NAME.data());
 		}
@@ -279,7 +315,7 @@ namespace ai
 		{
 			logging::log_debug("cdecorator_inverter do_tick");
 
-			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+			BT_EMIT_TICK_EVENT(tree().id(), id());
 
 			return detail::invoke_node_function(m_child, detail::C_TICK_FUNCTION_NAME.data()) == tick_result_ok ? tick_result_fail : tick_result_ok;
 		}
