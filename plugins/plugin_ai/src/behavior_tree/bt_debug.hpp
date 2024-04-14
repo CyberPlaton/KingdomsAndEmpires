@@ -17,22 +17,28 @@ namespace ai::bt::debug
 		cbehavior_tree_debugger();
 		~cbehavior_tree_debugger();
 
+		std::string log_tree(tree_id_t id);
+		std::string log_node(std::string& out, const ref_t<snode>& node, unsigned depth = 0);
+
 	private:
 		struct snode
 		{
 			std::string m_name;
-			node_id_t m_id;
-
-			vector_t<snode> m_children;
+			vector_t<ref_t<snode>> m_children;
 		};
 
 		struct stree
 		{
-			snode m_root;
+			//- recursive representation used for visualization
+			ref_t<snode> m_root;
+			umap_t<node_id_t, ref_t<snode>> m_nodes;
 		};
 
-
+		umap_t<tree_id_t, stree> m_trees;
 		core::cmutex m_mutex;
+
+	private:
+
 	};
 
 } //- ai::bt::debug
