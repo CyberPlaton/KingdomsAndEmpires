@@ -72,6 +72,7 @@ namespace stl = std;
 #endif
 #define ARRAYSIZE(__array) ((u32)(sizeof(__array) / sizeof(*(__array))))
 #define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
+#define STATIC_INSTANCE_EX(__class) STATIC_INSTANCE(__class, s_instance)
 
 #define CORE_MALLOC(size)		mi_malloc(size)
 #define CORE_CALLOC(n, size)	mi_calloc(n, size)

@@ -39,19 +39,7 @@ namespace ai
 		class caction;
 		class ccondition;
 		class caction_logg;
-
 		class cbehavior_tree;
-		using node_id_t = handle_type_t;
-		using tree_id_t = handle_type_t;
-
-		//------------------------------------------------------------------------------------------------------------------------
-		enum tick_result : uint8_t
-		{
-			tick_result_none = 0,
-			tick_result_ok,
-			tick_result_fail,
-			tick_result_pending,
-		};
 
 		namespace detail
 		{
@@ -278,7 +266,7 @@ namespace ai
 		//- detaching decorators from nodes
 		//- attaching a tree as a node to another tree (along with detaching)
 		//- blackboards (one global for a Tree and optional local for nodes)
-		//- runtime debugging, i.e. showing order of execution along with returned tick_results
+		//- runtime debugging, i.e. showing order of execution along with returned tick_results (see bt_debug.hpp)
 		//- concept of attaching a Tree to an entity proxy (proxies is a more general concept for whole ai library)
 		//- storing current executing node for later proceed command, listening to interrupt signals and Tree reaction to interruptions
 		//------------------------------------------------------------------------------------------------------------------------
@@ -341,6 +329,8 @@ namespace ai
 		{
 			m_nodes[node] = std::move(TNode(*this, node, m_nodes[node]));
 
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::sdecorator_attach_event>(id(), node, rttr::type::get<TNode>());
+
 			return node;
 		}
 
@@ -359,6 +349,8 @@ namespace ai
 
 			auto& node = m_nodes.emplace_back(TNode(*this, id, args...));
 
+			//- TODO: code duplication
+
 			if (id > 0 && !attach_node_to(id, parent))
 			{
 				logging::log_error(fmt::format("[Behavior Tree '{} (#{})'] attaching node '{}' to '{}' failed",
@@ -369,6 +361,8 @@ namespace ai
 				logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching root node to '{}' is not allowed",
 					m_name, m_id, parent));
 			}
+
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_attach_event>(id(), node, rttr::type::get<TNode>(), parent);
 
 			return id;
 		}
@@ -381,6 +375,7 @@ namespace ai
 
 			auto& node = m_nodes.emplace_back(TNode(*this, id));
 
+			//- TODO: code duplication
 			if (id > 0 && !attach_node_to(id, parent))
 			{
 				logging::log_error(fmt::format("[Behavior Tree '{} (#{})'] attaching node '{}' to '{}' failed",
@@ -391,6 +386,8 @@ namespace ai
 				logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching root node to '{}' is not allowed",
 					m_name, m_id, parent));
 			}
+
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_attach_event>(id(), node, rttr::type::get<TNode>(), parent);
 
 			return id;
 		}

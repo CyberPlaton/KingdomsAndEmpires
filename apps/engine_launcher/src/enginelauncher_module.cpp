@@ -92,46 +92,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	slang::slang_logger().init(core_io_slang_error_function, slang::detail::log_level_trace);
 
-	/*
-	class Tree
-	{
-		def init(depth)
-		{
-			this.depth = depth;
-			if (depth > 0)
-			{
-				this.a = Tree(depth - 1);
-				this.b = Tree(depth - 1);
-				this.c = Tree(depth - 1);
-				this.d = Tree(depth - 1);
-				this.e = Tree(depth - 1);
-			}
-		}
-
-		def walk()
-		{
-			if (this.depth == 0) return 0;
-			return this.depth
-			+ this.a.walk()
-			+ this.b.walk()
-			+ this.c.walk()
-			+ this.d.walk()
-			+ this.e.walk();
-		}
-	}
-
-	var tree = Tree(8);
-
-	var start = clock();
-
-	for (var i = 0; i < 100; i = i + 1)
-	{
-		if (tree.walk() != 122068) print "Error";
-	}
-
-	print clock() - start;
-	*/
-
 	ai::bt::cbehavior_tree tree("Testing");
 
 	auto i = tree.emplace<ai::bt::cfallback>();

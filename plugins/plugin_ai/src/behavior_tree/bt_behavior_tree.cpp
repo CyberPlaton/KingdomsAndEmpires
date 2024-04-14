@@ -90,6 +90,8 @@ namespace ai
 		{
 			logging::log_debug("cfallback do_tick");
 
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+
 			for (const auto& i : m_children)
 			{
 				if (do_tick_child(i) == tick_result_ok)
@@ -121,6 +123,8 @@ namespace ai
 		{
 			logging::log_debug("crandom_sequence do_tick");
 
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+
 			auto children = m_children;
 
 			algorithm::shuffle(children.begin(), children.end(), 0);
@@ -140,6 +144,8 @@ namespace ai
 		{
 			logging::log_debug("csequence do_tick");
 
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+
 			for (const auto& i : m_children)
 			{
 				if (do_tick_child(i) == tick_result_fail)
@@ -154,6 +160,8 @@ namespace ai
 		void croot::do_tick()
 		{
 			logging::log_debug("croot do_tick");
+
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
 
 			for (const auto& i : m_children)
 			{
@@ -184,6 +192,8 @@ namespace ai
 		{
 			logging::log_debug("caction do_tick");
 
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+
 			return tick_result_ok;
 		}
 
@@ -191,6 +201,8 @@ namespace ai
 		ai::bt::tick_result ccondition::do_tick()
 		{
 			logging::log_debug("ccondition do_tick");
+
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
 
 			return tick_result_ok;
 		}
@@ -247,6 +259,8 @@ namespace ai
 		{
 			logging::log_debug(fmt::format("[Behavior Tree '{} (#{})'] '{}'", tree().name(), tree().id(), m_message));
 
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+
 			return tick_result_ok;
 		}
 
@@ -255,6 +269,8 @@ namespace ai
 		{
 			logging::log_debug("cdecorator do_tick");
 
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
+
 			return detail::invoke_node_function(m_child, detail::C_TICK_FUNCTION_NAME.data());
 		}
 
@@ -262,6 +278,8 @@ namespace ai
 		ai::bt::tick_result cdecorator_inverter::do_tick()
 		{
 			logging::log_debug("cdecorator_inverter do_tick");
+
+			engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree().id(), id());
 
 			return detail::invoke_node_function(m_child, detail::C_TICK_FUNCTION_NAME.data()) == tick_result_ok ? tick_result_fail : tick_result_ok;
 		}
