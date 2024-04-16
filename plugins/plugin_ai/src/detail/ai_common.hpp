@@ -3,7 +3,9 @@
 #include <engine.h>
 #include <plugin_logging.h>
 
-#ifndef BT_NO_DEBUG
+//- uncomment when ready
+/*#ifndef BT_NO_DEBUG*/
+#if 0
 #define BT_EMIT_TICK_EVENT(tree_id, node_id) \
 engine::cengine::service<engine::cevent_service>()->emit_event<debug::snode_tick_event>(tree_id, node_id)
 
@@ -47,26 +49,38 @@ namespace ai
 			template<typename TType>
 			const TType& find(stringview_t name) const;
 
-			//- Get reference to value stored in blackborad. Emplaces new one if not existent, crashes when type does not match.
+			//- Get reference to value stored in blackboard.
 			template<typename TType>
-			TType& get_or_emplace(stringview_t name);
+			TType& get(stringview_t name);
+
+			template<typename TType>
+			TType& emplace(stringview_t name, TType value);
 
 		private:
-			umap_t<stringview_t, core::cany> m_storage;
+			umap_t<stringview_t, rttr::variant> m_storage;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TType>
-		TType& cblackboard::get_or_emplace(stringview_t name)
+		TType& cblackboard::emplace(stringview_t name, TType value)
 		{
-			return m_storage[name.data()].cast_ref<TType>();
+			auto& [it, result] = m_storage.emplace(name.data(), value);
+
+			return it->second.get_value<TType>();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TType>
+		TType& cblackboard::get(stringview_t name)
+		{
+			return m_storage[name].get_value<TType>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TType>
 		const TType& cblackboard::find(stringview_t name) const
 		{
-			return m_storage.at(name.data()).cast_ref<TType>();
+			return m_storage.at(name).get_value<TType>();
 		}
 
 		namespace debug

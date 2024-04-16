@@ -1185,23 +1185,25 @@ namespace core
 		std::chrono::time_point<std::chrono::high_resolution_clock> m_timepoint;
 	};
 
+
+	//- TODO: Consider replacing std::any with rttr::variant. It is easier to work with and has more information.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cany final
 	{
 	public:
 		cany() = default;
 		template<typename TType>
-		cany(TType&& data) :
+		explicit cany(TType&& data) :
 			m_data(data)
 		{
 		}
 		template<typename TType>
-		cany(const TType& data) :
+		explicit cany(const TType& data) :
 			m_data(data)
 		{
 		}
 		template<typename TType>
-		cany(TType data) :
+		explicit cany(TType data) :
 			m_data(data)
 		{
 		}

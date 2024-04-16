@@ -27,16 +27,6 @@ namespace ai
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			template<typename... ARGS>
-			void invoke_node_function(const rttr::variant& node, stringview_t function, ARGS&&... args)
-			{
-				if (const auto& m = node.get_type().get_method(function.data()); m.is_valid())
-				{
-					m.invoke(node, args...);
-				}
-			}
-
-			//------------------------------------------------------------------------------------------------------------------------
 			node_id_t node_id(const rttr::variant& node)
 			{
 				if (const auto& m = node.get_type().get_method(detail::C_ID_FUNCTION_NAME.data()); m.is_valid())
@@ -57,8 +47,12 @@ namespace ai
 		cbehavior_tree::cbehavior_tree(stringview_t name) :
 			m_name(name), m_id(detail::generate_tree_id()), m_next_id(0)
 		{
-			emplace<croot>();
-			bb().get_or_emplace<node_id_t>(detail::C_LAST_RUNNING_NODE_PROP_NAME) = invalid_handle_t;
+			//- emplace root manually
+			auto id = generate_node_id();
+
+			auto& node = m_nodes.emplace_back(croot(*this, id));
+
+			bb().emplace(detail::C_LAST_RUNNING_NODE_PROP_NAME, (node_id_t)invalid_handle_t);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -72,24 +66,17 @@ namespace ai
 		{
 			const auto& parent_node = m_nodes.at(parent);
 
-			detail::invoke_node_function(parent_node, detail::C_EMPLACE_CHILD_FUNCTION_NAME.data(), parent, id);
+			if (const auto& m = parent_node.get_type().get_method(detail::C_EMPLACE_CHILD_FUNCTION_NAME.data()); m.is_valid())
+			{
+				m.invoke(parent_node, id);
+			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		bool cbehavior_tree::can_emplace_node(node_id_t parent)
 		{
-			//- trying to emplace a root
-			if (m_next_id == 0)
-			{
-				//- make sure parent is a valid identifier
-				if (parent > 0 && parent != invalid_handle_t)
-				{
-					return true;
-				}
-				logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching root node to root is not allowed",
-					m_name, m_id));
-			}
-			else
+			//- emplacing a root node is not possible with this function
+			if(m_next_id > 0)
 			{
 				//- make sure parent exists and is a type to take in a child
 				if (const auto it = algorithm::find_if(m_nodes.begin(), m_nodes.end(),
@@ -123,7 +110,7 @@ namespace ai
 		//------------------------------------------------------------------------------------------------------------------------
 		void cbehavior_tree::store_last_running_node(node_id_t id)
 		{
-			bb().get_or_emplace<node_id_t>(detail::C_LAST_RUNNING_NODE_PROP_NAME) = id;
+			bb().get<node_id_t>(detail::C_LAST_RUNNING_NODE_PROP_NAME) = id;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -275,16 +262,36 @@ namespace ai
 		//------------------------------------------------------------------------------------------------------------------------
 		void cbehavior_tree::tick(tf::Taskflow& subflow, bool force_restart/* = false*/)
 		{
-			subflow.emplace([this, restart=force_restart]()
+			subflow.emplace([&]()
 				{
 					CORE_NAMED_ZONE("cbehavior_tree::tick");
 
-					auto node_id = CORE_LIKELY(!restart) ? last_running_node() : 0;
+					auto node_id = CORE_LIKELY(!force_restart) ? last_running_node() : 0;
 
-					return tick_node(node_id);
+					tick_node(node_id);
 				});
 
 			m_task = engine::cengine::service<engine::cthread_service>()->push_background_taskflow(subflow);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cbehavior_tree::tick(bool force_restart/* = false*/)
+		{
+			CORE_NAMED_ZONE("cbehavior_tree::tick");
+
+			auto node_id = 0;
+
+			if (CORE_LIKELY(!force_restart))
+			{
+				const auto id = last_running_node();
+
+				if (id != invalid_handle_t)
+				{
+					node_id = id;
+				}
+			}
+
+			tick_node(node_id);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

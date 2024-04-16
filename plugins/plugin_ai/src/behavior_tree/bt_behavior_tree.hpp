@@ -290,6 +290,9 @@ namespace ai
 
 			void tick(tf::Taskflow& subflow, bool force_restart = false);
 
+			//- Singlethreaded execution. More for debugging purposes.
+			void tick(bool force_restart = false);
+
 			template<typename TNode, typename... ARGS>
 			node_id_t emplace(ARGS&&... args);
 
