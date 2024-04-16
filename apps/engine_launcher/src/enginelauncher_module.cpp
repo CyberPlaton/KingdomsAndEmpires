@@ -104,7 +104,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	auto d = tree.attach_decorator_to<ai::bt::cdecorator>(o);
 	auto e = tree.attach_decorator_to<ai::bt::cdecorator_inverter>(d);
 
-	tree.tick();
+	tf::Executor executor;
+	tf::Taskflow taskflow;
+
+	tree.tick(taskflow);
+
+	auto r = executor.run(taskflow);
+	r.wait();
 
 	Sleep(10);
 

@@ -9,7 +9,7 @@ namespace sm
 		{
 			texture_t handle = invalid_handle_t;
 
-			if (auto texture = raylib::LoadTexture(path); raylib::IsTextureReady(texture))
+			if (auto texture = raylib::LoadTexture(path.data()); raylib::IsTextureReady(texture))
 			{
 				const auto h = algorithm::hash(name);
 
@@ -67,7 +67,7 @@ namespace sm
 		{
 			technique_t handle = invalid_handle_t;
 
-			if (auto shader = raylib::LoadShader(vspath, pspath); raylib::IsShaderReady(shader))
+			if (auto shader = raylib::LoadShader(vspath.data(), pspath.data()); raylib::IsShaderReady(shader))
 			{
 				const auto h = algorithm::hash(name);
 
@@ -96,7 +96,7 @@ namespace sm
 		{
 			technique_t handle = invalid_handle_t;
 
-			if (auto shader = raylib::LoadShaderFromMemory(vsdata, psdata); raylib::IsShaderReady(shader))
+			if (auto shader = raylib::LoadShaderFromMemory(vsdata.data(), psdata.data()); raylib::IsShaderReady(shader))
 			{
 				const auto h = algorithm::hash(name);
 

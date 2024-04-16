@@ -60,7 +60,7 @@ namespace ecs
 	TModule& ecs::imodule::begin(stringview_t name)
 	{
 		m_info.m_name = name;
-		m_info.m_module_entity = world().module<TModule>(name);
+		m_info.m_module_entity = world().module<TModule>(name.data());
 
 		return *reinterpret_cast<TModule*>(this);
 	}

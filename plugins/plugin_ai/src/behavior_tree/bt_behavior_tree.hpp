@@ -43,9 +43,9 @@ namespace ai
 
 		namespace detail
 		{
-			constexpr std::string_view C_TICK_FUNCTION_NAME			= "do_tick";
-			constexpr std::string_view C_EMPLACE_CHILD_FUNCTION_NAME= "emplace_child";
-			constexpr std::string_view C_ID_FUNCTION_NAME			= "id";
+			constexpr std::string_view C_TICK_FUNCTION_NAME				= "do_tick";
+			constexpr std::string_view C_EMPLACE_CHILD_FUNCTION_NAME	= "emplace_child";
+			constexpr std::string_view C_ID_FUNCTION_NAME				= "id";
 
 			tree_id_t generate_tree_id();
 			tick_result invoke_node_function(const rttr::variant& node, stringview_t function);
@@ -268,6 +268,7 @@ namespace ai
 		//- runtime debugging, i.e. showing order of execution along with returned tick_results (will probably be a tool or visualizer later on)
 		//- concept of attaching a Tree to an entity proxy (proxies is a more general concept for whole ai library)
 		//- storing current executing node for suspending execution and later picking up where we left
+		//- as of now it seems that node_id_t is equal to index of the node in the tree, meaning detaching is problematic and destructive
 		//------------------------------------------------------------------------------------------------------------------------
 		class cbehavior_tree
 		{
@@ -287,7 +288,7 @@ namespace ai
 // 					});
 // 			}
 
-			void tick(tf::Taskflow& subflow);
+			void tick(tf::Taskflow& subflow, bool force_restart = false);
 
 			template<typename TNode, typename... ARGS>
 			node_id_t emplace(ARGS&&... args);
@@ -328,6 +329,10 @@ namespace ai
 			void attach_node_to(node_id_t id, node_id_t parent);
 
 			bool can_emplace_node(node_id_t parent);
+
+			void store_last_running_node(node_id_t id);
+
+			node_id_t last_running_node();
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------

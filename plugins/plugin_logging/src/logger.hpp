@@ -13,12 +13,12 @@ namespace logging
 		bool init(logging_verbosity verbosity);
 		void shutdown();
 
-		void trace(stringview_t message);
-		void info(stringview_t message);
-		void warn(stringview_t message);
-		void error(stringview_t message);
-		void critical(stringview_t message);
-		void debug(stringview_t message);
+		void trace(const char* message);
+		void info(const char* message);
+		void warn(const char* message);
+		void error(const char* message);
+		void critical(const char* message);
+		void debug(const char* message);
 		float runtime() const;
 		float runtime_ms() const;
 

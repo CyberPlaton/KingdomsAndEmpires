@@ -184,7 +184,7 @@ namespace ecs
 	template<typename... TComps>
 	void csystem<TComps...>::run_after(stringview_t name)
 	{
-		run_after(world().lookup(name));
+		run_after(world().lookup(name.data()));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -204,9 +204,9 @@ namespace ecs
 	public:
 		using system_function_prototype_t = std::function<void(flecs::iter&)>;
 
-		cfree_system(flecs::world& world, const std::string& name) :
+		cfree_system(flecs::world& world, const string_t& name) :
 			iworld_context_holder(world),
-			m_builder(world.system(name.c_str()))
+			m_builder(world.system(name.data()))
 		{
 		}
 		~cfree_system() = default;

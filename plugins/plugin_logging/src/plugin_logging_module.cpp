@@ -32,75 +32,111 @@ namespace logging
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_trace(stringview_t message)
+	void log_trace(const char* message)
 	{
 		clog::instance().trace(message);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_debug(stringview_t message)
+	void log_trace(stringview_t message)
+	{
+		log_trace(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_trace(const string_t& message)
+	{
+		log_trace(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_debug(const char* message)
 	{
 		clog::instance().debug(message);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_info(stringview_t message)
+	void log_debug(stringview_t message)
+	{
+		log_debug(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_debug(const string_t& message)
+	{
+		log_debug(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_info(const char* message)
 	{
 		clog::instance().info(message);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_warn(stringview_t message)
+	void log_info(stringview_t message)
+	{
+		log_info(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_info(const string_t& message)
+	{
+		log_info(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_warn(const char* message)
 	{
 		clog::instance().warn(message);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_error(stringview_t message)
+	void log_warn(stringview_t message)
+	{
+		log_warn(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_warn(const string_t& message)
+	{
+		log_warn(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_error(const char* message)
 	{
 		clog::instance().error(message);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_critical(stringview_t message)
+	void log_error(stringview_t message)
+	{
+		log_error(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_error(const string_t& message)
+	{
+		log_error(message.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void log_critical(const char* message)
 	{
 		clog::instance().critical(message);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_trace(const std::string& message)
+	void log_critical(stringview_t message)
 	{
-		clog::instance().trace(message.c_str());
+		log_critical(message.data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void log_debug(const std::string& message)
+	void log_critical(const string_t& message)
 	{
-		clog::instance().debug(message.c_str());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void log_info(const std::string& message)
-	{
-		clog::instance().info(message.c_str());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void log_warn(const std::string& message)
-	{
-		clog::instance().warn(message.c_str());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void log_error(const std::string& message)
-	{
-		clog::instance().error(message.c_str());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void log_critical(const std::string& message)
-	{
-		clog::instance().critical(message.c_str());
+		log_critical(message.data());
 	}
 
 } //- logging

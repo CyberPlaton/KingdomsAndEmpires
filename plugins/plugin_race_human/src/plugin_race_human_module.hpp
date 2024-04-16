@@ -73,7 +73,7 @@ namespace races
 			race_def.m_derived_attributes.m_mana = 10;
 
 			//- define module prefabs
-			auto human_citizen = w.prefab(C_HUMAN_CITIZEN_PREFAB_NAME)
+			auto human_citizen = w.prefab(C_HUMAN_CITIZEN_PREFAB_NAME.data())
 						.emplace_override<shuman>(race_def)
 						.emplace_override<kingdoms::iunit>()
 						.add<professions::scitizen>()

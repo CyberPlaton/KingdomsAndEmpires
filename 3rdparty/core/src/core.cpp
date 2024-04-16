@@ -110,7 +110,7 @@ namespace math
 namespace algorithm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	unsigned hash(stringview_t string)
+	unsigned hash(const char* string)
 	{
 		unsigned len = SCAST(unsigned, strlen(string));
 		const char* s = string;
@@ -120,6 +120,18 @@ namespace algorithm
 			h = ((h << 5) + h) + (*s);
 		}
 		return h;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned hash(stringview_t string)
+	{
+		return hash(string.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned hash(const string_t& string)
+	{
+		return hash(string.data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -177,13 +189,13 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool is_path_directory(stringview_t path)
 		{
-			return string_utils::find_substr(path, ".") == MAX(size_t);
+			return string_utils::find_substr(path.data(), ".") == MAX(size_t);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool is_path_file(stringview_t path)
 		{
-			return string_utils::find_substr(path, ".") != MAX(size_t);
+			return string_utils::find_substr(path.data(), ".") != MAX(size_t);
 		}
 
 		//- @reference: raylib UnloadFileData.
@@ -203,7 +215,7 @@ namespace core
 
 			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path, "rb");
+				FILE* file = fopen(file_path.data(), "rb");
 
 				if(file != NULL)
 				{
@@ -247,7 +259,7 @@ namespace core
 		{
 			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path, "wb");
+				FILE* file = fopen(file_path.data(), "wb");
 
 				if (file != NULL)
 				{
@@ -293,7 +305,7 @@ namespace core
 
 			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path, "rt");
+				FILE* file = fopen(file_path.data(), "rt");
 
 				if (file != NULL)
 				{
@@ -353,7 +365,7 @@ namespace core
 		{
 			if (file_path != nullptr)
 			{
-				FILE* file = fopen(file_path, "wt");
+				FILE* file = fopen(file_path.data(), "wt");
 
 				if (file != NULL)
 				{
@@ -461,8 +473,8 @@ namespace core
 			{
 				return simdjson::dom::element_type::BOOL;
 			}
-			else if (rttr::type::get<std::string>() == type ||
-				rttr::type::get<std::string_view>() == type ||
+			else if (rttr::type::get<string_t>() == type ||
+				rttr::type::get<stringview_t>() == type ||
 				rttr::type::get<const char*>() == type)
 			{
 				return simdjson::dom::element_type::STRING;
@@ -563,13 +575,13 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		rttr::variant extract_from_string(std::string_view value, const rttr::type& type)
+		rttr::variant extract_from_string(stringview_t value, const rttr::type& type)
 		{
 			if (!value.empty())
 			{
-				rttr::variant var = std::string(value);
+				rttr::variant var = string_t(value);
 
-				if (var.get_type() == type || rttr::type::get<std::string_view>() == type)
+				if (var.get_type() == type || rttr::type::get<stringview_t>() == type)
 				{
 					return var;
 				}
@@ -747,7 +759,7 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		rttr::variant from_json_string(rttr::type expected, const std::string& json)
+		rttr::variant from_json_string(rttr::type expected, const string_t& json)
 		{
 			simdjson::dom::parser parser;
 			simdjson::dom::element element;
@@ -825,8 +837,8 @@ namespace core
 				json = nullptr;
 				return true;
 			}
-			else if (rttr::type::get<std::string>() == type ||
-				rttr::type::get<std::string_view>() == type ||
+			else if (rttr::type::get<string_t>() == type ||
+				rttr::type::get<stringview_t>() == type ||
 				rttr::type::get<const char*>() == type)
 			{
 				json = var.to_string();
@@ -930,7 +942,7 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		std::string to_json_string(rttr::instance object, bool beautify /*= false*/)
+		string_t to_json_string(rttr::instance object, bool beautify /*= false*/)
 		{
 			auto json = to_json_object(object);
 
@@ -964,10 +976,10 @@ namespace core
 	namespace string_utils
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		void split(const std::string& string, char delimiter, stl::vector<std::string>& storage)
+		void split(const string_t& string, char delimiter, stl::vector<string_t>& storage)
 		{
 			std::stringstream ss(string.c_str());
-			std::string token;
+			string_t token;
 
 			while (std::getline(ss, token, delimiter))
 			{
@@ -976,65 +988,65 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void insert(std::string& string, const std::string& to_insert_one, size_t index)
+		void insert(string_t& string, const string_t& to_insert_one, size_t index)
 		{
 			string.insert(index, to_insert_one);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void push_front(std::string& string, const std::string& to_prepend_one)
+		void push_front(string_t& string, const string_t& to_prepend_one)
 		{
 			string.insert(0, to_prepend_one);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void push_back(std::string& string, const std::string& to_append_one)
+		void push_back(string_t& string, const string_t& to_append_one)
 		{
 			string.append(to_append_one);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void erase_substr(std::string& string, const std::string& string_to_erase)
+		void erase_substr(string_t& string, const string_t& string_to_erase)
 		{
 			auto index = string.find(string_to_erase);
-			if (index != std::string::npos)
+			if (index != string_t::npos)
 			{
 				string.erase(index, string_to_erase.size());
 			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void erase_range(std::string& string, size_t begin, size_t end)
+		void erase_range(string_t& string, size_t begin, size_t end)
 		{
 			string.erase(string.begin() + begin, string.begin() + end);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void to_lower(std::string& string)
+		void to_lower(string_t& string)
 		{
 			std::transform(string.begin(), string.end(), string.begin(), [](unsigned char c) {return std::tolower(c); });
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		size_t length(const std::string& string)
+		size_t length(const string_t& string)
 		{
 			return string.size();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		size_t find_substr(const std::string& string, const std::string& substring)
+		size_t find_substr(const string_t& string, const string_t& substring)
 		{
 			return string.find(substring);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool does_substr_exist(const std::string& string, const std::string& substring)
+		bool does_substr_exist(const string_t& string, const string_t& substring)
 		{
-			return string.find(substring) != std::string::npos;
+			return string.find(substring) != string_t::npos;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool compare(const std::string& first, const std::string& second)
+		bool compare(const string_t& first, const string_t& second)
 		{
 			return first == second;
 		}
@@ -1056,7 +1068,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cuuid::cuuid(const std::string& uuid)
+	cuuid::cuuid(const string_t& uuid)
 	{
 		parse_string(uuid, m_data);
 	}
@@ -1109,7 +1121,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cuuid::parse_string(const std::string& uuid, array_t<unsigned char, 16u>& out)
+	void cuuid::parse_string(const string_t& uuid, array_t<unsigned char, 16u>& out)
 	{
 		unsigned i = 0, j = 0;
 		while (i < 36 && j < 16)
@@ -1124,7 +1136,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cuuid::write_string(const array_t<unsigned char, 16>& data, std::string& out) const
+	void cuuid::write_string(const array_t<unsigned char, 16>& data, string_t& out) const
 	{
 		out.resize(36);
 		unsigned i = 0, j = 0;
@@ -1173,9 +1185,9 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::string cuuid::generate_string() const
+	string_t cuuid::generate_string() const
 	{
-		std::string s;
+		string_t s;
 		write_string(m_data, s);
 		return s;
 	}
@@ -1449,7 +1461,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cpath::cpath(stringview_t path) :
+	cpath::cpath(const char* path) :
 		m_path(path)
 	{
 		m_dir = std::filesystem::directory_entry(m_path);
@@ -1575,13 +1587,19 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cpath cfilesystem::construct(stringview_t path, stringview_t addition)
+	cfilesystem::cfilesystem(const char* path) :
+		m_current(path)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cpath cfilesystem::construct(const char* path, const char* addition)
 	{
 		return cpath(path).append(addition);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cpath cfilesystem::join(stringview_t path, stringview_t addition)
+	cpath cfilesystem::join(const char* path, const char* addition)
 	{
 		return cpath(path) /= addition;
 	}
@@ -1600,25 +1618,25 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::create_dir(stringview_t path)
+	bool cfilesystem::create_dir(const char* path)
 	{
 		return std::filesystem::create_directory(path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::create_dir_in(stringview_t path, stringview_t name)
+	bool cfilesystem::create_dir_in(const char* path, const char* name)
 	{
 		return create_dir(cpath(path).append(name).view());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::create_dir_recursive(stringview_t path)
+	bool cfilesystem::create_dir_recursive(const char* path)
 	{
 		return std::filesystem::create_directories(path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::create_file(stringview_t path)
+	bool cfilesystem::create_file(const char* path)
 	{
 		std::ofstream out(path);
 
@@ -1632,13 +1650,13 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::create_file_in(stringview_t path, stringview_t stem, stringview_t ext)
+	bool cfilesystem::create_file_in(const char* path, const char* stem, const char* ext)
 	{
 		return create_file(fmt::format("{}/{}.{}", path, stem, ext).data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::remove(stringview_t path, stringview_t name)
+	bool cfilesystem::remove(const char* path, const char* name)
 	{
 		cpath p(path);
 		p.append(name);
@@ -1647,7 +1665,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::remove(stringview_t path)
+	bool cfilesystem::remove(const char* path)
 	{
 		//- filesystem throws on errors
 		try
@@ -1663,20 +1681,20 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::find_file(stringview_t path, stringview_t name)
+	bool cfilesystem::find_file(const char* path, const char* name)
 	{
 		return find_at(path, name, filesystem_lookup_type_file);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::find_file_by_stem(stringview_t path, stringview_t name)
+	bool cfilesystem::find_file_by_stem(const char* path, const char* name)
 	{
 		cpath p(path);
 		if (p.exists())
 		{
 			for (const auto& entry : std::filesystem::directory_iterator{ p.path() })
 			{
-				if (entry.is_regular_file() && entry.path().stem().generic_u8string().c_str() == name)
+				if (entry.is_regular_file() && entry.path().stem().string().compare(name) == 0)
 				{
 					return true;
 				}
@@ -1686,7 +1704,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::find_file_by_extension(stringview_t path, stringview_t name)
+	bool cfilesystem::find_file_by_extension(const char* path, const char* name)
 	{
 		cpath p(path);
 		if (p.exists())
@@ -1695,7 +1713,7 @@ namespace core
 			{
 				if (entry.is_regular_file() &&
 					entry.path().has_extension() &&
-					entry.path().extension().generic_u8string().c_str() == name)
+					entry.path().extension().string().compare(name) == 0)
 				{
 					return true;
 				}
@@ -1705,13 +1723,13 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::find_dir(stringview_t path, stringview_t name)
+	bool cfilesystem::find_dir(const char* path, const char* name)
 	{
 		return find_at(path, name, filesystem_lookup_type_directory);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::find_at(stringview_t path, stringview_t name, filesystem_lookup_type type)
+	bool cfilesystem::find_at(const char* path, const char* name, filesystem_lookup_type type)
 	{
 		cpath p(path);
 		if (p.exists())
@@ -1754,7 +1772,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cpath cfilesystem::construct_relative_to_cwd(stringview_t path)
+	core::cpath cfilesystem::construct_relative_to_cwd(const char* path)
 	{
 		auto absolute = std::filesystem::absolute(cfilesystem::cwd().path());
 
@@ -1768,7 +1786,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cfilesystem::forwards(stringview_t path, bool forced /*= false*/)
+	bool cfilesystem::forwards(const char* path, bool forced /*= false*/)
 	{
 		//- create copy
 		cpath copy(m_current);
@@ -1799,28 +1817,28 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cfilesystem::append(stringview_t path)
+	void cfilesystem::append(const char* path)
 	{
 		m_current /= path;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfilesystem& cfilesystem::operator/=(stringview_t path)
+	core::cfilesystem& cfilesystem::operator/=(const char* path)
 	{
 		append(path);
 		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::string cfile::load_text(const std::string& path)
+	string_t cfile::load_text(const string_t& path)
 	{
 		return load_text_file_data(path.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<std::string> cfile::load_text_async(const std::string& path)
+	std::future<string_t> cfile::load_text_async(const string_t& path)
 	{
-		auto result = casync::launch_async([&]() -> std::string
+		auto result = casync::launch_async([&]() -> string_t
 			{
 				return load_text(path);
 			});
@@ -1829,13 +1847,13 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	file_io_status cfile::save_text(const std::string& path, const std::string& text)
+	file_io_status cfile::save_text(const string_t& path, const string_t& text)
 	{
 		return save_text_file_data(path.c_str(), text.c_str()) ? file_io_status_success : file_io_status_failed;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<file_io_status> cfile::save_text_async(const std::string& path, const std::string& text)
+	std::future<file_io_status> cfile::save_text_async(const string_t& path, const string_t& text)
 	{
 		auto result = casync::launch_async([&]() -> file_io_status
 			{
@@ -1846,7 +1864,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	spair<uint8_t*, unsigned> cfile::load_binary(const std::string& path)
+	spair<uint8_t*, unsigned> cfile::load_binary(const string_t& path)
 	{
 		spair<uint8_t*, unsigned> out;
 
@@ -1856,7 +1874,7 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<spair<uint8_t*, unsigned>> cfile::load_binary_async(const std::string& path)
+	std::future<spair<uint8_t*, unsigned>> cfile::load_binary_async(const string_t& path)
 	{
 		auto result = casync::launch_async([&]() -> spair<uint8_t*, unsigned>
 			{
@@ -1867,13 +1885,13 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	file_io_status cfile::save_binary(const std::string& path, uint8_t* data, unsigned size)
+	file_io_status cfile::save_binary(const string_t& path, uint8_t* data, unsigned size)
 	{
 		return save_binary_file_data(path.c_str(), data, size) ? file_io_status_success : file_io_status_failed;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::future<file_io_status> cfile::save_binary_async(const std::string& path, uint8_t* data, unsigned size)
+	std::future<file_io_status> cfile::save_binary_async(const string_t& path, uint8_t* data, unsigned size)
 	{
 		auto result = casync::launch_async([&]() -> file_io_status
 			{
@@ -2067,369 +2085,6 @@ namespace core
 			}
 		}
 		return false;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring() :
-		m_first(m_buffer), m_last(m_buffer), m_capacity(m_buffer + C_BUFFER_SIZE)
-	{
-		resize(0);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(const cstring& other) :
-		m_first(m_buffer), m_last(m_buffer), m_capacity(m_buffer + C_BUFFER_SIZE)
-	{
-		reserve(other.size());
-		append(other.m_first, other.m_last);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(cstring&& other)
-	{
-		if (other.m_first == other.m_buffer)
-		{
-			m_first = m_buffer;
-			m_last = m_buffer;
-			m_capacity = m_buffer + C_BUFFER_SIZE;
-			reserve(other.size());
-			append(other.m_first, other.m_last);
-		}
-		else
-		{
-			m_first = other.m_first;
-			m_last = other.m_last;
-			m_capacity = other.m_capacity;
-		}
-		other.m_first = other.m_last = other.m_buffer;
-		other.m_capacity = other.m_buffer + C_BUFFER_SIZE;
-		other.resize(0);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(const char* sz) : m_first(m_buffer), m_last(m_buffer), m_capacity(m_buffer + C_BUFFER_SIZE)
-	{
-		size_t len = 0;
-		for (const char* it = sz; *it; ++it)
-		{
-			++len;
-		}
-
-		reserve(len);
-		append(sz, sz + len);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(const char* sz, size_t len) :
-		m_first(m_buffer), m_last(m_buffer), m_capacity(m_buffer + C_BUFFER_SIZE)
-	{
-		reserve(len);
-		append(sz, sz + len);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring::~cstring()
-	{
-		if (m_first != m_buffer)
-		{
-			sallocator::deallocate(m_first, m_capacity - m_first);
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring& cstring::operator=(const cstring& other)
-	{
-		cstring(other).swap(*this);
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring& cstring::operator=(cstring&& other)
-	{
-		cstring(static_cast<cstring&&>(other)).swap(*this);
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	const char* cstring::c_str() const
-	{
-		return m_first;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	size_t cstring::size() const
-	{
-		return (size_t)(m_last - m_first);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::reserve(size_t capacity)
-	{
-		if (m_first + capacity + 1 <= m_capacity)
-		{
-			return;
-		}
-
-		const size_t size = (size_t)(m_last - m_first);
-
-		pointer newfirst = (pointer)sallocator::allocate(capacity + 1);
-		for (pointer it = m_first, newit = newfirst, end = m_last; it != end; ++it, ++newit)
-		{
-			*newit = *it;
-		}
-
-		if (m_first != m_buffer)
-		{
-			sallocator::deallocate(m_first, m_capacity - m_first);
-		}
-
-		m_first = newfirst;
-		m_last = newfirst + size;
-		m_capacity = m_first + capacity;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::resize(size_t size)
-	{
-		const size_t prevSize = m_last - m_first;
-		reserve(size);
-		if (size > prevSize)
-		{
-			for (pointer it = m_last, end = m_first + size + 1; it < end; ++it)
-			{
-				*it = 0;
-			}
-		}
-		else if (m_last != m_first)
-		{
-			m_first[size] = 0;
-		}
-
-		m_last = m_first + size;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::clear()
-	{
-		resize(0);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::append(const char* first, const char* last)
-	{
-		const size_t newsize = (size_t)((m_last - m_first) + (last - first) + 1);
-		if (m_first + newsize > m_capacity)
-		{
-			reserve((newsize * 3) / 2);
-		}
-
-		for (; first != last; ++m_last, ++first)
-		{
-			*m_last = *first;
-		}
-		*m_last = 0;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::assign(const char* sz, size_t n)
-	{
-		clear();
-		append(sz, sz + n);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::shrink_to_fit()
-	{
-		if (m_last == m_first)
-		{
-			const size_t capacity = (size_t)(m_capacity - m_first);
-			if (capacity)
-			{
-				sallocator::deallocate(m_first, capacity + 1);
-			}
-			m_capacity = m_first;
-		}
-		else if (m_capacity != m_last)
-		{
-			const size_t size = (size_t)(m_last - m_first);
-			char* newfirst = (pointer)sallocator::allocate(size + 1);
-			for (pointer in = m_first, out = newfirst; in != m_last + 1; ++in, ++out)
-			{
-				*out = *in;
-			}
-			if (m_first != m_capacity)
-			{
-				sallocator::deallocate(m_first, m_capacity + 1 - m_first);
-			}
-			m_first = newfirst;
-			m_last = newfirst + size;
-			m_capacity = m_last;
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::swap(cstring& other)
-	{
-		const pointer tfirst = m_first, tlast = m_last, tcapacity = m_capacity;
-		m_first = other.m_first, m_last = other.m_last, m_capacity = other.m_capacity;
-		other.m_first = tfirst, other.m_last = tlast, other.m_capacity = tcapacity;
-
-		char tbuffer[C_BUFFER_SIZE];
-
-		if (m_first == other.m_buffer)
-		{
-			for (pointer it = other.m_buffer, end = m_last, out = tbuffer; it != end; ++it, ++out)
-			{
-				*out = *it;
-			}
-		}
-
-		if (other.m_first == m_buffer)
-		{
-			other.m_last = other.m_last - other.m_first + other.m_buffer;
-			other.m_first = other.m_buffer;
-			other.m_capacity = other.m_buffer + C_BUFFER_SIZE;
-
-			for (pointer it = other.m_first, end = other.m_last, in = m_buffer; it != end; ++it, ++in)
-			{
-				*it = *in;
-			}
-			*other.m_last = 0;
-		}
-
-		if (m_first == other.m_buffer)
-		{
-			m_last = m_last - m_first + m_buffer;
-			m_first = m_buffer;
-			m_capacity = m_buffer + C_BUFFER_SIZE;
-
-			for (pointer it = m_first, end = m_last, in = tbuffer; it != end; ++it, ++in)
-			{
-				*it = *in;
-			}
-			*m_last = 0;
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool operator==(const cstring& lhs, const cstring& rhs)
-	{
-		typedef const char* pointer;
-
-		const size_t lsize = lhs.size(), rsize = rhs.size();
-		if (lsize != rsize)
-		{
-			return false;
-		}
-
-		pointer lit = lhs.c_str(), rit = rhs.c_str();
-		pointer lend = lit + lsize;
-		while (lit != lend)
-		{
-			if (*lit++ != *rit++)
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::cstringview() :
-		m_str(nullptr), m_size(0)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::cstringview(const char* s, size_type count) :
-		m_str(s), m_size(count)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::cstringview(const char* s) :
-		m_str(s), m_size(strlen(s))
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr const char* cstringview::data() const
-	{
-		return m_str;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr char cstringview::operator[](size_type pos) const
-	{
-		return m_str[pos];
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::size_type cstringview::size() const
-	{
-		return m_size;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr bool cstringview::empty() const
-	{
-		return 0 == m_size;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::iterator cstringview::begin() const
-	{
-		return m_str;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::const_iterator cstringview::cbegin() const
-	{
-		return m_str;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::iterator cstringview::end() const
-	{
-		return m_str + m_size;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::const_iterator cstringview::cend() const
-	{
-		return m_str + m_size;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview cstringview::substr(size_type pos, size_type count) const
-	{
-		return cstringview(m_str + pos, npos == count ? m_size - pos : count);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr void cstringview::swap(cstringview& v)
-	{
-		const char* strtmp = m_str;
-		size_type sizetmp = m_size;
-		m_str = v.m_str;
-		m_size = v.m_size;
-		v.m_str = strtmp;
-		v.m_size = sizetmp;
-	}
-
-	//- Required for strignview constexpr length initialization
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr cstringview::size_type cstringview::strlen(const char* s)
-	{
-		for (size_t len = 0; ; ++len)
-		{
-			if (0 == s[len])
-			{
-				return len;
-			}
-		}
-		return 0;
 	}
 
 } //- core

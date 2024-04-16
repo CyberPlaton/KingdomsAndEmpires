@@ -12,7 +12,7 @@ namespace ecs
 	class cprefab : public core::cnon_copyable, iworld_context_holder
 	{
 	public:
-		cprefab(const std::string& name, flecs::world& w);
+		cprefab(const string_t& name, flecs::world& w);
 		cprefab(flecs::entity e, flecs::world& w);
 		~cprefab();
 

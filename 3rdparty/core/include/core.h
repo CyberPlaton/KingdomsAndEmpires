@@ -115,7 +115,8 @@ template<class T>
 using ref_t = std::shared_ptr<T>;
 template<class T>
 using ptr_t = std::unique_ptr<T>;
-using stringview_t = const char*;
+using stringview_t = stl::string_view;
+using string_t = stl::string;
 
 template<class T>
 using queue_t = stl::queue<T>;
@@ -193,7 +194,7 @@ namespace rttr
 		template<class T> struct svalue_type<T, std::void_t<typename T::value_type>> { using type = typename T::value_type; };
 		template<class T, typename = void> struct sis_iterator : std::false_type { };
 		template<class T> struct sis_iterator<T, std::void_t<typename T::iterator>> : std::true_type { };
-		template<class T> constexpr bool sis_container = sis_iterator<T>::value && !std::is_same_v<T, std::string>;
+		template<class T> constexpr bool sis_container = sis_iterator<T>::value && !std::is_same_v<T, string_t>;
 
 	} //- detail
 
@@ -466,7 +467,7 @@ namespace algorithm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TEnum>
-	std::string enum_to_string(TEnum value)
+	string_t enum_to_string(TEnum value)
 	{
 		return magic_enum::enum_name(value).data();
 	}
@@ -591,7 +592,7 @@ namespace engine
 
 namespace core
 {
-	using error_report_function_t = std::function<void(uint8_t, const std::string&)>;
+	using error_report_function_t = std::function<void(uint8_t, const string_t&)>;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct serror_reporter
@@ -724,20 +725,20 @@ namespace core
 
 	namespace io
 	{
-		constexpr std::string_view C_NO_SERIALIZE_META = "NO_SERIALIZE";
-		constexpr std::string_view C_OBJECT_TYPE_NAME = "__type__";
-		constexpr std::string_view C_MAP_KEY_NAME = "__key__";
-		constexpr std::string_view C_MAP_VALUE_NAME = "__value__";
+		constexpr stringview_t C_NO_SERIALIZE_META	= "NO_SERIALIZE";
+		constexpr stringview_t C_OBJECT_TYPE_NAME	= "__type__";
+		constexpr stringview_t C_MAP_KEY_NAME		= "__key__";
+		constexpr stringview_t C_MAP_VALUE_NAME		= "__value__";
 
 		[[nodiscard]] rttr::variant from_json_object(rttr::type expected, const simdjson::dom::element& json);
-		[[nodiscard]] rttr::variant from_json_string(rttr::type expected, const std::string& json);
+		[[nodiscard]] rttr::variant from_json_string(rttr::type expected, const string_t& json);
 		template<class TType>
-		[[nodiscard]] TType from_json_string(const std::string& json)
+		[[nodiscard]] TType from_json_string(const string_t& json)
 		{
 			auto var = from_json_string(rttr::type::get<TType>(), json);
 			return std::move(var.template get_value<TType>());
 		}
-		std::string to_json_string(rttr::instance object, bool beautify = false);
+		string_t to_json_string(rttr::instance object, bool beautify = false);
 		[[nodiscard]] nlohmann::json to_json_object(rttr::instance object);
 		void to_json_object(rttr::instance object, nlohmann::json& json);
 
@@ -745,17 +746,17 @@ namespace core
 
 	namespace string_utils
 	{
-		void split(const std::string& string, char delimiter, stl::vector< std::string >& storage);
-		void insert(std::string& string, const std::string& to_insert_one, size_t index);
-		void push_front(std::string& string, const std::string& to_prepend_one);
-		void push_back(std::string& string, const std::string& to_append_one);
-		void erase_substr(std::string& string, const std::string& string_to_erase);
-		void erase_range(std::string& string, size_t begin, size_t end);
-		void to_lower(std::string& string);
-		size_t length(const std::string& string);
-		size_t find_substr(const std::string& string, const std::string& substring);
-		bool does_substr_exist(const std::string& string, const std::string& substring);
-		bool compare(const std::string& first, const std::string& second);
+		void split(const string_t& string, char delimiter, stl::vector< string_t >& storage);
+		void insert(string_t& string, const string_t& to_insert_one, size_t index);
+		void push_front(string_t& string, const string_t& to_prepend_one);
+		void push_back(string_t& string, const string_t& to_append_one);
+		void erase_substr(string_t& string, const string_t& string_to_erase);
+		void erase_range(string_t& string, size_t begin, size_t end);
+		void to_lower(string_t& string);
+		size_t length(const string_t& string);
+		size_t find_substr(const string_t& string, const string_t& substring);
+		bool does_substr_exist(const string_t& string, const string_t& substring);
+		bool compare(const string_t& first, const string_t& second);
 
 	} //- string_utils
 
@@ -815,86 +816,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	using smaterial_pair = spair<texture_t, material_t>;
 
-	//- Extracted from TINYSTL.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cstring
-	{
-	public:
-		cstring();
-		cstring(const cstring& other);
-		cstring(cstring&& other);
-		cstring(const char* sz);
-		cstring(const char* sz, size_t len);
-		~cstring();
 
-		cstring& operator=(const cstring& other);
-		cstring& operator=(cstring&& other);
-
-		const char* c_str() const;
-		size_t size() const;
-
-		void reserve(size_t size);
-		void resize(size_t size);
-
-		void clear();
-		void append(const char* first, const char* last);
-		void assign(const char* s, size_t n);
-
-		void shrink_to_fit();
-		void swap(cstring& other);
-
-	private:
-		typedef char* pointer;
-		pointer m_first;
-		pointer m_last;
-		pointer m_capacity;
-
-		static constexpr size_t C_BUFFER_SIZE = 12;
-		char m_buffer[12];
-	};
-
-	//- Extracted from TINYSTL.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cstringview
-	{
-	public:
-		typedef char value_type;
-		typedef char* pointer;
-		typedef const char* const_pointer;
-		typedef char& reference;
-		typedef const char& const_reference;
-		typedef const_pointer iterator;
-		typedef const_pointer const_iterator;
-		typedef size_t size_type;
-		typedef ptrdiff_t difference_type;
-
-		static constexpr size_type npos = size_type(-1);
-
-		constexpr cstringview();
-		constexpr cstringview(const char* s, size_type count);
-		constexpr cstringview(const char* s);
-		constexpr cstringview(const cstringview&) = default;
-		cstringview& operator=(const cstringview&) = default;
-
-		constexpr const char* data() const;
-		constexpr char operator[](size_type pos) const;
-		constexpr size_type size() const;
-		constexpr bool empty() const;
-		constexpr iterator begin() const;
-		constexpr const_iterator cbegin() const;
-		constexpr iterator end() const;
-		constexpr const_iterator cend() const;
-		constexpr cstringview substr(size_type pos = 0, size_type count = npos) const;
-		constexpr void swap(cstringview& v);
-
-	private:
-		const char* m_str;
-		size_type m_size;
-
-	private:
-		cstringview(decltype(nullptr)) = delete;
-		static constexpr size_type strlen(const char*);
-	};
 
 	//- base class for a service
 	//------------------------------------------------------------------------------------------------------------------------
@@ -990,12 +912,12 @@ namespace core
 
 		cuuid();
 		cuuid(array_t<unsigned char, 16u> data);
-		cuuid(const std::string& uuid);
+		cuuid(const string_t& uuid);
 		cuuid(size_t seed);
 		cuuid(const cuuid& other);
 		~cuuid() = default;
 
-		std::string string() const { return generate_string(); }
+		string_t string() const { return generate_string(); }
 		unsigned hash() const { return algorithm::hash(string().c_str()); }
 		bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
 		bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
@@ -1011,13 +933,13 @@ namespace core
 
 	private:
 		void generate(size_t seed);
-		void parse_string(const std::string& uuid, array_t<unsigned char, 16u>& out);
-		void write_string(const array_t<unsigned char, 16>& data, std::string& out) const;
+		void parse_string(const string_t& uuid, array_t<unsigned char, 16u>& out);
+		void write_string(const array_t<unsigned char, 16>& data, string_t& out) const;
 		unsigned hex2dec(char c);
 		void copy_to(cuuid& other);
 		void copy_from(const cuuid& other);
 		int compare(const cuuid& other) const;
-		std::string generate_string() const;
+		string_t generate_string() const;
 
 		RTTR_ENABLE();
 		RTTR_REFLECTABLE();
@@ -1132,7 +1054,7 @@ namespace core
 	class cpath final
 	{
 	public:
-		cpath(stringview_t path);
+		cpath(const char* path);
 		cpath(const std::filesystem::path& path);
 		cpath(const cpath& path);
 		cpath& operator=(const cpath& path);
@@ -1141,9 +1063,9 @@ namespace core
 		std::filesystem::path path() const;
 		std::filesystem::directory_entry dir() const;
 
-		inline stringview_t view() const { return m_string_path.c_str(); }
-		inline stringview_t extension() const { return m_string_ext.c_str(); }
-		inline stringview_t stem() const { return m_string_stem.c_str(); }
+		inline const char* view() const { return m_string_path.c_str(); }
+		inline const char* extension() const { return m_string_ext.c_str(); }
+		inline const char* stem() const { return m_string_stem.c_str(); }
 
 		bool exists() const;
 		explicit operator bool() const { return exists(); }
@@ -1160,9 +1082,9 @@ namespace core
 		bool operator==(const std::filesystem::path& path);
 
 	private:
-		std::string m_string_path;
-		std::string m_string_ext;
-		std::string m_string_stem;
+		string_t m_string_path;
+		string_t m_string_ext;
+		string_t m_string_stem;
 		std::filesystem::path m_path;
 		std::filesystem::directory_entry m_dir;
 
@@ -1176,38 +1098,39 @@ namespace core
 	{
 	public:
 		cfilesystem(cpath path);
+		cfilesystem(const char* path);
 		~cfilesystem() = default;
 
-		static cpath construct(stringview_t path, stringview_t addition);
-		static cpath join(stringview_t path, stringview_t addition);
+		static cpath construct(const char* path, const char* addition);
+		static cpath join(const char* path, const char* addition);
 		static cpath cwd();
 
-		static bool create_dir(stringview_t path);
-		static bool create_dir_in(stringview_t path, stringview_t name);
-		static bool create_dir_recursive(stringview_t path);
+		static bool create_dir(const char* path);
+		static bool create_dir_in(const char* path, const char* name);
+		static bool create_dir_recursive(const char* path);
 
-		static bool create_file(stringview_t path);
-		static bool create_file_in(stringview_t path, stringview_t stem, stringview_t ext);
+		static bool create_file(const char* path);
+		static bool create_file_in(const char* path, const char* stem, const char* ext);
 
-		static bool remove(stringview_t path);
-		static bool remove(stringview_t path, stringview_t name);
+		static bool remove(const char* path);
+		static bool remove(const char* path, const char* name);
 
-		static bool find_file(stringview_t path, stringview_t name);
-		static bool find_file_by_stem(stringview_t path, stringview_t name);
-		static bool find_file_by_extension(stringview_t path, stringview_t name);
-		static bool find_dir(stringview_t path, stringview_t name);
-		static bool find_at(stringview_t path, stringview_t name, filesystem_lookup_type type);
+		static bool find_file(const char* path, const char* name);
+		static bool find_file_by_stem(const char* path, const char* name);
+		static bool find_file_by_extension(const char* path, const char* name);
+		static bool find_dir(const char* path, const char* name);
+		static bool find_at(const char* path, const char* name, filesystem_lookup_type type);
 
-		static cpath construct_relative_to_cwd(stringview_t path);
+		static cpath construct_relative_to_cwd(const char* path);
 		static bool is_contained(const cpath& contained, const cpath& container);
 
 		inline cpath current() const { return m_current; }
 
-		bool forwards(stringview_t path, bool forced = false);
+		bool forwards(const char* path, bool forced = false);
 		bool backwards();
 
-		void append(stringview_t path);
-		cfilesystem& operator/=(stringview_t path);
+		void append(const char* path);
+		cfilesystem& operator/=(const char* path);
 
 		inline bool exists() const { return m_current.exists(); };
 		inline bool is_file() const { return m_current.is_file(); };
@@ -1224,21 +1147,21 @@ namespace core
 	class cfile final
 	{
 	public:
-		static std::string load_text(const std::string& path);
+		static string_t load_text(const string_t& path);
 
-		static std::future<std::string> load_text_async(const std::string& path);
+		static std::future<string_t> load_text_async(const string_t& path);
 
-		static file_io_status save_text(const std::string& path, const std::string& text);
+		static file_io_status save_text(const string_t& path, const string_t& text);
 
-		static std::future<file_io_status> save_text_async(const std::string& path, const std::string& text);
+		static std::future<file_io_status> save_text_async(const string_t& path, const string_t& text);
 
-		static spair<uint8_t*, unsigned> load_binary(const std::string& path);
+		static spair<uint8_t*, unsigned> load_binary(const string_t& path);
 
-		static std::future<spair<uint8_t*, unsigned>> load_binary_async(const std::string& path);
+		static std::future<spair<uint8_t*, unsigned>> load_binary_async(const string_t& path);
 
-		static file_io_status save_binary(const std::string& path, uint8_t* data, unsigned size);
+		static file_io_status save_binary(const string_t& path, uint8_t* data, unsigned size);
 
-		static std::future<file_io_status> save_binary_async(const std::string& path, uint8_t* data, unsigned size);
+		static std::future<file_io_status> save_binary_async(const string_t& path, uint8_t* data, unsigned size);
 
 		static void unload(char* data);
 
@@ -1316,7 +1239,7 @@ namespace core
 		{
 			ASSERT(is<TType>(), "Casting to another data type is not allowed");
 
-			return std::any_cast<TType&>(m_data);
+			return std::any_cast<const TType&>(m_data);
 		}
 
 	private:
@@ -1923,7 +1846,7 @@ namespace core
 	public:
 		struct sconfig
 		{
-			vector_t<std::string> m_services;
+			vector_t<string_t> m_services;
 
 			RTTR_ENABLE();
 		};
@@ -1963,7 +1886,7 @@ namespace core
 	template<class TService>
 	TService* cservice_manager::find(stringview_t service_type)
 	{
-		auto id = rttr::type::get_by_name(service_type).get_id();
+		auto id = rttr::type::get_by_name(service_type.data()).get_id();
 
 		if (s_service_types.find(id) != s_service_types.end())
 		{
@@ -2034,7 +1957,7 @@ namespace core
 			;
 
 		rttr::default_constructor<cservice_manager::sconfig>();
-		rttr::default_constructor<vector_t<std::string>>();
+		rttr::default_constructor<vector_t<string_t>>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

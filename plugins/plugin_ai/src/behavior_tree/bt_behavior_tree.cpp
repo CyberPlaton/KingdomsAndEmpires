@@ -6,6 +6,7 @@ namespace ai
 	{
 		namespace detail
 		{
+			constexpr stringview_t C_LAST_RUNNING_NODE_PROP_NAME = "last_running";
 			static tree_id_t s_unique_tree_id = 0;
 
 			//------------------------------------------------------------------------------------------------------------------------
@@ -18,7 +19,7 @@ namespace ai
 			//------------------------------------------------------------------------------------------------------------------------
 			tick_result invoke_node_function(const rttr::variant& node, stringview_t function)
 			{
-				if (const auto& m = node.get_type().get_method(function); m.is_valid())
+				if (const auto& m = node.get_type().get_method(function.data()); m.is_valid())
 				{
 					return m.invoke(node).convert<tick_result>();
 				}
@@ -29,9 +30,18 @@ namespace ai
 			template<typename... ARGS>
 			void invoke_node_function(const rttr::variant& node, stringview_t function, ARGS&&... args)
 			{
-				if (const auto& m = node.get_type().get_method(function); m.is_valid())
+				if (const auto& m = node.get_type().get_method(function.data()); m.is_valid())
 				{
-					return m.invoke(node, args...);
+					m.invoke(node, args...);
+				}
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			node_id_t node_id(const rttr::variant& node)
+			{
+				if (const auto& m = node.get_type().get_method(detail::C_ID_FUNCTION_NAME.data()); m.is_valid())
+				{
+					return m.invoke(node).convert<node_id_t>();
 				}
 			}
 
@@ -48,6 +58,7 @@ namespace ai
 			m_name(name), m_id(detail::generate_tree_id()), m_next_id(0)
 		{
 			emplace<croot>();
+			bb().get_or_emplace<node_id_t>(detail::C_LAST_RUNNING_NODE_PROP_NAME) = invalid_handle_t;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -82,7 +93,7 @@ namespace ai
 			{
 				//- make sure parent exists and is a type to take in a child
 				if (const auto it = algorithm::find_if(m_nodes.begin(), m_nodes.end(),
-					[id = id, parent = parent](const rttr::variant& node)
+					[&](const rttr::variant& node)
 					{
 						if (const auto& id_func = node.get_type().get_method(detail::C_ID_FUNCTION_NAME.data()); id_func.is_valid() &&
 							id_func.invoke(node).convert<node_id_t>() == parent)
@@ -102,11 +113,23 @@ namespace ai
 						return true;
 					}
 
-					logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching node '{}' to '{}' failed, as the parent can not take in children",
-						m_name, m_id, id, parent));
+					logging::log_warn(fmt::format("[Behavior Tree '{} (#{})'] attaching node to parent '{}' failed, as the parent can not take in children",
+						m_name.data(), m_id, parent));
 				}
 			}
 			return false;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cbehavior_tree::store_last_running_node(node_id_t id)
+		{
+			bb().get_or_emplace<node_id_t>(detail::C_LAST_RUNNING_NODE_PROP_NAME) = id;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		ai::bt::node_id_t cbehavior_tree::last_running_node()
+		{
+			return bb().find<node_id_t>(detail::C_LAST_RUNNING_NODE_PROP_NAME);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -250,17 +273,15 @@ namespace ai
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void cbehavior_tree::tick(tf::Taskflow& subflow)
+		void cbehavior_tree::tick(tf::Taskflow& subflow, bool force_restart/* = false*/)
 		{
-			subflow.emplace([this]()
+			subflow.emplace([this, restart=force_restart]()
 				{
 					CORE_NAMED_ZONE("cbehavior_tree::tick");
 
-					const auto& root = m_nodes[0];
+					auto node_id = CORE_LIKELY(!restart) ? last_running_node() : 0;
 
-					const auto& method = root.get_type().get_method(detail::C_TICK_FUNCTION_NAME.data());
-
-					method.invoke(root);
+					return tick_node(node_id);
 				});
 
 			m_task = engine::cengine::service<engine::cthread_service>()->push_background_taskflow(subflow);
@@ -281,6 +302,8 @@ namespace ai
 			//- However care must be taken to not forget and setup those node classes, thats why we want to explicitly throw.
 			if (CORE_LIKELY(valid))
 			{
+				store_last_running_node(detail::node_id(node));
+
 				return method.invoke(node).convert<tick_result>();
 			}
 

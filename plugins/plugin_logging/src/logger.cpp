@@ -37,7 +37,7 @@ namespace logging
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void clog::trace(stringview_t message)
+	void clog::trace(const char* message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_trace)
@@ -47,7 +47,7 @@ namespace logging
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void clog::info(stringview_t message)
+	void clog::info(const char* message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_info)
@@ -57,7 +57,7 @@ namespace logging
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void clog::warn(stringview_t message)
+	void clog::warn(const char* message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_warn)
@@ -67,7 +67,7 @@ namespace logging
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void clog::error(stringview_t message)
+	void clog::error(const char* message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_error)
@@ -77,7 +77,7 @@ namespace logging
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void clog::critical(stringview_t message)
+	void clog::critical(const char* message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_critical)
@@ -87,7 +87,7 @@ namespace logging
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void clog::debug(stringview_t message)
+	void clog::debug(const char* message)
 	{
 		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
 			m_verbosity <= logging_verbosity::logging_verbosity_debug)

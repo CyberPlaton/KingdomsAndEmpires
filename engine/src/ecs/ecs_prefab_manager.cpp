@@ -38,7 +38,7 @@ namespace ecs
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
-			m_prefabs.try_emplace(h, name, world());
+			m_prefabs.try_emplace(h, string_t(name), world());
 		}
 		else
 		{
@@ -76,7 +76,7 @@ namespace ecs
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
-			m_prefabs.try_emplace(h, name, world());
+			m_prefabs.try_emplace(h, string_t(name), world());
 		}
 		else
 		{
@@ -101,7 +101,7 @@ namespace ecs
 		simdjson::dom::parser parser;
 		simdjson::dom::element element;
 		simdjson::dom::element component_element;
-		std::string_view type_name;
+		stringview_t type_name;
 
 		auto string = core::cfile::load_text(path.view());
 

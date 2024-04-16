@@ -55,7 +55,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cfree_system::run_after(stringview_t name)
 	{
-		run_after(world().lookup(name));
+		run_after(world().lookup(name.data()));
 	}
 
 } //- ecs

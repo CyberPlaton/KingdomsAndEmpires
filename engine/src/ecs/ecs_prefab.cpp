@@ -4,7 +4,7 @@ namespace ecs
 {
 	//- create a prefab entity to be ready for definition
 	//------------------------------------------------------------------------------------------------------------------------
-	cprefab::cprefab(const std::string& name, flecs::world& w) :
+	cprefab::cprefab(const string_t& name, flecs::world& w) :
 		iworld_context_holder(w)
 	{
 		m_entity = world().prefab(name.data());

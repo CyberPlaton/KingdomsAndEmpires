@@ -31,7 +31,7 @@ namespace ecs
 	flecs::entity centity_manager::create_entity(stringview_t uuid)
 	{
 		//- create runtime ecs entity uniquely identifiable by uuid
-		auto e = world().entity(uuid);
+		auto e = world().entity(uuid.data());
 
 		return m_entities.emplace_back(e);
 	}

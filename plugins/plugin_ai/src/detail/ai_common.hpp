@@ -45,28 +45,28 @@ namespace ai
 
 			//- Get reference to value stored in blackboard. Crashes when element not present or type does not match.
 			template<typename TType>
-			const TType& operator[](const core::cstringview& name) const;
+			const TType& find(stringview_t name) const;
 
 			//- Get reference to value stored in blackborad. Emplaces new one if not existent, crashes when type does not match.
 			template<typename TType>
-			TType& operator[](const core::cstringview& name);
+			TType& get_or_emplace(stringview_t name);
 
 		private:
-			umap_t<core::cstringview, core::cany> m_storage;
+			umap_t<stringview_t, core::cany> m_storage;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TType>
-		TType& cblackboard::operator[](const core::cstringview& name)
+		TType& cblackboard::get_or_emplace(stringview_t name)
 		{
-			return m_storage[name].cast_ref<TType>();
+			return m_storage[name.data()].cast_ref<TType>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TType>
-		const TType& cblackboard::operator[](const core::cstringview& name) const
+		const TType& cblackboard::find(stringview_t name) const
 		{
-			return m_storage.at(name).cast_ref<TType>();
+			return m_storage.at(name.data()).cast_ref<TType>();
 		}
 
 		namespace debug
