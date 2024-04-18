@@ -14,34 +14,15 @@ function set_basic_defines()
 	end
 
 	filter{"configurations:debug"}
-		defines{"DEBUG=1", "TRACY_ENABLE", "BX_CONFIG_DEBUG"}
+		defines{"DEBUG=1", "TRACY_ENABLE"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE", "BX_CONFIG_RELEASE"}
+		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
 			"__STDC_FORMAT_MACROS",
 			"_CRT_SECURE_NO_DEPRECATE"}
 end
-
-------------------------------------------------------------------------------------------------------------------------
-function set_bx_includes()
-	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
-	if PLATFORM == "windows" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
-	elseif PLATFORM == "linux" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
-	elseif PLATFORM == "macosx" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
-	end
-end
-
-------------------------------------------------------------------------------------------------------------------------
-function set_sdl_deps()
-	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
-	links{"SDL2", "SDL2main"}
-end
-
 
 ------------------------------------------------------------------------------------------------------------------------
 function load_project(project, dir)
@@ -94,7 +75,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language,
-	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes, requires_bx_includes)
+	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes)
 	if VERBOSE == true then
 		print("\tstatic library: " .. name)
 	end
@@ -119,11 +100,6 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
-
-		if requires_bx_includes == true then
-			set_bx_includes()
-			set_sdl_deps()
-		end
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -333,7 +309,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_app(name, build_options, define_flags, thirdparty_deps, plugin_deps, plugin_headeronly_deps,
-	thirdparty_headeronly_deps, additional_includes, requires_bx_includes)
+	thirdparty_headeronly_deps, additional_includes)
 	if VERBOSE == true then
 		print("\tapplication: " .. name)
 	end
@@ -383,12 +359,6 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		elseif PLATFORM == "linux" then
 			links{path.join(VENDOR_DIR, OUTDIR, "libraylib.a")}
 		else
-		end
-
-		-- TODO: when we are done with raylib. Remove it from automatic linking
-		if requires_bx_includes == true then
-			set_bx_includes()
-			set_sdl_deps()
 		end
 
 		filter{"configurations:debug"}
