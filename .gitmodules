@@ -1,3 +1,16 @@
 [submodule "3rdparty/raylib/raylib"]
 	path = 3rdparty/raylib/raylib
 	url = https://github.com/raysan5/raylib.git
+[submodule "3rdparty/bx/bx"]
+	path = 3rdparty/bx/bx
+	url = https://github.com/bkaradzic/bx.git
+[submodule "3rdparty/sdl/SDL"]
+	path = 3rdparty/sdl/SDL
+	url = https://github.com/libsdl-org/SDL.git
+	branch = SDL2
+[submodule "3rdparty/bimg/bimg"]
+	path = 3rdparty/bimg/bimg
+	url = https://github.com/bkaradzic/bimg.git
+[submodule "3rdparty/bgfx/bgfx"]
+	path = 3rdparty/bgfx/bgfx
+	url = https://github.com/bkaradzic/bgfx.git
