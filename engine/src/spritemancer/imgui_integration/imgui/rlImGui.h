@@ -30,7 +30,7 @@
 
 #pragma once
 #include <core.h>
-#include <raylib.h>
+#include "../../raylib_integration/raylib.hpp"
 #ifndef NO_FONT_AWESOME
 #include "IconsFontAwesome6.h"
 #ifndef FONT_AWESOME_ICON_SIZE

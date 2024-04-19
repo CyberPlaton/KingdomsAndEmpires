@@ -7,7 +7,7 @@ function plugin_status_effects()
 					{"plugin_logging", "plugin_kingdoms_core"},
 					{"rttr", "EASTL", "spdlog", "core", "mimalloc", "flecs"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "raylib", "Tracy"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},
 					true)
 end

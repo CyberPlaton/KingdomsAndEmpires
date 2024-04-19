@@ -11,7 +11,7 @@ function engine_launcher()
 					"plugin_kingdoms_core", "plugin_camera_system", "plugin_ai",
 					"plugin_status_effects", "plugin_race_human", "plugin_render_system"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib", "Tracy"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
 					{}
 					)
 end

@@ -1,6 +1,6 @@
 #pragma once
 #include <core.h>
-#include <raylib.h>
+#include "raylib_integration/raylib.hpp"
 #include <plugin_logging.h>
 
 namespace sm

@@ -92,6 +92,7 @@ function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
 end
 
+-- Creates a static library project. By default c sources are compiled too.
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language,
 	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes, requires_bx_includes)
@@ -378,17 +379,9 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		end
 
 		if PLATFORM == "windows" then
-			links{"gdi32.lib", "ws2_32.lib", "kernel32.lib", "opengl32.lib", "psapi.lib", "winmm.lib",
-					path.join(VENDOR_DIR, OUTDIR, "raylib.lib")}
+			links{"gdi32", "ws2_32", "kernel32", "opengl32", "psapi", "winmm"}
 		elseif PLATFORM == "linux" then
-			links{path.join(VENDOR_DIR, OUTDIR, "libraylib.a")}
 		else
-		end
-
-		-- TODO: when we are done with raylib. Remove it from automatic linking
-		if requires_bx_includes == true then
-			set_bx_includes()
-			set_sdl_deps()
 		end
 
 		filter{"configurations:debug"}

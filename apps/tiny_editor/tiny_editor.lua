@@ -11,7 +11,7 @@ function tiny_editor()
 					"plugin_camera_system", "plugin_race_human", "plugin_kingdoms_and_empires",
 					"plugin_status_effects", "plugin_tiny_editor", "plugin_render_system"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "raylib", "Tracy"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
 					{}
 					)
 end

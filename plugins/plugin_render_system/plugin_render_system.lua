@@ -7,7 +7,7 @@ function plugin_render_system()
 					{"plugin_logging"},
 					{"rttr", "EASTL", "spdlog", "core", "mimalloc", "flecs"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy", "raylib"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},
 					true)
 end

@@ -29,7 +29,7 @@
 **********************************************************************************************/
 #include "rlImGui.h"
 #include "imgui.h"
-#include <raylib/GLFW/glfw3.h>
+#include <raylib/external/glfw/include/GLFW/glfw3.h>
 #include <math.h>
 #include <vector>
 #include <map>
