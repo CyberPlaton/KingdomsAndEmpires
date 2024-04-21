@@ -1,0 +1,21 @@
+name: linux_x86_64
+
+on: "push"
+
+jobs:
+  build_linux_x86_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Premake for Linux
+        uses: abel0b/setup-premake@v2.3
+        with:
+          version: "5.0.0-beta2"
+
+      - name: Build on Linux
+        run: |
+          premake5 gmake2
+          make
+        working-directory: .
