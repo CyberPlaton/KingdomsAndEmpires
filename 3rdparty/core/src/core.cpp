@@ -257,13 +257,13 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool save_text_file_data(stringview_t file_path, stringview_t text)
 		{
-			if (file_path != nullptr)
+			if (file_path.data() != nullptr)
 			{
 				FILE* file = fopen(file_path.data(), "wt");
 
 				if (file != NULL)
 				{
-					auto count = fprintf(file, "%s", text);
+					auto count = fprintf(file, "%s", text.data());
 
 					fclose(file);
 
