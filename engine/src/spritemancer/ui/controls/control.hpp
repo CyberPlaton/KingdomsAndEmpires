@@ -91,7 +91,7 @@ namespace ui
 		protected:
 			virtual click_result show_ui() = 0;
 			ImGuiID imgui_id() const;
-			void set_image(stringview_t name);
+			void set_image(texture_t handle);
 			click_result mousebutton_state();
 
 		protected:
@@ -99,7 +99,7 @@ namespace ui
 			std::string m_title;
 			std::string m_tooltip;
 			std::string m_icon;
-			const raylib::Texture2D* m_image;
+			texture_t m_image;
 			bool m_active;
 
 		private:

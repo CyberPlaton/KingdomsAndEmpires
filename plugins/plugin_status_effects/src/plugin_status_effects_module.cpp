@@ -9,8 +9,8 @@ namespace effects
 		{
 			auto* c = e.get_mut<ecs::ssprite>();
 
-			m_material_handle = sm::ctx().sm().get(m_material.c_str());
-			m_texture_handle = sm::ctx().tm().get(m_texture.c_str());
+			m_material_handle = sm::ctx().sm().at(m_material.c_str());
+			m_texture_handle = sm::ctx().tm().at(m_texture.c_str());
 
 			if (algorithm::is_valid_handle(m_material_handle) && algorithm::is_valid_handle(m_texture_handle))
 			{

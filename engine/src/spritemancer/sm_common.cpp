@@ -13,6 +13,176 @@ namespace sm
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::cdrawcommand cdrawcommand::sprite(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h,
+		float r, material_t material, texture_t texture, renderlayer_t layer)
+	{
+		return sprite(rect, color, {x, y}, {w, h}, r, material ,texture, layer);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cdrawcommand cdrawcommand::sprite(const core::srect& rect, const core::scolor& color, const vec2_t& position,
+		const vec2_t& dimension, float r, material_t material, texture_t texture, renderlayer_t layer)
+	{
+		return cdrawcommand(drawcommand_type_sprite, drawcommand::ssprite{rect, color, position, dimension, r, material, texture, layer});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cdrawcommand cdrawcommand::line(const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
+	{
+		return cdrawcommand(drawcommand_type_line, drawcommand::sline{ color, start, end, thick });
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cdrawcommand cdrawcommand::circle(const vec2_t& center, float radius, const core::scolor& color)
+	{
+		return cdrawcommand(drawcommand_type_circle, drawcommand::scircle{ color, center, radius });
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cdrawcommand cdrawcommand::rectangle(const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
+	{
+		return cdrawcommand(drawcommand_type_rect, drawcommand::srectangle{ color, position, dimension });
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ccommandbuffer::push(cdrawcommand command)
+	{
+		m_commands.emplace_back(std::move(command));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctexture::ctexture(const cimage& image) :
+		m_texture(raylib::LoadTextureFromImage(image.image()))
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctexture::ctexture(const raylib::Texture& texture) :
+		m_texture(texture)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctexture::ctexture() :
+		m_texture({ 0 })
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctexture::~ctexture()
+	{
+		if (ready())
+		{
+			raylib::UnloadTexture(texture());
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned ctexture::width() const
+	{
+		return m_texture.width;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned ctexture::height() const
+	{
+		return m_texture.height;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	crendertarget::crendertarget(unsigned w, unsigned h) :
+		m_image(raylib::LoadRenderTexture(w, h))
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	crendertarget::crendertarget() :
+		m_image({ 0 })
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	crendertarget::~crendertarget()
+	{
+		if (ready())
+		{
+			raylib::UnloadRenderTexture(target());
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool crendertarget::create(unsigned w, unsigned h)
+	{
+		if (ready())
+		{
+			raylib::UnloadRenderTexture(target());
+		}
+
+		m_image = raylib::LoadRenderTexture(w, h);
+
+		return ready();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crendertarget::bind() const
+	{
+		if (ready())
+		{
+			raylib::BeginTextureMode(target());
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crendertarget::unbind() const
+	{
+		raylib::EndTextureMode();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctechnique::ctechnique(const raylib::Shader& shader) :
+		m_shader(shader)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctechnique::ctechnique() :
+		m_shader({ 0 })
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctechnique::~ctechnique()
+	{
+		if (raylib::IsShaderReady(m_shader))
+		{
+			raylib::UnloadShader(m_shader);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ctechnique::bind() const
+	{
+		if (raylib::IsShaderReady(m_shader))
+		{
+			raylib::BeginShaderMode(m_shader);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ctechnique::unbind() const
+	{
+		raylib::EndShaderMode();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	int ctechnique::uniform_location(stringview_t name) const
+	{
+		return raylib::GetShaderLocation(shader(), name.data());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cwindow::~cwindow()
 	{
 		raylib::ShutdownWindow();
@@ -324,60 +494,53 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	csprite_atlas::csprite_atlas(const csprite_atlas& other) :
-		m_texture(other.m_texture), m_subtextures(other.m_subtextures)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::csprite_atlas& csprite_atlas::operator=(const csprite_atlas& other)
-	{
-		m_texture = other.m_texture;
-		m_subtextures = other.m_subtextures;
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void csprite_atlas::reset()
+	void cspriteatlas::reset()
 	{
 		m_texture = invalid_handle_t;
 		m_subtextures.clear();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::srect csprite_atlas::subtexture(subtexture_t texture) const
+	cspriteatlas::cspriteatlas(texture_t texture) :
+		m_texture(texture)
+	{
+		CORE_ASSERT(algorithm::is_valid_handle(texture), "Invalid operation. Invalid texture handle provided!");
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const core::srect& cspriteatlas::get(subtexture_t texture) const
 	{
 		return m_subtextures[texture];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::csprite_atlas& csprite_atlas::subtexture(const core::srect& rect)
+	sm::cspriteatlas& cspriteatlas::subtexture(const core::srect& rect)
 	{
 		m_subtextures.push_back(rect);
 		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	texture_t csprite_atlas::atlas() const
+	texture_t cspriteatlas::atlas() const
 	{
 		return m_texture;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::csprite_atlas& csprite_atlas::end()
+	sm::cspriteatlas& cspriteatlas::end()
 	{
 		ASSERT(!m_subtextures.empty(), "Empty sprite atlas is not allowed");
 		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	unsigned csprite_atlas::subtexture_count() const
+	unsigned cspriteatlas::subtexture_count() const
 	{
 		return SCAST(unsigned, m_subtextures.size());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::csprite_atlas& csprite_atlas::begin(texture_t texture)
+	sm::cspriteatlas& cspriteatlas::begin(texture_t texture)
 	{
 		m_texture = texture;
 		ASSERT(algorithm::is_valid_handle(m_texture), "Creating a sprite atlas with an invalid texture is not allowed");
@@ -386,236 +549,128 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader_uniform::cshader_uniform(const std::string& name, void* value, raylib::ShaderUniformDataType type) :
-		m_name(name), m_data(value), m_type(type)
+	cmaterial::cmaterial(ctechnique& shader, technique_t technique, blending_mode mode /*= blending_mode_alpha*/,
+		blending_equation equation /*= blending_equation_blend_color*/, blending_factor src /*= blending_factor_src_color*/,
+		blending_factor dst /*= blending_factor_one_minus_src_alpha*/) :
+		m_shader(shader), m_id(technique), m_blending_mode(mode), m_blending_src(src), m_blending_dst(dst), m_blending_equation(equation)
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void* cshader_uniform::get() const
+	void cmaterial::bind() const
 	{
-		return m_data;
-	}
+		shader().bind();
 
-	//------------------------------------------------------------------------------------------------------------------------
-	raylib::ShaderUniformDataType cshader_uniform::get_type() const
-	{
-		return m_type;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	std::string cshader_uniform::get_name() const
-	{
-		return m_name;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	const char* cshader_uniform::c_str() const
-	{
-		return m_name.c_str();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::cmaterial(technique_t technique, blending_mode mode, blending_equation equation, blending_factor src, blending_factor dst) :
-		m_program(technique), m_blending_mode(mode), m_blending_equation(equation), m_blending_src(src), m_blending_dst(dst)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::cmaterial(technique_t technique, blending_mode mode, blending_equation equation, blending_factor src, blending_factor dst, const vector_t< cshader_uniform >& static_uniforms, const vector_t< cshader_uniform >& dynamic_uniforms) :
-		m_program(technique), m_blending_mode(mode), m_blending_equation(equation), m_blending_src(src), m_blending_dst(dst), m_static_uniforms(static_uniforms), m_dynamic_uniforms(dynamic_uniforms)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::~cmaterial()
-	{
-		//- cmaterial is not responsible for unloading the shader and texture from memory
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::bind_shader(const raylib::Shader& technique) const
-	{
-		if (IsShaderReady(technique))
-		{
-			raylib::BeginShaderMode(technique);
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::bind_blend_mode() const
-	{
 		raylib::rlSetBlendMode(m_blending_mode);
 		raylib::rlSetBlendFactors(m_blending_src, m_blending_dst, m_blending_equation);
 		raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::reset()
-	{
-		m_static_uniforms.clear();
-		m_dynamic_uniforms.clear();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::bind_static_uniforms(const raylib::Shader& technique) const
-	{
-		bind_uniforms(technique, m_static_uniforms);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::bind_dynamic_uniforms(const raylib::Shader& technique) const
-	{
-		bind_uniforms(technique, m_dynamic_uniforms);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::end_shader() const
-	{
-		raylib::EndShaderMode();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::end_blend_mode() const
+	void cmaterial::unbind() const
 	{
 		raylib::EndBlendMode();
+
+		shader().unbind();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::set_blend_mode(blending_mode mode)
+	void cmaterial::set_uniform_float(stringview_t name, float value)
 	{
-		m_blending_mode = mode;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::set_blend_mode_src_factor(blending_factor factor)
-	{
-		m_blending_src = factor;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::set_blend_mode_dst_factor(blending_factor factor)
-	{
-		m_blending_dst = factor;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::set_blend_mode_equation(blending_equation equation)
-	{
-		m_blending_equation = equation;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::restore_default_blend_mode()
-	{
-		m_blending_mode = blending_mode_alpha;
-		m_blending_src = blending_factor_src_alpha;
-		m_blending_dst = blending_factor_one_minus_src_alpha;
-		m_blending_equation = blending_equation_blend_color;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::set_shader(technique_t technique)
-	{
-		m_program = technique;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	technique_t cmaterial::get_shader() const
-	{
-		return m_program;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::bind_uniforms(const raylib::Shader& technique, const vector_t< cshader_uniform >& vector) const
-	{
-		if (raylib::IsShaderReady(technique))
+		if (shader().ready())
 		{
-			uint32_t uniform_type = 0;
-			uint32_t uniform_loc = 0;
+			auto location = shader().uniform_location(name);
 
-			for (const auto& uniform : vector)
-			{
-				uniform_loc = raylib::GetShaderLocation(technique, uniform.c_str());
-
-				switch (uniform.get_type())
-				{
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_FLOAT:
-				{
-					uniform_type = raylib::SHADER_UNIFORM_FLOAT;
-					break;
-				}
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_INT:
-				{
-					uniform_type = raylib::SHADER_UNIFORM_INT;
-					break;
-				}
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_IVEC2:
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_VEC2:
-				{
-					uniform_type = raylib::SHADER_UNIFORM_VEC2;
-					break;
-				}
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_IVEC3:
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_VEC3:
-				{
-					uniform_type = raylib::SHADER_UNIFORM_VEC3;
-					break;
-				}
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_IVEC4:
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_VEC4:
-				{
-					uniform_type = raylib::SHADER_UNIFORM_VEC4;
-					break;
-				}
-				case raylib::ShaderUniformDataType::SHADER_UNIFORM_SAMPLER2D:
-				{
-					uniform_type = raylib::SHADER_UNIFORM_SAMPLER2D;
-					break;
-				}
-				default:
-				{
-					continue;
-				}
-				}
-				raylib::SetShaderValue(technique, uniform_loc, uniform.get(), uniform_type);
-			}
+			raylib::SetShaderValue(shader().shader(), location, &value, raylib::SHADER_UNIFORM_FLOAT);
 		}
 	}
 
-	namespace internal
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::set_uniform_int(stringview_t name, int value)
 	{
-		//------------------------------------------------------------------------------------------------------------------------
-		sdrawcommand::sdrawcommand(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h, float r,
-			material_t material, texture_t texture, renderlayer_t layer) :
-			m_rect(rect), m_color(color), m_position(x, y), m_dimension(w, h), m_rotation(r),
-			m_material(material), m_texture(texture), m_layer(layer)
+		if (shader().ready())
 		{
-		}
+			auto location = shader().uniform_location(name);
 
-		//------------------------------------------------------------------------------------------------------------------------
-		sdrawcommand::sdrawcommand(const core::srect& rect, const core::scolor& color, const vec2_t& position, const vec2_t& dimension, float r,
-			material_t material, texture_t texture, renderlayer_t layer) :
-			m_rect(rect), m_color(color), m_position(position), m_dimension(dimension), m_rotation(r),
-			m_material(material), m_texture(texture), m_layer(layer)
+			raylib::SetShaderValue(shader().shader(), location, &value, raylib::SHADER_UNIFORM_INT);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::set_uniform_vec2(stringview_t name, const vec2_t& value)
+	{
+		if (shader().ready())
 		{
-		}
+			auto location = shader().uniform_location(name);
 
-		//------------------------------------------------------------------------------------------------------------------------
-		void ccommand_buffer::push(const core::srect& rect, const core::scolor& color, const vec2_t& position, const vec2_t& dimension,
-			float r, material_t material, texture_t texture, renderlayer_t layer)
+			raylib::SetShaderValue(shader().shader(), location, &value, raylib::SHADER_UNIFORM_VEC2);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::set_uniform_vec3(stringview_t name, const vec3_t& value)
+	{
+		if (shader().ready())
 		{
-			m_commands.emplace_back(rect, color, position, dimension, r, material, texture, layer);
-		}
+			auto location = shader().uniform_location(name);
 
-		//------------------------------------------------------------------------------------------------------------------------
-		void ccommand_buffer::push(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h, float r,
-			material_t material, texture_t texture, renderlayer_t layer)
+			raylib::SetShaderValue(shader().shader(), location, &value, raylib::SHADER_UNIFORM_VEC3);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::set_uniform_vec4(stringview_t name, const vec4_t& value)
+	{
+		if (shader().ready())
 		{
-			m_commands.emplace_back(rect, color, x, y, w, h, r, material, texture, layer);
-		}
+			auto location = shader().uniform_location(name);
 
-	} //- internal
+			raylib::SetShaderValue(shader().shader(), location, &value, raylib::SHADER_UNIFORM_VEC4);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::set_uniform_matrix(stringview_t name, const mat4_t& value)
+	{
+		if (shader().ready())
+		{
+			auto location = shader().uniform_location(name);
+
+			float m[16] = { 0 };
+
+			std::memcpy(&m[0], glm::value_ptr(value), 16 * sizeof(float));
+
+			raylib::SetShaderValueMatrixEx(shader().shader(), location, m);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::set_uniform_texture(stringview_t name, const ctexture& value)
+	{
+		if (shader().ready())
+		{
+			auto location = shader().uniform_location(name);
+
+			raylib::SetShaderValueTexture(shader().shader(), location, value.texture());
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::set_uniform_texture(stringview_t name, const raylib::Texture& value)
+	{
+		if (shader().ready())
+		{
+			auto location = shader().uniform_location(name);
+
+			raylib::SetShaderValueTexture(shader().shader(), location, value);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::remove_uniform(stringview_t name)
+	{
+		//m_uniforms.erase(name.data());
+	}
 
 } //- sm
 

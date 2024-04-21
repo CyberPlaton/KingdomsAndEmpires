@@ -8,7 +8,6 @@
 #include "layer.hpp"
 #include "services/event_service.hpp"
 #include "services/thread_service.hpp"
-#include "services/resource_management_service.hpp"
 #include <argparse.h>
 
 namespace engine
@@ -22,7 +21,6 @@ namespace engine
 		engine_run_result_failed_parsing_invalid_config,
 		engine_run_result_failed_starting_spritemancer,
 		engine_run_result_failed_registering_services,
-		engine_run_result_failed_registering_resource_managers,
 		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
 	};
@@ -63,7 +61,6 @@ namespace engine
 			sm::cwindow::sconfig m_window_cfg;
 			core::cservice_manager::sconfig m_service_cfg;
 			clayers::sconfig m_layer_cfg;
-			cresource_management_service::sconfig m_resources_cfg;
 
 			RTTR_ENABLE();
 		};
@@ -92,7 +89,6 @@ namespace engine
 
 		void handle_arguments(argparse::ArgumentParser& args, int argc, char* argv[]);
 		void register_services(argparse::ArgumentParser& args);
-		void register_resource_managers(argparse::ArgumentParser& args);
 		bool init_layers(const clayers::sconfig& cfg);
 	};
 
@@ -122,7 +118,6 @@ namespace engine
 			.property("m_service_cfg", &cengine::sconfig::m_service_cfg)
 			.property("m_window_cfg", &cengine::sconfig::m_window_cfg)
 			.property("m_layer_cfg", &cengine::sconfig::m_layer_cfg)
-			.property("m_resources_cfg", &cengine::sconfig::m_resources_cfg)
 			;
 
 		rttr::default_constructor<cengine::sconfig>();

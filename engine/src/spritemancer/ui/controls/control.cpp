@@ -1,5 +1,4 @@
 #include "control.hpp"
-#include "../../sm_internal.hpp"
 
 namespace ui
 {
@@ -77,7 +76,7 @@ namespace ui
 	{
 		//------------------------------------------------------------------------------------------------------------------------
 		icontrol::icontrol() :
-			m_active(true), m_image(nullptr)
+			m_active(true), m_image(invalid_handle_t)
 		{
 		}
 
@@ -113,9 +112,9 @@ namespace ui
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void icontrol::set_image(stringview_t name)
+		void icontrol::set_image(texture_t handle)
 		{
-			m_image = sm::ctx().tm().native(name);
+			m_image = handle;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

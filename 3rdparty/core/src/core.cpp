@@ -1,112 +1,6 @@
 #include "core.hpp"
 #include <sstream>
 
-namespace math
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	mat2_t translate(const vec2_t& v, const mat2_t& m /*= C_MATRIX_ID*/)
-	{
-		mat2_t Result(1);
-		Result[1] = m[0] * v[0] + m[1] * v[1];
-		return std::move(Result);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	mat2_t rotate(float angle, const mat2_t& m /*= C_MATRIX_ID*/)
-	{
-		const float c = glm::cos(angle);
-		const float s = glm::sin(angle);
-
-		mat2_t Rotate;
-		Rotate[0][0] = c;
-		Rotate[0][1] = -s;
-		Rotate[1][0] = s;
-		Rotate[1][1] = c;
-
-		return std::move(m * Rotate);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	mat2_t scale(const vec2_t& v, const mat2_t& m /*= C_MATRIX_ID*/)
-	{
-		mat2_t Result;
-		Result[0] = m[0] * v[0];
-		Result[1] = m[1] * v[1];
-		return std::move(Result);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	vec3_t decompose_rotation(const mat4_t& transform)
-	{
-		vec3_t out;
-
-		decompose_rotation(transform, out);
-
-		return out;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void decompose_rotation(const mat4_t& transform, vec3_t& out)
-	{
-		glm::extractEulerAngleXYZ(transform, out.x, out.y, out.z);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	vec3_t decompose_translation(const mat4_t& transform)
-	{
-		return { transform[3] };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void decompose_translation(const mat4_t& transform, vec3_t& out)
-	{
-		out = { transform[3] };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	vec3_t decompose_scale(const mat4_t& transform)
-	{
-		return { glm::length(vec3_t(transform[0])), glm::length(vec3_t(transform[1])), glm::length(vec3_t(transform[2])) };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void decompose_scale(const mat4_t& transform, vec3_t& out)
-	{
-		out.x = glm::length(vec3_t(transform[0]));
-		out.y = glm::length(vec3_t(transform[1]));
-		out.z = glm::length(vec3_t(transform[2]));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	vec2_t decompose_translation(const mat2_t& transform)
-	{
-		return { transform[2][0], transform[2][1] };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void decompose_translation(const mat2_t& transform, vec2_t& out)
-	{
-		out = { transform[2][0], transform[2][1] };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	vec2_t decompose_scale(const mat2_t& transform)
-	{
-		vec2_t scale;
-		scale.x = length(vec2_t(transform[0][0], transform[1][0]));
-		scale.y = length(vec2_t(transform[0][1], transform[1][1]));
-		return scale;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void decompose_scale(const mat2_t& transform, vec2_t& out)
-	{
-		out.x = length(vec2_t(transform[0][0], transform[1][0]));
-		out.y = length(vec2_t(transform[0][1], transform[1][1]));
-	}
-
-} //- math
-
 namespace algorithm
 {
 	//------------------------------------------------------------------------------------------------------------------------
@@ -969,6 +863,26 @@ namespace core
 			{
 				to_json_recursive(object, json);
 			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		simdjson::dom::element load_json(stringview_t path)
+		{
+			simdjson::dom::parser parser;
+			simdjson::dom::element element;
+
+			auto string = cfile::load_text(path.data());
+
+			if (parser.parse(string.data(), string.length()).get(element) == simdjson::SUCCESS)
+			{
+				return element;
+			}
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+					fmt::format("Failed loading JSON file '{}'", path.data()));
+			}
+			return {};
 		}
 
 	} //- io

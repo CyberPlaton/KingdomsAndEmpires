@@ -1391,6 +1391,17 @@ void SetShaderValueV(Shader shader, int locIndex, const void *value, int uniform
 }
 
 // Set shader uniform value (matrix 4x4)
+void SetShaderValueMatrixEx(Shader shader, int locIndex, float mat[16])
+{
+	if (locIndex > -1)
+	{
+		rlEnableShader(shader.id);
+		rlSetUniformMatrixEx(locIndex, mat);
+		//rlDisableShader();
+	}
+}
+
+// Set shader uniform value (matrix 4x4)
 void SetShaderValueMatrix(Shader shader, int locIndex, Matrix mat)
 {
     if (locIndex > -1)

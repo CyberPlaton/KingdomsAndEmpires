@@ -4,89 +4,98 @@
 
 namespace sm
 {
-	namespace internal
+	//- Constant time access to textures by handle. Logarithmic time loading and unloading.
+	//------------------------------------------------------------------------------------------------------------------------
+	class ctexture_manager final : core::iresource_manager
 	{
-		//- Manager responsible for sprite atlases, aka texture atlases
-		//------------------------------------------------------------------------------------------------------------------------
-		class cspriteatlas_manager :
-			public core::cresource_manager<spriteatlas_t, csprite_atlas>
-		{
-		public:
-			cspriteatlas_manager() {}
+	public:
+		ctexture_manager();
+		~ctexture_manager();
 
-			spriteatlas_t create(stringview_t spriteatlasname, stringview_t texturepath, const vec2_t& frames);
-			core::srect subtexture(spriteatlas_t atlas, stringview_t name) const;
+		texture_t load(stringview_t name, stringview_t path);
+		texture_t at(stringview_t name) const;
+		void unload(texture_t handle);
 
-		protected:
-			void on_resource_unload(csprite_atlas& resource) override final;
-			bool init() override final;
+		const ctexture& get(texture_t handle) const;
+		ctexture& get(texture_t handle);
 
-			RTTR_ENABLE(core::cresource_manager<spriteatlas_t, csprite_atlas>);
-		};
+	private:
+		core::detail::cdynamic_pool<ctexture> m_textures;
+		umap_t<string_t, texture_t> m_handles;
+	};
 
-		//- Manager responsible for techniques, aka shaders
-		//------------------------------------------------------------------------------------------------------------------------
-		class ctechnique_manager :
-			public core::cresource_manager<technique_t, raylib::Shader>
-		{
-		public:
-			ctechnique_manager() {}
+	//------------------------------------------------------------------------------------------------------------------------
+	class cshader_manager final : core::iresource_manager
+	{
+	public:
+		cshader_manager();
+		~cshader_manager();
 
-			technique_t create(stringview_t name, stringview_t vspath, stringview_t pspath);
-			technique_t create_embedded(stringview_t name, stringview_t vsdata, stringview_t psdata);
+		technique_t load(stringview_t name, stringview_t vspath, stringview_t fspath);
+		technique_t load_from_memory(stringview_t name, const char* vs, const char* fs);
+		void unload(technique_t handle);
+		technique_t at(stringview_t name) const;
+		const ctechnique& get(technique_t handle) const;
+		ctechnique& get(technique_t handle);
 
-		protected:
-			void on_resource_unload(raylib::Shader& resource) override final;
-			bool init() override final;
+	private:
+		core::detail::cdynamic_pool<ctechnique> m_shaders;
+		umap_t<string_t, technique_t> m_handles;
+	};
 
-			RTTR_ENABLE(core::cresource_manager<technique_t, raylib::Shader>);
-		};
+	//------------------------------------------------------------------------------------------------------------------------
+	class cmaterial_manager final : core::iresource_manager
+	{
+	public:
+		cmaterial_manager();
+		~cmaterial_manager();
 
-		//- Manager responsible for materials
-		//------------------------------------------------------------------------------------------------------------------------
-		class cmaterial_manager :
-			public core::cresource_manager<material_t, cmaterial>
-		{
-			friend class ctechnique_manager;
-		public:
-			cmaterial_manager() {}
+		material_t load(stringview_t name, technique_t technique, blending_mode mode = blending_mode_alpha,
+			blending_equation equation = blending_equation_blend_color, blending_factor src = blending_factor_src_color,
+			blending_factor dst = blending_factor_one_minus_src_alpha);
+		material_t at(stringview_t name) const;
+		void unload(material_t handle);
 
-			material_t create(stringview_t name, technique_t technique, blending_mode mode = blending_mode_alpha,
-				blending_equation equation = blending_equation_blend_color, blending_factor src = blending_factor_src_color,
-				blending_factor dst = blending_factor_one_minus_src_alpha);
+		const cmaterial& get(material_t handle) const;
 
-			inline material_t default_material() const { return C_DEFAULT_MATERIAL; }
+	private:
+		core::detail::cdynamic_pool<cmaterial> m_materials;
+		umap_t<string_t, material_t> m_handles;
+	};
 
-		protected:
-			void on_resource_unload(cmaterial& resource) override final;
-			bool init() override final;
+	//------------------------------------------------------------------------------------------------------------------------
+	class cspriteatlas_manager final : core::iresource_manager
+	{
+	public:
+		cspriteatlas_manager();
+		~cspriteatlas_manager();
 
-		private:
-			bool create_default(technique_t technique, blending_mode mode = blending_mode_alpha, blending_equation equation = blending_equation_blend_color,
-				blending_factor src = blending_factor_src_color, blending_factor dst = blending_factor_one_minus_src_alpha);
+		spriteatlas_t load(stringview_t name, texture_t texture, const vec2_t& frames);
+		void unload(material_t handle);
 
-			RTTR_ENABLE(core::cresource_manager<material_t, cmaterial>);
-		};
+		const cspriteatlas& get(spriteatlas_t handle) const;
 
-		//- Manager responsible for textures
-		//------------------------------------------------------------------------------------------------------------------------
-		class ctexture_manager :
-			public core::cresource_manager<texture_t, raylib::Texture2D>
-		{
-		public:
-			ctexture_manager() {}
+	private:
+		core::detail::cdynamic_pool<cspriteatlas> m_spritesheets;
+		umap_t<string_t, spriteatlas_t> m_handles;
+	};
 
-			texture_t create(stringview_t name, stringview_t path);
-			const raylib::Texture2D* native(stringview_t name) const;
-			vec2_t texture_size(texture_t texture) const;
+	//------------------------------------------------------------------------------------------------------------------------
+	class crendertarget_manager final : core::iresource_manager
+	{
+	public:
+		crendertarget_manager();
+		~crendertarget_manager();
 
-		protected:
-			void on_resource_unload(raylib::Texture2D& resource) override final;
-			bool init() override final;
+		rendertarget_t load(stringview_t name, unsigned width, unsigned height);
+		void unload(rendertarget_t handle);
 
-			RTTR_ENABLE(core::cresource_manager<texture_t, raylib::Texture2D>);
-		};
+		const crendertarget& get(rendertarget_t handle) const;
 
-	} //- internal
+
+	private:
+		core::detail::cdynamic_pool<crendertarget> m_rendertargets;
+		umap_t<string_t, spriteatlas_t> m_handles;
+	};
 
 } //- sm

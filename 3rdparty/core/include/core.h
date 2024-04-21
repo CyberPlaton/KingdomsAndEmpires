@@ -142,19 +142,19 @@ using deque_t = stl::deque<T>;
 template<size_t TSize>
 using bitset_t = stl::bitset<TSize>;
 
-using handle_type_t = uint16_t;
-#define invalid_handle_t MAX(uint16_t)
-using service_type_t = handle_type_t;
-using technique_t = handle_type_t;
-using texture_t = handle_type_t;
-using uniform_t = handle_type_t;
-using material_t = handle_type_t;
-using spriteatlas_t = handle_type_t;
-using renderlayer_t = handle_type_t;
-using subtexture_t = handle_type_t;
-using render_target_t = handle_type_t;
-using window_t = handle_type_t;
-using entity_proxy_t = int;
+//- defining handles here as they migh have to be registered in RTTR
+using handle_type_t		= uint64_t;
+#define invalid_handle_t MAX(uint64_t)
+using service_type_t	= handle_type_t;
+using entity_proxy_t	= int;
+using renderlayer_t		= uint16_t;
+using material_t		= handle_type_t;
+using texture_t			= handle_type_t;
+using technique_t		= handle_type_t;
+using uniform_t			= handle_type_t;
+using spriteatlas_t		= handle_type_t;
+using subtexture_t		= handle_type_t;
+using rendertarget_t	= handle_type_t;
 
 using ivec2_t = glm::lowp_u32vec2;
 using vec2_t = glm::vec2;
@@ -354,39 +354,6 @@ namespace core
 	};
 
 } //- core
-
-namespace math
-{
-	namespace
-	{
-		constexpr mat2_t C_MATRIX_ID = mat2_t(1.0f);
-
-	} //- unnamed
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	bool almost_equal(TType x, TType y)
-	{
-		return glm::distance(glm::abs<TType>(x), glm::abs<TType>(y)) < glm::epsilon<TType>();
-	}
-
-	[[nodiscard]] mat2_t translate(const vec2_t& v, const mat2_t& m = C_MATRIX_ID);
-	[[nodiscard]] mat2_t rotate(float angle, const mat2_t& m = C_MATRIX_ID);
-	[[nodiscard]] mat2_t scale(const vec2_t& v, const mat2_t& m = C_MATRIX_ID);
-
-	vec2_t decompose_translation(const mat2_t& transform);
-	void decompose_translation(const mat2_t& transform, vec2_t& out);
-	vec2_t decompose_scale(const mat2_t& transform);
-	void decompose_scale(const mat2_t& transform, vec2_t& out);
-
-	vec3_t decompose_rotation(const mat4_t& transform);
-	vec3_t decompose_translation(const mat4_t& transform);
-	vec3_t decompose_scale(const mat4_t& transform);
-	void decompose_rotation(const mat4_t& transform, vec3_t& out);
-	void decompose_translation(const mat4_t& transform, vec3_t& out);
-	void decompose_scale(const mat4_t& transform, vec3_t& out);
-
-} //- math
 
 namespace algorithm
 {
@@ -741,6 +708,7 @@ namespace core
 		string_t to_json_string(rttr::instance object, bool beautify = false);
 		[[nodiscard]] nlohmann::json to_json_object(rttr::instance object);
 		void to_json_object(rttr::instance object, nlohmann::json& json);
+		[[nodiscard]] simdjson::dom::element load_json(stringview_t path);
 
 	} //- io
 
@@ -766,6 +734,8 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		struct ipool{};
 
+		//- Resizable and memory friendly pool providing constant access time and index stability, meaning
+		//- when an element is removed other indices stay valid, so that they could be used as handles.
 		//- Note: you have to deallocate memory using the shutdown function
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TType>
@@ -815,8 +785,6 @@ namespace core
 	//- define some common types of pairs
 	//------------------------------------------------------------------------------------------------------------------------
 	using smaterial_pair = spair<texture_t, material_t>;
-
-
 
 	//- base class for a service
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1351,150 +1319,14 @@ namespace core
 		snode m_root;
 	};
 
+	//- Interface class for resource manager base, deriving from service so that we can retrieve it from anywhere.
 	//------------------------------------------------------------------------------------------------------------------------
-	class iresource_manager
+	class iresource_manager : public cservice
 	{
 	public:
-		static constexpr unsigned C_MANAGER_COUNT_MAX = 64;
 
-		virtual bool on_start() = 0;
-		virtual void on_update(float) = 0;
-		virtual void on_shutdown() = 0;
-
-	private:
-		RTTR_ENABLE();
+		RTTR_ENABLE(cservice);
 	};
-
-	//- Base resource manager. Handles common storage types, like retrieving a handle or unloading.
-	//- Note: as of now the implementing resource manager has to respect correct creation behavior:
-	//- In m_lookup emplace the name of the resource paired to its handle, whereas the handle is the
-	//- index into m_resources where the underlying resource is stored. For examples see finished managers below.
-	//-
-	//- Goal of this manager is providing acceptable lookup times using a string and constant lookup time using the resource handle.
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResourceHandleType, typename TNativeResourceType>
-	class cresource_manager : public iresource_manager
-	{
-	public:
-		template<typename TResourceWrapper, typename TResource>
-		static void store_resource(vector_t<TResourceWrapper>& structure, TResource what, unsigned where = std::numeric_limits<unsigned>().max())
-		{
-			if (where == std::numeric_limits<unsigned>().max())
-			{
-				structure.emplace_back(std::move(what));
-			}
-			else
-			{
-				structure[where].m_resource = std::move(what);
-			}
-		}
-
-		cresource_manager() : m_count(0), m_fragmentations(0) {};
-		virtual ~cresource_manager();
-
-		virtual bool on_start() {return false;};
-		virtual void on_update(float dt) {};
-		virtual void on_shutdown() {};
-
-
-		TResourceHandleType get(stringview_t name) const;
-		const TNativeResourceType& raw(TResourceHandleType handle) const;
-		void unload(TResourceHandleType handle);
-
-	private:
-		struct swrapper
-		{
-			swrapper() = default;
-			swrapper(TNativeResourceType resource) : m_resource(std::move(resource)) {}
-
-			TNativeResourceType m_resource;
-			bool m_removed = false;
-		};
-
-	protected:
-		vector_t<swrapper> m_resources;
-		umap_t<unsigned, TResourceHandleType> m_lookup;
-
-	private:
-		unsigned m_count;
-		unsigned m_fragmentations;
-
-	protected:
-		inline bool fragmented() const { return m_fragmentations > 0; }
-		inline TResourceHandleType increment() { auto out = SCAST(TResourceHandleType, m_count++); return out; }
-		inline void decrement() { m_fragmentations = (m_fragmentations - 1 < 0) ? 0 : m_fragmentations - 1; }
-		unsigned fragmentation_slot();
-
-		virtual void on_resource_unload(TNativeResourceType& resource) {};
-		virtual bool init() { return false; }
-
-		RTTR_ENABLE(iresource_manager);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResourceHandleType, typename TNativeResourceType>
-	unsigned cresource_manager<TResourceHandleType, TNativeResourceType>::fragmentation_slot()
-	{
-		for (auto i = 0u; i < m_resources.size(); ++i)
-		{
-			if (m_resources[i].m_removed)
-			{
-				return i;
-			}
-		}
-
-		return std::numeric_limits<unsigned>().max();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResourceHandleType, typename TNativeResourceType>
-	const TNativeResourceType& cresource_manager<TResourceHandleType, TNativeResourceType>::raw(TResourceHandleType handle) const
-	{
-		return m_resources[handle].m_resource;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResourceHandleType, typename TNativeResourceType>
-	void cresource_manager<TResourceHandleType, TNativeResourceType>::unload(TResourceHandleType handle)
-	{
-		auto& wrapper = m_resources[handle];
-
-		//- handle underlying unload of resource specific to manager
-		on_resource_unload(wrapper.m_resource);
-
-		algorithm::erase_if(m_lookup, [&](auto it)
-			{
-				return it->second == handle;
-			});
-
-		--m_count;
-		++m_fragmentations;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResourceHandleType, typename TNativeResourceType>
-	cresource_manager<TResourceHandleType, TNativeResourceType>::~cresource_manager()
-	{
-		while (!m_resources.empty())
-		{
-			on_resource_unload(m_resources.back().m_resource);
-
-			m_resources.pop_back();
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResourceHandleType, typename TNativeResourceType>
-	TResourceHandleType cresource_manager<TResourceHandleType, TNativeResourceType>::get(stringview_t name) const
-	{
-		auto h = algorithm::hash(name);
-
-		if (auto iter = m_lookup.find(h); iter != m_lookup.end())
-		{
-			return iter->second;
-		}
-		return invalid_handle_t;
-	}
 
 } //- core
 

@@ -731,6 +731,7 @@ RLAPI int rlGetLocationUniform(unsigned int shaderId, const char *uniformName); 
 RLAPI int rlGetLocationAttrib(unsigned int shaderId, const char *attribName);   // Get shader location attribute
 RLAPI void rlSetUniform(int locIndex, const void *value, int uniformType, int count); // Set shader value uniform
 RLAPI void rlSetUniformMatrix(int locIndex, Matrix mat);                        // Set shader value matrix
+RLAPI void rlSetUniformMatrixEx(int locIndex, float mat[16]);                     // Set shader value matrix
 RLAPI void rlSetUniformSampler(int locIndex, unsigned int textureId);           // Set shader value sampler
 RLAPI void rlSetShader(unsigned int id, int *locs);                             // Set shader currently active (id and locations)
 
@@ -4144,6 +4145,14 @@ void rlSetUniformMatrix(int locIndex, Matrix mat)
         mat.m12, mat.m13, mat.m14, mat.m15
     };
     glUniformMatrix4fv(locIndex, 1, false, matfloat);
+#endif
+}
+
+// Set shader value uniform matrix
+void rlSetUniformMatrixEx(int locIndex, float mat[16])
+{
+#if defined(GRAPHICS_API_OPENGL_33) || defined(GRAPHICS_API_OPENGL_ES2)
+	glUniformMatrix4fv(locIndex, 1, false, mat);
 #endif
 }
 
