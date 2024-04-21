@@ -658,7 +658,14 @@ namespace core
 			simdjson::dom::parser parser;
 			simdjson::dom::element element;
 
-			parser.parse(json.data(), json.length()).get(element);
+			if (parser.parse(json.data(), json.length()).get(element) != simdjson::SUCCESS)
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+						fmt::format("Failed deserializing from json string with expected type '{}'", expected.get_name().data()));
+				}
+			}
 
 			return from_json_object(expected, element);
 		}
