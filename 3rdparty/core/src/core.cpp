@@ -197,7 +197,7 @@ namespace core
 		{
 			char* text = nullptr;
 
-			if (file_path != nullptr)
+			if (file_path.data() != nullptr)
 			{
 				FILE* file = fopen(file_path.data(), "rt");
 
