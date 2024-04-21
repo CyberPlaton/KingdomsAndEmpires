@@ -25,25 +25,6 @@ function set_basic_defines()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function set_bx_includes()
-	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
-	if PLATFORM == "windows" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
-	elseif PLATFORM == "linux" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
-	elseif PLATFORM == "macosx" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
-	end
-end
-
-------------------------------------------------------------------------------------------------------------------------
-function set_sdl_deps()
-	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
-	links{"SDL2", "SDL2main"}
-end
-
-
-------------------------------------------------------------------------------------------------------------------------
 function load_project(project, dir)
 	include(path.join(dir, project) .. ".lua")
 end

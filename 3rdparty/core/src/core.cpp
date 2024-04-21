@@ -107,7 +107,7 @@ namespace core
 			uint8_t* data = nullptr;
 			*data_size_out = 0;
 
-			if (file_path != nullptr)
+			if (file_path.data() != nullptr)
 			{
 				FILE* file = fopen(file_path.data(), "rb");
 
