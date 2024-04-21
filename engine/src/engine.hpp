@@ -69,9 +69,6 @@ namespace engine
 		template<class TService>
 		static auto service();
 
-		template<class TResourceManager>
-		static auto resource_manager();
-
 		STATIC_INSTANCE(cengine, s_cengine);
 		~cengine();
 
@@ -98,13 +95,6 @@ namespace engine
 	auto engine::cengine::service()
 	{
 		return core::cservice_manager::find<TService>();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<class TResourceManager>
-	auto engine::cengine::resource_manager()
-	{
-		return service<cresource_management_service>()->find<TResourceManager>();
 	}
 
 } //- engine

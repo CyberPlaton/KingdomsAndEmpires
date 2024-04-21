@@ -4,7 +4,16 @@
 
 namespace camera_system
 {
-	//- stack-machine-kind camera manager
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cdefault_camera final : public sm::ccamera
+	{
+	public:
+		cdefault_camera() {};
+		~cdefault_camera() {};	
+	};
+
+	//- Stack-machine-kind camera manager
 	//------------------------------------------------------------------------------------------------------------------------
 	class ccamera_manager : public sm::icamera_manager
 	{
@@ -29,7 +38,7 @@ namespace camera_system
 
 	private:
 		umap_t<unsigned, ptr_t<sm::ccamera>> m_cameras;
-		ptr_t<sm::ccamera> m_default;
+		ptr_t<cdefault_camera> m_default;
 		unsigned m_active_camera = 0;
 
 		RTTR_ENABLE(sm::icamera_manager);

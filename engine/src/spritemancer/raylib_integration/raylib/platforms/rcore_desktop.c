@@ -74,7 +74,7 @@
 
     //#define GLFW_EXPOSE_NATIVE_X11      // WARNING: Exposing Xlib.h > X.h results in dup symbols for Font type
     //#define GLFW_EXPOSE_NATIVE_WAYLAND
-    #include <raylib/external/glfw/include/glfw3native.h>// Required for: glfwGetX11Window()
+    #include <raylib/external/glfw/include/GLFW/glfw3native.h>// Required for: glfwGetX11Window()
 #endif
 #if defined(__APPLE__)
     #include <unistd.h>                 // Required for: usleep()

@@ -64,9 +64,9 @@ namespace ai
 		template<typename TType>
 		TType& cblackboard::emplace(stringview_t name, TType value)
 		{
-			auto& [it, result] = m_storage.emplace(name.data(), value);
+			auto [it, result] = m_storage.emplace(name.data(), value);
 
-			return it->second.get_value<TType>();
+			return it->second.template get_value<TType>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ namespace ai
 		template<typename TType>
 		const TType& cblackboard::find(stringview_t name) const
 		{
-			return m_storage.at(name).get_value<TType>();
+			return m_storage.at(name).template get_value<TType>();
 		}
 
 		namespace debug

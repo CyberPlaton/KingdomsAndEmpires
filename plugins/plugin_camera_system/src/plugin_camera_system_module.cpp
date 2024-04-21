@@ -10,7 +10,7 @@ namespace camera_system
 
 		//- create engine default camera,
 		//- so we can still run without a user made one
-		m_default = std::make_unique<sm::ccamera>();
+		m_default = std::make_unique<cdefault_camera>();
 		m_default->viewport(0.0f, 0.0f, SCAST(float, w), SCAST(float, h));
 		m_default->clearcolor(250, 250, 250, 250);
 		m_default->move_to({ 0.0f, 0.0f });
