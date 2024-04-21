@@ -6,7 +6,7 @@ VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
 THIRDPARTY = {"spdlog", "core", "glm", "EASTL", "argparse", "nlohmann",
 			  "magic_enum", "taskflow", "mimalloc", "flecs", "LuaBridge", "Lua",
-			  "rttr", "Tracy", "slang"}
+			  "Tracy", "slang"}
 PLUGINS = {"test", "test2", "plugin_logging", "plugin_module_example",
 			"plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human", "plugin_render_system",
 			"plugin_status_effects", "plugin_kingdoms_and_empires", "plugin_tiny_editor", "plugin_ai"}

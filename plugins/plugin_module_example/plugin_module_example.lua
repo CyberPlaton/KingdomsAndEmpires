@@ -5,7 +5,7 @@ function plugin_module_example()
 					{},
 					{},
 					{"plugin_logging", "test", "test2"},
-					{"rttr", "EASTL", "spdlog", "core", "mimalloc", "flecs"},
+					{"EASTL", "spdlog", "core", "mimalloc", "flecs"},
 					{},
 					{"nlohmann", "magic_enum", "taskflow", "argparse", "glm", "Tracy"},
 					{},

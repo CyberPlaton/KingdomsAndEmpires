@@ -5,11 +5,11 @@ function core()
 					{},
 					{"core_EXPORTS"},
 					{},
-					{"rttr", "EASTL", "spdlog", "mimalloc"},
+					{"EASTL", "spdlog", "mimalloc"},
 					"c++",
 					{}, -- plugin_headeronly_deps
 					{"rapidjson", "nlohmann", "glm", "magic_enum", "taskflow", "Tracy"}, -- thirdparty_headeronly_deps
-					{} -- additional_includes
+					{"src"} -- additional_includes
 					)
 end
 core()
