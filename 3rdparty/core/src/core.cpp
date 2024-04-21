@@ -151,7 +151,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size)
 		{
-			if (file_path != nullptr)
+			if (file_path.data() != nullptr)
 			{
 				FILE* file = fopen(file_path.data(), "wb");
 
