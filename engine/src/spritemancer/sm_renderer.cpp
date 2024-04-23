@@ -4,21 +4,29 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_line(const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
+	void crenderer::use_camera(renderlayer_t layer, const vec2_t& position, const vec2_t& offset,
+		float rotation, float zoom, const core::scolor& clearcolor)
 	{
-		buffer().push(std::move(cdrawcommand::line(start, end, thick, color)));
+		buffer().push(std::move(cdrawcommand::camera(position, offset, zoom, rotation, clearcolor, layer)));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_circle(const vec2_t& center, float radius, const core::scolor& color)
+	void crenderer::draw_line(renderlayer_t layer, const vec2_t& start, const vec2_t& end,
+		float thick, const core::scolor& color)
 	{
-		buffer().push(std::move(cdrawcommand::circle(center, radius, color)));
+		buffer().push(std::move(cdrawcommand::line(start, end, thick, color, layer)));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_rect(const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
+	void crenderer::draw_circle(renderlayer_t layer, const vec2_t& center, float radius, const core::scolor& color)
 	{
-		buffer().push(std::move(cdrawcommand::rectangle(position, dimension, color)));
+		buffer().push(std::move(cdrawcommand::circle(center, radius, color, layer)));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer::draw_rect(renderlayer_t layer, const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
+	{
+		buffer().push(std::move(cdrawcommand::rectangle(position, dimension, color, layer)));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

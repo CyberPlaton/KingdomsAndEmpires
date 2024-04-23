@@ -1319,15 +1319,6 @@ namespace core
 		snode m_root;
 	};
 
-	//- Interface class for resource manager base, deriving from service so that we can retrieve it from anywhere.
-	//------------------------------------------------------------------------------------------------------------------------
-	class iresource_manager : public cservice
-	{
-	public:
-
-		RTTR_ENABLE(cservice);
-	};
-
 } //- core
 
 namespace core

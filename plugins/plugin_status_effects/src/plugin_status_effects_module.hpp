@@ -79,6 +79,9 @@ namespace effects
 				{
 					ZoneScopedN("Status Effect System");
 
+					//- TODO: disable this for now, will be reworked later on
+					return;
+
 					vector_t<unsigned> to_be_removed;
 
 					for (auto i = 0u; i < affectable.m_active_effects.size(); ++i)

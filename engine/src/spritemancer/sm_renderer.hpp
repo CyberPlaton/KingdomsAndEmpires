@@ -14,11 +14,13 @@ namespace sm
 		crenderer() = default;
 		~crenderer() = default;
 
-		void draw_line(const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color);
+		void use_camera(renderlayer_t layer, const vec2_t& position, const vec2_t& offset, float rotation, float zoom, const core::scolor& clearcolor);
 
-		void draw_circle(const vec2_t& center, float radius, const core::scolor& color);
+		void draw_line(renderlayer_t layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color);
 
-		void draw_rect(const vec2_t& position, const vec2_t& dimension, const core::scolor& color);
+		void draw_circle(renderlayer_t layer, const vec2_t& center, float radius, const core::scolor& color);
+
+		void draw_rect(renderlayer_t layer, const vec2_t& position, const vec2_t& dimension, const core::scolor& color);
 
 		void draw_text();
 

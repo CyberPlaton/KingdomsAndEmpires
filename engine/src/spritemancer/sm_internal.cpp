@@ -113,13 +113,15 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::on_begin_drawing(ccamera* camera)
+	void ccontext::on_begin_drawing()
 	{
 		m_backbuffer.bind();
+		raylib::ClearBackground(raylib::RAYWHITE);
 		begin_default_blend_mode();
-		raylib::ClearBackground(to_cliteral(camera->clearcolor()));
-		camera->use();
-		m_frame_camera = camera;
+
+		//- this part is begin reworked
+		//raylib::ClearBackground(to_cliteral(camera->clearcolor()));
+		//camera->use();
 
 		//- part where rendering in world space ought to be done
 		//- originally the renderpass_stack part
@@ -128,7 +130,6 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::on_frame_end()
 	{
-		m_frame_camera->end();
 		end_blend_mode();
 		m_backbuffer.unbind();
 	}
@@ -181,18 +182,37 @@ namespace sm
 				}
 				case drawcommand_type_rect:
 				{
+					const auto& rect = command.get<drawcommand::srectangle>();
+					raylib::DrawRectangleV({ rect.m_position.x, rect.m_position.y }, { rect.m_size.x, rect.m_size.y }, to_cliteral(rect.m_color));
 					break;
 				}
 				case drawcommand_type_circle:
 				{
+					const auto& circle = command.get<drawcommand::scircle>();
+					raylib::DrawCircle(circle.m_center.x, circle.m_center.y, circle.m_radius, to_cliteral(circle.m_color));
 					break;
 				}
 				case drawcommand_type_line:
 				{
+					const auto& line = command.get<drawcommand::sline>();
+					raylib::DrawLineEx({ line.m_start.x, line.m_start.y }, { line.m_end.x, line.m_end.y }, line.m_thick, to_cliteral(line.m_color));
 					break;
 				}
 				case drawcommand_type_text:
 				{
+					break;
+				}
+				case drawcommand_type_opcode:
+				{
+					const auto& op = command.get<drawcommand::sopcode>();
+					break;
+				}
+				case drawcommand_type_camera:
+				{
+					//- TODO: camera clearcolor is not used to clear background
+					//- decide on how to use it and implement
+					const auto& cam = command.get<drawcommand::scamera>();
+					raylib::BeginMode2D(raylib::Camera2D{{ cam.m_position.x, cam.m_position.y }, { cam.m_offset.x, cam.m_offset.y }, cam.m_rotation, cam.m_zoom });
 					break;
 				}
 				default:
@@ -205,12 +225,15 @@ namespace sm
 		}
 		m_drawcommands.clear();
 
+		//- in any case we do not use camera mode for presenting backbuffer
+		raylib::EndMode2D();
+
 		//- Present render target to screen
 		raylib::BeginDrawing();
 
 		if (m_has_fxaa)
 		{
-			const auto& technique = m_shader_manager.get(m_fxaa);
+			const auto& technique = sm().get(m_fxaa);
 			const auto& rendertarget = m_backbuffer.target();
 			const auto resolution = vec2_t(rendertarget.texture.width, rendertarget.texture.height);
 
@@ -254,7 +277,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::begin_render_target(rendertarget_t texture)
 	{
-		m_rendertarget_manager.get(texture).bind();
+		rm().get(texture).bind();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -268,25 +291,54 @@ namespace sm
 	{
 		for (const auto& command : buffer)
 		{
+			//- TODO: find a more efficient way to move from buffer to required layer
 			switch (command.type())
 			{
 			case drawcommand_type_sprite:
 			{
 				const auto& sprite = command.get<drawcommand::ssprite>();
 
-				//- TODO: find a more efficient way to move from buffer to required layer
 				m_drawcommands[sprite.m_layer].emplace_back(command);
+				break;
+			}
+			case drawcommand_type_opcode:
+			{
+				const auto& op = command.get<drawcommand::sopcode>();
+
+				m_drawcommands[op.m_layer].emplace_back(command);
+
+				break;
+			}
+			case drawcommand_type_camera:
+			{
+				const auto& cam = command.get<drawcommand::scamera>();
+
+				m_drawcommands[cam.m_layer].emplace_back(command);
+
+				break;
 			}
 			case drawcommand_type_rect:
 			{
+				const auto& rect = command.get<drawcommand::srectangle>();
+
+				m_drawcommands[rect.m_layer].emplace_back(command);
+
 				break;
 			}
 			case drawcommand_type_circle:
 			{
+				const auto& circle = command.get<drawcommand::scircle>();
+
+				m_drawcommands[circle.m_layer].emplace_back(command);
+
 				break;
 			}
 			case drawcommand_type_line:
 			{
+				const auto& line = command.get<drawcommand::sline>();
+
+				m_drawcommands[line.m_layer].emplace_back(command);
+
 				break;
 			}
 			case drawcommand_type_text:
@@ -303,8 +355,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ccontext::ccontext()
+	ccontext::ccontext() :
+		m_fxaa(invalid_handle_t), m_default(invalid_handle_t), m_sprite(invalid_handle_t), m_has_fxaa(false), m_mainwindow(nullptr)
 	{
+		m_spriteatlas_manager = core::cservice_manager::emplace<cspriteatlas_manager>();
+		m_shader_manager = core::cservice_manager::emplace<cshader_manager>();
+		m_material_manager = core::cservice_manager::emplace<cmaterial_manager>();
+		m_texture_manager = core::cservice_manager::emplace<ctexture_manager>();
+		m_rendertarget_manager = core::cservice_manager::emplace<crendertarget_manager>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

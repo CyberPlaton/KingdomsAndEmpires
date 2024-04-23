@@ -6,7 +6,7 @@ namespace sm
 {
 	//- Constant time access to textures by handle. Logarithmic time loading and unloading.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture_manager final : core::iresource_manager
+	class ctexture_manager final : public core::cservice
 	{
 	public:
 		ctexture_manager();
@@ -22,10 +22,12 @@ namespace sm
 	private:
 		core::detail::cdynamic_pool<ctexture> m_textures;
 		umap_t<string_t, texture_t> m_handles;
+
+		RTTR_ENABLE(core::cservice);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cshader_manager final : core::iresource_manager
+	class cshader_manager final : public core::cservice
 	{
 	public:
 		cshader_manager();
@@ -41,10 +43,12 @@ namespace sm
 	private:
 		core::detail::cdynamic_pool<ctechnique> m_shaders;
 		umap_t<string_t, technique_t> m_handles;
+
+		RTTR_ENABLE(core::cservice);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmaterial_manager final : core::iresource_manager
+	class cmaterial_manager final : public core::cservice
 	{
 	public:
 		cmaterial_manager();
@@ -61,10 +65,12 @@ namespace sm
 	private:
 		core::detail::cdynamic_pool<cmaterial> m_materials;
 		umap_t<string_t, material_t> m_handles;
+
+		RTTR_ENABLE(core::cservice);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas_manager final : core::iresource_manager
+	class cspriteatlas_manager final : public core::cservice
 	{
 	public:
 		cspriteatlas_manager();
@@ -78,10 +84,12 @@ namespace sm
 	private:
 		core::detail::cdynamic_pool<cspriteatlas> m_spritesheets;
 		umap_t<string_t, spriteatlas_t> m_handles;
+
+		RTTR_ENABLE(core::cservice);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class crendertarget_manager final : core::iresource_manager
+	class crendertarget_manager final : public core::cservice
 	{
 	public:
 		crendertarget_manager();
@@ -96,6 +104,67 @@ namespace sm
 	private:
 		core::detail::cdynamic_pool<crendertarget> m_rendertargets;
 		umap_t<string_t, spriteatlas_t> m_handles;
+
+		RTTR_ENABLE(core::cservice);
 	};
+
+} //- sm
+
+namespace sm
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(ctexture_manager)
+	{
+		rttr::registration::class_<ctexture_manager>("ctexture_manager")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cshader_manager)
+	{
+		rttr::registration::class_<cshader_manager>("cshader_manager")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cmaterial_manager)
+	{
+		rttr::registration::class_<cmaterial_manager>("cmaterial_manager")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cspriteatlas_manager)
+	{
+		rttr::registration::class_<cspriteatlas_manager>("cspriteatlas_manager")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(crendertarget_manager)
+	{
+		rttr::registration::class_<crendertarget_manager>("crendertarget_manager")
+			.constructor<>()
+			(
+				rttr::policy::ctor::as_raw_ptr
+			)
+			;
+	}
 
 } //- sm

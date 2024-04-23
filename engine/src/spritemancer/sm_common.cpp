@@ -13,6 +13,19 @@ namespace sm
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::cdrawcommand cdrawcommand::camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation,
+		const core::scolor& clearcolor, renderlayer_t layer)
+	{
+		return cdrawcommand(drawcommand_type_camera, drawcommand::scamera{ clearcolor, position, offset, rotation, zoom, layer });
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cdrawcommand cdrawcommand::opcode(drawcommand_opcode code, renderlayer_t layer)
+	{
+		return cdrawcommand(drawcommand_type_opcode, drawcommand::sopcode{ code, layer });
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::cdrawcommand cdrawcommand::sprite(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h,
 		float r, material_t material, texture_t texture, renderlayer_t layer)
 	{
@@ -27,21 +40,23 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::cdrawcommand cdrawcommand::line(const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
+	sm::cdrawcommand cdrawcommand::line(const vec2_t& start, const vec2_t& end, float thick,
+		const core::scolor& color, renderlayer_t layer)
 	{
-		return cdrawcommand(drawcommand_type_line, drawcommand::sline{ color, start, end, thick });
+		return cdrawcommand(drawcommand_type_line, drawcommand::sline{ color, start, end, thick, layer });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::cdrawcommand cdrawcommand::circle(const vec2_t& center, float radius, const core::scolor& color)
+	sm::cdrawcommand cdrawcommand::circle(const vec2_t& center, float radius, const core::scolor& color, renderlayer_t layer)
 	{
-		return cdrawcommand(drawcommand_type_circle, drawcommand::scircle{ color, center, radius });
+		return cdrawcommand(drawcommand_type_circle, drawcommand::scircle{ color, center, radius, layer});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::cdrawcommand cdrawcommand::rectangle(const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
+	sm::cdrawcommand cdrawcommand::rectangle(const vec2_t& position, const vec2_t& dimension,
+		const core::scolor& color, renderlayer_t layer)
 	{
-		return cdrawcommand(drawcommand_type_rect, drawcommand::srectangle{ color, position, dimension });
+		return cdrawcommand(drawcommand_type_rect, drawcommand::srectangle{ color, position, dimension, layer});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

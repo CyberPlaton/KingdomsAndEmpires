@@ -130,11 +130,20 @@ namespace sm
 	enum drawcommand_type : uint8_t
 	{
 		drawcommand_type_none = 0,
-		drawcommand_type_sprite,
-		drawcommand_type_rect,
-		drawcommand_type_circle,
-		drawcommand_type_line,
-		drawcommand_type_text,
+		drawcommand_type_sprite,	//- draw a sprite
+		drawcommand_type_rect,		//- draw a rectangle (filled or lines)
+		drawcommand_type_circle,	//- draw a circle (filled or lines)
+		drawcommand_type_line,		//- draw a line
+		drawcommand_type_text,		//- draw some text
+		drawcommand_type_opcode,	//- push op code
+		drawcommand_type_camera,	//- push camera data to be used. Changes subsequent calls to world space
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum drawcommand_opcode : uint8_t
+	{
+		drawcommand_opcode_none = 0,
+		drawcommand_opcode_mode_2d,	//- push command to start drawing in world space
 	};
 
 	namespace drawcommand
@@ -152,7 +161,6 @@ namespace sm
 			renderlayer_t m_layer;
 		};
 
-		//- TODO: consider adding layered rendering to primitives below
 		//------------------------------------------------------------------------------------------------------------------------
 		struct sline
 		{
@@ -160,6 +168,7 @@ namespace sm
 			vec2_t m_start;
 			vec2_t m_end;
 			float m_thick;
+			renderlayer_t m_layer;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -168,6 +177,7 @@ namespace sm
 			core::scolor m_color;
 			vec2_t m_center;
 			float m_radius;
+			renderlayer_t m_layer;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -176,12 +186,33 @@ namespace sm
 			core::scolor m_color;
 			vec2_t m_position;
 			vec2_t m_size;
+			renderlayer_t m_layer;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
 		struct stext
 		{
 			//- TODO: Implement dferred text rendering
+			renderlayer_t m_layer;
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		struct scamera
+		{
+			core::scolor m_clearcolor;
+			vec2_t m_position;
+			vec2_t m_offset;
+			float m_rotation;
+			float m_zoom;
+			renderlayer_t m_layer;
+		};
+
+		//- generic command holding only an opcode to alter render state
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sopcode
+		{
+			drawcommand_opcode m_opcode;
+			renderlayer_t m_layer;
 		};
 
 	} //- drawcommand
@@ -193,15 +224,20 @@ namespace sm
 	class cdrawcommand
 	{
 	public:
+		static cdrawcommand camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation,
+			const core::scolor& clearcolor, renderlayer_t layer);
+
+		static cdrawcommand opcode(drawcommand_opcode code, renderlayer_t layer);
+
 		static cdrawcommand sprite(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h, float r,
 			material_t material, texture_t texture, renderlayer_t layer);
 
 		static cdrawcommand sprite(const core::srect& rect, const core::scolor& color, const vec2_t& position, const vec2_t& dimension, float r,
 			material_t material, texture_t texture, renderlayer_t layer);
 
-		static cdrawcommand line(const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color);
-		static cdrawcommand circle(const vec2_t& center, float radius, const core::scolor& color);
-		static cdrawcommand rectangle(const vec2_t& position, const vec2_t& dimension, const core::scolor& color);
+		static cdrawcommand line(const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color, renderlayer_t layer);
+		static cdrawcommand circle(const vec2_t& center, float radius, const core::scolor& color, renderlayer_t layer);
+		static cdrawcommand rectangle(const vec2_t& position, const vec2_t& dimension, const core::scolor& color, renderlayer_t layer);
 		static cdrawcommand text();
 
 		template<typename... ARGS>
@@ -231,7 +267,9 @@ namespace sm
 			drawcommand::sline,
 			drawcommand::scircle,
 			drawcommand::srectangle,
-			drawcommand::stext> as;
+			drawcommand::stext,
+			drawcommand::scamera,
+			drawcommand::sopcode> as;
 
 		drawcommand_type m_type;
 	};

@@ -1984,7 +1984,6 @@ namespace core
 				s_service_types[id] = t;
 				s_services[t] = std::move(var);
 				s_service_count++;
-
 				return true;
 			}
 			else

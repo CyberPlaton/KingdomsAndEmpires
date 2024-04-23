@@ -157,8 +157,6 @@ namespace engine
 			return m_result;
 		}
 
-		const auto* camera_manager = core::cservice_manager::find<sm::icamera_manager>("ccamera_manager");
-
 		//- enter engine main loop
 		while (!raylib::WindowShouldClose())
 		{
@@ -175,7 +173,9 @@ namespace engine
 
 				core::cservice_manager::on_update(0.016f);
 
-				ecs::cworld_manager::instance().prepare(camera_manager->active_camera()->world_visible_area());
+				//- TODO: we used to do this with an active camera, while camera system is being reworked
+				//- this here is an open question
+				// ecs::cworld_manager::instance().prepare(camera_manager->active_camera()->world_visible_area());
 
 				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_update);
 
@@ -186,7 +186,7 @@ namespace engine
 			{
 				ZoneScopedN("system_running_phase_on_world_render");
 
-				sm::begin_drawing(camera_manager->active_camera());
+				sm::begin_drawing();
 
 				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_world_render);
 
@@ -257,17 +257,19 @@ namespace engine
 		}
 
 		//- register common engine services
+		logging::log_info("Initialize services...");
+
 		for (const auto& name : m_config.m_service_cfg.m_services)
 		{
 			const auto type = rttr::type::get_by_name(name.c_str());
 
 			if (type.is_valid() && core::cservice_manager::emplace(type))
 			{
-				logging::log_info(fmt::format("Registered service: '{}'", type.get_name().data()));
+				logging::log_info(fmt::format("\t'{}' success...", type.get_name().data()));
 			}
 			else
 			{
-				logging::log_critical(fmt::format("Failed registering service: '{}'", type.get_name().data()));
+				logging::log_critical(fmt::format("\t'{}' failed...", type.get_name().data()));
 
 				//- fail configuration but let all try to register so we know all that are bugous
 				m_result = engine_run_result_failed_registering_services;
