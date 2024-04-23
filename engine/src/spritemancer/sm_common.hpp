@@ -152,6 +152,7 @@ namespace sm
 			renderlayer_t m_layer;
 		};
 
+		//- TODO: consider adding layered rendering to primitives below
 		//------------------------------------------------------------------------------------------------------------------------
 		struct sline
 		{

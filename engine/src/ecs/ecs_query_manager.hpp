@@ -86,6 +86,10 @@ namespace ecs
 		cquery_manager(flecs::world& w);
 		~cquery_manager();
 
+		//- immediate mode query for an entity matching some value in component.
+		template<typename... TComps, typename TCallable>
+		flecs::entity query_one(TCallable callback);
+
 		template<typename... ARGS>
 		unsigned query(ARGS&&... args);
 
@@ -117,6 +121,19 @@ namespace ecs
 		//- Note: for now we do not limit time of processing, but it might become relevant later.
 		void tick();
 	};
+
+	//- example usage:
+	//-
+	//- auto e = w.qm().query_one<ecs::stransform>([](const ecs::stransform& transform)
+	//- {
+	//-		return transform.m_rotation > 45;
+	//- });
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps, typename TCallable>
+	flecs::entity cquery_manager::query_one(TCallable callback)
+	{
+		return world().query<TComps...>().find(callback);
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... ARGS>

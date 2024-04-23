@@ -69,6 +69,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		//- can´t use more than what was configured as foreground threads
 		w.use_threads(engine::cthread_service::hardware_threads() / 2);
 
+		//- example usage of query
+		auto e = w.qm().query_one<ecs::stransform>([](const ecs::stransform& transform)
+			{
+				return transform.m_rotation > 45;
+			});
+
+		if (e.is_valid())
+		{
+
+		}
+
+
 		//- import module with required components
 		w.mm().import_module<module_example::cmy_second_module>();
 		w.mm().import_module<effects::cstatus_effects_module>();

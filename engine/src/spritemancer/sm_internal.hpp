@@ -73,28 +73,7 @@ namespace sm
 		ctexture_manager m_texture_manager;
 		crendertarget_manager m_rendertarget_manager;
 
-		//- World space position of a 2D object after transforming
-		struct sdecomposed_transform
-		{
-			sdecomposed_transform(float x, float y, float w, float h, float r);
-
-			float m_x, m_y, m_w, m_h, m_rotation;
-		};
-
-		//- Final draw command for a sprite ready to be drawn
-		struct ssprite_drawcommand
-		{
-			ssprite_drawcommand(core::srect rect, sdecomposed_transform transform,
-				core::scolor color, material_t material, texture_t texture);
-
-			core::srect m_rect;
-			sdecomposed_transform m_transform;
-			core::scolor m_color;
-			material_t m_material;
-			texture_t m_texture;
-		};
-
-		umap_t<renderlayer_t, vector_t<ssprite_drawcommand>> m_drawcommands;
+		umap_t<renderlayer_t, vector_t<cdrawcommand>> m_drawcommands;
 
 		crendertarget m_backbuffer; //- default render target
 		technique_t m_fxaa;			//- custom anti-aliasing shader

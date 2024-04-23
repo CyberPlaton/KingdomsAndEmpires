@@ -22,11 +22,20 @@ namespace render_system
 
 					//- TODO: we do it like this for now. But intended was to use world().visible_entities()
 					//- and render them only. The same approach should be done with animation.
+					//-
+					//- TODO: also we do not consider hierarchy relationships, but we should, otherwise we will
+					//- have errors
+
+					//- perform a transform to world space and submit for rendering
 
 					for (const auto& pair : sprite.m_materials)
 					{
-						renderer.draw_sprite(sprite.m_layer, { transform.m_x, transform.m_y }, pair.first, pair.second,
-							transform.m_rotation, { transform.m_w, transform.m_h }, sprite.m_source_rectangle,
+						const vec2_t position = { transform.m_x, transform.m_y };
+						const vec2_t scale = { transform.m_w, transform.m_h };
+
+						const auto [p, s, r] = math::transform(position, scale, { 0.0f, 0.0f }, transform.m_rotation);
+
+						renderer.draw_sprite(sprite.m_layer, p, pair.first, pair.second, r, s, sprite.m_source_rectangle,
 							sprite.m_tint, sprite.m_flipx, sprite.m_flipy);
 					}
 				});

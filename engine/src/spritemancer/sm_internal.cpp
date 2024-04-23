@@ -156,20 +156,51 @@ namespace sm
 		{
 			for (const auto& command : pair.second)
 			{
-				const auto& mat = mm().get(command.m_material);
-				const auto& tex = tm().get(command.m_texture);
+				switch (command.type())
+				{
+				case drawcommand_type_sprite:
+				{
+					const auto& sprite = command.get<drawcommand::ssprite>();
 
-				mat.bind();
+					const auto& mat = mm().get(sprite.m_material);
+					const auto& tex = tm().get(sprite.m_texture);
 
-				//- TODO: we do not use width and height from command transform, why
-				src = { command.m_rect.x(), command.m_rect.y() , command.m_rect.w() , command.m_rect.h() };
-				dst = { command.m_transform.m_x, command.m_transform.m_y, src.width, src.height };
+					mat.bind();
 
-				//- TODO: origin should be variable, probably a component thing that should be redirected to here
-				DrawTexturePro(tex.texture(), src, dst, {0.0f, 0.0f}, command.m_transform.m_rotation,
-					{ command.m_color.r(), command.m_color.g() , command.m_color.b() , command.m_color.a() });
+					//- TODO: we do not use width and height from command transform, why
+					src = { sprite.m_rect.x(), sprite.m_rect.y() , sprite.m_rect.w() , sprite.m_rect.h() };
+					dst = { sprite.m_position.x, sprite.m_position.y, src.width, src.height };
 
-				mat.unbind();
+					//- TODO: origin should be variable, probably a component thing that should be redirected to here
+					DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, sprite.m_rotation,
+						{ sprite.m_color.r(), sprite.m_color.g() , sprite.m_color.b() , sprite.m_color.a() });
+
+					mat.unbind();
+
+					break;
+				}
+				case drawcommand_type_rect:
+				{
+					break;
+				}
+				case drawcommand_type_circle:
+				{
+					break;
+				}
+				case drawcommand_type_line:
+				{
+					break;
+				}
+				case drawcommand_type_text:
+				{
+					break;
+				}
+				default:
+				{
+					//- report unknown command type
+					break;
+				}
+				}
 			}
 		}
 		m_drawcommands.clear();
@@ -243,15 +274,8 @@ namespace sm
 			{
 				const auto& sprite = command.get<drawcommand::ssprite>();
 
-				//- perform affine transformation and store for later rendering
-				//- TODO: how to handle parent-child relationships
-				const auto [p, s, r] = math::transform(sprite.m_position, sprite.m_dimension, { 0.0f, 0.0f },
-					sprite.m_rotation);
-
-					m_drawcommands[sprite.m_layer].emplace_back(sprite.m_rect,
-						sdecomposed_transform{ p.x, p.y, s.x, s.y, r },
-						sprite.m_color, algorithm::is_valid_handle(sprite.m_material) ? sprite.m_material : m_default,
-						sprite.m_texture);
+				//- TODO: find a more efficient way to move from buffer to required layer
+				m_drawcommands[sprite.m_layer].emplace_back(command);
 			}
 			case drawcommand_type_rect:
 			{
@@ -285,19 +309,6 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	ccontext::~ccontext()
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ccontext::ssprite_drawcommand::ssprite_drawcommand(core::srect rect, ccontext::sdecomposed_transform transform, core::scolor color,
-		material_t material, texture_t texture) :
-		m_rect(std::move(rect)), m_transform(std::move(transform)), m_color(std::move(color)), m_material(material), m_texture(texture)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ccontext::sdecomposed_transform::sdecomposed_transform(float x, float y, float w, float h, float r) :
-		m_x(x), m_y(y), m_w(w), m_h(h), m_rotation(r)
 	{
 	}
 
