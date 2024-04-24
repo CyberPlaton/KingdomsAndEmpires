@@ -116,12 +116,8 @@ namespace sm
 	void ccontext::on_begin_drawing()
 	{
 		m_backbuffer.bind();
-		raylib::ClearBackground(raylib::RAYWHITE);
-		begin_default_blend_mode();
 
-		//- this part is begin reworked
-		//raylib::ClearBackground(to_cliteral(camera->clearcolor()));
-		//camera->use();
+		begin_default();
 
 		//- part where rendering in world space ought to be done
 		//- originally the renderpass_stack part
@@ -183,18 +179,21 @@ namespace sm
 				case drawcommand_type_rect:
 				{
 					const auto& rect = command.get<drawcommand::srectangle>();
+
 					raylib::DrawRectangleV({ rect.m_position.x, rect.m_position.y }, { rect.m_size.x, rect.m_size.y }, to_cliteral(rect.m_color));
 					break;
 				}
 				case drawcommand_type_circle:
 				{
 					const auto& circle = command.get<drawcommand::scircle>();
+
 					raylib::DrawCircle(circle.m_center.x, circle.m_center.y, circle.m_radius, to_cliteral(circle.m_color));
 					break;
 				}
 				case drawcommand_type_line:
 				{
 					const auto& line = command.get<drawcommand::sline>();
+
 					raylib::DrawLineEx({ line.m_start.x, line.m_start.y }, { line.m_end.x, line.m_end.y }, line.m_thick, to_cliteral(line.m_color));
 					break;
 				}
@@ -206,12 +205,21 @@ namespace sm
 				{
 					const auto& op = command.get<drawcommand::sopcode>();
 
+					//- execute opcode
 					switch(op.m_opcode)
 					{
 					case drawcommand_opcode_clear:
 					{
-						const auto& color = op.m_data.cast_ref<core::scolor>();
-						raylib::ClearBackground(to_cliteral(color));
+						if (op.m_data.is<core::scolor>())
+						{
+							const auto& color = op.m_data.get<core::scolor>();
+
+							raylib::ClearBackground(to_cliteral(color));
+						}
+						else
+						{
+							//- warn
+						}
 						break;
 					}
 					default:
@@ -224,9 +232,8 @@ namespace sm
 				}
 				case drawcommand_type_camera:
 				{
-					//- TODO: camera clearcolor is not used to clear background
-					//- decide on how to use it and implement
 					const auto& cam = command.get<drawcommand::scamera>();
+
 					raylib::BeginMode2D(raylib::Camera2D{{ cam.m_position.x, cam.m_position.y }, { cam.m_offset.x, cam.m_offset.y }, cam.m_rotation, cam.m_zoom });
 					break;
 				}
@@ -273,9 +280,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::begin_default_blend_mode()
+	void ccontext::begin_default()
 	{
 		raylib::BeginBlendMode(raylib::BLEND_ALPHA);
+
+		//- default clear of backbuffer
+		raylib::ClearBackground(raylib::RAYWHITE);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -307,7 +317,7 @@ namespace sm
 	{
 		for (const auto& command : buffer)
 		{
-			//- TODO: find a more efficient way to move from buffer to required layer
+			//- delegate commands to their respective layers
 			switch (command.type())
 			{
 			case drawcommand_type_sprite:
@@ -374,11 +384,11 @@ namespace sm
 	ccontext::ccontext() :
 		m_fxaa(invalid_handle_t), m_default(invalid_handle_t), m_sprite(invalid_handle_t), m_has_fxaa(false), m_mainwindow(nullptr)
 	{
-		m_spriteatlas_manager = core::cservice_manager::emplace<cspriteatlas_manager>();
-		m_shader_manager = core::cservice_manager::emplace<cshader_manager>();
-		m_material_manager = core::cservice_manager::emplace<cmaterial_manager>();
-		m_texture_manager = core::cservice_manager::emplace<ctexture_manager>();
-		m_rendertarget_manager = core::cservice_manager::emplace<crendertarget_manager>();
+		m_spriteatlas_manager = core::cservice_manager::find<cspriteatlas_manager>();
+		m_shader_manager = core::cservice_manager::find<cshader_manager>();
+		m_material_manager = core::cservice_manager::find<cmaterial_manager>();
+		m_texture_manager = core::cservice_manager::find<ctexture_manager>();
+		m_rendertarget_manager = core::cservice_manager::find<crendertarget_manager>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

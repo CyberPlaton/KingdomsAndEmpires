@@ -13,10 +13,9 @@ namespace sm
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::cdrawcommand cdrawcommand::camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation,
-		const core::scolor& clearcolor, renderlayer_t layer)
+	sm::cdrawcommand cdrawcommand::camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation, renderlayer_t layer)
 	{
-		return cdrawcommand(drawcommand_type_camera, drawcommand::scamera{ clearcolor, position, offset, rotation, zoom, layer });
+		return cdrawcommand(drawcommand_type_camera, drawcommand::scamera{ position, offset, rotation, zoom, layer });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

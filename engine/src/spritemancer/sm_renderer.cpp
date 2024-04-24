@@ -4,10 +4,16 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::use_camera(renderlayer_t layer, const vec2_t& position, const vec2_t& offset,
-		float rotation, float zoom, const core::scolor& clearcolor)
+	void crenderer::clear_view(renderlayer_t layer, const core::scolor& color)
 	{
-		buffer().push(std::move(cdrawcommand::camera(position, offset, zoom, rotation, clearcolor, layer)));
+		buffer().push(std::move(cdrawcommand::opcode(drawcommand_opcode_clear, core::cany(color), layer)));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer::use_camera(renderlayer_t layer, const vec2_t& position, const vec2_t& offset,
+		float rotation, float zoom)
+	{
+		buffer().push(std::move(cdrawcommand::camera(position, offset, zoom, rotation, layer)));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

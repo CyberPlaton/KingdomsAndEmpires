@@ -50,6 +50,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	cfg.m_service_cfg.m_services.emplace_back("ccamera_manager");
 	cfg.m_service_cfg.m_services.emplace_back("cthread_service");
 	cfg.m_service_cfg.m_services.emplace_back("cevent_service");
+	cfg.m_service_cfg.m_services.emplace_back("ctexture_manager");
+	cfg.m_service_cfg.m_services.emplace_back("cshader_manager");
+	cfg.m_service_cfg.m_services.emplace_back("cmaterial_manager");
+	cfg.m_service_cfg.m_services.emplace_back("cspriteatlas_manager");
+	cfg.m_service_cfg.m_services.emplace_back("crendertarget_manager");
 
 	cfg.m_layer_cfg.m_layers.emplace_back("cgame");
 	cfg.m_layer_cfg.m_layers.emplace_back("ceditor");

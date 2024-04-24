@@ -46,7 +46,8 @@ namespace render_system
 						//- TODO: this is really stupid... is to be reworked together with how to process camera type commands
 						if (layers.count(sprite.m_layer) == 0)
 						{
-							renderer.use_camera(sprite.m_layer, p, o, r, z, clear);
+							renderer.clear_view(sprite.m_layer, clear);
+							renderer.use_camera(sprite.m_layer, p, o, r, z);
 
 							layers.insert(sprite.m_layer);
 						}

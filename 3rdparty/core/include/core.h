@@ -1153,67 +1153,52 @@ namespace core
 		std::chrono::time_point<std::chrono::high_resolution_clock> m_timepoint;
 	};
 
-
-	//- TODO: Consider replacing std::any with rttr::variant. It is easier to work with and has more information.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cany final
 	{
 	public:
 		cany() = default;
-		template<typename TType>
-		explicit cany(TType&& data) :
-			m_data(data)
-		{
-		}
-		template<typename TType>
-		explicit cany(const TType& data) :
-			m_data(data)
-		{
-		}
-		template<typename TType>
-		explicit cany(TType data) :
-			m_data(data)
-		{
-		}
+		cany(rttr::variant var) : m_data(std::move(var)) { }
 		cany& operator=(const cany& other);
 		~cany();
 
-		inline decltype(auto) type() const { return m_data.type().hash_code(); }
-		inline stringview_t type_name() const { return m_data.type().name(); }
-		inline bool empty() const { return !m_data.has_value(); }
+		inline rttr::type::type_id type() const { return m_data.get_type().get_id(); }
+		inline stringview_t type_name() const { return m_data.get_type().get_name().data(); }
+		inline bool empty() const { return !m_data.is_valid(); }
 
 		template<typename TType>
 		inline bool is() const
 		{
-			return typeid(TType).hash_code() == type();
+			return rttr::type::get<TType>().get_id() == type();
 		}
 
+		//- data type we are holding must be copy-constructible
 		template<typename TType>
-		TType cast() const noexcept
+		TType copy()
 		{
 			ASSERT(is<TType>(), "Casting to another data type is not allowed");
 
-			return std::any_cast<TType>(m_data);
+			return m_data.get_value<TType>();
 		}
 
 		template<typename TType>
-		TType& cast_ref() noexcept
+		TType& get()
 		{
 			ASSERT(is<TType>(), "Casting to another data type is not allowed");
 
-			return std::any_cast<TType&>(m_data);
+			return m_data.get_value<TType>();
 		}
 
 		template<typename TType>
-		const TType& cast_ref() const noexcept
+		const TType& get() const
 		{
 			ASSERT(is<TType>(), "Casting to another data type is not allowed");
 
-			return std::any_cast<const TType&>(m_data);
+			return m_data.get_value<TType>();
 		}
 
 	private:
-		std::any m_data;
+		rttr::variant m_data;
 	};
 
 	//- TODO: still work-in-progress

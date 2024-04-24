@@ -199,7 +199,6 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		struct scamera
 		{
-			core::scolor m_clearcolor;
 			vec2_t m_position;
 			vec2_t m_offset;
 			float m_rotation;
@@ -225,8 +224,7 @@ namespace sm
 	class cdrawcommand
 	{
 	public:
-		static cdrawcommand camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation,
-			const core::scolor& clearcolor, renderlayer_t layer);
+		static cdrawcommand camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation, renderlayer_t layer);
 
 		static cdrawcommand opcode(drawcommand_opcode code, core::cany data, renderlayer_t layer);
 

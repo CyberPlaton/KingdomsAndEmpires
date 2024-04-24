@@ -14,7 +14,9 @@ namespace sm
 		crenderer() = default;
 		~crenderer() = default;
 
-		void use_camera(renderlayer_t layer, const vec2_t& position, const vec2_t& offset, float rotation, float zoom, const core::scolor& clearcolor);
+		void clear_view(renderlayer_t layer, const core::scolor& color);
+
+		void use_camera(renderlayer_t layer, const vec2_t& position, const vec2_t& offset, float rotation, float zoom);
 
 		void draw_line(renderlayer_t layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color);
 

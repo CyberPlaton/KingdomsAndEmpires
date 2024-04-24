@@ -44,7 +44,7 @@ namespace sm
 		void on_ui_frame_end();
 		void on_end_drawing();
 
-		void begin_default_blend_mode();
+		void begin_default();
 		void begin_blend_mode(blending_mode mode);
 		void end_blend_mode();
 		void begin_render_target(rendertarget_t texture);
