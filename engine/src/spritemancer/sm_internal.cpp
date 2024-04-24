@@ -148,6 +148,8 @@ namespace sm
 	{
 		raylib::Rectangle src, dst;
 
+		core::cscope_mutex m(m_mutex);
+
 		//- Execute draw commands into default render target in a layered manner from lowest to highest
 		for (const auto& pair : m_drawcommands)
 		{
@@ -169,7 +171,7 @@ namespace sm
 					dst = { sprite.m_position.x, sprite.m_position.y, src.width, src.height };
 
 					//- TODO: origin should be variable, probably a component thing that should be redirected to here
-					DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, sprite.m_rotation,
+					raylib::DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, sprite.m_rotation,
 						{ sprite.m_color.r(), sprite.m_color.g() , sprite.m_color.b() , sprite.m_color.a() });
 
 					mat.unbind();
@@ -313,8 +315,10 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::push_commands(vector_t<cdrawcommand>&& buffer)
+	void ccontext::push_commands(vector_t<cdrawcommand> buffer)
 	{
+		core::cscope_mutex m(m_mutex);
+
 		for (const auto& command : buffer)
 		{
 			//- delegate commands to their respective layers

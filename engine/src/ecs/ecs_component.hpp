@@ -90,10 +90,10 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(scamera);
 
-		vec2_t m_position;
-		vec2_t m_offset;
-		float m_rotation;
-		float m_zoom;
+		vec2_t m_offset			= { 0.0f, 0.0f };
+		float m_zoom			= 0.0f;
+		bool m_active			= false;
+		renderlayer_t m_layer	= 0;
 
 		RTTR_ENABLE(icomponent);
 	};

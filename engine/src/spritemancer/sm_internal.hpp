@@ -49,7 +49,7 @@ namespace sm
 		void end_blend_mode();
 		void begin_render_target(rendertarget_t texture);
 		void end_render_target();
-		void push_commands(vector_t<cdrawcommand>&& buffer);
+		void push_commands(vector_t<cdrawcommand> buffer);
 
 		cspriteatlas_manager& am() { return *m_spriteatlas_manager; }
 		const cspriteatlas_manager& am() const { return *m_spriteatlas_manager; }
@@ -74,6 +74,7 @@ namespace sm
 		crendertarget_manager* m_rendertarget_manager;
 
 		umap_t<renderlayer_t, vector_t<cdrawcommand>> m_drawcommands;
+		core::cmutex m_mutex;
 
 		crendertarget m_backbuffer; //- default render target
 		technique_t m_fxaa;			//- custom anti-aliasing shader

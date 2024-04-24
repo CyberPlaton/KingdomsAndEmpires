@@ -13,7 +13,7 @@ namespace sm
 	constexpr auto C_TECHNIQUE_RESERVE_COUNT		= 512;
 	constexpr auto C_SPRITEATLAS_RESERVE_COUNT		= 512;
 	constexpr auto C_RENDERTARGET_RESERVE_COUNT		= 8;
-	constexpr material_t C_DEFAULT_MATERIAL			= invalid_handle_t;
+	constexpr material_t C_DEFAULT_MATERIAL			= 0;
 	inline static const core::scolor C_COLOR_WHITE	= { 255, 255, 255, 255 };
 	inline static const core::srect C_DEFAULT_RECT	= { 0.0f, 0.0f, 1.0f, 1.0f };
 	inline static const vec2_t C_DEFAULT_SCALE		= {1.0f, 1.0f};
@@ -143,7 +143,8 @@ namespace sm
 	enum drawcommand_opcode : uint8_t
 	{
 		drawcommand_opcode_none = 0,
-		drawcommand_opcode_clear,	//- push command to clear background
+		drawcommand_opcode_clear,	//- push command to clear background. Note: if no rendertarget is set before, then
+									//- the default backbuffer will be cleared
 	};
 
 	namespace drawcommand

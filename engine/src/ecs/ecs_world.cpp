@@ -110,21 +110,25 @@ namespace ecs
 		{
 		case system_running_phase_on_update:
 		{
+			logging::log_info("World on update");
 			world().set_pipeline(m_update_pipeline);
 			break;
 		}
 		case system_running_phase_on_world_render:
 		{
+			logging::log_info("World on render");
 			world().set_pipeline(m_world_render_pipeline);
 			break;
 		}
 		case system_running_phase_on_ui_render:
 		{
+			logging::log_info("World on ui render");
 			world().set_pipeline(m_ui_render_pipeline);
 			break;
 		}
 		case system_running_phase_on_post_update:
 		{
+			logging::log_info("World on post update");
 			world().set_pipeline(m_post_update_pipeline);
 			break;
 		}
@@ -137,7 +141,7 @@ namespace ecs
 		}
 
 		{
-			ZoneScoped;
+			ZoneScopedN("World Queries");
 
 			world().progress(dt);
 

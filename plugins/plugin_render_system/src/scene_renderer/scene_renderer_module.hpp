@@ -4,7 +4,29 @@
 namespace render_system
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cscene_render_system : public ecs::csystem<ecs::stransform, ecs::ssprite>
+	class ccamera_system final : public ecs::csystem<ecs::stransform, ecs::scamera>
+	{
+	public:
+		ccamera_system(flecs::world& w) :
+			ecs::csystem<ecs::stransform, ecs::scamera>
+			(w, "Camera System")
+		{
+			run_on(ecs::system_running_phase_on_world_render);
+			build([&](flecs::entity e, const ecs::stransform& transform, const ecs::scamera& camera)
+				{
+					//- TODO: there should only be one active camera in the world, maybe we can do something using a singleton
+					//- or something like that
+					ZoneScopedN("Camera System");
+					logging::log_info("\tcamera system");
+					sm::crenderer renderer;
+
+					renderer.use_camera(camera.m_layer, { transform.m_x, transform .m_y }, camera.m_offset, transform.m_rotation, camera.m_zoom);
+				});
+		};
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cscene_render_system final : public ecs::csystem<ecs::stransform, ecs::ssprite>
 	{
 	public:
 		cscene_render_system(flecs::world& w) :
@@ -12,12 +34,13 @@ namespace render_system
 			(w, "Scene Render System")
 		{
 			run_on(ecs::system_running_phase_on_world_render);
+			depends_on<ccamera_system>();
 			multithreaded();
 			exclude<ecs::tag::sinvisible>();
 			build([&](flecs::entity e, const ecs::stransform& transform, const ecs::ssprite& sprite)
 				{
 					ZoneScopedN("Scene Render System");
-
+					logging::log_warn("\tscene render system");
 					sm::crenderer renderer;
 
 					//- TODO: we do it like this for now. But intended was to use world().visible_entities()
@@ -25,16 +48,6 @@ namespace render_system
 					//-
 					//- TODO: also we do not consider hierarchy relationships, but we should, otherwise we will
 					//- have errors
-					//-
-					//- TODO: get active camera from world or something and use it here.
-					//- For now we simulate this process by creating one on the fly
-					vec2_t p(1.0f);
-					vec2_t o(0.0f);
-					float r = 0.0f, z = 1.0f;
-					core::scolor clear(250, 250, 250, 255);
-
-					uset_t<renderlayer_t> layers;
-
 					for (const auto& pair : sprite.m_materials)
 					{
 						//- perform a transform to world space and submit for rendering
@@ -43,19 +56,12 @@ namespace render_system
 
 						const auto [p, s, r] = math::transform(position, scale, { 0.0f, 0.0f }, transform.m_rotation);
 
-						//- TODO: this is really stupid... is to be reworked together with how to process camera type commands
-						if (layers.count(sprite.m_layer) == 0)
-						{
-							renderer.clear_view(sprite.m_layer, clear);
-							renderer.use_camera(sprite.m_layer, p, o, r, z);
-
-							layers.insert(sprite.m_layer);
-						}
-
 						renderer.draw_sprite(sprite.m_layer, p, pair.first, pair.second, r, s, sprite.m_source_rectangle,
 							sprite.m_tint, sprite.m_flipx, sprite.m_flipy);
 					}
 				});
+
+			run_after("Camera System");
 		}
 	};
 

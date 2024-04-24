@@ -177,7 +177,11 @@ namespace ecs
 	template<typename... TComps>
 	void csystem<TComps...>::run_after(flecs::entity e)
 	{
-		m_builder.kind(e);
+		CORE_ASSERT(e.is_valid(), "Invalid operation. Specified system does not exist!");
+
+		m_self.add(flecs::Phase).depends_on(e);
+
+		//m_builder.kind(e);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
