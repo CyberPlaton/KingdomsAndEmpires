@@ -143,7 +143,7 @@ namespace sm
 	enum drawcommand_opcode : uint8_t
 	{
 		drawcommand_opcode_none = 0,
-		drawcommand_opcode_mode_2d,	//- push command to start drawing in world space
+		drawcommand_opcode_clear,	//- push command to clear background
 	};
 
 	namespace drawcommand
@@ -212,6 +212,7 @@ namespace sm
 		struct sopcode
 		{
 			drawcommand_opcode m_opcode;
+			core::cany m_data;
 			renderlayer_t m_layer;
 		};
 
@@ -227,7 +228,7 @@ namespace sm
 		static cdrawcommand camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation,
 			const core::scolor& clearcolor, renderlayer_t layer);
 
-		static cdrawcommand opcode(drawcommand_opcode code, renderlayer_t layer);
+		static cdrawcommand opcode(drawcommand_opcode code, core::cany data, renderlayer_t layer);
 
 		static cdrawcommand sprite(const core::srect& rect, const core::scolor& color, float x, float y, float w, float h, float r,
 			material_t material, texture_t texture, renderlayer_t layer);

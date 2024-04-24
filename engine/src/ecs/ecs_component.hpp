@@ -86,6 +86,19 @@ namespace ecs
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
+	struct scamera final : public icomponent
+	{
+		DECLARE_COMPONENT(scamera);
+
+		vec2_t m_position;
+		vec2_t m_offset;
+		float m_rotation;
+		float m_zoom;
+
+		RTTR_ENABLE(icomponent);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	struct sidentifier final : public icomponent
 	{
 		DECLARE_COMPONENT(sidentifier);

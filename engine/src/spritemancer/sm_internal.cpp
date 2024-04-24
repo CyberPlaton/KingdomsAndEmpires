@@ -205,6 +205,21 @@ namespace sm
 				case drawcommand_type_opcode:
 				{
 					const auto& op = command.get<drawcommand::sopcode>();
+
+					switch(op.m_opcode)
+					{
+					case drawcommand_opcode_clear:
+					{
+						const auto& color = op.m_data.cast_ref<core::scolor>();
+						raylib::ClearBackground(to_cliteral(color));
+						break;
+					}
+					default:
+					{
+						break;
+					}
+					}
+
 					break;
 				}
 				case drawcommand_type_camera:
@@ -225,8 +240,9 @@ namespace sm
 		}
 		m_drawcommands.clear();
 
-		//- in any case we do not use camera mode for presenting backbuffer
+		//- in any case we do not use camera mode for presenting backbuffer or any custom backbuffer
 		raylib::EndMode2D();
+		raylib::EndTextureMode();
 
 		//- Present render target to screen
 		raylib::BeginDrawing();

@@ -20,9 +20,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::cdrawcommand cdrawcommand::opcode(drawcommand_opcode code, renderlayer_t layer)
+	sm::cdrawcommand cdrawcommand::opcode(drawcommand_opcode code, core::cany data, renderlayer_t layer)
 	{
-		return cdrawcommand(drawcommand_type_opcode, drawcommand::sopcode{ code, layer });
+		return cdrawcommand(drawcommand_type_opcode, drawcommand::sopcode{ code, data, layer });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
