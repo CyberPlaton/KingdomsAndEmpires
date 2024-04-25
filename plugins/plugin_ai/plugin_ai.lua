@@ -5,7 +5,7 @@ function plugin_ai()
 					{},
 					{},
 					{"plugin_logging"},
-					{"EASTL", "spdlog", "core", "mimalloc", "flecs"},
+					{"EASTL", "spdlog", "core", "flecs"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

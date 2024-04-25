@@ -14,14 +14,28 @@ function set_basic_defines()
 	end
 
 	filter{"configurations:debug"}
-		defines{"DEBUG=1", "TRACY_ENABLE", "BX_CONFIG_DEBUG"}
+		defines{"DEBUG=1", "TRACY_ENABLE"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE", "BX_CONFIG_RELEASE"}
+		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
 			"__STDC_FORMAT_MACROS",
 			"_CRT_SECURE_NO_DEPRECATE"}
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function configure()
+	filter{"configurations:debug"}
+		symbols "On"
+		optimize "Off"
+	filter{"configurations:hybrid"}
+		symbols "On"
+		optimize "Full"
+	filter{"configurations:release"}
+		symbols "Off"
+		optimize "Full"
+	filter{}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -129,14 +143,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 			set_include_path(true, p)
 		end
 
-		filter{"configurations:debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"configurations:release"}
-			symbols "On"
-			optimize "Full"
-		filter{}
+		configure()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -183,14 +190,7 @@ function add_target_library(name, build_options, define_flags, plugin_deps, thir
 		-- set additional default defines
 		defines{name .. "_EXPORTS"}
 
-		filter{"configurations:debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"configurations:release"}
-			symbols "On"
-			optimize "Full"
-		filter{}
+		configure()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -238,14 +238,7 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 		-- set additional default defines
 		defines{name .. "_EXPORTS"}
 
-		filter{"configurations:debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"configurations:release"}
-			symbols "On"
-			optimize "Full"
-		filter{}
+		configure()
 end
 
 -- special function for defining plugins that are linking with the engine
@@ -303,14 +296,7 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 
 		defines{name.. "_EXPORTS"}
 
-		filter{"configurations:debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"configurations:release"}
-			symbols "On"
-			optimize "Full"
-		filter{}
+		configure()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -365,12 +351,5 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		else
 		end
 
-		filter{"configurations:debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"configurations:release"}
-			symbols "On"
-			optimize "Full"
-		filter{}
+		configure()
 end

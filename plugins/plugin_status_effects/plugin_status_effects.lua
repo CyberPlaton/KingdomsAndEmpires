@@ -5,7 +5,7 @@ function plugin_status_effects()
 					{},
 					{},
 					{"plugin_logging", "plugin_kingdoms_core"},
-					{"EASTL", "spdlog", "core", "mimalloc", "flecs"},
+					{"EASTL", "spdlog", "core", "flecs"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

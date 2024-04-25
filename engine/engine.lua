@@ -7,7 +7,7 @@ function engine()
 	additional_includes = {"src/physics", "src/spritemancer/raylib_integration"}
 	plugin_deps = {"plugin_logging"}
 	plugin_headeronly_deps = {}
-	thirdparty_deps = {"Lua", "EASTL", "spdlog", "core", "mimalloc", "flecs"}
+	thirdparty_deps = {"Lua", "EASTL", "spdlog", "core", "flecs"}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"}
 	raylib_path = "src/spritemancer/raylib_integration/raylib"
 	glfw_path = path.join(raylib_path, "external", "glfw", "src")

@@ -97,7 +97,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		static void unload_file_binary_data(void* data)
 		{
-			mi_free(data);
+			CORE_FREE(data);
 		}
 
 		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message
@@ -119,7 +119,7 @@ namespace core
 
 					if (size > 0)
 					{
-						data = (uint8_t*)mi_malloc(sizeof(uint8_t) * size);
+						data = (uint8_t*)CORE_MALLOC(sizeof(uint8_t) * size);
 
 						unsigned count = SCAST(unsigned, fread(data, sizeof(uint8_t), size, file));
 						*data_size_out = count;
@@ -188,7 +188,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		static void unload_file_text_data(char* text)
 		{
-			mi_free(text);
+			CORE_FREE(text);
 		}
 
 		//- @reference: raylib LoadFileText
@@ -209,7 +209,7 @@ namespace core
 
 					if (size > 0)
 					{
-						text = SCAST(char*, mi_malloc((size + 1) * sizeof(char)));
+						text = SCAST(char*, CORE_MALLOC((size + 1) * sizeof(char)));
 
 						if (text != nullptr)
 						{
@@ -217,7 +217,7 @@ namespace core
 
 							if (count < size)
 							{
-								text = SCAST(char*, mi_realloc(text, count + 1));
+								text = SCAST(char*, CORE_REALLOC(text, count + 1));
 							}
 
 							text[count] = '\0';

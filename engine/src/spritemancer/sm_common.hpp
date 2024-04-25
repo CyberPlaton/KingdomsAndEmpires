@@ -17,10 +17,10 @@ namespace sm
 	inline static const core::scolor C_COLOR_WHITE	= { 255, 255, 255, 255 };
 	inline static const core::srect C_DEFAULT_RECT	= { 0.0f, 0.0f, 1.0f, 1.0f };
 	inline static const vec2_t C_DEFAULT_SCALE		= {1.0f, 1.0f};
-	constexpr mat4_t C_MATRIX_4x4_ID = mat4_t(1.0f);
-	constexpr stringview_t C_FXAA_TECHNIQUE_NAME = "fxaa";
-	constexpr stringview_t C_SPRITE_TECHNIQUE_NAME = "sprite";
-	constexpr stringview_t C_DEFAULT_MATERIAL_NAME = "default";
+	constexpr mat4_t C_MATRIX_4x4_ID				= mat4_t(1.0f);
+	constexpr stringview_t C_FXAA_TECHNIQUE_NAME	= "fxaa";
+	constexpr stringview_t C_SPRITE_TECHNIQUE_NAME	= "sprite";
+	constexpr stringview_t C_DEFAULT_MATERIAL_NAME	= "default";
 	constexpr stringview_t C_FXAA_TECHNIQUE_RESOLUTION_PROP = "resolution";
 
 	
@@ -514,92 +514,6 @@ namespace sm
 	//- their attraction/detraction behavior
 	//- 
 	//------------------------------------------------------------------------------------------------------------------------
-
-
-	//------------------------------------------------------------------------------------------------------------------------
-// 	class cshader_uniform
-// 	{
-// 	public:
-// 		cshader_uniform() = default;
-// 		cshader_uniform(const std::string& name, void* value, raylib::ShaderUniformDataType type);
-// 
-// 		void* get() const;
-// 		template< typename T >
-// 		T get_as();
-// 		raylib::ShaderUniformDataType get_type() const;
-// 		std::string get_name() const;
-// 		const char* c_str() const;
-// 
-// 	private:
-// 		std::string m_name;
-// 		raylib::ShaderUniformDataType m_type;
-// 		void* m_data;
-// 	};
-// 
-// 	//------------------------------------------------------------------------------------------------------------------------
-// 	template< typename T >
-// 	T sm::cshader_uniform::get_as()
-// 	{
-// 		if (m_data)
-// 		{
-// 			return reinterpret_cast<T>(m_data);
-// 		}
-// 	}
-// 
-// 	//------------------------------------------------------------------------------------------------------------------------
-// 	class cmaterial
-// 	{
-// 	public:
-// 		cmaterial(technique_t technique, blending_mode mode, blending_equation equation, blending_factor src, blending_factor dst);
-// 		cmaterial(technique_t technique, blending_mode mode, blending_equation equation, blending_factor src, blending_factor dst,
-// 			const vector_t< cshader_uniform >& static_uniforms, const vector_t< cshader_uniform >& dynamic_uniforms);
-// 		~cmaterial();
-// 
-// 		void bind_shader(const raylib::Shader& technique) const;
-// 		void bind_blend_mode() const;
-// 		void reset();
-// 		void bind_static_uniforms(const raylib::Shader& technique) const;
-// 		void bind_dynamic_uniforms(const raylib::Shader& technique) const;
-// 		void end_shader() const;
-// 		void end_blend_mode() const;
-// 		void set_blend_mode(blending_mode mode);
-// 		void set_blend_mode_src_factor(blending_factor factor);
-// 		void set_blend_mode_dst_factor(blending_factor factor);
-// 		void set_blend_mode_equation(blending_equation equation);
-// 		void restore_default_blend_mode();
-// 		void set_shader(technique_t technique);
-// 		technique_t get_shader() const;
-// 		template < typename T >
-// 		void add_static_uniform(const std::string& uniform_name, const T& value, raylib::ShaderUniformDataType type);
-// 		template < typename T >
-// 		void add_dynamic_uniform(const std::string& uniform_name, const T& value, raylib::ShaderUniformDataType type);
-// 
-// 	private:
-// 		technique_t m_program;
-// 		blending_mode m_blending_mode = blending_mode_alpha;
-// 		blending_factor m_blending_src = blending_factor_src_color;
-// 		blending_factor m_blending_dst = blending_factor_one_minus_src_alpha;
-// 		blending_equation m_blending_equation = blending_equation_blend_color;
-// 		vector_t< cshader_uniform > m_static_uniforms;
-// 		vector_t< cshader_uniform > m_dynamic_uniforms;
-// 
-// 	private:
-// 		void bind_uniforms(const raylib::Shader& technique, const vector_t< cshader_uniform >& vector) const;
-// 	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-// 	template < typename T >
-// 	void sm::cmaterial::add_dynamic_uniform(const std::string& uniform_name, const T& value, raylib::ShaderUniformDataType type)
-// 	{
-// 		m_dynamic_uniforms.emplace_back(uniform_name, value, type);
-// 	}
-// 
-// 	//------------------------------------------------------------------------------------------------------------------------
-// 	template < typename T >
-// 	void sm::cmaterial::add_static_uniform(const std::string& uniform_name, const T& value, raylib::ShaderUniformDataType type)
-// 	{
-// 		m_static_uniforms.emplace_back(uniform_name, value, type);
-// 	}
 
 } //- sm
 

@@ -17,8 +17,7 @@ namespace stl = eastl;
 namespace stl = std;
 #endif
 #include <new>
-#include <mimalloc.h>
-#include <mimalloc/track.h>
+#include <../src/malloc.h>
 #include <glm.h>
 #include <magic_enum.h>
 #include <taskflow.h>
@@ -74,24 +73,18 @@ namespace stl = std;
 #define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
 #define STATIC_INSTANCE_EX(__class) STATIC_INSTANCE(__class, s_instance)
 
-#define CORE_MALLOC(size)		mi_malloc(size)
-#define CORE_CALLOC(n, size)	mi_calloc(n, size)
-#define CORE_REALLOC(p, size)	mi_realloc(p, size)
-#define CORE_FREE(p)			mi_free(p)
-
-//- Reconsider. Seems not to be a good idea
-//#define malloc(size)		CORE_MALLOC(size)
-//#define calloc(n, size)	CORE_CALLOC(n, size)
-//#define realloc(p, size)	CORE_REALLOC(p, size)
-//#define free(p)			CORE_FREE(p)
+#define CORE_MALLOC(size)		dlmalloc(size)
+#define CORE_CALLOC(n, size)	dlcalloc(n, size)
+#define CORE_REALLOC(p, size)	dlrealloc(p, size)
+#define CORE_FREE(p)			dlfree(p)
 
 #if defined(core_EXPORTS)
 	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
-void operator delete(void* p){TracyFree(p); CORE_FREE(p); }
-#elif !CORE_PLATFORM_WINDOWS
-void* operator new(size_t n) { return CORE_MALLOC(n); }
-void operator delete(void* p) { CORE_FREE(p); }
+		void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
+		void operator delete(void* p) { TracyFree(p); CORE_FREE(p); }
+	#elif !CORE_PLATFORM_WINDOWS
+		void* operator new(size_t n) { return CORE_MALLOC(n); }
+		void operator delete(void* p) { CORE_FREE(p); }
 	#endif
 #endif
 
@@ -745,7 +738,7 @@ namespace core
 			cdynamic_pool();
 			~cdynamic_pool() = default;
 
-			bool init(uint64_t count, uint64_t alignment = 0);
+			bool init(uint64_t count);
 			void shutdown();
 			void reset();
 			TType* create(uint64_t* index_out);
@@ -769,12 +762,11 @@ namespace core
 			uint64_t m_top;
 			uint64_t m_size;
 			uint64_t m_capacity;
-			uint64_t m_alignment;
 			void* m_start;
 			void* m_end;
 
 		private:
-			void resize(uint64_t count, uint64_t alignment);
+			void resize(uint64_t count);
 			TType* unsafe(uint64_t index);
 			const TType* unsafe(uint64_t index) const;
 			bool initialized_at_index(uint64_t index) const;
@@ -1342,7 +1334,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TType>
 		core::detail::cdynamic_pool<TType>::cdynamic_pool() :
-			m_top(0), m_size(0), m_capacity(0), m_alignment(0), m_start(nullptr), m_end(nullptr)
+			m_top(0), m_size(0), m_capacity(0), m_start(nullptr), m_end(nullptr)
 		{
 		}
 
@@ -1362,27 +1354,22 @@ namespace core
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TType>
-		void core::detail::cdynamic_pool<TType>::resize(uint64_t count, uint64_t alignment)
+		void core::detail::cdynamic_pool<TType>::resize(uint64_t count)
 		{
 			auto prev_start = m_start;
 			auto prev_count = m_size;
-			auto prev_align = m_alignment;
 
-			m_start = mi_aligned_alloc(alignment, count * sizeof(TType));
+			m_start = CORE_MALLOC(count * sizeof(TType));
 
 			m_end = reinterpret_cast<void*>(memloc(m_start) + count * SCAST(uint64_t, sizeof(TType)));
 
-			//m_capacity = count * SCAST(uint64_t, sizeof(TType));
-
 			m_capacity = count;
-
-			m_alignment = alignment;
 
 			m_initialized_bit.resize(count, false);
 
 			std::memmove(m_start, prev_start, prev_count * sizeof(TType));
 
-			mi_free_size_aligned(prev_start, prev_count, prev_align);
+			CORE_FREE(prev_start, prev_count);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -1519,7 +1506,7 @@ namespace core
 		{
 			if (size() == capacity())
 			{
-				resize(m_size * 2, m_alignment);
+				resize(m_size * 2);
 			}
 
 			uint64_t index = 0;
@@ -1556,7 +1543,7 @@ namespace core
 		{
 			if (size() == capacity())
 			{
-				resize(m_size * 2, m_alignment);
+				resize(m_size * 2);
 			}
 
 			uint64_t index = 0;
@@ -1624,24 +1611,18 @@ namespace core
 				object = advance(object);
 			}
 
-			mi_free_size_aligned(m_start, m_size, m_alignment);
+			CORE_FREE(m_start, m_size);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TType>
-		bool core::detail::cdynamic_pool<TType>::init(uint64_t count, uint64_t alignment /*= 0*/)
+		bool core::detail::cdynamic_pool<TType>::init(uint64_t count)
 		{
-			auto __alignment = alignment == 0 ? next_power_of_2(alignof(TType)) : alignment;
-
-			m_start = mi_aligned_alloc(__alignment, sizeof(TType) * count);
+			m_start = CORE_MALLOC(sizeof(TType) * count);
 
 			m_end = reinterpret_cast<void*>(memloc(m_start) + count * SCAST(uint64_t, sizeof(TType)));
 
-			//m_capacity = count * SCAST(uint64_t, sizeof(TType));
-
 			m_capacity = count;
-
-			m_alignment = __alignment;
 
 			m_initialized_bit.resize(count, false);
 

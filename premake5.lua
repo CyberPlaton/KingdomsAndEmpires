@@ -5,7 +5,7 @@ SCRIPTS_DIR = "<undefined>"
 VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
 THIRDPARTY = {"spdlog", "core", "glm", "EASTL", "argparse", "nlohmann",
-			  "magic_enum", "taskflow", "mimalloc", "flecs", "LuaBridge", "Lua",
+			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua",
 			  "Tracy", "slang"}
 PLUGINS = {"test", "test2", "plugin_logging", "plugin_module_example",
 			"plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human", "plugin_render_system",
@@ -17,7 +17,7 @@ OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"
 workspace("KingdomsAndEmpires")
 	startproject("engine_launcher")
 	architecture "x86_64"
-	configurations{"debug", "release"}
+	configurations{"debug", "hybrid", "release"}
 	language "C++"
 	cppdialect "C++17"
 	systemversion "latest"

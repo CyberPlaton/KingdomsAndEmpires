@@ -5,7 +5,7 @@ function plugin_camera_system()
 					{},
 					{},
 					{"plugin_logging"},
-					{"Lua", "EASTL", "spdlog", "core", "mimalloc", "flecs"},
+					{"Lua", "EASTL", "spdlog", "core", "flecs"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

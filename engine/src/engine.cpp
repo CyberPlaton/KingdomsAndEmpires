@@ -250,7 +250,7 @@ namespace engine
 			}
 			else
 			{
-				logging::log_critical(fmt::format("\t'{}' failed...", type.get_name().data()));
+				logging::log_critical(fmt::format("\t'{}' failed...", name));
 
 				//- fail configuration but let all try to register so we know all that are bugous
 				m_result = engine_run_result_failed_registering_services;

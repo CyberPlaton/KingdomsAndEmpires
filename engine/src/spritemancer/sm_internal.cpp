@@ -143,6 +143,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::on_end_drawing()
 	{
+		ZoneScopedN("ccontext::on_end_drawing");
+
 		raylib::Camera2D frame_camera{ 0 };
 		raylib::Rectangle src, dst;
 
@@ -162,6 +164,8 @@ namespace sm
 					const auto& mat = mm().get(sprite.m_material);
 					const auto& tex = tm().get(sprite.m_texture);
 
+					//- TODO: we want to sort by material (texture, shader) for each layer,
+					//- as of now this is what kills performance
 					mat.bind();
 
 					//- TODO: we do not use width and height from command transform, why
@@ -205,21 +209,14 @@ namespace sm
 				{
 					const auto& op = command.get<drawcommand::sopcode>();
 
-					//- execute opcode
+					//- execute opcode, if data inside it is not what is required we crash
 					switch(op.m_opcode)
 					{
 					case drawcommand_opcode_clear:
 					{
-						if (op.m_data.is<core::scolor>())
-						{
-							const auto& color = op.m_data.get<core::scolor>();
+						const auto& color = op.m_data.get<core::scolor>();
 
-							//raylib::ClearBackground(to_cliteral(color));
-						}
-						else
-						{
-							//- warn
-						}
+						raylib::ClearBackground(to_cliteral(color));
 						break;
 					}
 					default:
@@ -241,7 +238,7 @@ namespace sm
 					frame_camera.rotation = cam.m_rotation;
 					frame_camera.zoom = cam.m_zoom;
 
-					//raylib::BeginMode2D(frame_camera);
+					raylib::BeginMode2D(frame_camera);
 					break;
 				}
 				default:
@@ -254,12 +251,9 @@ namespace sm
 		}
 		m_drawcommands.clear();
 
-		//- in any case we do not use camera mode for presenting backbuffer or any custom backbuffer
+		//- reset state to default before presenting backbuffer
 		raylib::EndMode2D();
 		raylib::EndBlendMode();
-
-		raylib::DrawRectangle(raylib::GetMouseX(), raylib::GetMouseY(), 250, 250, raylib::RED);
-
 		raylib::EndTextureMode();
 
 		//- Present render target to screen
@@ -326,6 +320,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::push_commands(vector_t<cdrawcommand> buffer)
 	{
+		ZoneScopedN("ccontext::push_commands");
+
 		core::cscope_mutex m(m_mutex);
 
 		for (const auto& command : buffer)

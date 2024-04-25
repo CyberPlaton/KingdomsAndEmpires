@@ -10,7 +10,14 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	ctexture_manager::ctexture_manager()
 	{
-		CORE_ASSERT(m_textures.init(C_TEXTURE_RESERVE_COUNT), "Invalid operation. Failed initializing texture manager!");
+		const auto result = m_textures.init(C_TEXTURE_RESERVE_COUNT);
+
+		CORE_ASSERT(result, "Invalid operation. Failed initializing texture manager!");
+
+		if (!result)
+		{
+			logging::log_critical("Failed initializing texture manager!");
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -76,7 +83,14 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	cshader_manager::cshader_manager()
 	{
-		CORE_ASSERT(m_shaders.init(C_TECHNIQUE_RESERVE_COUNT), "Invalid operation. Failed initializing shader manager!");
+		const auto result = m_shaders.init(C_TECHNIQUE_RESERVE_COUNT);
+
+		CORE_ASSERT(result, "Invalid operation. Failed initializing shader manager!");
+
+		if (!result)
+		{
+			logging::log_critical("Failed initializing shader manager!");
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -161,7 +175,14 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	cmaterial_manager::cmaterial_manager()
 	{
-		CORE_ASSERT(m_materials.init(C_MATERIAL_RESERVE_COUNT), "Invalid operation. Failed initializing material manager!");
+		const auto result = m_materials.init(C_MATERIAL_RESERVE_COUNT);
+
+		CORE_ASSERT(result, "Invalid operation. Failed initializing material manager!");
+
+		if (!result)
+		{
+			logging::log_critical("Failed initializing material manager!");
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -221,7 +242,14 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	cspriteatlas_manager::cspriteatlas_manager()
 	{
-		CORE_ASSERT(m_spritesheets.init(C_SPRITEATLAS_RESERVE_COUNT), "Invalid operation. Failed initializing spriteatlas manager!");
+		const auto result = m_spritesheets.init(C_SPRITEATLAS_RESERVE_COUNT);
+
+		CORE_ASSERT(result, "Invalid operation. Failed initializing spriteatlas manager!");
+
+		if (!result)
+		{
+			logging::log_critical("Failed initializing spriteatlas manager!");
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -293,7 +321,14 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	crendertarget_manager::crendertarget_manager()
 	{
-		CORE_ASSERT(m_rendertargets.init(C_RENDERTARGET_RESERVE_COUNT), "Invalid operation. Failed initializing rendertarget manager!");
+		const auto result = m_rendertargets.init(C_RENDERTARGET_RESERVE_COUNT);
+
+		CORE_ASSERT(result, "Invalid operation. Failed initializing rendertarget manager!");
+
+		if (!result)
+		{
+			logging::log_critical("Failed initializing rendertarget manager!");
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

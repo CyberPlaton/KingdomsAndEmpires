@@ -47,7 +47,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	logging::init();
 
 	engine::cengine::sconfig cfg;
-	cfg.m_service_cfg.m_services.emplace_back("ccamera_manager");
 	cfg.m_service_cfg.m_services.emplace_back("cthread_service");
 	cfg.m_service_cfg.m_services.emplace_back("cevent_service");
 	cfg.m_service_cfg.m_services.emplace_back("ctexture_manager");
@@ -67,12 +66,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	if (engine::cengine::instance().configure(cfg/*"config.json"*/) == engine::engine_run_result_ok)
 	{
+		logging::log_debug(fmt::format("Cwd: '{}'", core::cfilesystem::cwd().view()));
+
 		ecs::cworld_manager::instance().create("World");
 
 		auto& w = ecs::cworld_manager::instance().active();
 
 		//- can´t use more than what was configured as foreground threads
-		w.use_threads(engine::cthread_service::hardware_threads() / 4);
+		w.use_threads(engine::cthread_service::hardware_threads() / 2);
 
 		//- example usage of query
 		auto e = w.qm().query_one<ecs::stransform>([](const ecs::stransform& transform)
@@ -104,12 +105,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		cam_transform->m_y = 0.0f;
 
 		auto* cam_camera = cam.get_mut<ecs::scamera>();
-		cam_camera->m_zoom = 0.25f;
+		cam_camera->m_zoom = 1.0f;
 		cam_camera->m_active = true;
 		cam_camera->m_offset = { 0.0f, 0.0f };
 		cam_camera->m_layer = 0;
 
-		for (auto i = 0u; i < 250; ++i)
+		//- load texture for sprite
+		auto tex = sm::ctx().tm().load("sprite", "resources/figure_paladin_14.png");
+		const auto& texture = sm::ctx().tm().get(tex);
+
+		for (auto i = 0u; i < 25000; ++i)
 		{
 			auto e = w.em().create_entity();
 
@@ -128,23 +133,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			e.add<ecs::ssprite>();
 
 			auto* transform = e.get_mut<ecs::stransform>();
-			transform->m_x = rand.in_range_float(0.0f, 256.0f);
-			transform->m_y = rand.in_range_float(0.0f, 256.0f);
+			transform->m_x = rand.in_range_float(0.0f, 512.0f);
+			transform->m_y = rand.in_range_float(0.0f, 512.0f);
 			transform->m_w = 64;
 			transform->m_h = 64;
 
 			auto* sprite = e.get_mut<ecs::ssprite>();
-			sprite->m_source_rectangle = { 0.0f, 0.0f, 64.0f, 64.0f };
-			sprite->m_tint = core::scolor(150, 250, 22, 255);
-
-			logging::log_debug(fmt::format("Cwd: '{}'", core::cfilesystem::cwd().view()));
-
-			auto tex = sm::ctx().tm().load("sprite", "resources/figure_paladin_14.png");
-
+			sprite->m_source_rectangle = { 0.0f, 0.0f, (float)texture.width(), (float)texture.height() };
+			sprite->m_tint = core::scolor(rand.in_range_int(50, 255), rand.in_range_int(50, 255), rand.in_range_int(50, 255), 255);
 			sprite->m_materials.emplace_back(tex, sm::ctx().mm().at(sm::C_DEFAULT_MATERIAL_NAME));
 		}
 
-		w.save("MyWorld.world");
+		//w.save("MyWorld.world");
 
 		//- create several entities for testing
 // 		auto walther = w.em().create_entity();
