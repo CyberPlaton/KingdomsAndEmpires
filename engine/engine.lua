@@ -84,8 +84,10 @@ function engine()
 				  path.join(glfw_path, "glx_context.c"),
 				  path.join(glfw_path, "linux_joystick.h"),
 				  path.join(glfw_path, "linux_joystick.c"),
+				  path.join(glfw_path, "posix_poll.h"),
+				  path.join(glfw_path, "posix_poll.c"),
 			}
-			links{"GL"}
+			links{"GL", "rt", "lm", "x11"}
 		elseif PLATFORM == "macosx" then
 			defines{"_GLFW_COCOA"}
 			files{path.join(glfw_path, "cocoa_time.c"),
