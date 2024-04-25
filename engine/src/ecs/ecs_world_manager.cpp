@@ -59,11 +59,11 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld_manager::tick(float dt, system_running_phase p)
+	void cworld_manager::tick(float dt)
 	{
 		if (m_current != 0)
 		{
-			active().tick(dt, p);
+			active().tick(dt);
 		}
 	}
 

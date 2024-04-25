@@ -20,7 +20,7 @@ namespace ecs
 		cworld(stringview_t name);
 		~cworld();
 
-		void tick(float dt, system_running_phase p);
+		void tick(float dt);
 		[[nodiscard]] decltype(auto) visible_entities() const {return m_visible_entities;}
 		void prepare(const core::srect& area);
 
@@ -64,13 +64,6 @@ namespace ecs
 
 		stringview_t m_name;
 		flecs::world m_world;
-
-		float m_world_tick_dt;
-		float m_world_tick_fixed_dt = 0.016f;
-		flecs::entity m_update_pipeline;
-		flecs::entity m_world_render_pipeline;
-		flecs::entity m_ui_render_pipeline;
-		flecs::entity m_post_update_pipeline;
 
 		struct sworld_query
 		{

@@ -126,13 +126,11 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::on_frame_end()
 	{
-		end_blend_mode();
-		m_backbuffer.unbind();
+		//- TODO: is this required?
 	}
 
 	void ccontext::on_ui_frame()
 	{
-		m_backbuffer.bind();
 		cui::begin();
 	}
 
@@ -140,12 +138,12 @@ namespace sm
 	void ccontext::on_ui_frame_end()
 	{
 		cui::end();
-		m_backbuffer.unbind();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::on_end_drawing()
 	{
+		raylib::Camera2D frame_camera{ 0 };
 		raylib::Rectangle src, dst;
 
 		core::cscope_mutex m(m_mutex);
@@ -216,7 +214,7 @@ namespace sm
 						{
 							const auto& color = op.m_data.get<core::scolor>();
 
-							raylib::ClearBackground(to_cliteral(color));
+							//raylib::ClearBackground(to_cliteral(color));
 						}
 						else
 						{
@@ -236,7 +234,14 @@ namespace sm
 				{
 					const auto& cam = command.get<drawcommand::scamera>();
 
-					raylib::BeginMode2D(raylib::Camera2D{{ cam.m_position.x, cam.m_position.y }, { cam.m_offset.x, cam.m_offset.y }, cam.m_rotation, cam.m_zoom });
+					frame_camera.target.x = cam.m_position.x;
+					frame_camera.target.y = cam.m_position.y;
+					frame_camera.offset.x = cam.m_offset.x;
+					frame_camera.offset.y = cam.m_offset.y;
+					frame_camera.rotation = cam.m_rotation;
+					frame_camera.zoom = cam.m_zoom;
+
+					//raylib::BeginMode2D(frame_camera);
 					break;
 				}
 				default:
@@ -251,6 +256,10 @@ namespace sm
 
 		//- in any case we do not use camera mode for presenting backbuffer or any custom backbuffer
 		raylib::EndMode2D();
+		raylib::EndBlendMode();
+
+		raylib::DrawRectangle(raylib::GetMouseX(), raylib::GetMouseY(), 250, 250, raylib::RED);
+
 		raylib::EndTextureMode();
 
 		//- Present render target to screen
@@ -284,7 +293,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::begin_default()
 	{
-		raylib::BeginBlendMode(raylib::BLEND_ALPHA);
+		raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
 
 		//- default clear of backbuffer
 		raylib::ClearBackground(raylib::RAYWHITE);

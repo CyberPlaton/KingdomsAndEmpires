@@ -12,7 +12,6 @@ namespace render_system
 			ecs::csystem<ecs::sanimation>
 			(w, "Animation System")
 		{
-			run_on(ecs::system_running_phase_on_update);
 			multithreaded();
 			build([&](flecs::entity e, ecs::sanimation& animation)
 				{
@@ -21,9 +20,9 @@ namespace render_system
 					//- TODO: we do it like this for now. But intended was to use world().visible_entities()
 					//- and update their animations only, as it does not make sense to compute so much stuff
 					//- for sprites we do not even see.
-
-
 				});
+
+			run_after(flecs::OnUpdate);
 		}
 	};
 

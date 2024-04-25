@@ -19,7 +19,6 @@ namespace module_example
 			ecs::csystem<stargeting_component>
 			(w, "Targeting System")
 		{
-			run_on(ecs::system_running_phase_on_update);
 			multithreaded();
 			build([&](flecs::entity e, stargeting_component& target)
 				{
@@ -38,6 +37,8 @@ namespace module_example
 					}
 					target.m_cooldown -= C_DT;
 				});
+
+			run_after(flecs::OnUpdate);
 		}
 	};
 
@@ -50,7 +51,6 @@ namespace module_example
 			ecs::csystem<stargeting_component>
 			(w, "Targeting System #2")
 		{
-			run_on(ecs::system_running_phase_on_update);
 			multithreaded();
 			build([&](flecs::entity e, stargeting_component& target)
 				{
@@ -72,6 +72,8 @@ namespace module_example
 
 					target.m_cooldown -= C_DT * rand.in_range_float(0.0f, 1.75f);
 				});
+
+			run_after(flecs::OnUpdate);
 		}
 	};
 
@@ -83,14 +85,10 @@ namespace module_example
 			ecs::csystem<stargeting_component>
 			(w, "Targeting System #3")
 		{
-			run_on(ecs::system_running_phase_on_ui_render);
-			//multithreaded();
+			multithreaded();
 			build([&](flecs::entity e, stargeting_component& target)
 				{
 					ZoneScopedN("Targeting System #3");
-
-					ImGui::Begin("Window");
-					ImGui::End();
 
 					//- check for first start of the system or
 					//- end of cooldown and restart
@@ -108,6 +106,8 @@ namespace module_example
 
 					target.m_cooldown -= C_DT * rand.in_range_float(0.0f, 1.75f);
 				});
+
+			run_after(flecs::OnUpdate);
 		}
 	};
 
@@ -122,8 +122,6 @@ namespace module_example
 			auto update_phase = world.entity("Transform Update Phase")
 				.add(flecs::Phase)
 				.depends_on(flecs::OnUpdate);
-
-			run_after(update_phase);
 
 			build([&](flecs::entity e, stransform_component& tr)
 				{
@@ -143,6 +141,8 @@ namespace module_example
 						transform_timer.start();
 					}
 				});
+
+			run_after(update_phase);
 		}
 	};
 
@@ -154,16 +154,9 @@ namespace module_example
 			ecs::csystem<sreplicable_component, stransform_component, sidentifier_component>
 			(w, "Replication System")
 		{
-			depends_on<cexample_transform_system>();
-
 			auto update_phase = w.entity("Replication Update Phase")
 				.add(flecs::Phase)
 				.depends_on(w.lookup("Transform Update Phase"));
-
-			//- Note: another possibility should be to write:
-			//- kind("Transform Update Phase");
-			//- without the need to create a new phase as above.
-			run_after("Replication Update Phase");
 
 			build([&](flecs::entity e, sreplicable_component& rep, const stransform_component& trans,
 				const sidentifier_component& id)
@@ -186,6 +179,11 @@ namespace module_example
 						network_timer.start();
 					}
 				});
+
+			//- Note: another possibility should be to write:
+			//- kind("Transform Update Phase");
+			//- without the need to create a new phase as above.
+			run_after("Replication Update Phase");
 		}
 	};
 

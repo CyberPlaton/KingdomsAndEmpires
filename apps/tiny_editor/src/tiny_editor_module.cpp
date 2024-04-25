@@ -104,9 +104,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		cam_transform->m_y = 0.0f;
 
 		auto* cam_camera = cam.get_mut<ecs::scamera>();
-		cam_camera->m_zoom = 1.0f;
+		cam_camera->m_zoom = 0.25f;
 		cam_camera->m_active = true;
-		cam_camera->m_offset = {0.0f, 0.0f};
+		cam_camera->m_offset = { 0.0f, 0.0f };
 		cam_camera->m_layer = 0;
 
 		for (auto i = 0u; i < 250; ++i)
@@ -135,6 +135,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 			auto* sprite = e.get_mut<ecs::ssprite>();
 			sprite->m_source_rectangle = { 0.0f, 0.0f, 64.0f, 64.0f };
+			sprite->m_tint = core::scolor(150, 250, 22, 255);
 
 			logging::log_debug(fmt::format("Cwd: '{}'", core::cfilesystem::cwd().view()));
 

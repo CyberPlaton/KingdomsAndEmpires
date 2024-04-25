@@ -12,7 +12,7 @@ namespace ecs
 
 		bool create(stringview_t name);
 		bool set_active(stringview_t name);
-		void tick(float dt, system_running_phase p);
+		void tick(float dt);
 		void prepare(const core::srect& area);
 		const cworld& active() const;
 		cworld& active();

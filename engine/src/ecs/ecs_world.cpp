@@ -24,37 +24,6 @@ namespace ecs
 	{
 		use_threads(m_used_threads);
 
-		//- setup phases
-		auto* phases = world().template get_mut<ssystem_phases>();
-		auto previous_phase = flecs::OnUpdate;
-		for (auto i = 0u; i < ssystem_phases::C_COUNT; ++i)
-		{
-			auto p = world().entity();
-
-			p.add(flecs::Phase).depends_on(previous_phase);
-
-			phases->m_phases.push_back(p);
-
-			previous_phase = p;
-		}
-
-		//- setup pipelines
-		m_update_pipeline = world().pipeline()
-			.with(flecs::System)
-			.with<ssystem_phases::son_update>().build();
-
-		m_world_render_pipeline = world().pipeline()
-			.with(flecs::System)
-			.with<ssystem_phases::son_world_render>().build();
-
-		m_ui_render_pipeline = world().pipeline()
-			.with(flecs::System)
-			.with<ssystem_phases::son_ui_render>().build();
-
-		m_post_update_pipeline = world().pipeline()
-			.with(flecs::System)
-			.with<ssystem_phases::son_post_update>().build();
-
 		//- setup observers
 		world().observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
@@ -96,59 +65,15 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld::tick(float dt, system_running_phase p)
+	void cworld::tick(float dt)
 	{
-		//- TODO: to make flecs work multithreaded 'progress' is necessary, which in turn breaks our architecture.
-		//- what we need to refactor is moving away from runnables and towards flecs phases (flecs::Phase), where we
-		//- define a 'pipeline' from Update->WorldRender->UiRender->PostUpdate and a system instead of defining phase
-		//- as it is now defines it as: m_builder.add(flecs::Phase).depends_on(Update) which will make it run on update tick.
-		//-
-		//- Additionally, spritemancer has to be refactored as a system or module. So that we can control when is sm::begin_drawing() etc
-		//- called and know what happens next. (if not system then see flecs tasks, they do not need any components to match)
-		//-
-		switch (p)
-		{
-		case system_running_phase_on_update:
-		{
-			logging::log_info("World on update");
-			world().set_pipeline(m_update_pipeline);
-			break;
-		}
-		case system_running_phase_on_world_render:
-		{
-			logging::log_info("World on render");
-			world().set_pipeline(m_world_render_pipeline);
-			break;
-		}
-		case system_running_phase_on_ui_render:
-		{
-			logging::log_info("World on ui render");
-			world().set_pipeline(m_ui_render_pipeline);
-			break;
-		}
-		case system_running_phase_on_post_update:
-		{
-			logging::log_info("World on post update");
-			world().set_pipeline(m_post_update_pipeline);
-			break;
-		}
-		default:
-		case system_running_phase_none:
-		{
-			CORE_ASSERT(false, "Invalid operation. Invalid system phase provided");
-			return;
-		}
-		}
+		ZoneScopedN("World Tick");
 
-		{
-			ZoneScopedN("World Queries");
+		world().progress(dt);
 
-			world().progress(dt);
-
-			//- process any queries, they will be available for systems on next tick,
-			//- also clearup memory for already taken and processed queries.
-			process_queries();
-		}
+		//- process any queries, they will be available for systems on next tick,
+		//- also clearup memory for already taken and processed queries.
+		process_queries();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

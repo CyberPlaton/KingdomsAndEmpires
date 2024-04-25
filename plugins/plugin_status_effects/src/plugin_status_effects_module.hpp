@@ -73,7 +73,6 @@ namespace effects
 			ecs::csystem<saffectable>
 			(w, "Status Effect System")
 		{
-			run_on(ecs::system_running_phase_on_update);
 			multithreaded();
 			build([&](flecs::entity e, saffectable& affectable)
 				{
@@ -134,6 +133,8 @@ namespace effects
 						algorithm::erase_at_index(affectable.m_active_effects, to_be_removed[i]);
 					}
 				});
+
+			run_after(flecs::OnUpdate);
 		}
 	};
 

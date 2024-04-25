@@ -5,16 +5,6 @@
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	enum system_running_phase
-	{
-		system_running_phase_none = 0,
-		system_running_phase_on_update,
-		system_running_phase_on_world_render,
-		system_running_phase_on_ui_render,
-		system_running_phase_on_post_update, //- Note: fixed dt. After all rendering is done.
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
 	class isystem
 	{
 	public:
@@ -57,46 +47,39 @@ namespace ecs
 		stringview_t name() const override final { return m_self.name().c_str(); }
 
 	protected:
-		template<class TSystem>
-		void depends_on();
-
 		//- Marks the system as available for threading. Note that a system using ImGui UI
 		//- is not eligible for multithreading.
+		//- Note: must be called BEFORE 'build'
 		void multithreaded();
 
 		//- Changes made by this system are visible immediately. Normally,
 		//- any structural changes are inserted into a command buffer and synced
 		//- before next tick. Enabling this makes the system single threaded.
 		//- Note: Structural changes are for example adding or removing components from an entity.
+		//- Also, must be called BEFORE 'build'
 		void immediate();
 
+		//- Specifies a component to explicitly exclude, meaning an entity having it will be ignored
+		//- Note: must be called BEFORE 'build'
 		template<typename... TComponent>
 		void exclude();
-
-		void run_on(system_running_phase p);
-
-		void run_after(flecs::entity e);
-
-		void run_after(stringview_t name);
 
 		template<typename TCallable>
 		void build(TCallable&& func);
 
+		//- Specifies after which already existing system to run in order.
+		//- Note: the other system must have the same 'run_on' value set,
+		//- otherwise we wont run at all.
+		//- Also, this must be called AFTER 'build', otherwise its a crash...
+		void run_after(flecs::entity e);
+		void run_after(const flecs::entity_t e);
+		void run_after(stringview_t name);
+
 	private:
 		flecs::system m_self;
 		flecs::system_builder<TComps...> m_builder;
-		system_running_phase m_phase;
 		bool m_multithreaded = false;
 	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	template<class TSystem>
-	void csystem<TComps...>::depends_on()
-	{
-		//- Note: registers a system we depend on AFTER we are registered to flecs
-		TSystem system(world());
-	}
 
 	//- Excludes one or more components from matching table, i.e. retrieves entities that
 	//- do not have those components.
@@ -114,9 +97,6 @@ namespace ecs
 	template<typename... TComps>
 	void csystem<TComps...>::multithreaded()
 	{
-		CORE_ASSERT(m_phase != system_running_phase_on_ui_render,
-			"Invalid operation. A UI system can not be multithreaded");
-
 		m_builder.multi_threaded();
 		m_multithreaded = true;
 	}
@@ -131,57 +111,18 @@ namespace ecs
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... TComps>
-	void csystem<TComps...>::run_on(system_running_phase p)
-	{
-		const auto* phases = world().template get<ssystem_phases>();
-
-		switch (p)
-		{
-		case system_running_phase_on_update:
-		{
-			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UPDATE])
-			.template kind<ssystem_phases::son_update>();
-			break;
-		}
-		case system_running_phase_on_world_render:
-		{
-			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_WORLD_RENDER])
-				.template kind<ssystem_phases::son_world_render>();
-			break;
-		}
-		case system_running_phase_on_ui_render:
-		{
-			CORE_ASSERT(!m_multithreaded, "Invalid operation. A UI system can not be multithreaded");
-
-			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_UI_RENDER])
-				.template kind<ssystem_phases::son_ui_render>();
-			break;
-		}
-		case system_running_phase_on_post_update:
-		{
-			m_builder.kind(phases->m_phases[ssystem_phases::C_ON_POST_UPDATE])
-				.template kind<ssystem_phases::son_post_update>();
-			break;
-		}
-		default:
-		case system_running_phase_none:
-		{
-			CORE_ASSERT(false, "Invalid operation. Phase is not valid");
-			break;
-		}
-		}
-		m_phase = p;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
 	void csystem<TComps...>::run_after(flecs::entity e)
 	{
 		CORE_ASSERT(e.is_valid(), "Invalid operation. Specified system does not exist!");
 
 		m_self.add(flecs::Phase).depends_on(e);
+	}
 
-		//m_builder.kind(e);
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	void csystem<TComps...>::run_after(const flecs::entity_t e)
+	{
+		m_self.add(flecs::Phase).depends_on(e);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -218,21 +159,15 @@ namespace ecs
 		flecs::entity self() const override final { return m_self; }
 		stringview_t name() const override final { return m_self.name().c_str(); }
 
-		template<class TSystem>
-		void depends_on();
-
-		void run_on(system_running_phase p);
-
-		void run_after(flecs::entity e);
-
-		void run_after(stringview_t name);
-
 		template<typename TCallable>
 		void build(TCallable&& callback);
 
+		void run_after(flecs::entity e);
+		void run_after(const flecs::entity_t e);
+		void run_after(stringview_t name);
+
 	private:
 		flecs::system m_self;
-		system_running_phase m_phase;
 		flecs::system_builder<> m_builder;
 	};
 
@@ -241,14 +176,6 @@ namespace ecs
 	void cfree_system::build(TCallable&& callback)
 	{
 		m_self = m_builder.iter(callback);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<class TSystem>
-	void cfree_system::depends_on()
-	{
-		//- Note: registers a system we depend on AFTER we are registered to flecs
-		TSystem system(world());
 	}
 
 } //- ecs

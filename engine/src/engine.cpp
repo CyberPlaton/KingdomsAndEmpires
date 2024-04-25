@@ -160,6 +160,8 @@ namespace engine
 		//- enter engine main loop
 		while (!raylib::WindowShouldClose())
 		{
+			ZoneScopedN("Engine Frame");
+
 			//- NOTE: reconsider how to handle events from hardware and game/engine/editor internal
 			if (raylib::IsWindowResized())
 			{
@@ -167,41 +169,27 @@ namespace engine
 			}
 
 			//- TODO: implement ctimestep class for variable or fixed delta time
-			//- update
 			{
-				ZoneScopedN("system_running_phase_on_update");
-
+				//- general update and deferred rendering calls
 				core::cservice_manager::on_update(0.016f);
 
-				//- TODO: we used to do this with an active camera, while camera system is being reworked
-				//- this here is an open question
-				// ecs::cworld_manager::instance().prepare(camera_manager->active_camera()->world_visible_area());
-
-				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_update);
+				ecs::cworld_manager::instance().tick(0.016f);
 
 				m_layers.on_update(0.016f);
 			}
 
-			//- world space rendering
 			{
-				ZoneScopedN("system_running_phase_on_world_render");
-
+				//- raylib frame processing deferred rendering class
 				sm::begin_drawing();
-
-				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_world_render);
 
 				m_layers.on_world_render();
 
 				sm::end_frame();
 			}
 
-			//- ui (screen space) rendering
 			{
-				ZoneScopedN("system_running_phase_on_ui_render");
-
+				//- ImGui ui frame
 				sm::ui_frame();
-
-				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_ui_render);
 
 				m_layers.on_ui_render();
 
@@ -210,13 +198,6 @@ namespace engine
 				sm::end_ui_frame();
 
 				sm::end_drawing();
-			}
-
-			//- post update with fixed timestep
-			{
-				ZoneScopedN("system_running_phase_on_post_update");
-
-				ecs::cworld_manager::instance().tick(0.016f, ecs::system_running_phase_on_post_update);
 			}
 		}
 

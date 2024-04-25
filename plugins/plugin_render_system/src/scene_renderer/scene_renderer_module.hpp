@@ -11,17 +11,18 @@ namespace render_system
 			ecs::csystem<ecs::stransform, ecs::scamera>
 			(w, "Camera System")
 		{
-			run_on(ecs::system_running_phase_on_world_render);
 			build([&](flecs::entity e, const ecs::stransform& transform, const ecs::scamera& camera)
 				{
 					//- TODO: there should only be one active camera in the world, maybe we can do something using a singleton
 					//- or something like that
 					ZoneScopedN("Camera System");
-					logging::log_info("\tcamera system");
+
 					sm::crenderer renderer;
 
 					renderer.use_camera(camera.m_layer, { transform.m_x, transform .m_y }, camera.m_offset, transform.m_rotation, camera.m_zoom);
 				});
+
+			run_after(flecs::OnUpdate);
 		};
 	};
 
@@ -33,14 +34,12 @@ namespace render_system
 			ecs::csystem<ecs::stransform, ecs::ssprite>
 			(w, "Scene Render System")
 		{
-			run_on(ecs::system_running_phase_on_world_render);
-			depends_on<ccamera_system>();
 			multithreaded();
 			exclude<ecs::tag::sinvisible>();
 			build([&](flecs::entity e, const ecs::stransform& transform, const ecs::ssprite& sprite)
 				{
 					ZoneScopedN("Scene Render System");
-					logging::log_warn("\tscene render system");
+
 					sm::crenderer renderer;
 
 					//- TODO: we do it like this for now. But intended was to use world().visible_entities()
@@ -72,8 +71,9 @@ namespace render_system
 		cscene_render_module(flecs::world& w) : ecs::imodule(w)
 		{
 			begin<cscene_render_module>("Scene Render Module")
+				.subsystem<cscene_render_module, ccamera_system>()
 				.subsystem<cscene_render_module, cscene_render_system>()
-				.end<cscene_render_module>();
+			.end<cscene_render_module>();
 		}
 
 		RTTR_ENABLE(ecs::imodule);

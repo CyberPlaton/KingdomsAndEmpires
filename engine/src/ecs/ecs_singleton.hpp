@@ -58,43 +58,12 @@ namespace ecs
 		RTTR_ENABLE();
 	};
 
-	//- singleton contains all defined phases for systems to run on.
-	//- Does not need to be serializable, as its initialized on each world start.
-	//- Note: to register a system that should run on update tick do
-	//- .kind<ecs::ssystem_phases::son_update>()
-	//- in flecs system builder (system definition/creation).
 	//------------------------------------------------------------------------------------------------------------------------
-	struct ssystem_phases : isingleton
+	struct sexample_singleton : isingleton
 	{
-		DECLARE_SINGLETON(ssystem_phases);
+		DECLARE_SINGLETON(sexample_singleton);
 
-		struct son_update{};
-		struct son_world_render {};
-		struct son_ui_render {};
-		struct son_post_update {};
-
-		inline static unsigned C_BEGIN_FRAME = 0;
-		inline static unsigned C_ON_UPDATE = 1;
-		inline static unsigned C_ON_WORLD_RENDER = 2;
-		inline static unsigned C_END_FRAME = 3;
-		inline static unsigned C_BEGIN_UI_FRAME = 4;
-		inline static unsigned C_ON_UI_RENDER = 5;
-		inline static unsigned C_END_UI_FRAME = 6;
-		inline static unsigned C_END_RENDER = 7;
-		inline static unsigned C_ON_POST_UPDATE = 8;
-		inline static unsigned C_COUNT = C_ON_POST_UPDATE + 1;
-
-		vector_t<flecs::entity> m_phases;
-
-		RTTR_ENABLE(isingleton);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	struct stools_and_visualizers : isingleton
-	{
-		DECLARE_SINGLETON(stools_and_visualizers);
-
-		umap_t<std::string, bool> m_activated_table;
+		umap_t<std::string, bool> m_data;
 
 		RTTR_ENABLE(isingleton);
 	};
@@ -104,15 +73,15 @@ namespace ecs
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(stools_and_visualizers)
+	REFLECT_INLINE(sexample_singleton)
 	{
-		rttr::registration::class_<stools_and_visualizers>("stools_and_visualizers")
-			.property("m_activated_table", &stools_and_visualizers::m_activated_table)
-			.method("serialize", &stools_and_visualizers::serialize)
-			.method("set", &stools_and_visualizers::set)
+		rttr::registration::class_<sexample_singleton>("sexample_singleton")
+			.property("m_data", &sexample_singleton::m_data)
+			.method("serialize", &sexample_singleton::serialize)
+			.method("set", &sexample_singleton::set)
 			;
 
-		rttr::default_constructor<stools_and_visualizers>();
+		rttr::default_constructor<sexample_singleton>();
 		rttr::default_constructor<umap_t<std::string, bool>>();
 	};
 
