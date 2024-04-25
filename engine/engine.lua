@@ -68,7 +68,7 @@ function engine()
 			}
 			links{"gdi32", "ws2_32", "kernel32", "opengl32", "psapi", "winmm"}
 		elseif PLATFORM == "linux" then
-			defines{"_GLFW_X11"} -- TODO: check difference between x11 and wayland and decide what to use
+			defines{"_GLFW_X11"}
 			files{path.join(glfw_path, "posix_time.c"),
 				  path.join(glfw_path, "posix_thread.c"),
 				  path.join(glfw_path, "posix_module.c"),
@@ -85,6 +85,7 @@ function engine()
 				  path.join(glfw_path, "linux_joystick.h"),
 				  path.join(glfw_path, "linux_joystick.c"),
 			}
+			links{"GL"}
 		elseif PLATFORM == "macosx" then
 			defines{"_GLFW_COCOA"}
 			files{path.join(glfw_path, "cocoa_time.c"),

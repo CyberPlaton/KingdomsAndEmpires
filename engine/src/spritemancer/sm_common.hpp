@@ -485,7 +485,7 @@ namespace sm
 		unsigned h() const;
 	};
 
-	//- TODO:
+	//- TODO: Reworking camera system
 	//- Following an entity: camera locks on to an in-game entity
 	//- Edge-Snapping: camera can not move farther or below some coordinate
 	//- Camera Window: camera locks on to an in-game entity and pushes camera
@@ -514,53 +514,7 @@ namespace sm
 	//- their attraction/detraction behavior
 	//- 
 	//------------------------------------------------------------------------------------------------------------------------
-	class ccamera
-	{
-	public:
-		ccamera() {};
-		virtual ~ccamera() {};
 
-		core::srect viewport() const;
-		void viewport(float x, float y, float w, float h);
-
-		float viewport_x() const { return m_viewport.x(); }
-		float viewport_y() const { return m_viewport.y(); }
-		float viewport_w() const { return m_viewport.w(); }
-		float viewport_h() const { return m_viewport.h(); }
-
-		core::scolor clearcolor() const;
-		void clearcolor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-
-		void move(vec2_t v);
-		void move_to(vec2_t v);
-
-		void rotate(float v);
-		void rotate_to(float v);
-
-		void zoom(float v);
-		void zoom_to(float v);
-
-		vec2_t position() const;
-		float rotation() const;
-		float zoom() const;
-
-		vec2_t vector_screen_to_world(const vec2_t& point);
-		vec2_t vector_world_to_screen(const vec2_t& point);
-
-		//- extendability
-		virtual core::srect world_visible_area() const;
-		virtual void use();
-		virtual void end();
-		virtual void update(float dt) {}
-
-		//- utility, debug purposes.
-		raylib::Camera2D get_camera() const;
-
-	protected:
-		core::srect m_viewport;
-		raylib::Camera2D m_camera;
-		core::scolor m_clearcolor;
-	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 // 	class cshader_uniform
@@ -647,17 +601,6 @@ namespace sm
 // 		m_static_uniforms.emplace_back(uniform_name, value, type);
 // 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class icamera_manager : public core::cservice
-	{
-	public:
-		virtual ccamera* active_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
-		virtual ccamera* default_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return nullptr; };
-		virtual bool has_active_camera() const { ASSERT(false, "Invalid operation. Using icamera_manager interface function"); return false; }
-
-		RTTR_ENABLE(core::cservice);
-	};
-
 } //- sm
 
 namespace compression
@@ -731,19 +674,6 @@ namespace sm
 			;
 
 		rttr::default_constructor<cwindow::sconfig>();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(icamera_manager)
-	{
-		rttr::registration::class_<icamera_manager>("icamera_manager")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
-			.method("active_camera", &icamera_manager::active_camera)
-			.method("default_camera", &icamera_manager::default_camera)
-			;
 	}
 
 } //- sm
