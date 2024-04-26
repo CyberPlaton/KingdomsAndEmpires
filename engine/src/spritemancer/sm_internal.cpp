@@ -151,8 +151,11 @@ namespace sm
 		core::cscope_mutex m(m_mutex);
 
 		//- Execute draw commands into default render target in a layered manner from lowest to highest
-		for (const auto& pair : m_drawcommands)
+		for (auto& pair : m_drawcommands)
 		{
+			//- Sort drawcommands for a layer to incur minimal state changes
+			sort(pair.second);
+		
 			for (const auto& command : pair.second)
 			{
 				switch (command.type())
@@ -403,6 +406,60 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	ccontext::~ccontext()
 	{
+	}
+	
+	//------------------------------------------------------------------------------------------------------------------------
+	void ccontext::sort(vector_t<cdrawcommand>& commands)
+	{
+		ZoneScopedN("ccontext::sort");
+		
+		//- Note: sorting should only be done for sprite draw commands
+		const auto sort_by_technique = [&](const cdrawcommand& a, const cdrawcommand& b)
+			{
+				const auto& _a = a.get<drawcommand::ssprite>();
+				const auto& _b = b.get<drawcommand::ssprite>();
+				
+				return _a.m_material < _b.m_material;
+			};
+		
+		const auto sort_by_texture = [&](const cdrawcommand& a, const cdrawcommand& b)
+			{
+				const auto& _a = a.get<drawcommand::ssprite>();
+				const auto& _b = b.get<drawcommand::ssprite>();
+				
+				return _a.m_texture < _b.m_texture;
+			};
+		
+		//- Note: mode := 0 = technique, else = texture.
+		const auto sort_by = [&](unsigned mode, unsigned begin, unsigned end)
+			{
+				if(mode == 0)
+				{
+					std::sort(commands.begin() + begin, commands.end() + end, sort_by_technique);
+				}
+				else
+				{
+					std::sort(commands.begin() + begin, commands.end() + end, sort_by_texture);
+				}
+			};
+			
+		sort_by(0, 0, commands.size());
+		
+		auto x = 0u, y = 0u;
+		for(auto i = 0u; i < commands.size(); ++i)
+		{
+			if(i + 1 == commands.size())
+			{
+				sort_by(1, x, commands.size());
+			}
+			else
+			{
+				y = i + 1;
+				sort_by(1, x, y);
+				
+				x = y;
+			}
+		}
 	}
 
 } //- sm

@@ -86,6 +86,8 @@ namespace sm
 	private:
 		ccontext();
 		~ccontext();
+		
+		void sort(vector_t<cdrawcommand>& commands);
 	};
 
 	//- shortcut

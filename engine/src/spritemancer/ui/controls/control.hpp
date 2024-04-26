@@ -83,7 +83,7 @@ namespace ui
 			};
 
 			icontrol();
-			virtual ~icontrol() {};
+			virtual ~icontrol();
 
 			click_result show();
 			operator bool() { return show() != click_result_none; }

@@ -77,6 +77,7 @@ namespace stl = std;
 #define CORE_CALLOC(n, size)	dlcalloc(n, size)
 #define CORE_REALLOC(p, size)	dlrealloc(p, size)
 #define CORE_FREE(p)			dlfree(p)
+#define CORE_FREEN(p, n)		CORE_FREE(p) 
 
 #if defined(core_EXPORTS)
 	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
@@ -1369,7 +1370,7 @@ namespace core
 
 			std::memmove(m_start, prev_start, prev_count * sizeof(TType));
 
-			CORE_FREE(prev_start, prev_count);
+			CORE_FREEN(prev_start, prev_count);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -1611,7 +1612,7 @@ namespace core
 				object = advance(object);
 			}
 
-			CORE_FREE(m_start, m_size);
+			CORE_FREEN(m_start, m_size);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
