@@ -76,18 +76,16 @@ namespace sm
 		umap_t<renderlayer_t, vector_t<cdrawcommand>> m_drawcommands;
 		core::cmutex m_mutex;
 
-		crendertarget m_backbuffer; //- default render target
-		technique_t m_fxaa;			//- custom anti-aliasing shader
-		material_t m_default;		//- default material
-		technique_t m_sprite;		//- default pixel perfect shader
+		crendertarget m_backbuffer;		//- default render target
+		technique_t m_fxaa;				//- custom anti-aliasing shader
+		material_t m_default;			//- default material
+		technique_t m_sprite;			//- default pixel perfect shader
 		bool m_has_fxaa;
 		ptr_t<cwindow> m_mainwindow;
 
 	private:
 		ccontext();
 		~ccontext();
-		
-		void sort(vector_t<cdrawcommand>& commands);
 	};
 
 	//- shortcut

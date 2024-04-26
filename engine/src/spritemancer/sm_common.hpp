@@ -286,6 +286,8 @@ namespace sm
 
 		[[nodiscard]] decltype(auto) take() { return std::move(m_commands); }
 
+		inline bool empty() const { return m_commands.empty(); }
+
 	private:
 		vector_t<cdrawcommand> m_commands;
 	};

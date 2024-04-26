@@ -17,7 +17,6 @@ namespace stl = eastl;
 namespace stl = std;
 #endif
 #include <new>
-#include <../src/malloc.h>
 #include <glm.h>
 #include <magic_enum.h>
 #include <taskflow.h>
@@ -73,19 +72,16 @@ namespace stl = std;
 #define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
 #define STATIC_INSTANCE_EX(__class) STATIC_INSTANCE(__class, s_instance)
 
-#define CORE_MALLOC(size)		dlmalloc(size)
-#define CORE_CALLOC(n, size)	dlcalloc(n, size)
-#define CORE_REALLOC(p, size)	dlrealloc(p, size)
-#define CORE_FREE(p)			dlfree(p)
-#define CORE_FREEN(p, n)		CORE_FREE(p) 
+#define CORE_MALLOC(size)		std::malloc(size)
+#define CORE_CALLOC(n, size)	std::calloc(n, size)
+#define CORE_REALLOC(p, size)	std::realloc(p, size)
+#define CORE_FREE(p)			std::free(p)
+#define CORE_FREEN(p, n)		CORE_FREE(p)
 
 #if defined(core_EXPORTS)
 	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 		void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
 		void operator delete(void* p) { TracyFree(p); CORE_FREE(p); }
-	#elif !CORE_PLATFORM_WINDOWS
-		void* operator new(size_t n) { return CORE_MALLOC(n); }
-		void operator delete(void* p) { CORE_FREE(p); }
 	#endif
 #endif
 
