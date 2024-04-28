@@ -3,35 +3,6 @@
 
 namespace sm
 {
-	namespace
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		inline raylib::Color to_cliteral(const core::scolor& c)
-		{
-			return { c.r(), c.g() ,c.b(), c.a() };
-		}
-
-	} //- unnamed
-
-	namespace detail
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		irenderer::~irenderer()
-		{
-			submit();
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void irenderer::submit()
-		{
-			if (!m_commands.empty())
-			{
-				ctx().push_commands(std::move(m_commands.take()));
-			}
-		}
-
-	} //- detail
-
 	//------------------------------------------------------------------------------------------------------------------------
 	ccontext& ctx()
 	{
@@ -148,113 +119,6 @@ namespace sm
 	{
 		ZoneScopedN("ccontext::on_end_drawing");
 
-		core::cscope_mutex m(m_mutex);
-
-		//- prepare frame data
-		raylib::Camera2D frame_camera{ 0 };
-		raylib::Rectangle src, dst;
-
-		//- Execute draw commands into default render target in a layered manner from lowest to highest
-		for (auto& pair : m_drawcommands)
-		{
-			for (auto& commands : pair.second)
-			{
-				const auto& mat = sm().get(commands.first);
-
-				mat.bind();
-
-				for (const auto& command : commands.second)
-				{
-					switch (command.type())
-					{
-					case drawcommand_type_sprite:
-					{
-						const auto& sprite = command.get<drawcommand::ssprite>();
-
-						const auto& tex = tm().get(sprite.m_texture);
-
-						//- TODO: we do not use width and height from command transform, why
-						src = { sprite.m_rect.x(), sprite.m_rect.y() , sprite.m_rect.w() , sprite.m_rect.h() };
-						dst = { sprite.m_position.x, sprite.m_position.y, src.width, src.height };
-
-						//- TODO: origin should be variable, probably a component thing that should be redirected to here
-						raylib::DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, sprite.m_rotation,
-							{ sprite.m_color.r(), sprite.m_color.g() , sprite.m_color.b() , sprite.m_color.a() });
-						break;
-					}
-					case drawcommand_type_rect:
-					{
-						const auto& rect = command.get<drawcommand::srectangle>();
-
-						raylib::DrawRectangleV({ rect.m_position.x, rect.m_position.y }, { rect.m_size.x, rect.m_size.y }, to_cliteral(rect.m_color));
-						break;
-					}
-					case drawcommand_type_circle:
-					{
-						const auto& circle = command.get<drawcommand::scircle>();
-
-						raylib::DrawCircle(circle.m_center.x, circle.m_center.y, circle.m_radius, to_cliteral(circle.m_color));
-						break;
-					}
-					case drawcommand_type_line:
-					{
-						const auto& line = command.get<drawcommand::sline>();
-
-						raylib::DrawLineEx({ line.m_start.x, line.m_start.y }, { line.m_end.x, line.m_end.y }, line.m_thick, to_cliteral(line.m_color));
-						break;
-					}
-					case drawcommand_type_text:
-					{
-						break;
-					}
-					case drawcommand_type_opcode:
-					{
-						const auto& op = command.get<drawcommand::sopcode>();
-
-						//- execute opcode, if data inside it is not what is required we crash
-						switch (op.m_opcode)
-						{
-						case drawcommand_opcode_clear:
-						{
-							const auto& color = op.m_data.get<core::scolor>();
-
-							raylib::ClearBackground(to_cliteral(color));
-							break;
-						}
-						default:
-						{
-							break;
-						}
-						}
-
-						break;
-					}
-					case drawcommand_type_camera:
-					{
-						const auto& cam = command.get<drawcommand::scamera>();
-
-						frame_camera.target.x = cam.m_position.x;
-						frame_camera.target.y = cam.m_position.y;
-						frame_camera.offset.x = cam.m_offset.x;
-						frame_camera.offset.y = cam.m_offset.y;
-						frame_camera.rotation = cam.m_rotation;
-						frame_camera.zoom = cam.m_zoom;
-
-						raylib::BeginMode2D(frame_camera);
-						break;
-					}
-					default:
-					{
-						//- report unknown command type
-						break;
-					}
-					}
-				}
-				mat.unbind();
-			}
-		}
-		m_drawcommands.clear();
-
 		//- reset state to default before presenting backbuffer
 		raylib::EndMode2D();
 		raylib::EndBlendMode();
@@ -278,7 +142,7 @@ namespace sm
 		const auto w = SCAST(float, m_backbuffer.target().texture.width);
 		const auto h = SCAST(float, m_backbuffer.target().texture.height);
 
-		raylib::DrawTextureRec(m_backbuffer.target().texture, { 0.0f, 0.0f, w, -h }, { 0.0f, 0.0f }, to_cliteral(C_COLOR_WHITE));
+		raylib::DrawTextureRec(m_backbuffer.target().texture, { 0.0f, 0.0f, w, -h }, { 0.0f, 0.0f }, C_COLOR_WHITE.to_cliteral());
 
 		if (m_has_fxaa)
 		{
@@ -319,74 +183,6 @@ namespace sm
 	void ccontext::end_render_target()
 	{
 		raylib::EndTextureMode();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::push_commands(vector_t<cdrawcommand> buffer)
-	{
-		ZoneScopedN("ccontext::push_commands");
-
-		core::cscope_mutex m(m_mutex);
-
-		for (const auto& command : buffer)
-		{
-			//- delegate commands to their respective layers
-			switch (command.type())
-			{
-			case drawcommand_type_sprite:
-			{
-				const auto& sprite = command.get<drawcommand::ssprite>();
-
-				m_drawcommands[sprite.m_layer][sprite.m_material].emplace_back(command);
-				break;
-			}
-			case drawcommand_type_opcode:
-			{
-				const auto& op = command.get<drawcommand::sopcode>();
-
-				m_drawcommands[op.m_layer][0].emplace_back(command);
-				break;
-			}
-			case drawcommand_type_camera:
-			{
-				const auto& cam = command.get<drawcommand::scamera>();
-
-				m_drawcommands[cam.m_layer][0].emplace_back(command);
-				break;
-			}
-			case drawcommand_type_rect:
-			{
-				const auto& rect = command.get<drawcommand::srectangle>();
-
-				m_drawcommands[rect.m_layer][0].emplace_back(command);
-				break;
-			}
-			case drawcommand_type_circle:
-			{
-				const auto& circle = command.get<drawcommand::scircle>();
-
-				m_drawcommands[circle.m_layer][0].emplace_back(command);
-				break;
-			}
-			case drawcommand_type_line:
-			{
-				const auto& line = command.get<drawcommand::sline>();
-
-				m_drawcommands[line.m_layer][0].emplace_back(command);
-
-				break;
-			}
-			case drawcommand_type_text:
-			{
-				break;
-			}
-			default:
-			{
-				//- report unknown command type
-				break;
-			}
-			}
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

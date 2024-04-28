@@ -91,9 +91,9 @@ namespace ecs
 				return c.m_active == true;
 			});
 
-		const auto* c = e.get<scamera>();
-		const auto* t = e.get<stransform>();
-		auto aabb = physics::aabb(world_visible_area({ t->m_x, t->m_y }, c->m_offset, c->m_zoom));
+		const auto& c = *e.get<scamera>();
+		const auto& t = *e.get<stransform>();
+		auto aabb = physics::aabb(world_visible_area({ t.m_x, t.m_y }, c.m_offset, c.m_zoom));
 
 		//- perform a query for all currently visible entities
 		m_master_query_type = query_type_entity_array;

@@ -88,7 +88,7 @@ namespace ecs
 
 		//- immediate mode query for an entity matching some value in component.
 		template<typename... TComps, typename TCallable>
-		flecs::entity query_one(TCallable callback);
+		flecs::entity query_one(TCallable callback) const;
 
 		template<typename... ARGS>
 		query_t query(ARGS&&... args);
@@ -130,7 +130,7 @@ namespace ecs
 	//- });
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... TComps, typename TCallable>
-	flecs::entity cquery_manager::query_one(TCallable callback)
+	flecs::entity cquery_manager::query_one(TCallable callback) const
 	{
 		return world().query<TComps...>().find(callback);
 	}

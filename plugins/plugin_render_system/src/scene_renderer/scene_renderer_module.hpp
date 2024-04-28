@@ -4,14 +4,13 @@
 namespace render_system
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class ccamera_system final : public ecs::csystem<ecs::stransform, ecs::scamera>
+	class ccamera_system final : public ecs::cfree_system
 	{
 	public:
 		ccamera_system(flecs::world& w) :
-			ecs::csystem<ecs::stransform, ecs::scamera>
-			(w, "Camera System")
+			ecs::cfree_system(w, "Camera System")
 		{
-			build([&](flecs::entity e, const ecs::stransform& transform, const ecs::scamera& camera)
+			build([&](float dt)
 				{
 					//- TODO: there should only be one active camera in the world, maybe we can do something using a singleton
 					//- or something like that
@@ -19,7 +18,18 @@ namespace render_system
 
 					sm::crenderer renderer;
 
-					renderer.use_camera(camera.m_layer, { transform.m_x, transform .m_y }, camera.m_offset, transform.m_rotation, camera.m_zoom);
+					const auto* w = world_context<ecs::cworld>();
+
+					auto e = w->qm().query_one<const ecs::scamera>(
+						[](const ecs::scamera& c)
+						{
+							return c.m_active == true;
+						});
+
+					const auto& c = *e.get<ecs::scamera>();
+					const auto& t = *e.get<ecs::stransform>();
+
+					renderer.begin_camera({ t.m_x, t.m_y }, c.m_offset, t.m_rotation, c.m_zoom);
 				});
 
 			run_after(flecs::OnUpdate);
@@ -56,7 +66,7 @@ namespace render_system
 					}
 				});
 
-			run_after(flecs::OnUpdate);
+			run_after("Camera System");
 		}
 	};
 

@@ -977,6 +977,7 @@ namespace core
 		inline uint8_t a() const { return m_a; }
 
 		vec4_t normalize() const;
+		inline raylib::Color to_cliteral() const { return { r(), g(), b(), a() }; }
 
 		uint8_t m_r, m_g, m_b, m_a;
 

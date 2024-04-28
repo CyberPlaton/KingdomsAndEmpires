@@ -4,27 +4,7 @@
 
 namespace sm
 {
-	namespace detail
-	{
-		//- Base class for renderer. Automatically submits command buffer when going out of scope.
-		//------------------------------------------------------------------------------------------------------------------------
-		class irenderer
-		{
-		public:
-			irenderer() = default;
-			virtual ~irenderer();
-
-		protected:
-			inline ccommandbuffer& buffer() { return m_commands; }
-
-		private:
-			ccommandbuffer m_commands;
-
-		private:
-			void submit();
-		};
-
-	} //- detail
+	class ccontext;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	class ccontext
@@ -49,7 +29,6 @@ namespace sm
 		void end_blend_mode();
 		void begin_render_target(rendertarget_t texture);
 		void end_render_target();
-		void push_commands(vector_t<cdrawcommand> buffer);
 
 		cspriteatlas_manager& am() { return *m_spriteatlas_manager; }
 		const cspriteatlas_manager& am() const { return *m_spriteatlas_manager; }
@@ -72,9 +51,6 @@ namespace sm
 		cmaterial_manager* m_material_manager;
 		ctexture_manager* m_texture_manager;
 		crendertarget_manager* m_rendertarget_manager;
-
-		map_t<renderlayer_t, umap_t<technique_t, vector_t<cdrawcommand>>> m_drawcommands;
-		core::cmutex m_mutex;
 
 		crendertarget m_backbuffer;		//- default render target
 		technique_t m_fxaa;				//- custom anti-aliasing shader
