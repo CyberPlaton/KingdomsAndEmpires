@@ -91,7 +91,7 @@ namespace ecs
 		flecs::entity query_one(TCallable callback);
 
 		template<typename... ARGS>
-		unsigned query(ARGS&&... args);
+		query_t query(ARGS&&... args);
 
 		//- return a query that is ready to be processed. If it is not ready it returns nullptr.
 		//- Note: after taking a valid query, it will be destroyed next frame so process it directly and
@@ -137,9 +137,9 @@ namespace ecs
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... ARGS>
-	unsigned cquery_manager::query(ARGS&&... args)
+	query_t cquery_manager::query(ARGS&&... args)
 	{
-		unsigned i = 0;
+		query_t i = 0;
 
 		m_queries.create(&i, args...);
 

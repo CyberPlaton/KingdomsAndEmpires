@@ -145,6 +145,7 @@ using uniform_t			= handle_type_t;
 using spriteatlas_t		= handle_type_t;
 using subtexture_t		= handle_type_t;
 using rendertarget_t	= handle_type_t;
+using query_t		= handle_type_t;
 
 using ivec2_t = glm::lowp_u32vec2;
 using vec2_t = glm::vec2;

@@ -21,8 +21,7 @@ namespace ecs
 		~cworld();
 
 		void tick(float dt);
-		[[nodiscard]] decltype(auto) visible_entities() const {return m_visible_entities;}
-		void prepare(const core::srect& area);
+		[[nodiscard]] decltype(auto) visible_entities() const { return m_visible_entities; }
 
 		bool load(const core::cpath& path);
 		void save(const core::cpath& path);
@@ -72,7 +71,7 @@ namespace ecs
 			bool m_any;
 		};
 
-		static constexpr unsigned C_MASTER_QUERY_KEY_MAX = cquery_manager::C_QUERY_COUNT_MAX;
+		static constexpr auto C_MASTER_QUERY_KEY_MAX = cquery_manager::C_QUERY_COUNT_MAX;
 		query_type m_master_query_type;
 		unsigned m_master_query_key;
 		sworld_query m_master_query_result;
@@ -82,6 +81,7 @@ namespace ecs
 		unsigned m_used_threads;
 
 	private:
+		void prepare();
 		void deserialize_entity(const simdjson::dom::object& json);
 		void serialize_entity(const flecs::entity e, nlohmann::json& json);
 		void update_proxy(flecs::entity e);
@@ -89,6 +89,8 @@ namespace ecs
 		void create_proxy(flecs::entity e);
 		bool has_proxy(flecs::entity e);
 		void process_queries();
+		void process_query(cquery& q);
+		core::srect world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom);
 	};
 
 } //- ecs

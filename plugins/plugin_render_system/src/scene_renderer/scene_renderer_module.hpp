@@ -27,6 +27,22 @@ namespace render_system
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
+	class cscenerender_system final : public ecs::cfree_system
+	{
+	public:
+		cscenerender_system(flecs::world& w) :
+			ecs::cfree_system(w, "Scene Render System")
+		{
+			build([&](flecs::iter& it)
+				{
+					
+				});
+
+			run_after(flecs::OnUpdate);
+		}
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	class cscene_render_system final : public ecs::csystem<ecs::stransform, ecs::ssprite>
 	{
 	public:

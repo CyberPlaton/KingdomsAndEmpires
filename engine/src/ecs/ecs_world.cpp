@@ -67,7 +67,9 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::tick(float dt)
 	{
-		ZoneScopedN("World Tick");
+		ZoneScopedN("cworld::tick");
+
+		prepare();
 
 		world().progress(dt);
 
@@ -77,9 +79,23 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld::prepare(const core::srect& area)
+	void cworld::prepare()
 	{
-		auto aabb = physics::aabb(area);
+		//- set active world context
+		world().set_ctx(this);
+
+		//- get current viewing rect for active camera
+		auto e = qm().query_one<const scamera, const stransform>(
+			[](const scamera& c, const stransform& t)
+			{
+				return c.m_active == true;
+			});
+
+		const auto* c = e.get<scamera>();
+		const auto* t = e.get<stransform>();
+		auto aabb = physics::aabb(world_visible_area({ t->m_x, t->m_y }, c->m_offset, c->m_zoom));
+
+		//- perform a query for all currently visible entities
 		m_master_query_type = query_type_entity_array;
 		m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
 
@@ -93,58 +109,68 @@ namespace ecs
 	{
 		for (auto* query = qm().fetch(); query != nullptr; query = qm().fetch())
 		{
-			//- consider using 'unlikely' here, or just consider invalid queries as working
-			if (query->type() == query_type_none ||
-				query->intersection_type() == query_intersection_type_none)
-			{
-				continue;
-			}
-
-			//- prepare query and let it run
-			m_master_query_type = query->type();
-			m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
-
-			if (query->intersection_type() == query_intersection_type_aabb)
-			{
-				Query(this, query->aabb());
-			}
-			else if (query->intersection_type() == query_intersection_type_raycast)
-			{
-				RayCast(this, query->raycast());
-			}
-
-			//- store back the results
-			switch (query->type())
-			{
-			case query_type_any_occurance:
-			{
-				query->m_any = m_master_query_result.m_any;
-				break;
-			}
-			case query_type_entity_array:
-			{
-				query->m_entities = m_master_query_result.m_entity_array;
-				break;
-			}
-			case query_type_entity_count:
-			{
-				query->m_count = m_master_query_result.m_entity_count;
-				break;
-			}
-			default:
-			case query_type_none:
-			{
-				break;
-			}
-			}
-
-			query->finish();
+			process_query(*query);
 		}
 
 		qm().tick();
 
 		m_master_query_type = query_type_none;
 		m_master_query_result = sworld_query{};
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::process_query(cquery& q)
+	{
+		if (CORE_UNLIKELY(q.type() == query_type_none || q.intersection_type() == query_intersection_type_none))
+		{
+			return;
+		}
+
+		//- prepare query and let it run
+		m_master_query_type = q.type();
+		m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
+
+		if (q.intersection_type() == query_intersection_type_aabb)
+		{
+			Query(this, q.aabb());
+		}
+		else if (q.intersection_type() == query_intersection_type_raycast)
+		{
+			RayCast(this, q.raycast());
+		}
+
+		//- store back the results
+		switch (q.type())
+		{
+		case query_type_any_occurance:
+		{
+			q.m_any = m_master_query_result.m_any;
+			break;
+		}
+		case query_type_entity_array:
+		{
+			q.m_entities = m_master_query_result.m_entity_array;
+			break;
+		}
+		case query_type_entity_count:
+		{
+			q.m_count = m_master_query_result.m_entity_count;
+			break;
+		}
+		default:
+		case query_type_none:
+		{
+			break;
+		}
+		}
+		q.finish();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::srect cworld::world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom)
+	{
+		return { target.x - (1.0f / zoom) * offset.x + 5.0f, target.y - (1.0f / zoom) * offset.y + 5.0f,
+				(1.0f / zoom) * offset.x * 2.0f - 5.0f, (1.0f / zoom) * offset.y * 2.0f - 5.0f };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
