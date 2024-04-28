@@ -157,100 +157,100 @@ namespace sm
 		//- Execute draw commands into default render target in a layered manner from lowest to highest
 		for (auto& pair : m_drawcommands)
 		{
-			for (const auto& command : pair.second)
+			for (auto& commands : pair.second)
 			{
-				switch (command.type())
+				const auto& mat = sm().get(commands.first);
+
+				mat.bind();
+
+				for (const auto& command : commands.second)
 				{
-				case drawcommand_type_sprite:
-				{
-					const auto& sprite = command.get<drawcommand::ssprite>();
-
-					const auto& mat = mm().get(sprite.m_material);
-					const auto& tex = tm().get(sprite.m_texture);
-
-					//- TODO: we want to sort by material (texture, shader) for each layer,
-					//- as of now this is what kills performance
-					mat.bind();
-
-					//- TODO: we do not use width and height from command transform, why
-					src = { sprite.m_rect.x(), sprite.m_rect.y() , sprite.m_rect.w() , sprite.m_rect.h() };
-					dst = { sprite.m_position.x, sprite.m_position.y, src.width, src.height };
-
-					//- TODO: origin should be variable, probably a component thing that should be redirected to here
-					raylib::DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, sprite.m_rotation,
-						{ sprite.m_color.r(), sprite.m_color.g() , sprite.m_color.b() , sprite.m_color.a() });
-
-					mat.unbind();
-
-					break;
-				}
-				case drawcommand_type_rect:
-				{
-					const auto& rect = command.get<drawcommand::srectangle>();
-
-					raylib::DrawRectangleV({ rect.m_position.x, rect.m_position.y }, { rect.m_size.x, rect.m_size.y }, to_cliteral(rect.m_color));
-					break;
-				}
-				case drawcommand_type_circle:
-				{
-					const auto& circle = command.get<drawcommand::scircle>();
-
-					raylib::DrawCircle(circle.m_center.x, circle.m_center.y, circle.m_radius, to_cliteral(circle.m_color));
-					break;
-				}
-				case drawcommand_type_line:
-				{
-					const auto& line = command.get<drawcommand::sline>();
-
-					raylib::DrawLineEx({ line.m_start.x, line.m_start.y }, { line.m_end.x, line.m_end.y }, line.m_thick, to_cliteral(line.m_color));
-					break;
-				}
-				case drawcommand_type_text:
-				{
-					break;
-				}
-				case drawcommand_type_opcode:
-				{
-					const auto& op = command.get<drawcommand::sopcode>();
-
-					//- execute opcode, if data inside it is not what is required we crash
-					switch(op.m_opcode)
+					switch (command.type())
 					{
-					case drawcommand_opcode_clear:
+					case drawcommand_type_sprite:
 					{
-						const auto& color = op.m_data.get<core::scolor>();
+						const auto& sprite = command.get<drawcommand::ssprite>();
 
-						raylib::ClearBackground(to_cliteral(color));
+						const auto& tex = tm().get(sprite.m_texture);
+
+						//- TODO: we do not use width and height from command transform, why
+						src = { sprite.m_rect.x(), sprite.m_rect.y() , sprite.m_rect.w() , sprite.m_rect.h() };
+						dst = { sprite.m_position.x, sprite.m_position.y, src.width, src.height };
+
+						//- TODO: origin should be variable, probably a component thing that should be redirected to here
+						raylib::DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, sprite.m_rotation,
+							{ sprite.m_color.r(), sprite.m_color.g() , sprite.m_color.b() , sprite.m_color.a() });
+						break;
+					}
+					case drawcommand_type_rect:
+					{
+						const auto& rect = command.get<drawcommand::srectangle>();
+
+						raylib::DrawRectangleV({ rect.m_position.x, rect.m_position.y }, { rect.m_size.x, rect.m_size.y }, to_cliteral(rect.m_color));
+						break;
+					}
+					case drawcommand_type_circle:
+					{
+						const auto& circle = command.get<drawcommand::scircle>();
+
+						raylib::DrawCircle(circle.m_center.x, circle.m_center.y, circle.m_radius, to_cliteral(circle.m_color));
+						break;
+					}
+					case drawcommand_type_line:
+					{
+						const auto& line = command.get<drawcommand::sline>();
+
+						raylib::DrawLineEx({ line.m_start.x, line.m_start.y }, { line.m_end.x, line.m_end.y }, line.m_thick, to_cliteral(line.m_color));
+						break;
+					}
+					case drawcommand_type_text:
+					{
+						break;
+					}
+					case drawcommand_type_opcode:
+					{
+						const auto& op = command.get<drawcommand::sopcode>();
+
+						//- execute opcode, if data inside it is not what is required we crash
+						switch (op.m_opcode)
+						{
+						case drawcommand_opcode_clear:
+						{
+							const auto& color = op.m_data.get<core::scolor>();
+
+							raylib::ClearBackground(to_cliteral(color));
+							break;
+						}
+						default:
+						{
+							break;
+						}
+						}
+
+						break;
+					}
+					case drawcommand_type_camera:
+					{
+						const auto& cam = command.get<drawcommand::scamera>();
+
+						frame_camera.target.x = cam.m_position.x;
+						frame_camera.target.y = cam.m_position.y;
+						frame_camera.offset.x = cam.m_offset.x;
+						frame_camera.offset.y = cam.m_offset.y;
+						frame_camera.rotation = cam.m_rotation;
+						frame_camera.zoom = cam.m_zoom;
+
+						raylib::BeginMode2D(frame_camera);
 						break;
 					}
 					default:
 					{
+						//- report unknown command type
 						break;
 					}
 					}
-
-					break;
 				}
-				case drawcommand_type_camera:
-				{
-					const auto& cam = command.get<drawcommand::scamera>();
-
-					frame_camera.target.x = cam.m_position.x;
-					frame_camera.target.y = cam.m_position.y;
-					frame_camera.offset.x = cam.m_offset.x;
-					frame_camera.offset.y = cam.m_offset.y;
-					frame_camera.rotation = cam.m_rotation;
-					frame_camera.zoom = cam.m_zoom;
-
-					raylib::BeginMode2D(frame_camera);
-					break;
-				}
-				default:
-				{
-					//- report unknown command type
-					break;
-				}
-				}
+				mat.unbind();
 			}
 		}
 		m_drawcommands.clear();
@@ -337,42 +337,42 @@ namespace sm
 			{
 				const auto& sprite = command.get<drawcommand::ssprite>();
 
-				m_drawcommands[sprite.m_layer].emplace_back(command);
+				m_drawcommands[sprite.m_layer][sprite.m_material].emplace_back(command);
 				break;
 			}
 			case drawcommand_type_opcode:
 			{
 				const auto& op = command.get<drawcommand::sopcode>();
 
-				m_drawcommands[op.m_layer].emplace_back(command);
+				m_drawcommands[op.m_layer][0].emplace_back(command);
 				break;
 			}
 			case drawcommand_type_camera:
 			{
 				const auto& cam = command.get<drawcommand::scamera>();
 
-				m_drawcommands[cam.m_layer].emplace_back(command);
+				m_drawcommands[cam.m_layer][0].emplace_back(command);
 				break;
 			}
 			case drawcommand_type_rect:
 			{
 				const auto& rect = command.get<drawcommand::srectangle>();
 
-				m_drawcommands[rect.m_layer].emplace_back(command);
+				m_drawcommands[rect.m_layer][0].emplace_back(command);
 				break;
 			}
 			case drawcommand_type_circle:
 			{
 				const auto& circle = command.get<drawcommand::scircle>();
 
-				m_drawcommands[circle.m_layer].emplace_back(command);
+				m_drawcommands[circle.m_layer][0].emplace_back(command);
 				break;
 			}
 			case drawcommand_type_line:
 			{
 				const auto& line = command.get<drawcommand::sline>();
 
-				m_drawcommands[line.m_layer].emplace_back(command);
+				m_drawcommands[line.m_layer][0].emplace_back(command);
 
 				break;
 			}

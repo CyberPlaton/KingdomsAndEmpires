@@ -73,7 +73,7 @@ namespace sm
 		ctexture_manager* m_texture_manager;
 		crendertarget_manager* m_rendertarget_manager;
 
-		umap_t<renderlayer_t, vector_t<cdrawcommand>> m_drawcommands;
+		map_t<renderlayer_t, umap_t<technique_t, vector_t<cdrawcommand>>> m_drawcommands;
 		core::cmutex m_mutex;
 
 		crendertarget m_backbuffer;		//- default render target
