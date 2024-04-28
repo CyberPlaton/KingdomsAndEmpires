@@ -33,39 +33,19 @@ namespace render_system
 		cscenerender_system(flecs::world& w) :
 			ecs::cfree_system(w, "Scene Render System")
 		{
-			build([&](flecs::iter& it)
-				{
-					
-				});
-
-			run_after(flecs::OnUpdate);
-		}
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cscene_render_system final : public ecs::csystem<ecs::stransform, ecs::ssprite>
-	{
-	public:
-		cscene_render_system(flecs::world& w) :
-			ecs::csystem<ecs::stransform, ecs::ssprite>
-			(w, "Scene Render System")
-		{
-			multithreaded();
-			exclude<ecs::tag::sinvisible>();
-			build([&](flecs::entity e, const ecs::stransform& transform, const ecs::ssprite& sprite)
+			build([&](float dt)
 				{
 					ZoneScopedN("Scene Render System");
 
 					sm::crenderer renderer;
 
-					//- TODO: we do it like this for now. But intended was to use world().visible_entities()
-					//- and render them only. The same approach should be done with animation.
-					//-
-					//- TODO: also we do not consider hierarchy relationships, but we should, otherwise we will
-					//- have errors
-					for (const auto& pair : sprite.m_materials)
+					const auto* w = world_context<ecs::cworld>();
+
+					for (auto e : w->visible_entities())
 					{
-						//- perform a transform to world space and submit for rendering
+						const auto& sprite = *e.get<ecs::ssprite>();
+						const auto& transform = *e.get<ecs::stransform>();
+
 						const vec2_t position = { transform.m_x, transform.m_y };
 						const vec2_t scale = { transform.m_w, transform.m_h };
 
@@ -76,7 +56,7 @@ namespace render_system
 					}
 				});
 
-			run_after("Camera System");
+			run_after(flecs::OnUpdate);
 		}
 	};
 
@@ -88,7 +68,7 @@ namespace render_system
 		{
 			begin<cscene_render_module>("Scene Render Module")
 				.subsystem<cscene_render_module, ccamera_system>()
-				.subsystem<cscene_render_module, cscene_render_system>()
+				.subsystem<cscene_render_module, cscenerender_system>()
 			.end<cscene_render_module>();
 		}
 

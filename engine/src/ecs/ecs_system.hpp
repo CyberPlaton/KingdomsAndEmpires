@@ -142,12 +142,13 @@ namespace ecs
 
 	//- A free system is similar to a normal system, only that it does not match any components and thus no entities.
 	//- If entities are required they can be retrieved through the world or a query.
+	//- The function itself is executed as is, with only delta time provided.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cfree_system : public isystem,
 		public iworld_context_holder
 	{
 	public:
-		using system_function_prototype_t = std::function<void(flecs::iter&)>;
+		using system_function_prototype_t = std::function<void(float)>;
 
 		cfree_system(flecs::world& world, const string_t& name) :
 			iworld_context_holder(world),
@@ -175,7 +176,10 @@ namespace ecs
 	template<typename TCallable>
 	void cfree_system::build(TCallable&& callback)
 	{
-		m_self = m_builder.iter(callback);
+		m_self = m_builder.iter([](flecs::iter& it)
+			{
+				callback(it.delta_time());
+			});
 	}
 
 } //- ecs

@@ -16,6 +16,10 @@ namespace ecs
 		iworld_context_holder(flecs::world& w);
 		~iworld_context_holder();
 
+		template<typename TType>
+		TType* world_context();
+
+		//- TODO: this is fini, consider creating a callback or something, this is not the place for it
 		//- Called before shutting down the world and while it is still valid.
 		//- Can be used to destroy entities, prefabs etc.
 		virtual void on_shutdown() {}
@@ -36,6 +40,14 @@ namespace ecs
 
 		RTTR_ENABLE();
 	};
+
+	//- Retrieves context currently set in ecs world
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	TType* ecs::iworld_context_holder::world_context()
+	{
+		reinterpret_cast<TType*>(world().get_ctx());
+	}
 
 } //- ecs
 
