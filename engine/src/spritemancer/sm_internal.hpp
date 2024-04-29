@@ -25,7 +25,7 @@ namespace sm
 		void on_end_drawing();
 
 		void begin_default();
-		void submit(renderlayer_t layer, rendertarget_t target);
+		void submit(renderlayer_t layer, rendertarget_t target, core::srect rect);
 
 		cspriteatlas_manager& am() { return *m_spriteatlas_manager; }
 		const cspriteatlas_manager& am() const { return *m_spriteatlas_manager; }
@@ -49,7 +49,13 @@ namespace sm
 		ctexture_manager* m_texture_manager;
 		crendertarget_manager* m_rendertarget_manager;
 
-		map_t<renderlayer_t, rendertarget_t> m_renderpaths;
+		struct srendertargetdata
+		{
+			core::srect m_rect = { 0.0f, 0.0f, 0.0f, 0.0f };
+			rendertarget_t m_target = 0;
+		};
+
+		map_t<renderlayer_t, srendertargetdata> m_renderpaths;
 		core::cmutex m_mutex;
 
 		rendertarget_t m_backbuffer;	//- default render target

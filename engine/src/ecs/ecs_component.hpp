@@ -85,15 +85,19 @@ namespace ecs
 		RTTR_ENABLE();
 	};
 
+	//- 'Transform' for camera is included in the camera component.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct scamera final : public icomponent
 	{
 		DECLARE_COMPONENT(scamera);
 
-		vec2_t m_offset			= { 0.0f, 0.0f };
-		float m_zoom			= 0.0f;
-		bool m_active			= false;
-		renderlayer_t m_layer	= 0;
+		vec2_t m_position			= { 0.0f, 0.0f };
+		vec2_t m_offset				= { 0.0f, 0.0f };
+		float m_zoom				= 0.0f;
+		float m_rotation			= 0.0f;
+		core::srect m_viewrect		= { 0.0f, 0.0f, 0.0f, 0.0f };
+		bool m_active				= false;
+		renderlayer_t m_layer		= 0;
 
 		RTTR_ENABLE(icomponent);
 	};
@@ -105,11 +109,11 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		std::string m_name;
-		flecs::entity m_self;
+		string_t m_name;
 		core::cuuid m_uuid;
-		
+
 		//- internal usage
+		flecs::entity m_self; //- required for world intersection queries
 		entity_proxy_t m_aabb_proxy		= 0;
 		unsigned m_aabb_proxy_query_key = 0;
 

@@ -33,6 +33,13 @@ namespace ecs
 		//- create runtime ecs entity uniquely identifiable by uuid
 		auto e = world().entity(uuid.data());
 
+		//- emplace default components
+		auto& id = *e.add<sidentifier>().get_mut<sidentifier>();
+
+		id.m_uuid = string_t(uuid.data());
+		id.m_self = e;
+		id.m_name = uuid.data();
+
 		return m_entities.emplace_back(e);
 	}
 

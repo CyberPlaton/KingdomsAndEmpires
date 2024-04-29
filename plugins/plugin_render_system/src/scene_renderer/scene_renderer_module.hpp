@@ -21,15 +21,15 @@ namespace render_system
 						const auto& w = ecs::cworld_manager::instance().active();
 
 						//- match at most one entity, that means the one is the active camera
-						if (auto e = w.qm().query_one<ecs::scamera, ecs::stransform>([](ecs::scamera& c, ecs::stransform&)
+						if (auto e = w.qm().query_one<ecs::scamera>([](ecs::scamera& c)
 							{
 								return c.m_active == true;
 							}); e.is_valid())
 						{
 							const auto& c = *e.get<ecs::scamera>();
-							const auto& t = *e.get<ecs::stransform>();
 
-							path.begin_camera({ t.m_x, t.m_y }, c.m_offset, t.m_rotation, c.m_zoom);
+							path.begin_camera({ c.m_position.x, c.m_position.y }, c.m_offset, c.m_rotation, c.m_zoom);
+							path.viewrect(c.m_viewrect.x(), c.m_viewrect.y(), c.m_viewrect.w(), c.m_viewrect.h());
 
 							for (auto e : w.visible_entities())
 							{

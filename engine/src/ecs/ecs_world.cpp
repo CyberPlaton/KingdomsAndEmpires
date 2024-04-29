@@ -1,4 +1,5 @@
 #include "ecs_world.hpp"
+#include "../spritemancer/sm_common.hpp"
 
 namespace ecs
 {
@@ -82,23 +83,23 @@ namespace ecs
 	void cworld::prepare()
 	{
 		//- get current viewing rect for active camera
-		auto e = qm().query_one<const scamera, const stransform>(
-			[](const scamera& c, const stransform& t)
+		if (auto e = qm().query_one<const scamera>(
+			[](const scamera& c)
 			{
 				return c.m_active == true;
-			});
+			}); e.is_valid())
+		{
+			const auto& c = *e.get<scamera>();
+			auto aabb = physics::aabb(world_visible_area(c.m_position, c.m_offset, c.m_zoom));
 
-		const auto& c = *e.get<scamera>();
-		const auto& t = *e.get<stransform>();
-		auto aabb = physics::aabb(world_visible_area({ t.m_x, t.m_y }, c.m_offset, c.m_zoom));
+			//- perform a query for all currently visible entities
+			m_master_query_type = query_type_entity_array;
+			m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
 
-		//- perform a query for all currently visible entities
-		m_master_query_type = query_type_entity_array;
-		m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
+			Query(this, aabb);
 
-		Query(this, aabb);
-
-		m_visible_entities = std::move(m_master_query_result.m_entity_array);
+			m_visible_entities = std::move(m_master_query_result.m_entity_array);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -166,8 +167,19 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	core::srect cworld::world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom)
 	{
-		return { target.x - (1.0f / zoom) * offset.x + 5.0f, target.y - (1.0f / zoom) * offset.y + 5.0f,
-				(1.0f / zoom) * offset.x * 2.0f - 5.0f, (1.0f / zoom) * offset.y * 2.0f - 5.0f };
+		raylib::Camera2D camera;
+		camera.target = { target.x, target.y };
+		camera.offset = { offset.x, offset.y };
+		camera.zoom = zoom;
+		camera.rotation = 0;
+
+		auto tl = raylib::GetScreenToWorld2D({ 0.0f, 0.0f }, camera);
+		auto br = raylib::GetScreenToWorld2D({ 1280.0f, 1024.0f }, camera);
+
+		return { tl.x, tl.y, br.x, br.y };
+
+// 		return { target.x - (1.0f / zoom) * offset.x + 5.0f, target.y - (1.0f / zoom) * offset.y + 5.0f,
+// 				(1.0f / zoom) * offset.x * 2.0f - 5.0f, (1.0f / zoom) * offset.y * 2.0f - 5.0f };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -378,7 +390,7 @@ namespace ecs
 		auto* id = e.get_mut<sidentifier>();
 		const auto* tr = e.get<stransform>();
 
-		id->m_aabb_proxy = CreateProxy(physics::aabb(tr->m_x, tr->m_y, tr->m_w, tr->m_h), &id);
+		id->m_aabb_proxy = CreateProxy(physics::aabb(tr->m_x, tr->m_y, tr->m_w, tr->m_h), id);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

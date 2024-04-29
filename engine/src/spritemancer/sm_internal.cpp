@@ -141,7 +141,12 @@ namespace sm
 
 			for (const auto& pair : m_renderpaths)
 			{
-				const auto& target = rm().get(pair.second).target();
+				const auto& target = rm().get(pair.second.m_target).target();
+
+				const auto& rect = pair.second.m_rect;
+
+				raylib::DrawTexturePro(target.texture, { 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height },
+					{ rect.x(), rect.y(), rect.w(), rect.h() }, {0.0f, 0.0f}, 0.0f, raylib::WHITE);
 
 				raylib::DrawTextureRec(target.texture,
 					{ 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height}, {0.0f, 0.0f}, to_cliteral(C_COLOR_WHITE));
@@ -188,15 +193,15 @@ namespace sm
 		raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
 
 		//- default clear of backbuffer
-		raylib::ClearBackground(raylib::BLANK);
+		raylib::ClearBackground(raylib::WHITE);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::submit(renderlayer_t layer, rendertarget_t target)
+	void ccontext::submit(renderlayer_t layer, rendertarget_t target, core::srect rect)
 	{
 		core::cscope_mutex m(m_mutex);
 
-		m_renderpaths[layer] = target;
+		m_renderpaths[layer] = { rect, target };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -29,6 +29,7 @@ namespace sm
 
 		target.bind();
 
+		viewrect(0, 0, w, h);
 		clear(C_COLOR_BLANK);
 	}
 
@@ -37,13 +38,19 @@ namespace sm
 	{
 		raylib::EndTextureMode();
 
-		sm::ctx().submit(m_layer, m_target);
+		sm::ctx().submit(m_layer, m_target, m_viewrect);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderpath::clear(const core::scolor& color)
 	{
 		raylib::ClearBackground(to_cliteral(color));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderpath::viewrect(unsigned x, unsigned y, unsigned w, unsigned h)
+	{
+		m_viewrect = { SCAST(float, x), SCAST(float, y) , SCAST(float, w) , SCAST(float, h) };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

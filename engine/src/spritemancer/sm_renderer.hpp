@@ -15,6 +15,8 @@ namespace sm
 
 		void clear(const core::scolor& color);
 
+		void viewrect(unsigned x, unsigned y, unsigned w, unsigned h);
+
 		void begin_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation);
 		void end_camera();
 
@@ -51,6 +53,7 @@ namespace sm
 			spriteatlas_t atlas, subtexture_t subtexture, const core::scolor& color, bool flipx, bool flipy);
 
 	private:
+		core::srect m_viewrect;
 		rendertarget_t m_target;
 		renderlayer_t m_layer;
 		material_t m_current;
