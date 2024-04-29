@@ -21,11 +21,11 @@ namespace editor
 
 	//- Base tool class. Does not require a component as input and runs once per world tick.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cfree_tool : public ecs::cfree_system
+	class cfree_tool : public ecs::ctask
 	{
 	public:
 		cfree_tool(flecs::world& world, const std::string& name) :
-			ecs::cfree_system(world, name)
+			ecs::ctask(world, name)
 		{
 		}
 

@@ -68,15 +68,6 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld_manager::prepare(const core::srect& area)
-	{
-		if (m_current != 0)
-		{
-			active().prepare(area);
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	const cworld& cworld_manager::active() const
 	{
 		ASSERT(m_current != 0, "Active world was not set for world manager!");

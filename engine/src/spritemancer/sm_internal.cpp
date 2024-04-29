@@ -142,7 +142,7 @@ namespace sm
 		const auto w = SCAST(float, m_backbuffer.target().texture.width);
 		const auto h = SCAST(float, m_backbuffer.target().texture.height);
 
-		raylib::DrawTextureRec(m_backbuffer.target().texture, { 0.0f, 0.0f, w, -h }, { 0.0f, 0.0f }, C_COLOR_WHITE.to_cliteral());
+		raylib::DrawTextureRec(m_backbuffer.target().texture, { 0.0f, 0.0f, w, -h }, { 0.0f, 0.0f }, to_cliteral(C_COLOR_WHITE));
 
 		if (m_has_fxaa)
 		{

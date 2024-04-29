@@ -13,7 +13,6 @@ namespace ecs
 		bool create(stringview_t name);
 		bool set_active(stringview_t name);
 		void tick(float dt);
-		void prepare(const core::srect& area);
 		const cworld& active() const;
 		cworld& active();
 		decltype(auto) has_active() const {return m_current != 0;}

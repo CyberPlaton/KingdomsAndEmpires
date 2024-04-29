@@ -23,6 +23,7 @@ namespace sm
 	constexpr stringview_t C_DEFAULT_MATERIAL_NAME	= "default";
 	constexpr stringview_t C_FXAA_TECHNIQUE_RESOLUTION_PROP = "resolution";
 
+	raylib::Color to_cliteral(const core::scolor& c);
 	
 	//- BC_* formats: https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-block-compression#bc3
 	//------------------------------------------------------------------------------------------------------------------------

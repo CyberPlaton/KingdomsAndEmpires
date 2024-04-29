@@ -46,7 +46,7 @@ namespace ecs
 	template<typename TType>
 	TType* ecs::iworld_context_holder::world_context()
 	{
-		reinterpret_cast<TType*>(world().get_ctx());
+		return reinterpret_cast<TType*>(world().get_ctx());
 	}
 
 } //- ecs

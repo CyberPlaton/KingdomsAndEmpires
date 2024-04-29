@@ -61,8 +61,8 @@ namespace render_system
 
 						const auto [p, s, r] = math::transform(position, scale, { 0.0f, 0.0f }, transform.m_rotation);
 
-						renderer.draw_sprite(sprite.m_layer, p, pair.first, pair.second, r, s, sprite.m_source_rectangle,
-							sprite.m_tint, sprite.m_flipx, sprite.m_flipy);
+						//renderer.draw_sprite(sprite.m_layer, p, pair.first, pair.second, r, s, sprite.m_source_rectangle,
+							//sprite.m_tint, sprite.m_flipx, sprite.m_flipy);
 					}
 				});
 

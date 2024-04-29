@@ -50,19 +50,19 @@ namespace sm
 	void crenderer::draw_line(const vec2_t& start, const vec2_t& end,
 		float thick, const core::scolor& color)
 	{
-		raylib::DrawLineEx({ start.x, start.y }, { end.x, end.y }, thick, color.to_cliteral());
+		raylib::DrawLineEx({ start.x, start.y }, { end.x, end.y }, thick, to_cliteral(color));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer::draw_circle(const vec2_t& center, float radius, const core::scolor& color)
 	{
-		raylib::DrawCircle(center.x, center.y, radius, color.to_cliteral());
+		raylib::DrawCircle(center.x, center.y, radius, to_cliteral(color));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer::draw_rect(const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
 	{
-		raylib::DrawRectangleV({ position.x, position.y }, { dimension.x, dimension.y }, color.to_cliteral());
+		raylib::DrawRectangleV({ position.x, position.y }, { dimension.x, dimension.y }, to_cliteral(color));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ namespace sm
 		raylib::Rectangle dst = { position.x, position.y, src.width, src.height };
 
 		//- TODO: origin should be variable, probably a component thing that should be redirected to here
-		raylib::DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, rotation, color.to_cliteral());
+		raylib::DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, rotation, to_cliteral(color));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

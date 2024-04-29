@@ -506,6 +506,12 @@ namespace sm
 		//m_uniforms.erase(name.data());
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	raylib::Color to_cliteral(const core::scolor& c)
+	{
+		return {c.r(), c.g() , c.b(), c.a() };
+	}
+
 } //- sm
 
 namespace raylib

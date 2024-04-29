@@ -176,7 +176,7 @@ namespace ecs
 	template<typename TCallable>
 	void ctask::build(TCallable&& callback)
 	{
-		m_self = m_builder.iter([](flecs::iter& it)
+		m_self = m_builder.iter([&](flecs::iter& it)
 			{
 				callback(it.delta_time());
 			});
