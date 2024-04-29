@@ -344,11 +344,14 @@ namespace sm
 		{
 			rendertarget_t handle = invalid_handle_t;
 
-			auto* rt = m_rendertargets.create(&handle, width, height);
+			if (const auto target = raylib::LoadRenderTexture(width, height); raylib::IsRenderTextureReady(target))
+			{
+				auto* rt = m_rendertargets.create(&handle, target);
 
-			CORE_ASSERT(rt && algorithm::is_valid_handle(handle), "Invalid operation. Failed loading a Rendertarget!");
+				CORE_ASSERT(rt && algorithm::is_valid_handle(handle), "Invalid operation. Failed loading a Rendertarget!");
 
-			m_handles[name.data()] = handle;
+				m_handles[name.data()] = handle;
+			}
 		}
 		return m_handles.at(name.data());
 	}
@@ -371,6 +374,14 @@ namespace sm
 		CORE_ASSERT(algorithm::is_valid_handle(handle), "Invalid operation. Handle is not valid");
 
 		return *m_rendertargets.find(handle);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::crendertarget& crendertarget_manager::modify(rendertarget_t handle)
+	{
+		CORE_ASSERT(algorithm::is_valid_handle(handle), "Invalid operation. Handle is not valid");
+
+		return *m_rendertargets.modify(handle);
 	}
 
 } //- sm

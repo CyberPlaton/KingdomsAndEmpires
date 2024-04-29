@@ -53,16 +53,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	crendertarget::crendertarget(unsigned w, unsigned h) :
-		m_image(raylib::LoadRenderTexture(w, h))
+	crendertarget::crendertarget(const raylib::RenderTexture& texture) :
+		m_image(texture)
 	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	crendertarget::crendertarget() :
-		m_image({ 0 })
-	{
-
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -74,17 +67,13 @@ namespace sm
 		}
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	bool crendertarget::create(unsigned w, unsigned h)
+	void crendertarget::resize(unsigned w, unsigned h)
 	{
 		if (ready())
 		{
 			raylib::UnloadRenderTexture(target());
 		}
-
 		m_image = raylib::LoadRenderTexture(w, h);
-
-		return ready();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

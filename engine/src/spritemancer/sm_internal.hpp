@@ -25,10 +25,7 @@ namespace sm
 		void on_end_drawing();
 
 		void begin_default();
-		void begin_blend_mode(blending_mode mode);
-		void end_blend_mode();
-		void begin_render_target(rendertarget_t texture);
-		void end_render_target();
+		void submit(renderlayer_t layer, rendertarget_t target);
 
 		cspriteatlas_manager& am() { return *m_spriteatlas_manager; }
 		const cspriteatlas_manager& am() const { return *m_spriteatlas_manager; }
@@ -52,7 +49,10 @@ namespace sm
 		ctexture_manager* m_texture_manager;
 		crendertarget_manager* m_rendertarget_manager;
 
-		crendertarget m_backbuffer;		//- default render target
+		map_t<renderlayer_t, rendertarget_t> m_renderpaths;
+		core::cmutex m_mutex;
+
+		rendertarget_t m_backbuffer;	//- default render target
 		technique_t m_fxaa;				//- custom anti-aliasing shader
 		material_t m_default;			//- default material
 		technique_t m_sprite;			//- default pixel perfect shader

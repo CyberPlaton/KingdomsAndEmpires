@@ -3,23 +3,23 @@
 
 namespace sm
 {
+	//- Renderpath drawing to a separate rendertarget. The layer represents the order of final combining of rendertargets,
+	//- where 0 is bottom layer and n is top layer.
+	//- On creating of the renderpath the rendertarget is cleared by default to a blank color.
 	//------------------------------------------------------------------------------------------------------------------------
-	class crenderpath
+	class crenderpath final
 	{
 	public:
-		crenderpath() = default;
-		~crenderpath() = default;
-	};
+		crenderpath(renderlayer_t layer, unsigned w = 0, unsigned h = 0);
+		~crenderpath();
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class crenderer
-	{
-	public:
-		crenderer() = default;
-		~crenderer() = default;
+		void clear(const core::scolor& color);
 
 		void begin_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation);
 		void end_camera();
+
+		void begin_blend_mode(blending_mode mode);
+		void end_blend_mode();
 
 		void begin_material(material_t material);
 		void end_material();
@@ -51,7 +51,9 @@ namespace sm
 			spriteatlas_t atlas, subtexture_t subtexture, const core::scolor& color, bool flipx, bool flipy);
 
 	private:
-		material_t m_current = invalid_handle_t;
+		rendertarget_t m_target;
+		renderlayer_t m_layer;
+		material_t m_current;
 	};
 
 } //- sm

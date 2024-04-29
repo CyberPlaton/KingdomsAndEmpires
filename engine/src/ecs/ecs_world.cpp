@@ -81,9 +81,6 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::prepare()
 	{
-		//- set active world context
-		world().set_ctx(this);
-
 		//- get current viewing rect for active camera
 		auto e = qm().query_one<const scamera, const stransform>(
 			[](const scamera& c, const stransform& t)

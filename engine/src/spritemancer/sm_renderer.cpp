@@ -3,8 +3,63 @@
 
 namespace sm
 {
+	namespace
+	{
+		constexpr stringview_t C_RENDERTARGET_NAME = "RenderTarget";
+		static const core::scolor C_COLOR_BLANK = core::scolor(0, 0, 0, 0);
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::begin_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation)
+	crenderpath::crenderpath(renderlayer_t layer, unsigned w /*= 0*/, unsigned h /*= 0*/) :
+		m_layer(layer), m_current(invalid_handle_t)
+	{
+		if (w == 0)
+		{
+			w = sm::ctx().window().w();
+		}
+		if (h == 0)
+		{
+			h = sm::ctx().window().h();
+		}
+
+		m_target = sm::ctx().rm().load(fmt::format("{}{}", C_RENDERTARGET_NAME.data(), layer), w, h);
+
+		const auto& target = sm::ctx().rm().get(m_target);
+
+		target.bind();
+
+		clear(C_COLOR_BLANK);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	crenderpath::~crenderpath()
+	{
+		raylib::EndTextureMode();
+
+		sm::ctx().submit(m_layer, m_target);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderpath::clear(const core::scolor& color)
+	{
+		raylib::ClearBackground(to_cliteral(color));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderpath::begin_blend_mode(blending_mode mode)
+	{
+		raylib::BeginBlendMode(mode);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderpath::end_blend_mode()
+	{
+		raylib::EndBlendMode();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderpath::begin_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation)
 	{
 		raylib::Camera2D frame_camera{ 0 };
 		frame_camera.target.x = position.x;
@@ -18,13 +73,13 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::end_camera()
+	void crenderpath::end_camera()
 	{
 		raylib::EndMode2D();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::begin_material(material_t material)
+	void crenderpath::begin_material(material_t material)
 	{
 		const auto& mat = ctx().sm().get(material);
 
@@ -34,7 +89,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::end_material()
+	void crenderpath::end_material()
 	{
 		if (algorithm::is_valid_handle(m_current))
 		{
@@ -47,26 +102,26 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_line(const vec2_t& start, const vec2_t& end,
+	void crenderpath::draw_line(const vec2_t& start, const vec2_t& end,
 		float thick, const core::scolor& color)
 	{
 		raylib::DrawLineEx({ start.x, start.y }, { end.x, end.y }, thick, to_cliteral(color));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_circle(const vec2_t& center, float radius, const core::scolor& color)
+	void crenderpath::draw_circle(const vec2_t& center, float radius, const core::scolor& color)
 	{
 		raylib::DrawCircle(center.x, center.y, radius, to_cliteral(color));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_rect(const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
+	void crenderpath::draw_rect(const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
 	{
 		raylib::DrawRectangleV({ position.x, position.y }, { dimension.x, dimension.y }, to_cliteral(color));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
+	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
 		const vec2_t& scale, const core::srect& rect, const core::scolor& color, bool flipx, bool flipy)
 	{
 		auto __rect = rect;
@@ -84,40 +139,40 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
+	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
 		const vec2_t& scale, const core::srect& rect, const core::scolor& color)
 	{
 		draw_sprite(position, texture, rotation, scale, rect, color, false, false);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
+	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
 		const vec2_t& scale, const core::srect& rect)
 	{
 		draw_sprite(position, texture, rotation, scale, rect, C_COLOR_WHITE);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
+	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
 		const vec2_t& scale)
 	{
 		draw_sprite(position, texture, rotation, scale, C_DEFAULT_RECT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_sprite(const vec2_t& position, texture_t texture, float rotation)
+	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation)
 	{
 		draw_sprite(position, texture, rotation, C_DEFAULT_SCALE);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_sprite(const vec2_t& position, texture_t texture)
+	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture)
 	{
 		draw_sprite(position, texture, 0.0f);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer::draw_spriteatlas_sprite(const vec2_t& position, float rotation, const vec2_t& scale,
+	void crenderpath::draw_spriteatlas_sprite(const vec2_t& position, float rotation, const vec2_t& scale,
 		spriteatlas_t atlas, subtexture_t subtexture, const core::scolor& color, bool flipx, bool flipy)
 	{
 		//internal::irenderer::draw_spriteatlas_sprite(layer, position, rotation, scale, atlas, subtexture, color, flipx, flipy);

@@ -3,6 +3,12 @@
 
 namespace sm
 {
+	namespace
+	{
+		constexpr stringview_t C_RENDERTARGET_NAME = "RenderTargetDefault";
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
 	ccontext& ctx()
 	{
@@ -27,7 +33,7 @@ namespace sm
 		cui::on_resize(cfg.m_width, cfg.m_height);
 
 		//- default framebuffer
-		if (!m_backbuffer.create(cfg.m_width, cfg.m_height))
+		if (m_backbuffer = rm().load(C_RENDERTARGET_NAME.data(), cfg.m_width, cfg.m_height); !algorithm::is_valid_handle(m_backbuffer))
 		{
 			//- report failure
 			return false;
@@ -81,7 +87,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::on_resize(unsigned w, unsigned h)
 	{
-		m_backbuffer.create(w, h);
+		rm().modify(m_backbuffer).resize(w, h);
 
 		cui::on_resize(w, h);
 	}
@@ -89,7 +95,9 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::on_begin_drawing()
 	{
-		m_backbuffer.bind();
+		//- TODO: consider changing this up a bit. As of now this is only required to draw the ImGui UI to
+		//- our default backbuffer. Having a game UI won´t use ImGui and this most certainly
+		rm().get(m_backbuffer).bind();
 
 		begin_default();
 
@@ -100,7 +108,6 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::on_frame_end()
 	{
-		//- TODO: is this required?
 	}
 
 	void ccontext::on_ui_frame()
@@ -124,13 +131,36 @@ namespace sm
 		raylib::EndBlendMode();
 		raylib::EndTextureMode();
 
-		//- Present render target to screen
+		//- render submitted rendertargets in layered order to default backbuffer
+		const auto& backbuffer = rm().get(m_backbuffer);
+		{
+			core::cscope_mutex m(m_mutex);
+
+			backbuffer.bind();
+			raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
+
+			for (const auto& pair : m_renderpaths)
+			{
+				const auto& target = rm().get(pair.second).target();
+
+				raylib::DrawTextureRec(target.texture,
+					{ 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height}, {0.0f, 0.0f}, to_cliteral(C_COLOR_WHITE));
+			}
+
+			raylib::EndBlendMode();
+			backbuffer.unbind();
+
+			m_renderpaths.clear();
+		}
+
+
+		//- Present default rendertarget to screen
 		raylib::BeginDrawing();
 
 		if (m_has_fxaa)
 		{
 			const auto& technique = sm().get(m_fxaa);
-			const auto& rendertarget = m_backbuffer.target();
+			const auto& rendertarget = backbuffer.target();
 			const auto resolution = vec2_t(rendertarget.texture.width, rendertarget.texture.height);
 
 			raylib::BeginShaderMode(technique.shader());
@@ -139,10 +169,10 @@ namespace sm
 				&resolution, raylib::SHADER_UNIFORM_VEC2);
 		}
 
-		const auto w = SCAST(float, m_backbuffer.target().texture.width);
-		const auto h = SCAST(float, m_backbuffer.target().texture.height);
+		const auto w = SCAST(float, backbuffer.target().texture.width);
+		const auto h = SCAST(float, backbuffer.target().texture.height);
 
-		raylib::DrawTextureRec(m_backbuffer.target().texture, { 0.0f, 0.0f, w, -h }, { 0.0f, 0.0f }, to_cliteral(C_COLOR_WHITE));
+		raylib::DrawTextureRec(backbuffer.target().texture, { 0.0f, 0.0f, w, -h }, { 0.0f, 0.0f }, to_cliteral(C_COLOR_WHITE));
 
 		if (m_has_fxaa)
 		{
@@ -158,31 +188,15 @@ namespace sm
 		raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
 
 		//- default clear of backbuffer
-		raylib::ClearBackground(raylib::RAYWHITE);
+		raylib::ClearBackground(raylib::BLANK);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::begin_blend_mode(blending_mode mode)
+	void ccontext::submit(renderlayer_t layer, rendertarget_t target)
 	{
-		raylib::BeginBlendMode(mode);
-	}
+		core::cscope_mutex m(m_mutex);
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::end_blend_mode()
-	{
-		raylib::EndBlendMode();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::begin_render_target(rendertarget_t texture)
-	{
-		rm().get(texture).bind();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::end_render_target()
-	{
-		raylib::EndTextureMode();
+		m_renderpaths[layer] = target;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -7,7 +7,6 @@
 namespace sm
 {
 	//- forward decl. and constants
-	class crenderer;
 	constexpr auto C_MATERIAL_RESERVE_COUNT			= 2048;
 	constexpr auto C_TEXTURE_RESERVE_COUNT			= 2048;
 	constexpr auto C_TECHNIQUE_RESERVE_COUNT		= 512;
@@ -203,11 +202,10 @@ namespace sm
 	class crendertarget
 	{
 	public:
-		crendertarget(unsigned w, unsigned h);
-		crendertarget();
+		crendertarget(const raylib::RenderTexture& texture);
 		~crendertarget();
 
-		bool create(unsigned w, unsigned h);
+		void resize(unsigned w, unsigned h);
 
 		void bind() const;
 		void unbind() const;

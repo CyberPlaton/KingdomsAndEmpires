@@ -132,7 +132,12 @@ namespace ecs
 	template<typename... TComps, typename TCallable>
 	flecs::entity cquery_manager::query_one(TCallable callback) const
 	{
-		return world().query<TComps...>().find(callback);
+		//- use ad-hoc filter, as this does not require building tables
+		//- and thus can be used inside a progress tick
+		return world().filter_builder<TComps...>()
+			.term(flecs::Any)
+			.build()
+			.find(callback);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

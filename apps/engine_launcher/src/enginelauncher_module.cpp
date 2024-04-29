@@ -105,6 +105,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	raylib::Rectangle buildings[MAX_BUILDINGS] = { 0 };
 	raylib::Color buildColors[MAX_BUILDINGS] = { 0 };
 
+	raylib::Texture2D village = raylib::LoadTexture("resources/village.png");
+	raylib::Texture2D city = raylib::LoadTexture("resources/city.png");
+
+	raylib::RenderTexture2D firstRT = raylib::LoadRenderTexture(screenWidth, screenHeight);
+	raylib::RenderTexture2D secondRT = raylib::LoadRenderTexture(screenWidth, screenHeight);
+
 	int spacing = 0;
 
 	for (int i = 0; i < MAX_BUILDINGS; i++)
@@ -165,6 +171,26 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		}
 		//----------------------------------------------------------------------------------
 
+		//- Draw offscreen to Texture
+		{
+			raylib::BeginTextureMode(firstRT);
+
+			raylib::ClearBackground(raylib::BLANK);
+
+			raylib::DrawTexture(village, 0, 0, raylib::RAYWHITE);
+
+			raylib::EndTextureMode();
+		}
+		{
+			raylib::BeginTextureMode(secondRT);
+
+			raylib::ClearBackground(raylib::BLANK);
+
+			raylib::DrawTexture(city, 64, 64, raylib::RAYWHITE);
+
+			raylib::EndTextureMode();
+		}
+
 		// Draw
 		//----------------------------------------------------------------------------------
 		raylib::BeginDrawing();
@@ -200,6 +226,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		raylib::DrawText("- A / S to Rotate", 40, 80, 10, raylib::DARKGRAY);
 		raylib::DrawText("- R to reset Zoom and Rotation", 40, 100, 10, raylib::DARKGRAY);
 
+		//- Draw RT to default buffer
+		raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
+		raylib::DrawTextureRec(firstRT.texture, { 0.0f, 0.0f, screenWidth, -screenHeight }, { 0.0f, 0.0f }, raylib::RAYWHITE);
+		raylib::DrawTextureRec(secondRT.texture, { 0.0f, 0.0f, screenWidth, -screenHeight }, { 0.0f, 0.0f }, raylib::RAYWHITE);
+		raylib::EndBlendMode();
 		raylib::EndDrawing();
 		//----------------------------------------------------------------------------------
 	}

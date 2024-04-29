@@ -99,7 +99,7 @@ namespace sm
 		void unload(rendertarget_t handle);
 
 		const crendertarget& get(rendertarget_t handle) const;
-
+		crendertarget& modify(rendertarget_t handle);
 
 	private:
 		core::detail::cdynamic_pool<crendertarget> m_rendertargets;
