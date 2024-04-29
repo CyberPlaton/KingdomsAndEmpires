@@ -4,11 +4,11 @@
 namespace render_system
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class ccamera_system final : public ecs::cfree_system
+	class ccamera_system final : public ecs::ctask
 	{
 	public:
 		ccamera_system(flecs::world& w) :
-			ecs::cfree_system(w, "Camera System")
+			ecs::ctask(w, "Camera System")
 		{
 			build([&](float dt)
 				{
@@ -37,11 +37,11 @@ namespace render_system
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cscenerender_system final : public ecs::cfree_system
+	class cscenerender_system final : public ecs::ctask
 	{
 	public:
 		cscenerender_system(flecs::world& w) :
-			ecs::cfree_system(w, "Scene Render System")
+			ecs::ctask(w, "Scene Render System")
 		{
 			build([&](float dt)
 				{

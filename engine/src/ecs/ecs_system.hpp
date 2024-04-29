@@ -41,7 +41,7 @@ namespace ecs
 			m_builder(world.system<TComps...>(name.c_str()))
 		{
 		}
-		~csystem() = default;
+		virtual ~csystem() {};
 
 		flecs::entity self() const override final { return m_self; }
 		stringview_t name() const override final { return m_self.name().c_str(); }
@@ -140,22 +140,22 @@ namespace ecs
 		m_self = m_builder.each(func);
 	}
 
-	//- A free system is similar to a normal system, only that it does not match any components and thus no entities.
+	//- A task is similar to a normal system, only that it does not match any components and thus no entities.
 	//- If entities are required they can be retrieved through the world or a query.
 	//- The function itself is executed as is, with only delta time provided.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cfree_system : public isystem,
+	class ctask : public isystem,
 		public iworld_context_holder
 	{
 	public:
 		using system_function_prototype_t = std::function<void(float)>;
 
-		cfree_system(flecs::world& world, const string_t& name) :
+		ctask(flecs::world& world, const string_t& name) :
 			iworld_context_holder(world),
 			m_builder(world.system(name.data()))
 		{
 		}
-		~cfree_system() = default;
+		virtual ~ctask() {};
 
 		flecs::entity self() const override final { return m_self; }
 		stringview_t name() const override final { return m_self.name().c_str(); }
@@ -174,7 +174,7 @@ namespace ecs
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TCallable>
-	void cfree_system::build(TCallable&& callback)
+	void ctask::build(TCallable&& callback)
 	{
 		m_self = m_builder.iter([](flecs::iter& it)
 			{

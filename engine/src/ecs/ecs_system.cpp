@@ -6,7 +6,7 @@
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	void cfree_system::run_after(flecs::entity e)
+	void ctask::run_after(flecs::entity e)
 	{
 		CORE_ASSERT(e.is_valid(), "Invalid operation. Specified system does not exist!");
 
@@ -14,13 +14,13 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cfree_system::run_after(stringview_t name)
+	void ctask::run_after(stringview_t name)
 	{
 		run_after(world().lookup(name.data()));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cfree_system::run_after(const flecs::entity_t e)
+	void ctask::run_after(const flecs::entity_t e)
 	{
 		m_self.add(flecs::Phase).depends_on(e);
 	}
