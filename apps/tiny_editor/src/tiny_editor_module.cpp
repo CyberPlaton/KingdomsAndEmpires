@@ -112,7 +112,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		auto tex = sm::ctx().tm().load("sprite", "resources/figure_paladin_14.png");
 		const auto& texture = sm::ctx().tm().get(tex);
 
-		for (auto i = 0u; i < 25000; ++i)
+		for (auto i = 0u; i < 25; ++i)
 		{
 			auto e = w.em().create_entity();
 
@@ -131,8 +131,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			e.add<ecs::ssprite>();
 
 			auto* transform = e.get_mut<ecs::stransform>();
-			transform->m_x = rand.in_range_float(-512.0f, 512.0f);
-			transform->m_y = rand.in_range_float(-512.0f, 512.0f);
+			transform->m_x = i * 64;
+			transform->m_y = i * 64;
 			transform->m_w = 64;
 			transform->m_h = 64;
 

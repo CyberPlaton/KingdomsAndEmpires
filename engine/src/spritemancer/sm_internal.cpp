@@ -147,9 +147,6 @@ namespace sm
 
 				raylib::DrawTexturePro(target.texture, { 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height },
 					{ rect.x(), rect.y(), rect.w(), rect.h() }, {0.0f, 0.0f}, 0.0f, raylib::WHITE);
-
-				raylib::DrawTextureRec(target.texture,
-					{ 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height}, {0.0f, 0.0f}, to_cliteral(C_COLOR_WHITE));
 			}
 
 			raylib::EndBlendMode();

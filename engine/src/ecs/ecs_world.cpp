@@ -391,6 +391,8 @@ namespace ecs
 		const auto* tr = e.get<stransform>();
 
 		id->m_aabb_proxy = CreateProxy(physics::aabb(tr->m_x, tr->m_y, tr->m_w, tr->m_h), id);
+
+		logging::log_debug(fmt::format("Creating entity proxy: '{} ({})'", id->m_uuid.string(), id->m_aabb_proxy));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
