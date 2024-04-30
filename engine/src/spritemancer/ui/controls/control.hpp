@@ -114,7 +114,8 @@ namespace ui
 	class ccontrol : public detail::icontrol
 	{
 	public:
-		virtual ~ccontrol() {}
+		ccontrol() = default;
+		~ccontrol() = default;
 
 	protected:
 		decltype(auto) id(stringview_t _id) { m_id = _id; return _this(); }

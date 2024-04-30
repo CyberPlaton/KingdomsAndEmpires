@@ -15,7 +15,7 @@ namespace ui
 	{
 	public:
 		cbutton() = default;
-		~cbutton() {};
+		~cbutton() = default;
 
 		cbutton& id(stringview_t _id);
 		cbutton& title(stringview_t _title);
