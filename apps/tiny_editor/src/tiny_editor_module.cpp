@@ -75,17 +75,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		//- can´t use more than what was configured as foreground threads
 		w.use_threads(engine::cthread_service::hardware_threads() / 2);
 
-		//- example usage of query
-		auto e = w.qm().query_one<ecs::stransform>([](const ecs::stransform& transform)
-			{
-				return transform.m_rotation > 45;
-			});
-
-		if (e.is_valid())
-		{
-
-		}
-
 		core::crandom rand;
 
 		//- import module with required components
@@ -101,7 +90,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 		auto* cam_camera = cam.get_mut<ecs::scamera>();
 		cam_camera->m_position = { 0.0f, 0.0f };
-		cam_camera->m_zoom = 0.5f;
+		cam_camera->m_zoom = 1.0f;
 		cam_camera->m_rotation = 0.0f;
 		cam_camera->m_active = true;
 		cam_camera->m_offset = { 1280.0f / 2.0f, 1024.0f / 2.0f };
@@ -117,7 +106,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			auto e = w.em().create_entity();
 
 			e.add<module_example::stargeting_component>();
-			e.add<ecs::sidentifier>();
 			e.add<ecs::stransform>();
 
 			e.add<effects::saffectable>();

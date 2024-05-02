@@ -10,7 +10,7 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cquery::cquery(query_type type, physics::aabb_t aabb) :
+	cquery::cquery(query_type type, math::caabb aabb) :
 		m_query_type(type), m_intersection_type(query_intersection_type_aabb), m_has_filter(false),
 		m_aabb(std::move(aabb)), m_ready(false)
 	{
@@ -24,7 +24,7 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cquery::cquery(query_type type, physics::aabb_t aabb, rttr::instance filter) :
+	cquery::cquery(query_type type, math::caabb aabb, rttr::instance filter) :
 		m_query_type(type), m_intersection_type(query_intersection_type_aabb), m_has_filter(true),
 		m_aabb(std::move(aabb)), m_filter(filter), m_ready(false)
 	{
@@ -69,7 +69,7 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	const physics::aabb_t cquery::aabb() const
+	const math::caabb cquery::aabb() const
 	{
 		if (intersection_type() == query_intersection_type_aabb)
 		{

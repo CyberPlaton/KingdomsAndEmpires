@@ -2,7 +2,7 @@
 #include <flecs.h>
 #include <core.h>
 #include "ecs_world_context_holder.hpp"
-#include "../physics/b2_physics.hpp"
+#include "../math.hpp"
 
 namespace ecs
 {
@@ -43,16 +43,16 @@ namespace ecs
 		friend class cworld;
 	public:
 		cquery(query_type type, physics::ray_t ray);
-		cquery(query_type type, physics::aabb_t aabb);
+		cquery(query_type type, math::caabb aabb);
 		cquery(query_type type, physics::ray_t ray, rttr::instance filter);
-		cquery(query_type type, physics::aabb_t aabb, rttr::instance filter);
+		cquery(query_type type, math::caabb aabb, rttr::instance filter);
 
 		const query_type type() const;
 		const query_intersection_type intersection_type() const;
 		const bool has_filter() const;
 		rttr::instance filter() const;
 		const physics::ray_t raycast() const;
-		const physics::aabb_t aabb() const;
+		const math::caabb aabb() const;
 
 		vector_t<flecs::entity> result_entity_array() const;
 		unsigned result_entity_count() const;
@@ -75,7 +75,7 @@ namespace ecs
 
 		//- query data
 		physics::ray_t m_ray;
-		physics::aabb_t m_aabb;
+		math::caabb m_aabb;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

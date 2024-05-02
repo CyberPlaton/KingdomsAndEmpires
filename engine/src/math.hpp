@@ -1,5 +1,6 @@
 #pragma once
 #include <core.h>
+#include "physics/b2_physics.hpp"
 
 namespace math
 {
@@ -22,5 +23,30 @@ namespace math
 	//------------------------------------------------------------------------------------------------------------------------
 	std::tuple<vec2_t, vec2_t, float> transform(const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
 		float rotation, const mat4_t& parent = C_MAT4_ID);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class caabb
+	{
+	public:
+		caabb();
+		~caabb() = default;
+		caabb(const b2AABB& aabb);
+		caabb(const core::srect& rect);
+		caabb(const vec2_t& center, const vec2_t& halfextents);
+		caabb(float x, float y, float size);
+		caabb(float x, float y, float halfwidth, float halfheight);
+
+		void to_aabb(const core::srect& rect);
+		void to_aabb(const vec2_t& center, const vec2_t& halfextents);
+		void to_aabb(float x, float y, float size);
+		void to_aabb(float x, float y, float halfwidth, float halfheight);
+
+		core::srect to_rect() const;
+
+		operator b2AABB () const { return m_aabb; }
+		operator core::srect() const { return to_rect(); }
+
+		b2AABB m_aabb;
+	};
 
 } //- math

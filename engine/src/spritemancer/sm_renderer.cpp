@@ -23,7 +23,7 @@ namespace sm
 			h = sm::ctx().window().h();
 		}
 
-		m_target = sm::ctx().rm().load(fmt::format("{}{}", C_RENDERTARGET_NAME.data(), layer), w, h);
+		m_target = sm::ctx().rm().load(fmt::format("{}_{}", C_RENDERTARGET_NAME.data(), layer), w, h);
 
 		const auto& target = sm::ctx().rm().get(m_target);
 
@@ -36,6 +36,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	crenderpath::~crenderpath()
 	{
+		end_camera();
 		raylib::EndTextureMode();
 
 		sm::ctx().submit(m_layer, m_target, m_viewrect);

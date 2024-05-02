@@ -26,31 +26,36 @@ namespace ecs
 		use_threads(m_used_threads);
 
 		//- setup observers
+		//- observe transform changes for AABB tree
 		world().observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
 			.event(flecs::OnSet)
+			.event(flecs::UnSet)
 			.each([&](flecs::iter& it, size_t index, stransform& transform, sidentifier& id)
 				{
 					flecs::entity e = it.entity(index);
 					std::string c = it.event_id().str().c_str();
 
-					if (it.event() == flecs::OnAdd)
+					if (it.event() == flecs::OnAdd || it.event() == flecs::OnSet)
 					{
 						//- add aabb proxy for entity to b2DynamicTree
 						create_proxy(e);
+
+						//- name of the component will be in form 'ecs.transform', we have to
+						//- format the name first
+						//cm().on_component_added(e, c);
 					}
-					else if (it.event() == flecs::OnRemove)
+					else if (it.event() == flecs::OnRemove || it.event() == flecs::UnSet)
 					{
 						//- remove aabb proxy of entity from b2DynamicTree
 						destroy_proxy(e);
 					}
-					else if (it.event() == flecs::OnSet)
-					{
-						//- update internal b2DynamicTree aabb proxy with new position of entity
-						update_proxy(e);
-					}
 				});
+
+		m_transform_change_tracker = world().query<stransform, sidentifier>();
+
+		//- TODO: observer that observes any added or removed components seems problematic through queries
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -82,6 +87,18 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::prepare()
 	{
+		ZoneScopedN("cworld::prepare");
+
+		//- observe changes and update internal AABB tree
+		if (m_transform_change_tracker.changed())
+		{
+			//- TODO: does not look like we only observe 'changes', but rather do this every tick
+			m_transform_change_tracker.each([&](flecs::entity e, stransform& /*transform*/, sidentifier& /*id*/)
+				{
+					if (has_proxy(e)) { update_proxy(e); }
+				});
+		}
+
 		//- get current viewing rect for active camera
 		if (auto e = qm().query_one<const scamera>(
 			[](const scamera& c)
@@ -90,7 +107,8 @@ namespace ecs
 			}); e.is_valid())
 		{
 			const auto& c = *e.get<scamera>();
-			auto aabb = physics::aabb(world_visible_area(c.m_position, c.m_offset, c.m_zoom));
+
+			math::caabb aabb(world_visible_area(c.m_position, c.m_offset, c.m_zoom));
 
 			//- perform a query for all currently visible entities
 			m_master_query_type = query_type_entity_array;
@@ -105,6 +123,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::process_queries()
 	{
+		ZoneScopedN("cworld::process_queries");
+
 		for (auto* query = qm().fetch(); query != nullptr; query = qm().fetch())
 		{
 			process_query(*query);
@@ -368,12 +388,17 @@ namespace ecs
 		const auto* id = e.get<sidentifier>();
 		const auto* tr = e.get<stransform>();
 
-		const auto& prev_aabb = GetFatAABB(id->m_aabb_proxy);
+		const auto __aabb = GetFatAABB(id->m_aabb_proxy);
+		const auto rect = math::caabb(__aabb).to_rect();
+		const auto dx = tr->m_x - rect.x();
+		const auto dy = tr->m_y - rect.y();
 
-		auto dx = (prev_aabb.GetCenter().x - prev_aabb.GetExtents().x) - tr->m_x;
-		auto dy = (prev_aabb.GetCenter().y - prev_aabb.GetExtents().y) - tr->m_y;
+		if(glm::abs(dx) > b2_aabbExtension || glm::abs(dy) > b2_aabbExtension)
+		{
+			math::caabb aabb(tr->m_x, tr->m_y, tr->m_w / 2.0f, tr->m_h / 2.0f);
 
-		MoveProxy(id->m_aabb_proxy, physics::aabb(tr->m_x, tr->m_y, tr->m_w, tr->m_h), { dx, dy });
+			MoveProxy(id->m_aabb_proxy, aabb, { 0.0f, 0.0f });
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -389,10 +414,8 @@ namespace ecs
 	{
 		auto* id = e.get_mut<sidentifier>();
 		const auto* tr = e.get<stransform>();
-
-		id->m_aabb_proxy = CreateProxy(physics::aabb(tr->m_x, tr->m_y, tr->m_w, tr->m_h), id);
-
-		logging::log_debug(fmt::format("Creating entity proxy: '{} ({})'", id->m_uuid.string(), id->m_aabb_proxy));
+		math::caabb aabb(tr->m_x, tr->m_y, tr->m_w / 2.0f, tr->m_h / 2.0f);
+		id->m_aabb_proxy = CreateProxy(aabb, id);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

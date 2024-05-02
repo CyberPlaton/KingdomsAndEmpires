@@ -158,6 +158,7 @@ namespace sm
 
 		//- Present default rendertarget to screen
 		raylib::BeginDrawing();
+		raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
 
 		if (m_has_fxaa)
 		{

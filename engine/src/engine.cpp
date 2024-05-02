@@ -195,6 +195,15 @@ namespace engine
 
 				ImGui::ShowDemoWindow();
 
+				ImGui::Begin("Renderpaths");
+
+				sm::ctx().rm().visit([](sm::crendertarget& target)
+					{
+						sm::cui::image(&target.target().texture, { 256.0f, 256.0f }, {255, 255, 255, 255});
+					});
+
+				ImGui::End();
+
 				sm::end_ui_frame();
 
 				sm::end_drawing();

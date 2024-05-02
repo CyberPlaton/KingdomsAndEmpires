@@ -101,12 +101,27 @@ namespace sm
 		const crendertarget& get(rendertarget_t handle) const;
 		crendertarget& modify(rendertarget_t handle);
 
+		template<typename TCallable>
+		void visit(TCallable callback);
+
 	private:
 		core::detail::cdynamic_pool<crendertarget> m_rendertargets;
 		umap_t<string_t, spriteatlas_t> m_handles;
 
 		RTTR_ENABLE(core::cservice);
 	};
+
+	template<typename TCallable>
+	void sm::crendertarget_manager::visit(TCallable callback)
+	{
+		auto* target = m_rendertargets.begin();
+		while (target)
+		{
+			callback(*target);
+
+			target = m_rendertargets.advance(target);
+		}
+	}
 
 } //- sm
 

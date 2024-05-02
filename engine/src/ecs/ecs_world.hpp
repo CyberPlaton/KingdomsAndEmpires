@@ -1,11 +1,11 @@
 #pragma once
+#include "../math.hpp"
 #include "ecs_entity_manager.hpp"
 #include "ecs_module_manager.hpp"
 #include "ecs_component_manager.hpp"
 #include "ecs_query_manager.hpp"
 #include "ecs_singleton_manager.hpp"
 #include "ecs_prefab_manager.hpp"
-#include "../physics/b2_physics.hpp"
 
 namespace ecs
 {
@@ -60,6 +60,10 @@ namespace ecs
 		csingleton_manager m_singleton_manager;
 		centity_manager m_entity_manager;
 		cmodule_manager m_module_manager;
+
+		//- TODO: where to use mutex
+		core::cmutex m_mutex;
+		flecs::query<stransform, sidentifier> m_transform_change_tracker;
 
 		stringview_t m_name;
 		flecs::world m_world;

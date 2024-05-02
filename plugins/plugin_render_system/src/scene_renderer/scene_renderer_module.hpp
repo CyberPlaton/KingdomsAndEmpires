@@ -16,9 +16,12 @@ namespace render_system
 
 					if (ecs::cworld_manager::instance().has_active())
 					{
-						sm::crenderpath path(0);
-
 						const auto& w = ecs::cworld_manager::instance().active();
+
+						sm::crenderpath path(0);
+						path.begin_blend_mode(sm::blending_mode_add_colors);
+
+						raylib::DrawLine(0, 0, 256, 256, raylib::GREEN);
 
 						//- match at most one entity, that means the one is the active camera
 						if (auto e = w.qm().query_one<ecs::scamera>([](ecs::scamera& c)
@@ -36,10 +39,8 @@ namespace render_system
 								const auto& sprite = *e.get<ecs::ssprite>();
 								const auto& transform = *e.get<ecs::stransform>();
 
-								const vec2_t position = { transform.m_x, transform.m_y };
-								const vec2_t scale = { transform.m_w, transform.m_h };
-
-								const auto [p, s, r] = math::transform(position, scale, { 0.0f, 0.0f }, transform.m_rotation);
+								const auto [p, s, r] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
+									{ 0.0f, 0.0f }, transform.m_rotation);
 
 								for (const auto& mat : sprite.m_materials)
 								{
@@ -55,6 +56,44 @@ namespace render_system
 		}
 	};
 
+	class cscenedebugrender_system : public ecs::csystem<ecs::stransform>
+	{
+	public:
+		cscenedebugrender_system(flecs::world& w) :
+			ecs::csystem<ecs::stransform>
+			(w, "Debug Scene Render System")
+		{
+
+			build([&](flecs::entity e, const ecs::stransform& transform)
+				{
+					if (ecs::cworld_manager::instance().has_active())
+					{
+						const auto& w = ecs::cworld_manager::instance().active();
+
+						sm::crenderpath path(0);
+
+						if (auto eCamera = w.qm().query_one<ecs::scamera>([](ecs::scamera& c)
+							{
+								return c.m_active == true;
+							}); eCamera.is_valid())
+						{
+							const auto& c = *eCamera.get<ecs::scamera>();
+
+							path.begin_camera({ c.m_position.x, c.m_position.y }, c.m_offset, c.m_rotation, c.m_zoom);
+							path.viewrect(c.m_viewrect.x(), c.m_viewrect.y(), c.m_viewrect.w(), c.m_viewrect.h());
+
+							const auto [p, s, _] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
+								{ 0.0f, 0.0f }, transform.m_rotation);
+
+							raylib::DrawRectangleLines(p.x, p.y, s.x, s.y, raylib::MAROON);
+						}
+					}
+				});
+
+			run_after("Scene Render System");
+		}
+	};
+
 	//------------------------------------------------------------------------------------------------------------------------
 	class cscene_render_module : public ecs::imodule
 	{
@@ -63,6 +102,7 @@ namespace render_system
 		{
 			begin<cscene_render_module>("Scene Render Module")
 				.subsystem<cscene_render_module, cscenerender_system>()
+				.subsystem<cscene_render_module, cscenedebugrender_system>()
 			.end<cscene_render_module>();
 		}
 
