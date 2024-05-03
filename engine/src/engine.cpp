@@ -177,36 +177,16 @@ namespace engine
 
 				m_layers.on_update(0.016f);
 			}
-
 			{
-				//- raylib frame processing deferred rendering class
-				sm::begin_drawing();
-
 				m_layers.on_world_render();
-
-				sm::end_frame();
-			}
-
-			{
-				//- ImGui ui frame
-				sm::ui_frame();
-
+				
+				sm::frame();
+				
 				m_layers.on_ui_render();
-
+				
 				ImGui::ShowDemoWindow();
-
-				ImGui::Begin("Renderpaths");
-
-				sm::ctx().rm().visit([](sm::crendertarget& target)
-					{
-						sm::cui::image(&target.target().texture, { 256.0f, 256.0f }, {255, 255, 255, 255});
-					});
-
-				ImGui::End();
-
-				sm::end_ui_frame();
-
-				sm::end_drawing();
+				
+				sm::end();
 			}
 		}
 

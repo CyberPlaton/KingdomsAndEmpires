@@ -7,10 +7,7 @@ namespace sm
 	void shutdown();
 
 	//- Order of declaration is expected order of calling
-	void begin_drawing();
-	void end_frame();
-	void ui_frame();
-	void end_ui_frame();
-	void end_drawing();
+	void frame();
+	void end();
 
 } //- sm

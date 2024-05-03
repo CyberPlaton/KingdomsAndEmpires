@@ -18,14 +18,12 @@ namespace sm
 		void on_resize(unsigned w, unsigned h);
 
 		//- Order of declaration is the expected order of calling
-		void on_begin_drawing();
-		void on_frame_end();
-		void on_ui_frame();
-		void on_ui_frame_end();
-		void on_end_drawing();
+		void frame();
+		void end();
 
 		void begin_default();
 		void submit(renderlayer_t layer, rendertarget_t target, core::srect rect);
+		void submit(renderlayer_t layer, rendertarget_t target, core::srect rect, vector_t<technique_t> postprocess);
 
 		cspriteatlas_manager& am() { return *m_spriteatlas_manager; }
 		const cspriteatlas_manager& am() const { return *m_spriteatlas_manager; }
@@ -51,6 +49,7 @@ namespace sm
 
 		struct srendertargetdata
 		{
+			vector_t<technique_t> m_postprocess;
 			core::srect m_rect = { 0.0f, 0.0f, 0.0f, 0.0f };
 			rendertarget_t m_target = 0;
 		};
@@ -58,7 +57,6 @@ namespace sm
 		map_t<renderlayer_t, srendertargetdata> m_renderpaths;
 		core::cmutex m_mutex;
 
-		rendertarget_t m_backbuffer;	//- default render target
 		technique_t m_fxaa;				//- custom anti-aliasing shader
 		material_t m_default;			//- default material
 		technique_t m_sprite;			//- default pixel perfect shader

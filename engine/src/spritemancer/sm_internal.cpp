@@ -3,12 +3,6 @@
 
 namespace sm
 {
-	namespace
-	{
-		constexpr stringview_t C_RENDERTARGET_NAME = "RenderTargetDefault";
-
-	} //- unnamed
-
 	//------------------------------------------------------------------------------------------------------------------------
 	ccontext& ctx()
 	{
@@ -31,13 +25,6 @@ namespace sm
 		}
 
 		cui::on_resize(cfg.m_width, cfg.m_height);
-
-		//- default framebuffer
-		if (m_backbuffer = rm().load(C_RENDERTARGET_NAME.data(), cfg.m_width, cfg.m_height); !algorithm::is_valid_handle(m_backbuffer))
-		{
-			//- report failure
-			return false;
-		}
 
 		//- default sprite shader
 		if (m_sprite = sm().load_from_memory(C_SPRITE_TECHNIQUE_NAME.data(), programs::pixelperfect::s_vs, programs::pixelperfect::s_ps);
@@ -87,107 +74,79 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::on_resize(unsigned w, unsigned h)
 	{
-		rm().modify(m_backbuffer).resize(w, h);
-
+		//- TODO: resize rendertargets
+		
 		cui::on_resize(w, h);
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::on_begin_drawing()
+	//------------------------------------------------------------------------------------------------------------------------	
+	void ccontext::frame()
 	{
-		//- TODO: consider changing this up a bit. As of now this is only required to draw the ImGui UI to
-		//- our default backbuffer. Having a game UI won´t use ImGui and this most certainly
-		rm().get(m_backbuffer).bind();
-
+		ZoneScopedN("ccontext::frame");
+		
+		//- render all renderpaths
+		raylib::BeginDrawing();
+		
 		begin_default();
-
-		//- part where rendering in world space ought to be done
-		//- originally the renderpass_stack part
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::on_frame_end()
-	{
-	}
-
-	void ccontext::on_ui_frame()
-	{
+		
+		{
+			core::cscope_mutex m(m_mutex);
+			
+			for(const auto& path: m_renderpaths)
+			{
+				const auto& target = rm().get(path.second.m_target).target();
+				const auto& rect = path.second.m_rect;
+					
+				if(!path.second.m_postprocess.empty())
+				{
+					//- draw with postprocess
+					for(const auto& post: path.second.m_postprocess)
+					{
+						const auto& shader = sm().get(post);
+		
+						shader.bind();
+						
+						raylib::DrawTexturePro(target.texture, { 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height },
+							{ rect.x(), rect.y(), rect.w(), rect.h() }, {0.0f, 0.0f}, 0.0f, raylib::WHITE);
+						
+						shader.unbind();
+					}
+				}
+				else
+				{
+					//- draw without postprocess
+					raylib::DrawTexturePro(target.texture, { 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height },
+						{ rect.x(), rect.y(), rect.w(), rect.h() }, {0.0f, 0.0f}, 0.0f, raylib::WHITE);
+				}
+			}
+			
+			m_renderpaths.clear();
+		}
+			
+		
+		//- begin ImGui rendering	
 		cui::begin();
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::on_ui_frame_end()
+	//------------------------------------------------------------------------------------------------------------------------	
+	void ccontext::end()
 	{
+		ZoneScopedN("ccontext::end");
+		
+		//- end ImGui rendering and present everything
 		cui::end();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccontext::on_end_drawing()
-	{
-		ZoneScopedN("ccontext::on_end_drawing");
-
-		//- reset state to default before presenting backbuffer
-		raylib::EndMode2D();
-		raylib::EndBlendMode();
-		raylib::EndTextureMode();
-
-		//- render submitted rendertargets in layered order to default backbuffer
-		const auto& backbuffer = rm().get(m_backbuffer);
-		{
-			core::cscope_mutex m(m_mutex);
-
-			backbuffer.bind();
-			raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
-
-			for (const auto& pair : m_renderpaths)
-			{
-				const auto& target = rm().get(pair.second.m_target).target();
-
-				const auto& rect = pair.second.m_rect;
-
-				raylib::DrawTexturePro(target.texture, { 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height },
-					{ rect.x(), rect.y(), rect.w(), rect.h() }, {0.0f, 0.0f}, 0.0f, raylib::WHITE);
-			}
-
-			raylib::EndBlendMode();
-			backbuffer.unbind();
-
-			m_renderpaths.clear();
-		}
-
-
-		//- Present default rendertarget to screen
-		raylib::BeginDrawing();
-		raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
-
-		if (m_has_fxaa)
-		{
-			const auto& technique = sm().get(m_fxaa);
-			const auto& rendertarget = backbuffer.target();
-			const auto resolution = vec2_t(rendertarget.texture.width, rendertarget.texture.height);
-
-			raylib::BeginShaderMode(technique.shader());
-
-			raylib::SetShaderValue(technique.shader(), raylib::GetShaderLocation(technique.shader(), C_FXAA_TECHNIQUE_RESOLUTION_PROP.data()),
-				&resolution, raylib::SHADER_UNIFORM_VEC2);
-		}
-
-		const auto w = SCAST(float, backbuffer.target().texture.width);
-		const auto h = SCAST(float, backbuffer.target().texture.height);
-
-		raylib::DrawTextureRec(backbuffer.target().texture, { 0.0f, 0.0f, w, -h }, { 0.0f, 0.0f }, to_cliteral(C_COLOR_WHITE));
-
-		if (m_has_fxaa)
-		{
-			raylib::EndShaderMode();
-		}
-
+	
 		raylib::EndDrawing();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::begin_default()
 	{
+		//- reset state to default before presenting backbuffer
+		raylib::EndMode2D();
+		raylib::EndBlendMode();
+		raylib::EndTextureMode();
+		
 		raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
 
 		//- default clear of backbuffer
@@ -199,7 +158,15 @@ namespace sm
 	{
 		core::cscope_mutex m(m_mutex);
 
-		m_renderpaths[layer] = { rect, target };
+		m_renderpaths[layer] = { {}, rect, target };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ccontext::submit(renderlayer_t layer, rendertarget_t target, core::srect rect, vector_t<technique_t> postprocess)
+	{
+		core::cscope_mutex m(m_mutex);
+
+		m_renderpaths[layer] = { postprocess, rect, target };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
