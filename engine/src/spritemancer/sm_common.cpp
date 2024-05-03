@@ -53,7 +53,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	crendertarget::crendertarget(const raylib::RenderTexture& texture) :
+	crendertarget::crendertarget(const raylib::RenderTexture2D& texture) :
 		m_image(texture)
 	{
 	}

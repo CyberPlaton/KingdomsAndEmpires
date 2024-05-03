@@ -201,7 +201,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 		raylib::DrawRectangle(-6000, 320, 13000, 8000, raylib::DARKGRAY);
 
-		for (int i = 0; i < MAX_BUILDINGS; i++) DrawRectangleRec(buildings[i], buildColors[i]);
+		for (int i = 0; i < MAX_BUILDINGS; i++) raylib::DrawRectangleRec(buildings[i], buildColors[i]);
 
 		raylib::DrawRectangleRec(player, raylib::RED);
 

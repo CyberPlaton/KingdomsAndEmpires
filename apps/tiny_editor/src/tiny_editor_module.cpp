@@ -93,7 +93,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		cam_camera->m_zoom = 1.0f;
 		cam_camera->m_rotation = 0.0f;
 		cam_camera->m_active = true;
-		cam_camera->m_offset = { 1280.0f / 2.0f, 1024.0f / 2.0f };
+		cam_camera->m_offset = { sm::ctx().window().w() / 2.0f, sm::ctx().window().h() / 2.0f };
 		cam_camera->m_layer = 0;
 		cam_camera->m_viewrect = { 0.0f, 0.0f, 1280.0f, 1024.0f };
 
@@ -119,8 +119,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			e.add<ecs::ssprite>();
 
 			auto* transform = e.get_mut<ecs::stransform>();
-			transform->m_x = i * 64;
-			transform->m_y = i * 64;
+			transform->m_x = i + 64;
+			transform->m_y = i + 64;
 			transform->m_w = 64;
 			transform->m_h = 64;
 

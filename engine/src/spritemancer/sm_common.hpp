@@ -202,7 +202,7 @@ namespace sm
 	class crendertarget
 	{
 	public:
-		crendertarget(const raylib::RenderTexture& texture);
+		crendertarget(const raylib::RenderTexture2D& texture);
 		~crendertarget();
 
 		void resize(unsigned w, unsigned h);
@@ -211,11 +211,11 @@ namespace sm
 		void unbind() const;
 
 		inline bool ready() const { return raylib::IsRenderTextureReady(target()); }
-		inline raylib::RenderTexture& target() { return m_image; }
-		inline const raylib::RenderTexture& target() const { return m_image; }
+		inline raylib::RenderTexture2D& target() { return m_image; }
+		inline const raylib::RenderTexture2D& target() const { return m_image; }
 
 	private:
-		raylib::RenderTexture m_image;
+		raylib::RenderTexture2D m_image;
 	};
 
 	//- Describes shader settings and uniforms along with blend mode.
