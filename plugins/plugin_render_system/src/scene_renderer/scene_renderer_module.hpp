@@ -18,10 +18,12 @@ namespace render_system
 					{
 						const auto& w = ecs::cworld_manager::instance().active();
 
-						sm::crenderpath path(0);
+						sm::crenderpath path(0, 256, 256);
+						path.viewrect(256, 256, 256, 256);
 
+						raylib::DrawText("Text", 5, 5, 20, raylib::BLACK);
 						raylib::DrawLine(0, 0, 256, 256, raylib::GREEN);
-						raylib::DrawLine(-1024, -1024, 1024, 1024, raylib::YELLOW);
+						raylib::DrawLine(-1024, -10, 1024, 10, raylib::YELLOW);
 
 						//- match at most one entity, that means the one is the active camera
 						if (auto e = w.qm().query_one<ecs::scamera>([](ecs::scamera& c)
@@ -31,8 +33,8 @@ namespace render_system
 						{
 							const auto& c = *e.get<ecs::scamera>();
 
-							//path.begin_camera({ c.m_position.x, c.m_position.y }, c.m_offset, c.m_rotation, c.m_zoom);
-							path.viewrect(c.m_viewrect.x(), c.m_viewrect.y(), c.m_viewrect.w(), c.m_viewrect.h());
+							path.begin_camera({ c.m_position.x, c.m_position.y }, c.m_offset, c.m_rotation, c.m_zoom);
+							//path.viewrect(c.m_viewrect.x(), c.m_viewrect.y(), c.m_viewrect.w(), c.m_viewrect.h());
 
 							for (auto e : w.visible_entities())
 							{
@@ -70,7 +72,7 @@ namespace render_system
 					{
 						const auto& w = ecs::cworld_manager::instance().active();
 
-						sm::crenderpath path(0);
+						sm::crenderpath path(1);
 
 						if (auto eCamera = w.qm().query_one<ecs::scamera>([](ecs::scamera& c)
 							{

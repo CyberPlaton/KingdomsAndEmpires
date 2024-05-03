@@ -75,40 +75,40 @@ namespace sm
 	void ccontext::on_resize(unsigned w, unsigned h)
 	{
 		//- TODO: resize rendertargets
-		
+
 		cui::on_resize(w, h);
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------	
+	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::frame()
 	{
 		ZoneScopedN("ccontext::frame");
-		
+
 		//- render all renderpaths
 		raylib::BeginDrawing();
-		
+
 		begin_default();
-		
+
 		{
 			core::cscope_mutex m(m_mutex);
-			
+
 			for(const auto& path: m_renderpaths)
 			{
 				const auto& target = rm().get(path.second.m_target).target();
 				const auto& rect = path.second.m_rect;
-					
+
 				if(!path.second.m_postprocess.empty())
 				{
 					//- draw with postprocess
 					for(const auto& post: path.second.m_postprocess)
 					{
 						const auto& shader = sm().get(post);
-		
+
 						shader.bind();
-						
+
 						raylib::DrawTexturePro(target.texture, { 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height },
 							{ rect.x(), rect.y(), rect.w(), rect.h() }, {0.0f, 0.0f}, 0.0f, raylib::WHITE);
-						
+
 						shader.unbind();
 					}
 				}
@@ -119,16 +119,15 @@ namespace sm
 						{ rect.x(), rect.y(), rect.w(), rect.h() }, {0.0f, 0.0f}, 0.0f, raylib::WHITE);
 				}
 			}
-			
+
 			m_renderpaths.clear();
 		}
-			
-		
-		//- begin ImGui rendering	
+
+		//- begin ImGui rendering
 		cui::begin();
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------	
+	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::end()
 	{
 		ZoneScopedN("ccontext::end");
@@ -146,7 +145,7 @@ namespace sm
 		raylib::EndMode2D();
 		raylib::EndBlendMode();
 		raylib::EndTextureMode();
-		
+
 		raylib::BeginBlendMode(raylib::RL_BLEND_ALPHA);
 
 		//- default clear of backbuffer

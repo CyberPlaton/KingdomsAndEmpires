@@ -89,11 +89,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		cam.add<ecs::scamera>();
 
 		auto* cam_camera = cam.get_mut<ecs::scamera>();
-		cam_camera->m_position = { 0.0f, 0.0f };
-		cam_camera->m_zoom = 1.0f;
+		cam_camera->m_position = { -100.0f, 0.0f };
+		cam_camera->m_zoom = 0.5f;
 		cam_camera->m_rotation = 0.0f;
 		cam_camera->m_active = true;
-		cam_camera->m_offset = { sm::ctx().window().w() / 2.0f, sm::ctx().window().h() / 2.0f };
+		cam_camera->m_offset = { 0.0f, 0.0f };
 		cam_camera->m_layer = 0;
 		cam_camera->m_viewrect = { 0.0f, 0.0f, 1280.0f, 1024.0f };
 
@@ -101,7 +101,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		auto tex = sm::ctx().tm().load("sprite", "resources/figure_paladin_14.png");
 		const auto& texture = sm::ctx().tm().get(tex);
 
-		for (auto i = 0u; i < 25; ++i)
+		for (auto i = 0u; i < 250; ++i)
 		{
 			auto e = w.em().create_entity();
 
@@ -119,8 +119,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			e.add<ecs::ssprite>();
 
 			auto* transform = e.get_mut<ecs::stransform>();
-			transform->m_x = i + 64;
-			transform->m_y = i + 64;
+			transform->m_x = i * 64 % 1024;
+			transform->m_y = i * 64 % 1024;
 			transform->m_w = 64;
 			transform->m_h = 64;
 

@@ -388,17 +388,11 @@ namespace ecs
 		const auto* id = e.get<sidentifier>();
 		const auto* tr = e.get<stransform>();
 
-		const auto __aabb = GetFatAABB(id->m_aabb_proxy);
-		const auto rect = math::caabb(__aabb).to_rect();
-		const auto dx = tr->m_x - rect.x();
-		const auto dy = tr->m_y - rect.y();
+		const auto [p, s, _] = math::transform({ tr->m_x, tr->m_y }, { tr->m_w, tr->m_h }, { 0.0f, 0.0f }, tr->m_rotation);
 
-		if(glm::abs(dx) > b2_aabbExtension || glm::abs(dy) > b2_aabbExtension)
-		{
-			math::caabb aabb(tr->m_x, tr->m_y, tr->m_w / 2.0f, tr->m_h / 2.0f);
+		math::caabb aabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f);
 
-			MoveProxy(id->m_aabb_proxy, aabb, { 0.0f, 0.0f });
-		}
+		MoveProxy(id->m_aabb_proxy, aabb, { 0.0f, 0.0f });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

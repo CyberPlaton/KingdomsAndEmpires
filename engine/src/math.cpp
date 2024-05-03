@@ -18,8 +18,7 @@ namespace math
 	void transform(mat4_t& out, const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
 		float rotation, const mat4_t& parent /*= C_MAT4_ID*/)
 	{
-		static vec3_t S_POSITION = vec3_t(0.0f, 0.0f, 1.0f), S_DIMENSION = vec3_t(0.0f, 0.0f, 1.0f),
-			S_Z_AXIS = vec3_t(0.0f, 0.0f, 1.0f);
+		static vec3_t S_POSITION = vec3_t(0.0f, 0.0f, 1.0f), S_DIMENSION = vec3_t(0.0f, 0.0f, 1.0f), S_Z_AXIS = vec3_t(0.0f, 0.0f, 1.0f);
 		static float S_ROTATION = 0.0f;
 
 		S_POSITION.x = position.x;
@@ -28,9 +27,9 @@ namespace math
 		S_DIMENSION.y = scale.y;
 		S_ROTATION = glm::radians(rotation);
 
-		out = glm::translate(C_MAT4_ID, S_POSITION) *
-			glm::rotate(C_MAT4_ID, S_ROTATION, S_Z_AXIS) *
-			glm::scale(C_MAT4_ID, S_DIMENSION);
+		out = glm::translate(C_MAT4_ID, S_POSITION)
+			* glm::rotate(C_MAT4_ID, S_ROTATION, S_Z_AXIS)
+			* glm::scale(C_MAT4_ID, S_DIMENSION);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -118,13 +117,29 @@ namespace math
 	//------------------------------------------------------------------------------------------------------------------------
 	void caabb::to_aabb(float x, float y, float halfwidth, float halfheight)
 	{
-		m_aabb.lowerBound = { x, y };
-		m_aabb.upperBound = { x + halfwidth * 2.0f, y  + halfheight * 2.0f };
+		//- Note: difference box2d internal coordinate system and engine:
+		//- box2d			engine
+		//- ^ Y+			------> X+
+		//- |				|
+		//- |				|
+		//- |				|
+		//- ------> X+		v Y+
+
+		m_aabb.lowerBound = { x, y - halfheight * 2 };
+		m_aabb.upperBound = { x + halfwidth * 2.0f, y };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::srect caabb::to_rect() const
 	{
+		//- Note: difference box2d internal coordinate system and engine:
+		//- box2d			engine
+		//- ^ Y+			------> X+
+		//- |				|
+		//- |				|
+		//- |				|
+		//- ------> X+		v Y+
+
 		const auto& c = m_aabb.GetCenter();
 		const auto& he = m_aabb.GetExtents();
 

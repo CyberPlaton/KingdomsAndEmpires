@@ -113,7 +113,7 @@ namespace ecs
 		core::cuuid m_uuid;
 
 		//- internal usage
-		flecs::entity m_self; //- required for world intersection queries
+		flecs::entity m_self;				//- required for world intersection queries
 		entity_proxy_t m_aabb_proxy		= 0;
 		unsigned m_aabb_proxy_query_key = 0;
 

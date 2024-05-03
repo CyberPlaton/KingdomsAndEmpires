@@ -140,7 +140,7 @@ namespace sm
 
 		//- TODO: we do not use width and height from command transform, why
 		raylib::Rectangle src = { __rect.x(), __rect.y() , __rect.w() , __rect.h() };
-		raylib::Rectangle dst = { position.x, position.y, src.width, src.height };
+		raylib::Rectangle dst = { position.x, position.y, scale.x, scale.y };
 
 		//- TODO: origin should be variable, probably a component thing that should be redirected to here
 		raylib::DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, rotation, to_cliteral(color));
