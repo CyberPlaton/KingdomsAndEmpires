@@ -18,8 +18,8 @@ namespace math
 	void transform(mat4_t& out, const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
 		float rotation, const mat4_t& parent /*= C_MAT4_ID*/)
 	{
-		static vec3_t S_POSITION = vec3_t(0.0f, 0.0f, 1.0f), S_DIMENSION = vec3_t(0.0f, 0.0f, 1.0f), S_Z_AXIS = vec3_t(0.0f, 0.0f, 1.0f);
-		static float S_ROTATION = 0.0f;
+		static thread_local vec3_t S_POSITION = vec3_t(0.0f, 0.0f, 0.0f), S_DIMENSION = vec3_t(0.0f, 0.0f, 0.0f), S_Z_AXIS = vec3_t(0.0f, 0.0f, 1.0f);
+		static thread_local float S_ROTATION = 0.0f;
 
 		S_POSITION.x = position.x;
 		S_POSITION.y = position.y;
@@ -36,8 +36,8 @@ namespace math
 	std::tuple<vec2_t, vec2_t, float> transform(const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
 		float rotation, const mat4_t& parent /*= C_MAT4_ID*/)
 	{
-		static vec3_t S_EULER_ANGLES = vec3_t(0.0f);
-		static mat4_t S_TRANSFORM = mat4_t(1.0f);
+		static thread_local vec3_t S_EULER_ANGLES = vec3_t(0.0f);
+		static thread_local mat4_t S_TRANSFORM = mat4_t(1.0f);
 
 		transform(S_TRANSFORM, position, scale, shear, rotation, parent);
 

@@ -352,6 +352,7 @@ namespace algorithm
 	unsigned percentage(float total_value, float part_value);
 	float percent_value(unsigned p, float total_value);
 	bool is_valid_handle(handle_type_t h);
+	bool is_valid_proxy(entity_proxy_t h);
 	handle_type_t invalid_handle();
 	float bytes_to_kilobytes(unsigned b);
 	float bytes_to_megabytes(unsigned b);

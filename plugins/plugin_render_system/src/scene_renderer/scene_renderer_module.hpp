@@ -18,8 +18,7 @@ namespace render_system
 					{
 						const auto& w = ecs::cworld_manager::instance().active();
 
-						sm::crenderpath path(0, 256, 256);
-						path.viewrect(256, 256, 256, 256);
+						sm::crenderpath path(0);
 
 						raylib::DrawText("Text", 5, 5, 20, raylib::BLACK);
 						raylib::DrawLine(0, 0, 256, 256, raylib::GREEN);
@@ -34,7 +33,6 @@ namespace render_system
 							const auto& c = *e.get<ecs::scamera>();
 
 							path.begin_camera({ c.m_position.x, c.m_position.y }, c.m_offset, c.m_rotation, c.m_zoom);
-							//path.viewrect(c.m_viewrect.x(), c.m_viewrect.y(), c.m_viewrect.w(), c.m_viewrect.h());
 
 							for (auto e : w.visible_entities())
 							{
@@ -82,7 +80,6 @@ namespace render_system
 							const auto& c = *eCamera.get<ecs::scamera>();
 
 							path.begin_camera({ c.m_position.x, c.m_position.y }, c.m_offset, c.m_rotation, c.m_zoom);
-							path.viewrect(c.m_viewrect.x(), c.m_viewrect.y(), c.m_viewrect.w(), c.m_viewrect.h());
 
 							const auto [p, s, _] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
 								{ 0.0f, 0.0f }, transform.m_rotation);

@@ -89,7 +89,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		cam.add<ecs::scamera>();
 
 		auto* cam_camera = cam.get_mut<ecs::scamera>();
-		cam_camera->m_position = { -100.0f, 0.0f };
+		cam_camera->m_position = { 0.0f, 0.0f };
 		cam_camera->m_zoom = 0.5f;
 		cam_camera->m_rotation = 0.0f;
 		cam_camera->m_active = true;
@@ -101,33 +101,37 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		auto tex = sm::ctx().tm().load("sprite", "resources/figure_paladin_14.png");
 		const auto& texture = sm::ctx().tm().get(tex);
 
-		for (auto i = 0u; i < 250; ++i)
+		for (auto i = 0u; i < 20; ++i)
 		{
-			auto e = w.em().create_entity();
-
-			e.add<module_example::stargeting_component>();
-			e.add<ecs::stransform>();
-
-			e.add<effects::saffectable>();
-			auto* c = e.get_mut<effects::saffectable>();
-
-			if (i < 100)
+			for (auto j = 0u; j < 20; ++j)
 			{
-				effects::apply_effect_to_entity<effects::sexample_effect>(e);
+				auto e = w.em().create_entity();
+
+				e.add<module_example::stargeting_component>();
+				e.add<ecs::stransform>();
+
+				e.add<effects::saffectable>();
+				auto* c = e.get_mut<effects::saffectable>();
+
+				if (i < 100)
+				{
+					effects::apply_effect_to_entity<effects::sexample_effect>(e);
+				}
+
+				e.add<ecs::ssprite>();
+
+				auto* transform = e.get_mut<ecs::stransform>();
+				transform->m_x = i * 64 % 1024;
+				transform->m_y = j * 64 % 1024;
+				transform->m_w = 64;
+				transform->m_h = 64;
+
+				auto* sprite = e.get_mut<ecs::ssprite>();
+				sprite->m_source_rectangle = { 0.0f, 0.0f, (float)texture.width(), (float)texture.height() };
+				sprite->m_tint = core::scolor(rand.in_range_int(50, 255), rand.in_range_int(50, 255), rand.in_range_int(50, 255), 255);
+				sprite->m_materials.emplace_back(tex, sm::ctx().mm().at(sm::C_DEFAULT_MATERIAL_NAME));
+
 			}
-
-			e.add<ecs::ssprite>();
-
-			auto* transform = e.get_mut<ecs::stransform>();
-			transform->m_x = i * 64 % 1024;
-			transform->m_y = i * 64 % 1024;
-			transform->m_w = 64;
-			transform->m_h = 64;
-
-			auto* sprite = e.get_mut<ecs::ssprite>();
-			sprite->m_source_rectangle = { 0.0f, 0.0f, (float)texture.width(), (float)texture.height() };
-			sprite->m_tint = core::scolor(rand.in_range_int(50, 255), rand.in_range_int(50, 255), rand.in_range_int(50, 255), 255);
-			sprite->m_materials.emplace_back(tex, sm::ctx().mm().at(sm::C_DEFAULT_MATERIAL_NAME));
 		}
 
 		//w.save("MyWorld.world");

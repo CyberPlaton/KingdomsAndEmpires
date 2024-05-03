@@ -407,9 +407,8 @@ namespace ecs
 	void cworld::create_proxy(flecs::entity e)
 	{
 		auto* id = e.get_mut<sidentifier>();
-		const auto* tr = e.get<stransform>();
-		math::caabb aabb(tr->m_x, tr->m_y, tr->m_w / 2.0f, tr->m_h / 2.0f);
-		id->m_aabb_proxy = CreateProxy(aabb, id);
+
+		id->m_aabb_proxy = CreateProxy(math::caabb(0.0f, 0.0f, 0.0f, 0.0f), id);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -417,7 +416,7 @@ namespace ecs
 	{
 		const auto* id = e.get<sidentifier>();
 
-		return GetUserData(id->m_aabb_proxy) != nullptr;
+		return algorithm::is_valid_proxy(id->m_aabb_proxy) && GetUserData(id->m_aabb_proxy);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
