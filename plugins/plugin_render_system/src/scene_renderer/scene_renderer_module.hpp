@@ -33,7 +33,9 @@ namespace render_system
 							for (auto e : w.visible_entities())
 							{
 								const auto& sprite = *e.get<ecs::ssprite>();
-								const auto& transform = *e.get<ecs::stransform>();
+								auto& transform = *e.get_mut<ecs::stransform>();
+
+								transform.m_rotation += 0.16f;
 
 								const auto [p, s, r] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
 									{ 0.0f, 0.0f }, transform.m_rotation);
@@ -83,7 +85,17 @@ namespace render_system
 								const auto [p, s, _] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
 									{ 0.0f, 0.0f }, transform.m_rotation);
 
-								raylib::DrawRectangleLines(p.x, p.y, s.x, s.y, raylib::MAROON);
+								core::srect rect = math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f, glm::radians(transform.m_rotation)).to_rect();
+
+								auto tl = rect.top_left();
+								auto tr = rect.top_right();
+								auto br = rect.bottom_right();
+								auto bl = rect.bottom_left();
+
+								raylib::DrawLine(tl.x, tl.y, tr.x, tr.y, raylib::MAROON);
+								raylib::DrawLine(tr.x, tr.y, br.x, br.y, raylib::MAROON);
+								raylib::DrawLine(br.x, br.y, bl.x, bl.y, raylib::MAROON);
+								raylib::DrawLine(bl.x, bl.y, tl.x, tl.y, raylib::MAROON);
 							}
 						}
 					}

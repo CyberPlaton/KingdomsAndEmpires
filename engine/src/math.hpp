@@ -35,11 +35,13 @@ namespace math
 		caabb(const vec2_t& center, const vec2_t& halfextents);
 		caabb(float x, float y, float size);
 		caabb(float x, float y, float halfwidth, float halfheight);
+		caabb(float x, float y, float halfwidth, float halfheight, float angle);
 
 		void to_aabb(const core::srect& rect);
 		void to_aabb(const vec2_t& center, const vec2_t& halfextents);
 		void to_aabb(float x, float y, float size);
 		void to_aabb(float x, float y, float halfwidth, float halfheight);
+		void to_aabb(float x, float y, float halfwidth, float halfheight, float angle);
 
 		core::srect to_rect() const;
 

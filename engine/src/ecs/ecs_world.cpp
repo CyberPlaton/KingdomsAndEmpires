@@ -392,7 +392,7 @@ namespace ecs
 
 		const auto [p, s, _] = math::transform({ tr->m_x, tr->m_y }, { tr->m_w, tr->m_h }, { 0.0f, 0.0f }, tr->m_rotation);
 
-		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f), {0.0f, 0.0f});
+		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f, glm::radians(tr->m_rotation)), {0.0f, 0.0f});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
