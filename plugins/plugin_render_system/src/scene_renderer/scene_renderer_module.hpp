@@ -43,7 +43,7 @@ namespace render_system
 								for (const auto& mat : sprite.m_materials)
 								{
 									path.draw_sprite(p, mat.first, r, s, sprite.m_source_rectangle,
-										sprite.m_tint, sprite.m_flipx, sprite.m_flipy);
+										sprite.m_tint, sprite.m_flags);
 								}
 							}
 						}

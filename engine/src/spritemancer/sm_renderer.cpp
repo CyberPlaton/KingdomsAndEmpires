@@ -1,5 +1,6 @@
 #include "sm_renderer.hpp"
 #include "sm_embedded_shaders.hpp"
+#include "../ecs/ecs_component.hpp"
 
 namespace sm
 {
@@ -130,11 +131,21 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation, const vec2_t& scale,
-		const core::srect& rect, const vec2_t& origin, const core::scolor& color, bool flipx, bool flipy)
+		const core::srect& rect, const vec2_t& origin, const core::scolor& color, int flags)
 	{
+		if (!algorithm::bit_on(flags, ecs::ssprite::flags_visible))
+		{
+			return;
+		}
 		auto __rect = rect;
-		if (flipx) __rect.m_w = (-__rect.m_w);
-		if (flipy) __rect.m_h = (-__rect.m_h);
+		if (algorithm::bit_on(flags, ecs::ssprite::flags_flipx))
+		{
+			__rect.m_w = (-__rect.m_w);
+		}
+		if (algorithm::bit_on(flags, ecs::ssprite::flags_flipy))
+		{
+			__rect.m_h = (-__rect.m_h);
+		}
 
 		const auto& tex = ctx().tm().get(texture);
 
@@ -149,16 +160,16 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
-		const vec2_t& scale, const core::srect& rect, const core::scolor& color, bool flipx, bool flipy)
+		const vec2_t& scale, const core::srect& rect, const core::scolor& color, int flags)
 	{
-		draw_sprite(position, texture, rotation, scale, rect, { scale.x / 2.0f, scale.y / 2.0f }, color, false, false);
+		draw_sprite(position, texture, rotation, scale, rect, { scale.x / 2.0f, scale.y / 2.0f }, color, flags);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
 		const vec2_t& scale, const core::srect& rect, const core::scolor& color)
 	{
-		draw_sprite(position, texture, rotation, scale, rect, color, false, false);
+		draw_sprite(position, texture, rotation, scale, rect, color, ecs::ssprite::flags_visible);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

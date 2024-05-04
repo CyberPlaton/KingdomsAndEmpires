@@ -132,16 +132,21 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(ssprite);
 
+		enum flags : uint8_t
+		{
+			flags_none		= BIT(0),
+			flags_visible	= BIT(1),
+			flags_flipx		= BIT(2),
+			flags_flipy		= BIT(3),
+		};
+
 		static void show_ui(flecs::entity e);
 
 		vector_t<core::spair<texture_t, material_t>> m_materials;
 
+		core::srect m_source_rectangle	= { 0.0f, 0.0f, 0.0f, 0.0f }; //- represents a rectangle in actual texture pixel size
 		core::scolor m_tint				= core::scolor(core::common_color_neutral1000);
-		//- represents a rectangle in actual texture pixel size
-		core::srect m_source_rectangle	= {0.0f, 0.0f, 0.0f, 0.0f};
-		bool m_visible					= true;
-		bool m_flipx					= false;
-		bool m_flipy					= false;
+		int m_flags						= flags_visible;
 		unsigned char m_layer			= 0;
 
 		RTTR_ENABLE(icomponent);
@@ -272,8 +277,7 @@ namespace ecs
 	{
 		rttr::ccomponent<ssprite>("ssprite")
 			.prop("m_materials", &ssprite::m_materials)
-			.prop("m_flipx", &ssprite::m_flipx)
-			.prop("m_flipy", &ssprite::m_flipy)
+			.prop("m_flags", &ssprite::m_flags)
 			.prop("m_layer", &ssprite::m_layer)
 			.prop("m_source_rectangle", &ssprite::m_source_rectangle)
 			.prop("m_tint", &ssprite::m_tint)

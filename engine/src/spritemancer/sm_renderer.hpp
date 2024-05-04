@@ -35,10 +35,10 @@ namespace sm
 		void draw_text();
 
 		void draw_sprite(const vec2_t& position, texture_t texture, float rotation,
-			const vec2_t& scale, const core::srect& rect, const vec2_t& origin, const core::scolor& color, bool flipx, bool flipy);
+			const vec2_t& scale, const core::srect& rect, const vec2_t& origin, const core::scolor& color, int flags);
 
 		void draw_sprite(const vec2_t& position, texture_t texture, float rotation,
-			const vec2_t& scale, const core::srect& rect, const core::scolor& color, bool flipx, bool flipy);
+			const vec2_t& scale, const core::srect& rect, const core::scolor& color, int flags);
 
 		void draw_sprite(const vec2_t& position, texture_t texture, float rotation,
 			const vec2_t& scale, const core::srect& rect, const core::scolor& color);
