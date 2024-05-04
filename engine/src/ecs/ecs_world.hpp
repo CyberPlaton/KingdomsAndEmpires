@@ -68,6 +68,13 @@ namespace ecs
 		stringview_t m_name;
 		flecs::world m_world;
 
+		struct sentity_proxy
+		{
+			flecs::entity m_entity;
+			entity_proxy_t m_proxy_id = -1;
+			unsigned m_proxy_query_key = 0;
+		};
+
 		struct sworld_query
 		{
 			vector_t<flecs::entity> m_entity_array;
@@ -76,6 +83,7 @@ namespace ecs
 		};
 
 		static constexpr auto C_MASTER_QUERY_KEY_MAX = cquery_manager::C_QUERY_COUNT_MAX;
+		umap_t<flecs::id_t, sentity_proxy> m_proxies;
 		query_type m_master_query_type;
 		unsigned m_master_query_key;
 		sworld_query m_master_query_result;

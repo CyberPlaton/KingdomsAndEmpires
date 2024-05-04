@@ -30,14 +30,11 @@ namespace ecs
 		world().observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
-			.event(flecs::OnSet)
-			.event(flecs::UnSet)
-			.each([&](flecs::iter& it, size_t index, stransform& transform, sidentifier& id)
+			.each([&](flecs::iter& it, size_t i, stransform& transform, sidentifier& id)
 				{
-					flecs::entity e = it.entity(index);
-					std::string c = it.event_id().str().c_str();
+					auto e = it.entity(i);
 
-					if (it.event() == flecs::OnAdd || it.event() == flecs::OnSet)
+					if (it.event() == flecs::OnAdd)
 					{
 						//- add aabb proxy for entity to b2DynamicTree
 						create_proxy(e);
@@ -46,7 +43,7 @@ namespace ecs
 						//- format the name first
 						//cm().on_component_added(e, c);
 					}
-					else if (it.event() == flecs::OnRemove || it.event() == flecs::UnSet)
+					else if (it.event() == flecs::OnRemove)
 					{
 						//- remove aabb proxy of entity from b2DynamicTree
 						destroy_proxy(e);
@@ -93,9 +90,14 @@ namespace ecs
 		if (m_transform_change_tracker.changed())
 		{
 			//- TODO: does not look like we only observe 'changes', but rather do this every tick
-			m_transform_change_tracker.each([&](flecs::entity e, stransform& /*transform*/, sidentifier& /*id*/)
+			m_transform_change_tracker.iter([&](flecs::iter& it, stransform* /*transform*/, sidentifier* /*id*/)
 				{
-					if (has_proxy(e)) { update_proxy(e); }
+					for (auto i : it)
+					{
+						auto e = it.entity(i);
+
+						if (has_proxy(e)) { update_proxy(e); }
+					}
 				});
 		}
 
@@ -209,31 +211,31 @@ namespace ecs
 
 		switch (m_master_query_type)
 		{
-		case query_type_entity_count: {result = true; break;}
-		case query_type_entity_array: {result = true; break;}
-		case query_type_any_occurance: {result = false; break;}
+		case query_type_entity_count: { result = true; break; }
+		case query_type_entity_array: { result = true; break; }
+		case query_type_any_occurance: { result = false; break; }
 		default:
 		case query_type_none:
 			return false;
 		}
 
 		//- assign query key to proxy and avaoid duplicate queries
-		auto* id = reinterpret_cast<sidentifier*>(GetUserData(proxy_id));
+		auto& proxy = *reinterpret_cast<sentity_proxy*>(GetUserData(proxy_id));
 
-		if (id->m_aabb_proxy_query_key == m_master_query_key)
+		if (proxy.m_proxy_query_key == m_master_query_key)
 		{
 			return result;
 		}
 
-		id->m_aabb_proxy_query_key = m_master_query_key;
+		proxy.m_proxy_query_key = m_master_query_key;
 
 		//- TODO: apply filter
 
 		switch (m_master_query_type)
 		{
-		case query_type_entity_count: {++m_master_query_result.m_entity_count; break; }
-		case query_type_entity_array: {m_master_query_result.m_entity_array.push_back(id->m_self); break; }
-		case query_type_any_occurance: {m_master_query_result.m_any = true; break; }
+		case query_type_entity_count: { ++m_master_query_result.m_entity_count; break; }
+		case query_type_entity_array: { m_master_query_result.m_entity_array.push_back(proxy.m_entity); break; }
+		case query_type_any_occurance: { m_master_query_result.m_any = true; break; }
 		default:
 		case query_type_none:
 			return false;
@@ -259,21 +261,21 @@ namespace ecs
 		}
 
 		//- assign query key to proxy and avaoid duplicate queries
-		auto* id = reinterpret_cast<sidentifier*>(GetUserData(proxy_id));
+		auto& proxy = *reinterpret_cast<sentity_proxy*>(GetUserData(proxy_id));
 
-		if (id->m_aabb_proxy_query_key == m_master_query_key)
+		if (proxy.m_proxy_query_key == m_master_query_key)
 		{
 			return result;
 		}
 
-		id->m_aabb_proxy_query_key = m_master_query_key;
+		proxy.m_proxy_query_key = m_master_query_key;
 
 		//- TODO: apply filter
 
 		switch (m_master_query_type)
 		{
 		case query_type_entity_count: {++m_master_query_result.m_entity_count; break; }
-		case query_type_entity_array: {m_master_query_result.m_entity_array.push_back(id->m_self); break; }
+		case query_type_entity_array: {m_master_query_result.m_entity_array.push_back(proxy.m_entity); break; }
 		case query_type_any_occurance: {m_master_query_result.m_any = true; break; }
 		default:
 		case query_type_none:
@@ -385,22 +387,20 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::update_proxy(flecs::entity e)
 	{
-		const auto* id = e.get<sidentifier>();
+		const auto& proxy = m_proxies.at(e.id());
 		const auto* tr = e.get<stransform>();
 
 		const auto [p, s, _] = math::transform({ tr->m_x, tr->m_y }, { tr->m_w, tr->m_h }, { 0.0f, 0.0f }, tr->m_rotation);
 
-		math::caabb aabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f);
-
-		MoveProxy(id->m_aabb_proxy, aabb, { 0.0f, 0.0f });
+		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f), {0.0f, 0.0f});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::destroy_proxy(flecs::entity e)
 	{
-		const auto* id = e.get<sidentifier>();
+		const auto& proxy = m_proxies.at(e.id());
 
-		DestroyProxy(id->m_aabb_proxy);
+		DestroyProxy(proxy.m_proxy_id);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -408,15 +408,15 @@ namespace ecs
 	{
 		auto* id = e.get_mut<sidentifier>();
 
-		id->m_aabb_proxy = CreateProxy(math::caabb(0.0f, 0.0f, 0.0f, 0.0f), id);
+		auto& proxy = m_proxies.emplace(e.id(), sentity_proxy{ e, 0, 0 }).first->second;
+
+		proxy.m_proxy_id = CreateProxy(math::caabb(0.0f, 0.0f, 0.0f, 0.0f), (void*)&proxy);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cworld::has_proxy(flecs::entity e)
 	{
-		const auto* id = e.get<sidentifier>();
-
-		return algorithm::is_valid_proxy(id->m_aabb_proxy) && GetUserData(id->m_aabb_proxy);
+		return m_proxies.find(e.id()) != m_proxies.end();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

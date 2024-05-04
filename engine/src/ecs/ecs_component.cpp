@@ -7,9 +7,6 @@ namespace ecs
 	void sidentifier::show_ui(flecs::entity e)
 	{
 		auto* identifier = e.get_mut<sidentifier>();
-
-		ImGui::TextUnformatted(fmt::format("uuid:\t{}", identifier->m_uuid.string()).c_str());
-		ImGui::TextUnformatted(fmt::format("id:\t{}", identifier->m_self.id()).c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

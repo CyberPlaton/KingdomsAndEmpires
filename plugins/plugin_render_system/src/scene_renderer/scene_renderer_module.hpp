@@ -20,10 +20,6 @@ namespace render_system
 
 						sm::crenderpath path(0);
 
-						raylib::DrawText("Text", 5, 5, 20, raylib::BLACK);
-						raylib::DrawLine(0, 0, 256, 256, raylib::GREEN);
-						raylib::DrawLine(-1024, -10, 1024, 10, raylib::YELLOW);
-
 						//- match at most one entity, that means the one is the active camera
 						if (auto e = w.qm().query_one<ecs::scamera>([](ecs::scamera& c)
 							{
@@ -56,15 +52,14 @@ namespace render_system
 		}
 	};
 
-	class cscenedebugrender_system : public ecs::csystem<ecs::stransform>
+	class cscenedebugrender_system final : public ecs::ctask
 	{
 	public:
 		cscenedebugrender_system(flecs::world& w) :
-			ecs::csystem<ecs::stransform>
-			(w, "Debug Scene Render System")
+			ecs::ctask(w, "Debug Scene Render System")
 		{
 
-			build([&](flecs::entity e, const ecs::stransform& transform)
+			build([&](float dt)
 				{
 					if (ecs::cworld_manager::instance().has_active())
 					{
@@ -81,10 +76,15 @@ namespace render_system
 
 							path.begin_camera({ c.m_position.x, c.m_position.y }, c.m_offset, c.m_rotation, c.m_zoom);
 
-							const auto [p, s, _] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
-								{ 0.0f, 0.0f }, transform.m_rotation);
+							for (auto e : w.visible_entities())
+							{
+								const auto& transform = *e.get<ecs::stransform>();
 
-							raylib::DrawRectangleLines(p.x, p.y, s.x, s.y, raylib::MAROON);
+								const auto [p, s, _] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
+									{ 0.0f, 0.0f }, transform.m_rotation);
+
+								raylib::DrawRectangleLines(p.x, p.y, s.x, s.y, raylib::MAROON);
+							}
 						}
 					}
 				});
