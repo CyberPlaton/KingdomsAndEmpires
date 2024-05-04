@@ -122,7 +122,14 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		float m_x = 0.0f, m_y = 0.0f, m_w = 0.0f, m_h = 0.0f, m_rotation = 0.0f;
+		//- local space position. To get the final position use a transform function
+		vec2_t m_position;
+
+		//- scale of the final sprite, where 1 is actual size
+		vec2_t m_scale;
+
+		//- rotation in radians
+		float m_angles;
 
 		RTTR_ENABLE(icomponent);
 	};
@@ -263,11 +270,9 @@ namespace ecs
 	REFLECT_INLINE(stransform)
 	{
 		rttr::ccomponent<stransform>("stransform")
-			.prop("m_x", &stransform::m_x)
-			.prop("m_y", &stransform::m_y)
-			.prop("m_w", &stransform::m_w)
-			.prop("m_h", &stransform::m_h)
-			.prop("m_rotation", &stransform::m_rotation)
+			.prop("m_position", &stransform::m_position)
+			.prop("m_scale", &stransform::m_scale)
+			.prop("m_angles", &stransform::m_angles)
 			.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &stransform::show_ui)
 			;
 	};
