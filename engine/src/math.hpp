@@ -24,6 +24,7 @@ namespace math
 	std::tuple<vec2_t, vec2_t, float> transform(const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
 		float rotation, const mat4_t& parent = C_MAT4_ID);
 
+	//- AABB class. Assuming the origin of the rectangle is centered.
 	//------------------------------------------------------------------------------------------------------------------------
 	class caabb
 	{
@@ -35,13 +36,11 @@ namespace math
 		caabb(const vec2_t& center, const vec2_t& halfextents);
 		caabb(float x, float y, float size);
 		caabb(float x, float y, float halfwidth, float halfheight);
-		caabb(float x, float y, float halfwidth, float halfheight, float angle);
 
 		void to_aabb(const core::srect& rect);
 		void to_aabb(const vec2_t& center, const vec2_t& halfextents);
 		void to_aabb(float x, float y, float size);
 		void to_aabb(float x, float y, float halfwidth, float halfheight);
-		void to_aabb(float x, float y, float halfwidth, float halfheight, float angle);
 
 		core::srect to_rect() const;
 

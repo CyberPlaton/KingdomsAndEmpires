@@ -85,7 +85,7 @@ namespace render_system
 								const auto [p, s, _] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
 									{ 0.0f, 0.0f }, transform.m_rotation);
 
-								core::srect rect = math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f, glm::radians(transform.m_rotation)).to_rect();
+								core::srect rect = math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f).to_rect();
 
 								auto tl = rect.top_left();
 								auto tr = rect.top_right();

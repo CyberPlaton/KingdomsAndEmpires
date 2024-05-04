@@ -56,7 +56,7 @@ namespace math
 		glm::extractEulerAngleXYZ(S_TRANSFORM, S_EULER_ANGLES.x, S_EULER_ANGLES.y, S_EULER_ANGLES.z);
 		r = S_EULER_ANGLES.z;
 
-		return {p, s, r};
+		return {p, s, glm::degrees(r)};
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -97,12 +97,6 @@ namespace math
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	caabb::caabb(float x, float y, float halfwidth, float halfheight, float angle)
-	{
-		to_aabb(x, y, halfwidth, halfheight, angle);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	void caabb::to_aabb(const core::srect& rect)
 	{
 		to_aabb(rect.x(), rect.y(), rect.w() / 2.0f, rect.h() / 2.0f);
@@ -131,42 +125,11 @@ namespace math
 		//- |				|
 		//- ------> X+		v Y+
 
-		m_aabb.lowerBound = { x, y - halfheight * 2 };
-		m_aabb.upperBound = { x + halfwidth * 2.0f, y };
-	}
+		m_aabb.lowerBound = { x - halfwidth, y - halfheight };
+		m_aabb.upperBound = { x + halfwidth, y + halfheight };
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void caabb::to_aabb(float x, float y, float halfwidth, float halfheight, float angle)
-	{
-		//- Note: difference box2d internal coordinate system and engine:
-		//- box2d			engine
-		//- ^ Y+			------> X+
-		//- |				|
-		//- |				|
-		//- |				|
-		//- ------> X+		v Y+
-
-		//- calculate four corners of rectangle
-		float cosTheta = glm::cos(angle);
-		float sinTheta = glm::sin(angle);
-
-		float x1 = x;
-		float y1 = y;
-
-		float x2 = x + cosTheta * halfwidth;
-		float y2 = y + sinTheta * halfwidth;
-
-		float x3 = x2 - sinTheta * halfheight;
-		float y3 = y2 + cosTheta * halfheight;
-
-		float x4 = x - sinTheta * halfheight;
-		float y4 = y + cosTheta * halfheight;
-
-		m_aabb.lowerBound.x = std::min({ x1, x2, x3, x4 });
-		m_aabb.lowerBound.y = std::min({ y1, y2, y3, y4 });
-
-		m_aabb.upperBound.x = std::max({ x1, x2, x3, x4 });
-		m_aabb.upperBound.y = std::max({ y1, y2, y3, y4 });
+// 		m_aabb.lowerBound = { x, y - halfheight * 2 };
+// 		m_aabb.upperBound = { x + halfwidth * 2.0f, y };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -139,8 +139,6 @@ namespace ecs
 		core::scolor m_tint				= core::scolor(core::common_color_neutral1000);
 		//- represents a rectangle in actual texture pixel size
 		core::srect m_source_rectangle	= {0.0f, 0.0f, 0.0f, 0.0f};
-		float m_originx					= 0.0f;
-		float m_originy					= 0.0f;
 		bool m_visible					= true;
 		bool m_flipx					= false;
 		bool m_flipy					= false;
@@ -277,8 +275,6 @@ namespace ecs
 			.prop("m_flipx", &ssprite::m_flipx)
 			.prop("m_flipy", &ssprite::m_flipy)
 			.prop("m_layer", &ssprite::m_layer)
-			.prop("m_originx", &ssprite::m_originx)
-			.prop("m_originy", &ssprite::m_originy)
 			.prop("m_source_rectangle", &ssprite::m_source_rectangle)
 			.prop("m_tint", &ssprite::m_tint)
 			.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ssprite::show_ui)

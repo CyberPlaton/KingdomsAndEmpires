@@ -129,8 +129,8 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
-		const vec2_t& scale, const core::srect& rect, const core::scolor& color, bool flipx, bool flipy)
+	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation, const vec2_t& scale,
+		const core::srect& rect, const vec2_t& origin, const core::scolor& color, bool flipx, bool flipy)
 	{
 		auto __rect = rect;
 		if (flipx) __rect.m_w = (-__rect.m_w);
@@ -138,12 +138,20 @@ namespace sm
 
 		const auto& tex = ctx().tm().get(texture);
 
-		//- TODO: we do not use width and height from command transform, why
+		//- TODO: as of now, scale is the size of the resulting sprite,
+		//- consider making it a scalar value that scales rect.w() and .h()
+		//- by its amount
 		raylib::Rectangle src = { __rect.x(), __rect.y() , __rect.w() , __rect.h() };
 		raylib::Rectangle dst = { position.x, position.y, scale.x, scale.y };
 
-		//- TODO: origin should be variable, probably a component thing that should be redirected to here
-		raylib::DrawTexturePro(tex.texture(), src, dst, { 0.0f, 0.0f }, rotation, to_cliteral(color));
+		raylib::DrawTexturePro(tex.texture(), src, dst, { origin.x, origin.y }, rotation, to_cliteral(color));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderpath::draw_sprite(const vec2_t& position, texture_t texture, float rotation,
+		const vec2_t& scale, const core::srect& rect, const core::scolor& color, bool flipx, bool flipy)
+	{
+		draw_sprite(position, texture, rotation, scale, rect, { scale.x / 2.0f, scale.y / 2.0f }, color, false, false);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

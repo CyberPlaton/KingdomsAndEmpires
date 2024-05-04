@@ -73,7 +73,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		auto& w = ecs::cworld_manager::instance().active();
 
 		//- can´t use more than what was configured as foreground threads
-		w.use_threads(engine::cthread_service::hardware_threads() / 2);
+		//w.use_threads(engine::cthread_service::hardware_threads() / 2);
 
 		core::crandom rand;
 
@@ -101,9 +101,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		auto tex = sm::ctx().tm().load("sprite", "resources/figure_paladin_14.png");
 		const auto& texture = sm::ctx().tm().get(tex);
 
-		for (auto i = 0u; i < 20; ++i)
+		for (auto i = 0u; i < 200; ++i)
 		{
-			for (auto j = 0u; j < 20; ++j)
+			for (auto j = 0u; j < 200; ++j)
 			{
 				auto e = w.em().create_entity();
 
