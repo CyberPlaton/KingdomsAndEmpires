@@ -125,8 +125,8 @@ namespace ecs
 		//- local space position. To get the final position use a transform function
 		vec2_t m_position;
 
-		//- scale of the final sprite, where 1 is actual size
-		vec2_t m_scale;
+		//- pixel perfect size of sprite or object
+		vec2_t m_size;
 
 		//- rotation in radians
 		float m_angles;
@@ -271,7 +271,7 @@ namespace ecs
 	{
 		rttr::ccomponent<stransform>("stransform")
 			.prop("m_position", &stransform::m_position)
-			.prop("m_scale", &stransform::m_scale)
+			.prop("m_size", &stransform::m_size)
 			.prop("m_angles", &stransform::m_angles)
 			.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &stransform::show_ui)
 			;

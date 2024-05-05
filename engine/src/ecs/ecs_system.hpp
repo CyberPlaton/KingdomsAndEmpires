@@ -1,5 +1,6 @@
 #pragma once
 #include "ecs_world_context_holder.hpp"
+#include "ecs_entity.hpp"
 #include "ecs_singleton.hpp"
 
 namespace ecs

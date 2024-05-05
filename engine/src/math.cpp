@@ -25,7 +25,7 @@ namespace math
 		S_POSITION.y = position.y;
 		S_DIMENSION.x = scale.x;
 		S_DIMENSION.y = scale.y;
-		S_ROTATION = glm::radians(rotation);
+		S_ROTATION = rotation;
 
 		out = glm::translate(C_MAT4_ID, S_POSITION)
 			* glm::rotate(C_MAT4_ID, S_ROTATION, S_Z_AXIS)

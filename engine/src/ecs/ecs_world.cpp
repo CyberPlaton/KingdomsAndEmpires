@@ -390,7 +390,7 @@ namespace ecs
 		const auto& proxy = m_proxies.at(e.id());
 		const auto* tr = e.get<stransform>();
 
-		const auto [p, s, _] = math::transform({ tr->m_x, tr->m_y }, { tr->m_w, tr->m_h }, { 0.0f, 0.0f }, tr->m_rotation);
+		const auto [p, s, _] = math::transform(tr->m_position, tr->m_size, { 0.0f, 0.0f }, tr->m_angles);
 
 		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f), {0.0f, 0.0f});
 	}
