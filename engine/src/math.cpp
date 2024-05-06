@@ -36,6 +36,8 @@ namespace math
 	std::tuple<vec2_t, vec2_t, float> transform(const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
 		float rotation, const mat4_t& parent /*= C_MAT4_ID*/)
 	{
+		CORE_NAMED_ZONE("math::transform");
+
 		static thread_local vec3_t S_EULER_ANGLES = vec3_t(0.0f);
 		static thread_local mat4_t S_TRANSFORM = mat4_t(1.0f);
 
@@ -117,6 +119,8 @@ namespace math
 	//------------------------------------------------------------------------------------------------------------------------
 	void caabb::to_aabb(float x, float y, float halfwidth, float halfheight)
 	{
+		CORE_NAMED_ZONE("caabb::to_aabb");
+
 		//- Note: difference box2d internal coordinate system and engine:
 		//- box2d			engine
 		//- ^ Y+			------> X+
@@ -135,6 +139,8 @@ namespace math
 	//------------------------------------------------------------------------------------------------------------------------
 	core::srect caabb::to_rect() const
 	{
+		CORE_NAMED_ZONE("caabb::to_rect");
+
 		//- Note: difference box2d internal coordinate system and engine:
 		//- box2d			engine
 		//- ^ Y+			------> X+

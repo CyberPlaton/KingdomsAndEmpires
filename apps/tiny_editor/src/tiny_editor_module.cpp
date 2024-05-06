@@ -109,15 +109,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 				e.add<module_example::stargeting_component>();
 				e.add<ecs::stransform>();
-
-// 				e.add<effects::saffectable>();
-// 				auto* c = e.get_mut<effects::saffectable>();
-// 
-// 				if (i < 100)
-// 				{
-// 					effects::apply_effect_to_entity<effects::sexample_effect>(e);
-// 				}
-
 				e.add<ecs::ssprite>();
 
 				auto* transform = e.get_mut<ecs::stransform>();

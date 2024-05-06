@@ -63,7 +63,7 @@ namespace ecs
 
 		//- TODO: where to use mutex
 		core::cmutex m_mutex;
-		flecs::query<stransform, sidentifier> m_transform_change_tracker;
+		flecs::query<const stransform> m_transform_change_tracker;
 
 		stringview_t m_name;
 		flecs::world m_world;
@@ -93,6 +93,8 @@ namespace ecs
 		unsigned m_used_threads;
 
 	private:
+		cworld() = default;
+
 		void prepare();
 		void deserialize_entity(const simdjson::dom::object& json);
 		void serialize_entity(const flecs::entity e, nlohmann::json& json);

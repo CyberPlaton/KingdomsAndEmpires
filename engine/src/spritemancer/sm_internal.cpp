@@ -82,7 +82,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::frame()
 	{
-		ZoneScopedN("ccontext::frame");
+		CORE_NAMED_ZONE("ccontext::frame");
 
 		//- render all renderpaths
 		raylib::BeginDrawing();
@@ -130,7 +130,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ccontext::end()
 	{
-		ZoneScopedN("ccontext::end");
+		CORE_NAMED_ZONE("ccontext::end");
 		
 		//- end ImGui rendering and present everything
 		cui::end();

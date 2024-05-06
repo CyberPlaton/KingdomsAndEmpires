@@ -50,7 +50,7 @@ namespace ecs
 					}
 				});
 
-		m_transform_change_tracker = world().query<stransform, sidentifier>();
+		m_transform_change_tracker = world().query<const stransform>();
 
 		//- TODO: observer that observes any added or removed components seems problematic through queries
 	}
@@ -70,7 +70,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::tick(float dt)
 	{
-		ZoneScopedN("cworld::tick");
+		CORE_NAMED_ZONE("cworld::tick");
 
 		prepare();
 
@@ -84,13 +84,13 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::prepare()
 	{
-		ZoneScopedN("cworld::prepare");
+		CORE_NAMED_ZONE("cworld::prepare");
 
 		//- observe changes and update internal AABB tree
 		if (m_transform_change_tracker.changed())
 		{
 			//- TODO: does not look like we only observe 'changes', but rather do this every tick
-			m_transform_change_tracker.iter([&](flecs::iter& it, stransform* /*transform*/, sidentifier* /*id*/)
+			m_transform_change_tracker.iter([this](flecs::iter& it)
 				{
 					for (auto i : it)
 					{
@@ -125,7 +125,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::process_queries()
 	{
-		ZoneScopedN("cworld::process_queries");
+		CORE_NAMED_ZONE("cworld::process_queries");
 
 		for (auto* query = qm().fetch(); query != nullptr; query = qm().fetch())
 		{
@@ -144,6 +144,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::process_query(cquery& q)
 	{
+		CORE_NAMED_ZONE("cworld::process_query");
+
 		if (CORE_UNLIKELY(q.type() == query_type_none || q.intersection_type() == query_intersection_type_none))
 		{
 			return;
@@ -210,6 +212,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cworld::QueryCallback(int proxy_id)
 	{
+		CORE_NAMED_ZONE("cworld::QueryCallback");
+
 		bool result = false;
 
 		switch (m_master_query_type)
@@ -250,6 +254,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	float cworld::RayCastCallback(const b2RayCastInput& ray_input, int proxy_id)
 	{
+		CORE_NAMED_ZONE("cworld::RayCastCallback");
+
 		//- 0.0f signals to stop and 1.0f signals to continue
 		float result = 0.0f;
 
@@ -362,6 +368,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::serialize_entity(const flecs::entity e, nlohmann::json& json)
 	{
+		CORE_NAMED_ZONE("cworld::serialize_entity");
+
 		json = nlohmann::json::object();
 
 		json["name"] = e.name();
@@ -390,10 +398,12 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::update_proxy(flecs::entity e)
 	{
-		const auto& proxy = m_proxies.at(e.id());
-		const auto* tr = e.get<stransform>();
+		CORE_NAMED_ZONE("cworld::update_proxy");
 
-		const auto [p, s, _] = math::transform(tr->m_position, tr->m_size, { 0.0f, 0.0f }, tr->m_angles);
+		const auto& proxy = m_proxies.at(e.id());
+		const auto& transform = *e.get<stransform>();
+
+		const auto [p, s, _] = math::transform(transform.m_position, transform.m_size, { 0.0f, 0.0f }, transform.m_angles);
 
 		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f), {0.0f, 0.0f});
 	}
@@ -401,6 +411,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::destroy_proxy(flecs::entity e)
 	{
+		CORE_NAMED_ZONE("cworld::destroy_proxy");
+
 		const auto& proxy = m_proxies.at(e.id());
 
 		DestroyProxy(proxy.m_proxy_id);
@@ -409,6 +421,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::create_proxy(flecs::entity e)
 	{
+		CORE_NAMED_ZONE("cworld::create_proxy");
+
 		auto* id = e.get_mut<sidentifier>();
 
 		auto& proxy = m_proxies.emplace(e.id(), sentity_proxy{ e, 0, 0 }).first->second;
@@ -425,6 +439,8 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::deserialize_entity(const simdjson::dom::object& json)
 	{
+		CORE_NAMED_ZONE("cworld::deserialize_entity");
+
 		simdjson::dom::array components_array;
 		simdjson::dom::element component_element;
 		std::string_view type_name;

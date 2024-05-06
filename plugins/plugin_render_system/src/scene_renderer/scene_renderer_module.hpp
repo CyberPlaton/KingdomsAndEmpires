@@ -12,7 +12,7 @@ namespace render_system
 		{
 			build([&](float dt)
 				{
-					ZoneScopedN("Scene Render System");
+					CORE_NAMED_ZONE("Scene Render System");
 
 					if (ecs::cworld_manager::instance().has_active())
 					{
@@ -33,9 +33,9 @@ namespace render_system
 							for (auto e : w.visible_entities())
 							{
 								const auto& sprite = *e.get<ecs::ssprite>();
-								auto& transform = *e.get_mut<ecs::stransform>();
+								const auto& transform = *e.get<ecs::stransform>();
 
-								transform.m_angles += 0.016f;
+								//transform.m_angles += 0.016f;
 
 								const auto [p, s, r] = math::transform(transform.m_position, transform.m_size,
 									{ 0.0f, 0.0f }, transform.m_angles);
@@ -60,6 +60,7 @@ namespace render_system
 		cscenedebugrender_system(flecs::world& w) :
 			ecs::ctask(w, "Debug Scene Render System")
 		{
+			CORE_NAMED_ZONE("Debug Scene Render System");
 
 			build([&](float dt)
 				{

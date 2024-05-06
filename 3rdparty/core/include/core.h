@@ -1410,6 +1410,8 @@ namespace core
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::modify(uint64_t index)
 		{
+			CORE_NAMED_ZONE("cdynamic_pool::modify");
+
 			return unsafe(index);
 		}
 
@@ -1417,6 +1419,8 @@ namespace core
 		template<class TType>
 		const TType* core::detail::cdynamic_pool<TType>::find(uint64_t index) const
 		{
+			CORE_NAMED_ZONE("cdynamic_pool::find");
+
 			return unsafe(index);
 		}
 
@@ -1431,6 +1435,8 @@ namespace core
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::advance(TType* object)
 		{
+			CORE_NAMED_ZONE("cdynamic_pool::advance");
+
 			auto next = memloc(object) + sizeof(TType);
 
 			while (next <= RCAST(uint64_t, m_end) && !initialized_at_index(memloc_index(RCAST(void*, next), m_start, sizeof(TType))))
@@ -1445,6 +1451,8 @@ namespace core
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::begin()
 		{
+			CORE_NAMED_ZONE("cdynamic_pool::begin");
+
 			if (m_size == 0)
 			{
 				return nullptr;
@@ -1503,6 +1511,8 @@ namespace core
 		template<typename... ARGS>
 		TType* core::detail::cdynamic_pool<TType>::create(uint64_t* index_out, ARGS&&... args)
 		{
+			CORE_NAMED_ZONE("cdynamic_pool::create");
+
 			if (size() == capacity())
 			{
 				resize(m_size * 2);
@@ -1540,6 +1550,8 @@ namespace core
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::create(uint64_t* index_out)
 		{
+			CORE_NAMED_ZONE("cdynamic_pool::create");
+
 			if (size() == capacity())
 			{
 				resize(m_size * 2);
