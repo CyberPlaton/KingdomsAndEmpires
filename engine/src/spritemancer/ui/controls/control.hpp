@@ -89,16 +89,18 @@ namespace ui
 			operator bool() { return show() != click_result_none; }
 
 		protected:
-			virtual click_result show_ui() = 0;
+			//- to be implemented by deriving control class
+			virtual click_result show_ui();
+
 			ImGuiID imgui_id() const;
 			void set_image(texture_t handle);
 			click_result mousebutton_state();
 
 		protected:
-			std::string m_id;
-			std::string m_title;
-			std::string m_tooltip;
-			std::string m_icon;
+			string_t m_id;
+			string_t m_title;
+			string_t m_tooltip;
+			string_t m_icon;
 			texture_t m_image;
 			bool m_active;
 
@@ -114,18 +116,30 @@ namespace ui
 	class ccontrol : public detail::icontrol
 	{
 	public:
-		ccontrol() = default;
-		~ccontrol() = default;
+		ccontrol();
+		virtual ~ccontrol();
 
 	protected:
-		decltype(auto) id(stringview_t _id) { m_id = _id; return _this(); }
-		decltype(auto) title(stringview_t _title) { m_title = _title; return _this(); }
-		decltype(auto) tooltip(stringview_t _tooltip) { m_tooltip = _tooltip; return _this(); }
-		decltype(auto) icon(stringview_t _icon) { m_icon = _icon; return _this(); }
-		decltype(auto) image(stringview_t _texture) { m_image = _texture; return _this(); }
+		auto id(stringview_t _id)			{ m_id = _id; return _this(); }
+		auto title(stringview_t _title)		{ m_title = _title; return _this(); }
+		auto tooltip(stringview_t _tooltip) { m_tooltip = _tooltip; return _this(); }
+		auto icon(stringview_t _icon)		{ m_icon = _icon; return _this(); }
+		auto image(stringview_t _texture)	{ m_image = _texture; return _this(); }
 
 	private:
-		decltype(auto) _this() {return *SCAST(TControlType, this);}
+		auto _this() { return *SCAST(TControlType, this); }
 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TControlType>
+	ui::ccontrol<TControlType>::~ccontrol()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TControlType>
+	ui::ccontrol<TControlType>::ccontrol()
+	{
+	}
 
 } //- ui

@@ -111,6 +111,12 @@ namespace ui
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		icontrol::click_result icontrol::show_ui()
+		{
+			return click_result_none;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		ImGuiID icontrol::imgui_id() const
 		{
 			return m_id.empty() ? ui::generate_id(m_title, m_icon) : ui::generate_id(m_id);
