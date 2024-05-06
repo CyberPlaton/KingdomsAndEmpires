@@ -7,11 +7,11 @@
 namespace sm
 {
 	//- forward decl. and constants
-	constexpr auto C_MATERIAL_RESERVE_COUNT			= 2048;
-	constexpr auto C_TEXTURE_RESERVE_COUNT			= 2048;
-	constexpr auto C_TECHNIQUE_RESERVE_COUNT		= 512;
-	constexpr auto C_SPRITEATLAS_RESERVE_COUNT		= 512;
-	constexpr auto C_RENDERTARGET_RESERVE_COUNT		= 8;
+	constexpr auto C_MATERIAL_RESERVE_COUNT			= 256;
+	constexpr auto C_TEXTURE_RESERVE_COUNT			= 512;
+	constexpr auto C_TECHNIQUE_RESERVE_COUNT		= 256;
+	constexpr auto C_SPRITEATLAS_RESERVE_COUNT		= 128;
+	constexpr auto C_RENDERTARGET_RESERVE_COUNT		= 16;
 	constexpr material_t C_DEFAULT_MATERIAL			= 0;
 	inline static const core::scolor C_COLOR_WHITE	= { 255, 255, 255, 255 };
 	inline static const core::srect C_DEFAULT_RECT	= { 0.0f, 0.0f, 1.0f, 1.0f };

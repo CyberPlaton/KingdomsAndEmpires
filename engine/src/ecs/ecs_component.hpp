@@ -122,14 +122,9 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		//- local space position. To get the final position use a transform function
-		vec2_t m_position;
-
-		//- pixel perfect size of sprite or object
-		vec2_t m_size;
-
-		//- rotation in radians
-		float m_angles;
+		vec2_t m_position	= { 0.0f, 0.0f };	//- local space position. To get the final position use a transform function
+		vec2_t m_size		= { 0.0f, 0.0f };	//- size of object in pixels
+		float m_angles		= 0.0f;				//- rotation in radians
 
 		RTTR_ENABLE(icomponent);
 	};

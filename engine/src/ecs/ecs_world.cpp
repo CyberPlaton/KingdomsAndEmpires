@@ -134,8 +134,11 @@ namespace ecs
 
 		qm().tick();
 
+		//- reset
 		m_master_query_type = query_type_none;
-		m_master_query_result = sworld_query{};
+		m_master_query_result.m_entity_array.clear();
+		m_master_query_result.m_entity_count = 0;
+		m_master_query_result.m_any = false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

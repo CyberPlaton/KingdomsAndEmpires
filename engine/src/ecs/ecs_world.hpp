@@ -21,7 +21,7 @@ namespace ecs
 		~cworld();
 
 		void tick(float dt);
-		[[nodiscard]] decltype(auto) visible_entities() const { return m_visible_entities; }
+		[[nodiscard]] inline const vector_t<flecs::entity>& visible_entities() const { return m_visible_entities; }
 
 		bool load(const core::cpath& path);
 		void save(const core::cpath& path);

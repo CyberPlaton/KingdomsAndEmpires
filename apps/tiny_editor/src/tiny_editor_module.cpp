@@ -101,30 +101,28 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		auto tex = sm::ctx().tm().load("sprite", "resources/figure_paladin_14.png");
 		const auto& texture = sm::ctx().tm().get(tex);
 
-		for (auto i = 0u; i < 200; ++i)
+		for (auto i = 0u; i < 15; ++i)
 		{
-			for (auto j = 0u; j < 200; ++j)
+			for (auto j = 0u; j < 15; ++j)
 			{
 				auto e = w.em().create_entity();
 
 				e.add<module_example::stargeting_component>();
 				e.add<ecs::stransform>();
 
-				e.add<effects::saffectable>();
-				auto* c = e.get_mut<effects::saffectable>();
-
-				if (i < 100)
-				{
-					effects::apply_effect_to_entity<effects::sexample_effect>(e);
-				}
+// 				e.add<effects::saffectable>();
+// 				auto* c = e.get_mut<effects::saffectable>();
+// 
+// 				if (i < 100)
+// 				{
+// 					effects::apply_effect_to_entity<effects::sexample_effect>(e);
+// 				}
 
 				e.add<ecs::ssprite>();
 
 				auto* transform = e.get_mut<ecs::stransform>();
-				transform->m_x = i * 64 % 1024;
-				transform->m_y = j * 64 % 1024;
-				transform->m_w = 64;
-				transform->m_h = 64;
+				transform->m_position = { i * 64 % 1024, j * 64 % 1024 };
+				transform->m_size = { 64, 64 };
 
 				auto* sprite = e.get_mut<ecs::ssprite>();
 				sprite->m_source_rectangle = { 0.0f, 0.0f, (float)texture.width(), (float)texture.height() };

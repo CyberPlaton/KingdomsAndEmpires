@@ -381,7 +381,7 @@ void rlImGuiEndInitImGui()
     io.KeyMap[ImGuiKey_Space] = raylib::KEY_SPACE;
     io.KeyMap[ImGuiKey_Enter] = raylib::KEY_ENTER;
     io.KeyMap[ImGuiKey_Escape] = raylib::KEY_ESCAPE;
-    io.KeyMap[ImGuiKey_KeyPadEnter] = raylib::KEY_KP_ENTER;
+    io.KeyMap[ImGuiKey_Enter] = raylib::KEY_KP_ENTER;
     io.KeyMap[ImGuiKey_A] = raylib::KEY_A;
     io.KeyMap[ImGuiKey_C] = raylib::KEY_C;
     io.KeyMap[ImGuiKey_V] = raylib::KEY_V;

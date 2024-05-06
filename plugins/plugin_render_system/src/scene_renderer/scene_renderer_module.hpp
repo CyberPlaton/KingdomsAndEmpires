@@ -35,10 +35,10 @@ namespace render_system
 								const auto& sprite = *e.get<ecs::ssprite>();
 								auto& transform = *e.get_mut<ecs::stransform>();
 
-								transform.m_rotation += 0.16f;
+								transform.m_angles += 0.016f;
 
-								const auto [p, s, r] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
-									{ 0.0f, 0.0f }, transform.m_rotation);
+								const auto [p, s, r] = math::transform(transform.m_position, transform.m_size,
+									{ 0.0f, 0.0f }, transform.m_angles);
 
 								for (const auto& mat : sprite.m_materials)
 								{
@@ -82,8 +82,8 @@ namespace render_system
 							{
 								const auto& transform = *e.get<ecs::stransform>();
 
-								const auto [p, s, _] = math::transform({ transform.m_x, transform.m_y }, { transform.m_w, transform.m_h },
-									{ 0.0f, 0.0f }, transform.m_rotation);
+								const auto [p, s, _] = math::transform(transform.m_position, transform.m_size,
+									{ 0.0f, 0.0f }, transform.m_angles);
 
 								core::srect rect = math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f).to_rect();
 

@@ -125,7 +125,10 @@ namespace engine
 
 		{
 			core::cscope_mutex m(m_mutex);
+
 			algorithm::swap(jobs, m_mainthread_jobs);
+
+			m_mainthread_jobs.clear();
 		}
 
 		for (const auto& job : jobs)
