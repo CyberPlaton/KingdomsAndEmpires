@@ -14,9 +14,9 @@ function set_basic_defines()
 	end
 
 	filter{"configurations:debug"}
-		defines{"DEBUG=1", "TRACY_ENABLE"}
+		defines{"DEBUG=1", "TRACY_ENABLE", "BX_CONFIG_DEBUG"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE"}
+		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE", "BX_CONFIG_RELEASE"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
@@ -80,6 +80,26 @@ function set_include_path(is_third_party, name)
 			print("\t\tadding dependency: " .. path.join(WORKSPACE_DIR, "plugins", name, "include"))
 		end
 	end
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_bx_includes()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
+	if PLATFORM == "windows" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
+	elseif PLATFORM == "linux" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
+	elseif PLATFORM == "macosx" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
+	else
+		print("Unknown platform!")
+	end
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_sdl_deps()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
+	links{"SDL2", "SDL2main"}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
