@@ -148,6 +148,8 @@ using rendertarget_t	= handle_type_t;
 using query_t		= handle_type_t;
 
 using ivec2_t = glm::lowp_u32vec2;
+using ivec3_t = glm::lowp_u32vec3;
+using ivec4_t = glm::lowp_u32vec4;
 using vec2_t = glm::vec2;
 using vec3_t = glm::vec3;
 using vec4_t = glm::vec4;
@@ -309,6 +311,18 @@ namespace core
 		common_color_neutral600,
 		common_color_neutral800,
 		common_color_neutral1000,	//- white
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum logging_verbosity : uint8_t
+	{
+		logging_verbosity_trace		= SPDLOG_LEVEL_TRACE,	//- internal
+		logging_verbosity_debug		= SPDLOG_LEVEL_DEBUG,	//- internal
+		logging_verbosity_info		= SPDLOG_LEVEL_INFO,
+		logging_verbosity_warn		= SPDLOG_LEVEL_WARN,
+		logging_verbosity_error		= SPDLOG_LEVEL_ERROR,
+		logging_verbosity_critical	= SPDLOG_LEVEL_CRITICAL,
+		logging_verbosity_off		= SPDLOG_LEVEL_OFF,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -551,12 +565,12 @@ namespace engine
 
 namespace core
 {
-	using error_report_function_t = std::function<void(uint8_t, const string_t&)>;
+	using error_report_function_t = std::function<void(logging_verbosity, const string_t&)>;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct serror_reporter
 	{
-		STATIC_INSTANCE(serror_reporter, s_serror_reporter);
+		STATIC_INSTANCE_EX(serror_reporter);
 
 		error_report_function_t m_callback = nullptr;
 	};
@@ -978,6 +992,8 @@ namespace core
 		inline uint8_t a() const { return m_a; }
 
 		vec4_t normalize() const;
+
+		unsigned rgba() const;
 
 		uint8_t m_r, m_g, m_b, m_a;
 

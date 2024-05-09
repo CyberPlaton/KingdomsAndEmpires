@@ -341,6 +341,8 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		externalincludedirs {additional_includes}
 		set_include_path_to_engine()
 		link_with_engine()
+		set_bx_includes()
+		set_sdl_deps()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()

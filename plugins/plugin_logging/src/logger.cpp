@@ -4,7 +4,7 @@ namespace logging
 {
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool clog::init(logging_verbosity verbosity)
+	bool clog::init(core::logging_verbosity verbosity)
 	{
 		//- make sure we did not initialize already
 		ASSERT(m_logger.get() == nullptr, "Logger is already initialized");
@@ -39,8 +39,8 @@ namespace logging
 	//------------------------------------------------------------------------------------------------------------------------
 	void clog::trace(const char* message)
 	{
-		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity <= logging_verbosity::logging_verbosity_trace)
+		if (m_verbosity != core::logging_verbosity::logging_verbosity_off &&
+			m_verbosity <= core::logging_verbosity::logging_verbosity_trace)
 		{
 			m_logger->trace(message);
 		}
@@ -49,8 +49,8 @@ namespace logging
 	//------------------------------------------------------------------------------------------------------------------------
 	void clog::info(const char* message)
 	{
-		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity <= logging_verbosity::logging_verbosity_info)
+		if (m_verbosity != core::logging_verbosity::logging_verbosity_off &&
+			m_verbosity <= core::logging_verbosity::logging_verbosity_info)
 		{
 			m_logger->info(message);
 		}
@@ -59,8 +59,8 @@ namespace logging
 	//------------------------------------------------------------------------------------------------------------------------
 	void clog::warn(const char* message)
 	{
-		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity <= logging_verbosity::logging_verbosity_warn)
+		if (m_verbosity != core::logging_verbosity::logging_verbosity_off &&
+			m_verbosity <= core::logging_verbosity::logging_verbosity_warn)
 		{
 			m_logger->warn(message);
 		}
@@ -69,8 +69,8 @@ namespace logging
 	//------------------------------------------------------------------------------------------------------------------------
 	void clog::error(const char* message)
 	{
-		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity <= logging_verbosity::logging_verbosity_error)
+		if (m_verbosity != core::logging_verbosity::logging_verbosity_off &&
+			m_verbosity <= core::logging_verbosity::logging_verbosity_error)
 		{
 			m_logger->error(message);
 		}
@@ -79,8 +79,8 @@ namespace logging
 	//------------------------------------------------------------------------------------------------------------------------
 	void clog::critical(const char* message)
 	{
-		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity <= logging_verbosity::logging_verbosity_critical)
+		if (m_verbosity != core::logging_verbosity::logging_verbosity_off &&
+			m_verbosity <= core::logging_verbosity::logging_verbosity_critical)
 		{
 			m_logger->critical(message);
 		}
@@ -89,8 +89,8 @@ namespace logging
 	//------------------------------------------------------------------------------------------------------------------------
 	void clog::debug(const char* message)
 	{
-		if (m_verbosity != logging_verbosity::logging_verbosity_off &&
-			m_verbosity <= logging_verbosity::logging_verbosity_debug)
+		if (m_verbosity != core::logging_verbosity::logging_verbosity_off &&
+			m_verbosity <= core::logging_verbosity::logging_verbosity_debug)
 		{
 			m_logger->debug(message);
 		}

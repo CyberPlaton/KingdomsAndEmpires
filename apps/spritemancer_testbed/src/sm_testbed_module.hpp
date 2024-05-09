@@ -3,3 +3,4 @@
 #include <plugin_logging.h>
 #include <lua.h>
 #include <luabridge.h>
+#include <spritemancer.h>

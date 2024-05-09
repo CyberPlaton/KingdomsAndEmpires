@@ -11,22 +11,10 @@ namespace logging
 		logging_mode_file,
 	};
 
-	//------------------------------------------------------------------------------------------------------------------------
-	enum class logging_verbosity : uint8_t
-	{
-		logging_verbosity_trace		= SPDLOG_LEVEL_TRACE,	//- internal
-		logging_verbosity_debug		= SPDLOG_LEVEL_DEBUG,	//- internal
-		logging_verbosity_info		= SPDLOG_LEVEL_INFO,
-		logging_verbosity_warn		= SPDLOG_LEVEL_WARN,
-		logging_verbosity_error		= SPDLOG_LEVEL_ERROR,
-		logging_verbosity_critical	= SPDLOG_LEVEL_CRITICAL,
-		logging_verbosity_off		= SPDLOG_LEVEL_OFF,
-	};
-
 #if DEBUG
-	bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_trace);
+	bool init(core::logging_verbosity verbosity = core::logging_verbosity::logging_verbosity_trace);
 #else
-	bool init(logging_verbosity verbosity = logging_verbosity::logging_verbosity_error);
+	bool init(core::logging_verbosity verbosity = core::logging_verbosity::logging_verbosity_error);
 #endif
 	void shutdown();
 	float app_runtime();

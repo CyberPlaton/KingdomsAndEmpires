@@ -10,7 +10,7 @@ namespace logging
 	public:
 		STATIC_INSTANCE(clog, s_clog);
 
-		bool init(logging_verbosity verbosity);
+		bool init(core::logging_verbosity verbosity);
 		void shutdown();
 
 		void trace(const char* message);
@@ -25,7 +25,7 @@ namespace logging
 	private:
 		core::ctimer m_timer;
 		logging_mode m_mode = logging_mode::logging_mode_console;
-		logging_verbosity m_verbosity = logging_verbosity::logging_verbosity_off;
+		core::logging_verbosity m_verbosity = core::logging_verbosity::logging_verbosity_off;
 		float m_start_time = 0.0f;
 		ref_t< spdlog::logger > m_logger;
 	};

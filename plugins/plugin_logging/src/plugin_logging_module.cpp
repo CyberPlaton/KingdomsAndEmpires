@@ -1,14 +1,9 @@
 #include "plugin_logging_module.hpp"
 
-RTTR_REGISTRATION
-{
-
-}
-
 namespace logging
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	bool init(logging_verbosity verbosity /*=logging_verbosity::logging_verbosity_**/)
+	bool init(core::logging_verbosity verbosity /*=logging_verbosity::logging_verbosity_**/)
 	{
 		return clog::instance().init(verbosity);
 	}

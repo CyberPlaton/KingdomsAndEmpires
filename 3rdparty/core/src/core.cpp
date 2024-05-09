@@ -137,7 +137,7 @@ namespace core
 				{
 					if (serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						serror_reporter::instance().m_callback(logging_verbosity_error,
 							fmt::format("Could not open file '{}'", file_path));
 					}
 				}
@@ -146,7 +146,7 @@ namespace core
 			{
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						"Invalid file path provided for load_binary_file_data");
 				}
 			}
@@ -173,7 +173,7 @@ namespace core
 				{
 					if (serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						serror_reporter::instance().m_callback(logging_verbosity_error,
 							fmt::format("Could not open file '{}'", file_path));
 					}
 				}
@@ -182,7 +182,7 @@ namespace core
 			{
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						"Invalid file path provided for save_binary_file_data");
 				}
 			}
@@ -233,7 +233,7 @@ namespace core
 					{
 						if (serror_reporter::instance().m_callback)
 						{
-							serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							serror_reporter::instance().m_callback(logging_verbosity_error,
 								fmt::format("Could not read text from file '{}'", file_path));
 						}
 					}
@@ -243,7 +243,7 @@ namespace core
 				{
 					if (serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						serror_reporter::instance().m_callback(logging_verbosity_error,
 							fmt::format("Could not open file '{}'", file_path));
 					}
 				}
@@ -252,7 +252,7 @@ namespace core
 			{
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						"Invalid file path provided for load_text_file_data");
 				}
 			}
@@ -281,7 +281,7 @@ namespace core
 					{
 						if (serror_reporter::instance().m_callback)
 						{
-							serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+							serror_reporter::instance().m_callback(logging_verbosity_error,
 								fmt::format("Could not write text to file '{}'", file_path));
 						}
 					}
@@ -290,7 +290,7 @@ namespace core
 				{
 					if (serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						serror_reporter::instance().m_callback(logging_verbosity_error,
 							fmt::format("Could not open file '{}'", file_path));
 					}
 				}
@@ -299,7 +299,7 @@ namespace core
 			{
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						"Invalid file path provided for save_text_file_data");
 				}
 			}
@@ -334,7 +334,7 @@ namespace core
 
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+				serror_reporter::instance().m_callback(logging_verbosity_error,
 					fmt::format("\tCould not extract numeric type '{}' from number '{} ({})'",
 						required_type.get_name().data(), value, rttr::type::get<TNumeric>().get_name().data()));
 			}
@@ -346,7 +346,7 @@ namespace core
 		{
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+				serror_reporter::instance().m_callback(logging_verbosity_warn,
 					fmt::format("\tExtracting RTTR type '{}'", type.get_name().data()));
 			}
 
@@ -389,7 +389,7 @@ namespace core
 			}
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("\t\tUnrecognized RTTR type '{}'",
+				serror_reporter::instance().m_callback(logging_verbosity_error, fmt::format("\t\tUnrecognized RTTR type '{}'",
 					type.get_name().data()));
 			}
 			return simdjson::dom::element_type::NULL_VALUE;
@@ -408,7 +408,7 @@ namespace core
 			}
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR, fmt::format("No default constructor found for RTTR type '{}'",
+				serror_reporter::instance().m_callback(logging_verbosity_error, fmt::format("No default constructor found for RTTR type '{}'",
 					type.get_name().data()));
 			}
 			return rttr::variant();
@@ -434,7 +434,7 @@ namespace core
 
 					if (!view.set_value(i++, std::move(val)) && serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						serror_reporter::instance().m_callback(logging_verbosity_error,
 							fmt::format("\tCould not set sequential array value with type '{}' at index '{}'",
 								type.get_name().data(), i));
 					}
@@ -462,7 +462,7 @@ namespace core
 
 					if (!view.insert(key, val).second && serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						serror_reporter::instance().m_callback(logging_verbosity_error,
 							fmt::format("\tCould not set associative array value with type '<{}:{}>'",
 								key_expected.get_name().data(), val_expected.get_name().data()));
 					}
@@ -493,7 +493,7 @@ namespace core
 				//- error
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						fmt::format("\tFailed extracting String '{}' to type '{}'",
 							value.data(), type.get_name().data()));
 				}
@@ -503,7 +503,7 @@ namespace core
 				//- Not an error, but nice to have, report quietly
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+					serror_reporter::instance().m_callback(logging_verbosity_debug,
 						"\tIgnoring extraction of empty String");
 				}
 			}
@@ -517,7 +517,7 @@ namespace core
 
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+				serror_reporter::instance().m_callback(logging_verbosity_debug,
 					fmt::format("Extracting RTTR type '{}'from JSON Object", type.get_name().data()));
 			}
 
@@ -530,7 +530,7 @@ namespace core
 
 					if (serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+						serror_reporter::instance().m_callback(logging_verbosity_debug,
 							fmt::format("\tDeserializing property '{}' with type '{}'", name, prop_type));
 					}
 
@@ -540,7 +540,7 @@ namespace core
 					{
 						if (serror_reporter::instance().m_callback)
 						{
-							serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+							serror_reporter::instance().m_callback(logging_verbosity_warn,
 								fmt::format("\t\tproperty '{}' with type '{}' not found", name, prop_type));
 						}
 						continue;
@@ -550,7 +550,7 @@ namespace core
 
 					if (!prop.set_value(object_out, object) && serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						serror_reporter::instance().m_callback(logging_verbosity_error,
 							fmt::format("\tFailed setting value of from JSON element of type '{}' for property '{}::{} ({})'",
 								algorithm::enum_to_string(element.type()), type.get_name().data(), name, prop.get_type().get_name().data()));
 					}
@@ -561,7 +561,7 @@ namespace core
 				//- error
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						fmt::format("\tRTTR type '{}' is not a class type", type.get_name().data()));
 				}
 			}
@@ -586,7 +586,7 @@ namespace core
 
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+				serror_reporter::instance().m_callback(logging_verbosity_debug,
 					fmt::format("Deserializing JSON object into expected RTTR type '{}', with JSON type '{}'",
 						expected.get_name().data(), algorithm::enum_to_string(json.type())));
 			}
@@ -615,7 +615,7 @@ namespace core
 			{
 				if (expected.is_enumeration() && serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+					serror_reporter::instance().m_callback(logging_verbosity_debug,
 						fmt::format("\tExtracting stringified enum of type '{}'",
 							expected.get_name().data()));
 				}
@@ -668,7 +668,7 @@ namespace core
 			{
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+					serror_reporter::instance().m_callback(logging_verbosity_warn,
 						fmt::format("Failed deserializing from json string with expected type '{}'", expected.get_name().data()));
 				}
 			}
@@ -719,7 +719,7 @@ namespace core
 				{
 					if (serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+						serror_reporter::instance().m_callback(logging_verbosity_error,
 							fmt::format("Failed serializing unknown numeric type '{}'", type.get_name().data()));
 					}
 					return false;
@@ -738,7 +738,7 @@ namespace core
 				//- could not write enum value, ignore but report
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+					serror_reporter::instance().m_callback(logging_verbosity_warn,
 						fmt::format("Failed serializing enum value with type '{}'", type.get_name().data()));
 				}
 				json = nullptr;
@@ -757,7 +757,7 @@ namespace core
 				//- but just in case report quietly
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+					serror_reporter::instance().m_callback(logging_verbosity_debug,
 						fmt::format("Not processing unknown (fundamental) type '{}'", type.get_name().data()));
 				}
 			}
@@ -840,7 +840,7 @@ namespace core
 				//- error
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						fmt::format("Failed serializing type '{}'", t.get_name().data()));
 				}
 				return false;
@@ -892,7 +892,7 @@ namespace core
 			}
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_WARN,
+				serror_reporter::instance().m_callback(logging_verbosity_warn,
 					fmt::format("Failed loading JSON file '{}'", path.data()));
 			}
 			return {};
@@ -1342,6 +1342,12 @@ namespace core
 	vec4_t scolor::normalize() const
 	{
 		return { m_r / 255.0f, m_g / 255.0f, m_b / 255.0f, m_a / 255.0f };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned scolor::rgba() const
+	{
+		return ((SCAST(unsigned, m_r) << 24) | (SCAST(unsigned, m_g) << 16) | (SCAST(unsigned, m_b) << 8) | SCAST(unsigned, m_a));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1933,7 +1939,7 @@ namespace core
 			{
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						fmt::format("Failed starting service '{}'", s_services[i].get_type().get_name().data()));
 				}
 			}
@@ -1992,7 +1998,7 @@ namespace core
 			{
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+					serror_reporter::instance().m_callback(logging_verbosity_error,
 						fmt::format("\tFailed constructing service '{}'. Did you register a default constructor?",
 							service_type.get_name().data()));
 				}
@@ -2002,7 +2008,7 @@ namespace core
 		{
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_ERROR,
+				serror_reporter::instance().m_callback(logging_verbosity_error,
 					fmt::format("\tCan not emplace service '{}'. Maximum number of services reached, increase value in 'core' library", service_type.get_name().data()));
 			}
 		}
