@@ -61,7 +61,7 @@ namespace sm
 		crenderable blank_quad;
 		ivec4_t viewport										= { 0, 0, 0, 0 };
 		vec4_t blend_state										= { 1.0f, 1.0f, 1.0f, 1.0f };
-		blending_mode blend_mode								= blending_mode_normal;
+		blending_mode blend_mode								= blending_mode_none;
 		auto fullscreen											= false;
 		auto enable_vsync										= true;
 		auto width												= 720;
@@ -70,6 +70,7 @@ namespace sm
 		vector_t<ID3D11ShaderResourceView*> dx_texture_srvs;
 		vector_t<ID3D11UnorderedAccessView*> dx_texture_uavs;
 		vector_t<ID3D11SamplerState*> dx_texture_samplers;
+		vector_t<ID3D11Resource*> dx_texture_srvs_data;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		constexpr stringview_t C_SHADER_LATEST_PROFILE		= "latest";
@@ -609,7 +610,7 @@ namespace sm
 
 		dx_adapter->GetParent(__uuidof(IDXGIFactory2), (void**)&dx_factory);
 
-		dx_factory->CreateSwapChainForHwnd(dx_device, *(HWND*)nwh, &dx_swapchain_desc, &dx_swapchain_desc_fullscreen, NULL, &dx_swapchain);
+		dx_factory->CreateSwapChainForHwnd(dx_device, (HWND)nwh, &dx_swapchain_desc, &dx_swapchain_desc_fullscreen, NULL, &dx_swapchain);
 
 		ID3D11Texture2D* backbuffer;
 		dx_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backbuffer);
@@ -814,6 +815,7 @@ namespace sm
 			safe_release(dx_texture_srvs[i]);
 			safe_release(dx_texture_uavs[i]);
 			safe_release(dx_texture_samplers[i]);
+			safe_release(dx_texture_srvs_data[i]);
 		}
 
 		safe_release(dx_vertex_indices_quad);
@@ -1049,6 +1051,7 @@ namespace sm
 		dx_texture_uavs.push_back(trash_memU);
 		dx_texture_srvs.push_back(trash_memV);
 		dx_texture_samplers.push_back(trash_memSamp);
+		dx_texture_srvs_data.push_back(gpuTexS);
 
 		return id;
 	}
@@ -1125,11 +1128,8 @@ namespace sm
 	void crenderer_dx::update_texture(unsigned id, unsigned w, unsigned h, void* data)
 	{
 		D3D11_MAPPED_SUBRESOURCE resource;
-		ID3D11Resource* texture_resource;
 
-		dx_texture_uavs[id]->GetResource(&texture_resource);
-
-		dx_device_context->Map(texture_resource, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+		dx_device_context->Map(dx_texture_srvs_data[id], 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 
 		BYTE* mappedData = reinterpret_cast<BYTE*>(resource.pData);
 		BYTE* buffer = reinterpret_cast<BYTE*>(data);
@@ -1142,7 +1142,7 @@ namespace sm
 			buffer += w * sizeof(unsigned);
 		}
 
-		dx_device_context->Unmap(texture_resource, 0);
+		dx_device_context->Unmap(dx_texture_srvs_data[id], 0);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

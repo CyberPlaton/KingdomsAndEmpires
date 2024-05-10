@@ -8,7 +8,7 @@ namespace logging
 	class clog
 	{
 	public:
-		STATIC_INSTANCE(clog, s_clog);
+		STATIC_INSTANCE_EX(clog);
 
 		bool init(core::logging_verbosity verbosity);
 		void shutdown();
@@ -24,10 +24,10 @@ namespace logging
 
 	private:
 		core::ctimer m_timer;
-		logging_mode m_mode = logging_mode::logging_mode_console;
+		core::logging_mode m_mode = core::logging_mode::logging_mode_console;
 		core::logging_verbosity m_verbosity = core::logging_verbosity::logging_verbosity_off;
 		float m_start_time = 0.0f;
-		ref_t< spdlog::logger > m_logger;
+		ref_t<spdlog::logger> m_logger;
 	};
 
 } //- logging

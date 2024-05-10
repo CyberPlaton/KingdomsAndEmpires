@@ -1,7 +1,7 @@
 #pragma once
 #include <core.h>
+#include <spritemancer.h>
 #include "physics/b2_physics.hpp"
-#include "spritemancer/sm.hpp"
 #include "ecs/ecs.hpp"
 #include "editor/editor_tool.hpp"
 #include "editor/editor_visualizer.hpp"
@@ -19,7 +19,6 @@ namespace engine
 		engine_run_result_failed_parsing_arguments,
 		engine_run_result_failed_loading_config,
 		engine_run_result_failed_parsing_invalid_config,
-		engine_run_result_failed_starting_spritemancer,
 		engine_run_result_failed_registering_services,
 		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
@@ -29,17 +28,35 @@ namespace engine
 	//- configures self and registers services etc. Does create a window and a rendering context and provides the main loop.
 	//- Constructible from cengine::instance() only to ensure correct functioning.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cengine final : core::cnon_copyable
+	class cengine final : public sm::iapp, core::cnon_copyable
 	{
+	public:
+		struct sconfig
+		{
+			vector_t<string_t> m_services_cfg;
+			vector_t<string_t> m_layers_cfg;
+
+			RTTR_ENABLE();
+		};
+
+	public:
+		template<class TService>
+		static auto service();
+
+		STATIC_INSTANCE(cengine, s_cengine);
+		~cengine();
+
+		bool on_init(void* config, argparse::ArgumentParser& args) override final;
+		void on_update(float dt) override final;
+		void on_shutdown() override final;
+
+	private:
+		cengine() = default;
+
 	private:
 		class clayers
 		{
 		public:
-			struct sconfig
-			{
-				vector_t<std::string> m_layers;
-			};
-
 			void init();
 			void shutdown();
 			void on_update(float dt);
@@ -55,38 +72,12 @@ namespace engine
 			vector_t<rttr::method> m_layer_init;
 		};
 
-	public:
-		struct sconfig
-		{
-			sm::cwindow::sconfig m_window_cfg;
-			core::cservice_manager::sconfig m_service_cfg;
-			clayers::sconfig m_layer_cfg;
-
-			RTTR_ENABLE();
-		};
-
-	public:
-		template<class TService>
-		static auto service();
-
-		STATIC_INSTANCE(cengine, s_cengine);
-		~cengine();
-
-		engine_run_result configure(sconfig cfg, int argc = 0, char* argv[] = {});
-		engine_run_result configure(const core::cpath& cfg, int argc = 0, char* argv[] = {});
-		engine_run_result run();
-
-	private:
-		cengine() = default;
-
-	private:
-		sconfig m_config;
 		clayers m_layers;
+		sconfig m_config;
 		engine_run_result m_result;
 
-		void handle_arguments(argparse::ArgumentParser& args, int argc, char* argv[]);
-		void register_services(argparse::ArgumentParser& args);
-		bool init_layers(const clayers::sconfig& cfg);
+	private:
+		bool try_push_layer(stringview_t name);
 	};
 
 	//- Shortcuts for common operations
@@ -105,13 +96,12 @@ namespace engine
 	REFLECT_INLINE(cengine::sconfig)
 	{
 		rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
-			.property("m_service_cfg", &cengine::sconfig::m_service_cfg)
-			.property("m_window_cfg", &cengine::sconfig::m_window_cfg)
-			.property("m_layer_cfg", &cengine::sconfig::m_layer_cfg)
+			.property("m_services_cfg", &cengine::sconfig::m_services_cfg)
+			.property("m_layers_cfg", &cengine::sconfig::m_layers_cfg)
 			;
 
 		rttr::default_constructor<cengine::sconfig>();
-		rttr::default_constructor<vector_t<std::string>>();
+		rttr::default_constructor<vector_t<string_t>>();
 	}
 
 } //- engine

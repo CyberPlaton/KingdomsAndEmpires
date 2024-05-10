@@ -8,7 +8,7 @@ function spritemancer()
 					{"rttr", "EASTL", "spdlog", "core", "sdl", "bx", "bimg"},
 					"c++",
 					{}, -- plugin_headeronly_deps
-					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy"}, -- thirdparty_headeronly_deps
+					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}, -- thirdparty_headeronly_deps
 					{}, -- additional_includes
 					true -- bx includes
 					)

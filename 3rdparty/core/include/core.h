@@ -145,7 +145,7 @@ using uniform_t			= handle_type_t;
 using spriteatlas_t		= handle_type_t;
 using subtexture_t		= handle_type_t;
 using rendertarget_t	= handle_type_t;
-using query_t		= handle_type_t;
+using query_t			= handle_type_t;
 
 using ivec2_t = glm::lowp_u32vec2;
 using ivec3_t = glm::lowp_u32vec3;
@@ -311,6 +311,13 @@ namespace core
 		common_color_neutral600,
 		common_color_neutral800,
 		common_color_neutral1000,	//- white
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum class logging_mode : uint8_t
+	{
+		logging_mode_console = 0,
+		logging_mode_file,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -664,7 +671,7 @@ namespace rttr
 
 			if (core::serror_reporter::instance().m_callback)
 			{
-				core::serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+				core::serror_reporter::instance().m_callback(core::logging_verbosity_error,
 					fmt::format("Registering RTTR class '{}' with policy '{}'",
 						rttr::type::get<TClass>().get_name().data(), rttr::type::get<TPolicy>().get_name().data()));
 			}
@@ -1228,7 +1235,7 @@ namespace core
 
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+				serror_reporter::instance().m_callback(logging_verbosity_debug,
 					fmt::format("Creating clinked_tree with reserved capacity of '{}({}KB)'",
 						m_pool.capacity(), algorithm::bytes_to_kilobytes(m_pool.memory_reserved())));
 			}
@@ -1238,7 +1245,7 @@ namespace core
 		{
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(SPDLOG_LEVEL_DEBUG,
+				serror_reporter::instance().m_callback(logging_verbosity_debug,
 					fmt::format("Destroying clinked_tree of size '{}({}KB)' and capacity '{}({}KB)'",
 						m_pool.size(), algorithm::bytes_to_kilobytes(m_pool.memory_usage()),
 						m_pool.capacity(), algorithm::bytes_to_kilobytes(m_pool.memory_reserved())));

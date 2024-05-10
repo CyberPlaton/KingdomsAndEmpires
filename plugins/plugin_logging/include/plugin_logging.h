@@ -1,16 +1,8 @@
 #pragma once
-#include <spdlog.h>
 #include <core.h>
 
 namespace logging
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	enum class logging_mode : uint8_t
-	{
-		logging_mode_console = 0,
-		logging_mode_file,
-	};
-
 #if DEBUG
 	bool init(core::logging_verbosity verbosity = core::logging_verbosity::logging_verbosity_trace);
 #else

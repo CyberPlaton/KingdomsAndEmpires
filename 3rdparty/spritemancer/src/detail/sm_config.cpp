@@ -81,11 +81,11 @@ namespace sm
 			{
 				CORE_ASSERT(false, "Invalid operation. App was not set before using it");
 			}
-			return sdata::instance().S_APP.get();
+			return sdata::instance().S_APP;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		sm::opresult cimage_loader::from_file(bimg::ImageContainer* container, stringview_t filepath,
+		sm::opresult cimage_loader::from_file(bimg::ImageContainer*& container, stringview_t filepath,
 			bimg::TextureFormat::Enum format)
 		{
 			const auto data = core::cfile::load_text(filepath.data());
@@ -105,14 +105,30 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		sm::opresult cimage_loader::create(bimg::ImageContainer* container, unsigned w, unsigned h,
-			const core::scolor& tint, bimg::TextureFormat::Enum /*format*/)
+		sm::opresult cimage_loader::create(bimg::ImageContainer*& container, unsigned w, unsigned h,
+			const core::scolor& tint, bimg::TextureFormat::Enum format)
 		{
-			bimg::imageSolid(container->m_data, w, h, tint.rgba());
+			if (container)
+			{
+				free(container);
+			}
 
-			return opresult_ok;
+			if (container = bimg::imageAlloc(entry::allocator(), format, w, h, 1, 1, false, false); container)
+			{
+				bimg::imageSolid(container->m_data, w, h, tint.rgba());
+
+				return opresult_ok;
+			}
+			return opresult_fail;
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		void cimage_loader::free(bimg::ImageContainer*& container)
+		{
+			bimg::imageFree(container); container = nullptr;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		bool cfilereader::open(const bx::FilePath& path, bx::Error* error)
 		{
 			if (const auto result = ifilereader::open(path, error); !result)
@@ -145,15 +161,21 @@ namespace sm
 	} //- entry
 
 	//------------------------------------------------------------------------------------------------------------------------
+	cimage::~cimage()
+	{
+		entry::image_loader()->free(m_container);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cimage::load_from_file(stringview_t filepath, bimg::TextureFormat::Enum format /*= bimg::TextureFormat::RGBA8*/)
 	{
-		return entry::image_loader()->from_file(&m_container, filepath, format);
+		return entry::image_loader()->from_file(m_container, filepath, format);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cimage::create(unsigned w, unsigned h, bimg::TextureFormat::Enum format /*= bimg::TextureFormat::RGBA8*/)
 	{
-		return entry::image_loader()->create(&m_container, w, h, {255, 255, 255, 255}, format);
+		return entry::image_loader()->create(m_container, w, h, {255, 255, 255, 255}, format);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -175,7 +197,7 @@ namespace sm
 
 		//- update GPU side
 		entry::renderer()->bind_texture(m_texture.m_id);
-		entry::renderer()->update_texture(m_texture.m_id, w, h, m_image.m_container.m_data);
+		entry::renderer()->update_texture(m_texture.m_id, w, h, m_image.m_container->m_data);
 	}
 
 } //- sm

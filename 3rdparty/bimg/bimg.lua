@@ -8,7 +8,10 @@ function bimg()
 
 		kind ("StaticLib")
 
-		files{"bimg/src/*.cpp"}
+		files{"bimg/include", "bimg/src/**.cpp",
+			"bimg/3rdparty/astc-encoder/source/**.cpp", "bimg/3rdparty/astc-encoder/source/**.h",
+			"bimg/3rdparty/tinyexr/deps/miniz/miniz.*"}
+
 		includedirs{"bimg/include",
 					"bimg/3rdparty",
 					"bimg/3rdparty/astc-encoder/include",
@@ -30,14 +33,9 @@ function bimg()
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
 		set_basic_defines()
+		configure()
 
-		filter{"configurations:debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"configurations:release"}
-			symbols "On"
-			optimize "Full"
-		filter{}
+		-- astc-encode does not work with it
+		removeflags "FloatFast"
 end
 bimg()

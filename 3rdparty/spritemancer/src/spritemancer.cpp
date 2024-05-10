@@ -9,12 +9,15 @@ namespace sm
 		static unsigned S_CURRENT_LAYER = 0;
 		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
 
-		static core::scolor S_WHITE = { 250, 250, 250, 250 };
+		static core::scolor S_WHITE = { 150, 250, 150, 250 };
 		static std::atomic_bool S_RUNNING;
 		static bool S_FULLSCREEN = false;
 		static bool S_VSYNC = false;
 		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
 		static float S_DT = 0.0f;
+
+		static void* S_CONFIG = nullptr;
+		static argparse::ArgumentParser S_ARGS;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void update_window_size(unsigned w, unsigned h)
@@ -27,6 +30,32 @@ namespace sm
 		void update_window_viewport()
 		{
 			entry::renderer()->update_viewport(S_X, S_Y, S_W, S_H);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void engine_configure_platform_and_renderer(iapp* app)
+		{
+			entry::sdata::instance().S_APP = app;
+			entry::sdata::instance().S_PLATFORM = std::move(std::make_unique<cplatform_sdl>());
+#if CORE_PLATFORM_WINDOWS || CORE_PLATFORM_XBOXONE || CORE_PLATFORM_XBOXSERIES
+			entry::sdata::instance().S_RENDERER = std::move(std::make_unique<crenderer_dx>());
+#else
+#endif
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void engine_configure_args()
+		{
+			//- common arguments available everywhere
+			S_ARGS.add_argument("--world")
+				.default_value("");
+
+			//- configuration specific arguments
+#if DEBUG
+			S_ARGS.add_argument("--console")
+				.default_value(true);
+#else
+#endif
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -61,9 +90,9 @@ namespace sm
 					if (layer.m_want_update)
 					{
 						entry::renderer()->update_texture(layer.m_target.texture().id(),
-							layer.m_target.image().m_container.m_width,
-							layer.m_target.image().m_container.m_height,
-							layer.m_target.image().m_container.m_data);
+							layer.m_target.image().m_container->m_width,
+							layer.m_target.image().m_container->m_height,
+							layer.m_target.image().m_container->m_data);
 
 						layer.m_want_update = false;
 					}
@@ -116,7 +145,7 @@ namespace sm
 
 			engine_prepare();
 
-			if (entry::app()->on_init())
+			if (entry::app()->on_init(S_CONFIG, S_ARGS))
 			{
 				S_RUNNING = false;
 			}
@@ -133,6 +162,29 @@ namespace sm
 		}
 
 	} //- unnamed
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult configure(iapp* app, void* config, int argc, char* argv[])
+	{
+		S_CONFIG = config;
+
+		engine_configure_platform_and_renderer(app);
+
+		engine_configure_args();
+
+		//- argparse throws on errorss
+		try
+		{
+			if (argc > 0 && argv)
+			{
+				S_ARGS.parse_args(argc, argv);
+			}
+		}
+		catch (const std::runtime_error& err)
+		{
+			return opresult_fail;
+		}
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult init(stringview_t title, unsigned x, unsigned y, unsigned w, unsigned h, bool fullscreen, bool vsync)
@@ -198,6 +250,12 @@ namespace sm
 			return true;
 		}
 		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void sm_logger(core::error_report_function_t callback)
+	{
+		serror_reporter::instance().m_callback = std::move(callback);
 	}
 
 } //- sm

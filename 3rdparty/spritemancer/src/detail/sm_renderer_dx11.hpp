@@ -36,6 +36,19 @@ namespace sm
 
 		void update_viewport(unsigned x, unsigned y,
 			unsigned w, unsigned h) override final;					//- update viewport dimension
+
+		RTTR_ENABLE(irenderer);
+	};
+
+} //- sm
+
+namespace sm
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(crenderer_dx)
+	{
+		rttr::cregistrator<crenderer_dx>("crenderer_dx")
+			;
 	};
 
 } //- sm

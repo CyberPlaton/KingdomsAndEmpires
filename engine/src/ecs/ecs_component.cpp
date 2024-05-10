@@ -1,5 +1,4 @@
 #include "ecs_component.hpp"
-#include "../spritemancer/sm_ui.hpp"
 
 namespace ecs
 {

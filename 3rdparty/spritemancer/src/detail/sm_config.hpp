@@ -1,6 +1,7 @@
 #pragma once
 #include "platform.hpp"
 #include <core.h>
+#include <argparse.h>
 #include <sdl2.h>
 #include <bimg.h>
 #include <bx.h>
@@ -65,11 +66,13 @@ namespace sm
 		public:
 			virtual ~iimage_loader() = default;
 
-			virtual opresult from_file(bimg::ImageContainer* container, stringview_t filepath,
+			virtual opresult from_file(bimg::ImageContainer* &container, stringview_t filepath,
 				bimg::TextureFormat::Enum format) = 0;
 
-			virtual opresult create(bimg::ImageContainer* container, unsigned w, unsigned h, const core::scolor& tint,
+			virtual opresult create(bimg::ImageContainer*& container, unsigned w, unsigned h, const core::scolor& tint,
 				bimg::TextureFormat::Enum format) = 0;
+
+			virtual void free(bimg::ImageContainer*& container) = 0;
 		};
 
 		//- Interface class for loading shaders
@@ -94,7 +97,7 @@ namespace sm
 			ptr_t<ishader_loader> S_SHADER_LOADER	= nullptr;
 			ptr_t<irenderer> S_RENDERER				= nullptr;
 			ptr_t<iplatform> S_PLATFORM				= nullptr;
-			ptr_t<iapp> S_APP						= nullptr;
+			iapp* S_APP								= nullptr;
 		};
 
 		ifilereader*	file_reader();
@@ -124,10 +127,12 @@ namespace sm
 		class cimage_loader final : public iimage_loader
 		{
 		public:
-			opresult from_file(bimg::ImageContainer* container, stringview_t filepath, bimg::TextureFormat::Enum format) override final;
+			opresult from_file(bimg::ImageContainer*& container, stringview_t filepath, bimg::TextureFormat::Enum format) override final;
 
-			opresult create(bimg::ImageContainer* container, unsigned w, unsigned h, const core::scolor& tint,
+			opresult create(bimg::ImageContainer*& container, unsigned w, unsigned h, const core::scolor& tint,
 				bimg::TextureFormat::Enum format) override final;
+
+			void free(bimg::ImageContainer*& container) override final;
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -158,7 +163,7 @@ namespace sm
 		opresult create(unsigned w, unsigned h, bimg::TextureFormat::Enum format = bimg::TextureFormat::RGBA8);
 
 	public:
-		bimg::ImageContainer m_container;
+		bimg::ImageContainer* m_container = nullptr;
 	};
 
 	//- GPU side image data
@@ -262,6 +267,8 @@ namespace sm
 
 		virtual void update_viewport(unsigned x, unsigned y,
 			unsigned w, unsigned h) = 0;						//- update viewport dimension
+
+		RTTR_ENABLE();
 	};
 
 	//- Platform interface class. Implementing hardware functionality, such as window creation, HDI interface and
@@ -284,6 +291,8 @@ namespace sm
 
 		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
 		virtual opresult process_event() = 0;				//- process one hardware event
+
+		RTTR_ENABLE();
 	};
 
 	//- Interface class for application to derive from and implement only three basic functions
@@ -292,7 +301,7 @@ namespace sm
 	{
 	public:
 		virtual ~iapp() = default;
-		virtual bool on_init() = 0;
+		virtual bool on_init(void* config, argparse::ArgumentParser& args) = 0;
 		virtual void on_update(float) = 0;
 		virtual void on_shutdown() = 0;
 	};

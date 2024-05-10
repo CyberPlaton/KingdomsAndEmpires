@@ -26,6 +26,19 @@ namespace sm
 
 		opresult optional_init_event_mainloop() override final;//- process hardware events in a loop; use where required
 		opresult process_event() override final;			//- process one hardware event
+
+		RTTR_ENABLE(iplatform);
+	};
+
+} //- sm
+
+namespace sm
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cplatform_sdl)
+	{
+		rttr::cregistrator<cplatform_sdl>("cplatform_sdl")
+			;
 	};
 
 } //- sm

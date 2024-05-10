@@ -46,6 +46,25 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	logging::init();
 
+	engine::cengine::sconfig cfg;
+	cfg.m_services_cfg.emplace_back("cthread_service");
+	cfg.m_services_cfg.emplace_back("cevent_service");
+	cfg.m_services_cfg.emplace_back("ctexture_manager");
+	cfg.m_services_cfg.emplace_back("cshader_manager");
+	cfg.m_services_cfg.emplace_back("cmaterial_manager");
+	cfg.m_services_cfg.emplace_back("cspriteatlas_manager");
+	cfg.m_services_cfg.emplace_back("crendertarget_manager");
+
+	cfg.m_layers_cfg.emplace_back("cgame");
+	cfg.m_layers_cfg.emplace_back("ceditor");
+
+	sm::sm_logger(core_io_error_function);
+
+	sm::configure(&engine::cengine::instance(),	//- engine class as the application
+		(void*)&cfg,							//- engine configuration
+		0,										//- command line args count
+		nullptr);								//- command line args values
+
 	sm::init("Title", 30, 30, 720, 648, false, false);
 
 	sm::run();

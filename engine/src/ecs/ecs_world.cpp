@@ -1,5 +1,4 @@
 #include "ecs_world.hpp"
-#include "../spritemancer/sm_common.hpp"
 
 namespace ecs
 {
@@ -194,16 +193,18 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	core::srect cworld::world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom)
 	{
-		raylib::Camera2D camera;
-		camera.target = { target.x, target.y };
-		camera.offset = { offset.x, offset.y };
-		camera.zoom = zoom;
-		camera.rotation = 0;
+		return {0.0f, 0.0f, 1.0f, 1.0f};
 
-		auto tl = raylib::GetScreenToWorld2D({ 0.0f, 0.0f }, camera);
-		auto br = raylib::GetScreenToWorld2D({ 1280.0f, 1024.0f }, camera);
-
-		return { tl.x, tl.y, br.x, br.y };
+// 		raylib::Camera2D camera;
+// 		camera.target = { target.x, target.y };
+// 		camera.offset = { offset.x, offset.y };
+// 		camera.zoom = zoom;
+// 		camera.rotation = 0;
+// 
+// 		auto tl = raylib::GetScreenToWorld2D({ 0.0f, 0.0f }, camera);
+// 		auto br = raylib::GetScreenToWorld2D({ 1280.0f, 1024.0f }, camera);
+// 
+// 		return { tl.x, tl.y, br.x, br.y };
 
 // 		return { target.x - (1.0f / zoom) * offset.x + 5.0f, target.y - (1.0f / zoom) * offset.y + 5.0f,
 // 				(1.0f / zoom) * offset.x * 2.0f - 5.0f, (1.0f / zoom) * offset.y * 2.0f - 5.0f };

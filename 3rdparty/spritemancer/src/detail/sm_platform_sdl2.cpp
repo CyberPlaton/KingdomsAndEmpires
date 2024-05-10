@@ -70,7 +70,7 @@ namespace sm
 		unsigned x, unsigned y, unsigned w, unsigned h,
 		bool fullscreen)
 	{
-		unsigned flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_BORDERLESS;
+		unsigned flags = SDL_WINDOW_BORDERLESS;
 
 		if (fullscreen)
 		{
