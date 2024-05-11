@@ -9,20 +9,20 @@ namespace sm
 		static unsigned S_CURRENT_LAYER = 0;
 		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
 
-		static core::scolor S_WHITE = { 150, 250, 150, 250 };
+		static core::scolor S_WHITE = { 250, 250, 150, 250 };
 		static std::atomic_bool S_RUNNING;
 		static bool S_FULLSCREEN = false;
 		static bool S_VSYNC = false;
 		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
 		static float S_INVERSE_W = 0.0f, S_INVERSE_H = 0.0f;
 		static float S_DT = 0.0f;
-		static blending_mode S_BLEND_MODE = blending_mode_normal;
-		static topology_type S_TOPOLOGY = topology_type_strip;
+		static blending_mode S_BLEND_MODE = blending_mode_default;
+		static primitive_topology_t S_TOPOLOGY = primitive_topology_t::TriList;
 
 		static void* S_CONFIG = nullptr;
 		static argparse::ArgumentParser S_ARGS;
 
-		static crenderable S_PLACEHOLDER_TEXTURE;
+		static srenderable S_PLACEHOLDER_TEXTURE;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void update_window_size(unsigned w, unsigned h)
@@ -36,7 +36,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void update_window_viewport()
 		{
-			entry::renderer()->update_viewport(S_X, S_Y, S_W, S_H);
+			entry::renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -76,13 +76,13 @@ namespace sm
 			entry::app()->on_update(S_DT);
 
 			//- render frame
-			entry::renderer()->update_viewport(S_X, S_Y, S_W, S_H);
+			entry::renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
 			entry::renderer()->clear(S_WHITE, true);
 
 			//- most basic layer, does always exist
 			S_LAYERS[0].m_want_update = true;
 			S_LAYERS[0].m_show = true;
-			entry::renderer()->set_blending_mode(blending_mode_normal);
+			entry::renderer()->blendmode(blending_mode_default);
 			entry::renderer()->prepare_frame();
 
 			//- layered rendering, from bottom to top
@@ -93,23 +93,23 @@ namespace sm
 				if (layer.m_show)
 				{
 					//- bind render target texture and fill it with color
-					entry::renderer()->bind_texture(layer.m_target.texture().id());
+					entry::renderer()->bind_texture(layer.m_layer_target.m_texture.handle().idx);
 					if (layer.m_want_update)
 					{
-						entry::renderer()->update_texture(layer.m_target.texture().id(),
-							layer.m_target.image().m_container->m_width,
-							layer.m_target.image().m_container->m_height,
-							layer.m_target.image().m_container->m_data);
+						entry::renderer()->update_texture_gpu(layer.m_layer_target.m_texture.handle().idx,
+							layer.m_layer_target.m_image.image()->m_width,
+							layer.m_layer_target.m_image.image()->m_height,
+							layer.m_layer_target.m_image.image()->m_data);
 
 						layer.m_want_update = false;
 					}
 
-					entry::renderer()->draw_layer_quad(S_X, S_Y, S_W, S_H, S_WHITE);
+					entry::renderer()->render_layer_quad({ S_X, S_Y }, { S_W, S_H }, S_WHITE);
 
 					//- render decals/textures for current layer
 					for (const auto& decal : layer.m_decals)
 					{
-						entry::renderer()->draw_decal(decal);
+						entry::renderer()->render_decal(decal);
 					}
 					layer.m_decals.clear();
 				}
@@ -126,7 +126,8 @@ namespace sm
 			update_window_viewport();
 
 			//- create default placeholder texture
-			S_PLACEHOLDER_TEXTURE.load("resources/figure_paladin_14.png");
+			S_PLACEHOLDER_TEXTURE.m_image.create_solid(256, 256, {150, 150, 150, 255 });
+			S_PLACEHOLDER_TEXTURE.m_texture.load_from_image(S_PLACEHOLDER_TEXTURE.m_image);
 
 			//- create default font
 
@@ -201,11 +202,11 @@ namespace sm
 	{
 		if (entry::platform()->init() != opresult_ok)
 		{
-			return opresult_fail_platform_init;
+			return opresult_fail;
 		}
 		if (entry::platform()->init_mainwindow(title.data(), x, y, w, h, fullscreen) != opresult_ok)
 		{
-			return opresult_fail_platform_init;
+			return opresult_fail;
 		}
 
 		//- required for later
@@ -232,7 +233,7 @@ namespace sm
 
 		if (entry::platform()->shutdown() != opresult_ok)
 		{
-			return opresult_fail_platform_init;
+			return opresult_fail;
 		}
 		return opresult_ok;
 	}
@@ -244,7 +245,7 @@ namespace sm
 		{
 			auto& layer = S_LAYERS[S_LAYER_COUNT];
 
-			layer.m_target.create(S_W, S_H);
+			layer.m_layer_target.m_image.create_solid(S_W, S_H, S_WHITE);
 
 			return S_LAYER_COUNT++;
 		}
@@ -269,13 +270,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_placeholder(const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/, const core::scolor& tint /*= {255, 255, 255, 255}*/)
+	void draw_placeholder(const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
+		const core::scolor& tint /*= {255, 255, 255, 255}*/)
 	{
-		draw_texture(position, &S_PLACEHOLDER_TEXTURE, scale, tint);
+		draw_texture(position, S_PLACEHOLDER_TEXTURE, scale, tint);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(const vec2_t& position, crenderable* renderable, const vec2_t& scale, const core::scolor& tint)
+	void draw_texture(const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
 	{
 		vec2_t vScreenSpacePos =
 		{
@@ -285,12 +287,12 @@ namespace sm
 
 		vec2_t vScreenSpaceDim =
 		{
-			vScreenSpacePos.x + (2.0f * (float(renderable->image().m_container->m_width) * S_INVERSE_W)) * scale.x,
-			vScreenSpacePos.y - (2.0f * (float(renderable->image().m_container->m_height) * S_INVERSE_H)) * scale.y
+			vScreenSpacePos.x + (2.0f * (float(renderable.m_image.image()->m_width) * S_INVERSE_W)) * scale.x,
+			vScreenSpacePos.y - (2.0f * (float(renderable.m_image.image()->m_height) * S_INVERSE_H)) * scale.y
 		};
 
 		auto& decal = S_LAYERS[S_CURRENT_LAYER].m_decals.emplace_back();
-		decal.m_texture = &renderable->texture();
+		decal.m_texture = renderable.m_texture.handle();
 		decal.m_points = 4;
 		decal.m_tint = { tint, tint, tint, tint };
 		decal.m_position = { { vScreenSpacePos.x, vScreenSpacePos.y }, { vScreenSpacePos.x, vScreenSpaceDim.y }, { vScreenSpaceDim.x, vScreenSpaceDim.y }, { vScreenSpaceDim.x, vScreenSpacePos.y } };

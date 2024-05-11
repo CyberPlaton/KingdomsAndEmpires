@@ -4,7 +4,7 @@ function spritemancer_testbed()
 	add_target_app("spritemancer_testbed",
 					{},
 					{},
-					{"Lua", "EASTL", "spdlog", "rttr", "core", "mimalloc", "flecs", "sdl", "bx", "bimg", "spritemancer"},
+					{"Lua", "EASTL", "spdlog", "rttr", "core", "mimalloc", "flecs", "sdl", "bx", "bimg", "bgfx", "spritemancer"},
 					{"plugin_logging"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
