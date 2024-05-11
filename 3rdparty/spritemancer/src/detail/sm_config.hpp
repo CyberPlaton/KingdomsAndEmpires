@@ -73,13 +73,12 @@ namespace sm
 		bx::FileReaderI*	filereader();
 		bx::FileWriterI*	filewriter();
 		bx::AllocatorI*		allocator();
-		bgfx::PlatformData& platformdata();
 		irenderer*			renderer();
 		iplatform*			platform();
 		iapp*				app();
-		void				set_platform(iplatform* platform);
+		void				set_platform(ptr_t<iplatform>&& platform);
 		void				set_app(iapp* app);
-		void				set_renderer(irenderer* renderer);
+		void				set_renderer(ptr_t<irenderer>&& renderer);
 
 	} //- entry
 
@@ -90,6 +89,7 @@ namespace sm
 	public:
 		explicit cimage(stringview_t filepath);
 		explicit cimage(void* data, unsigned size);
+		cimage();
 		~cimage();
 
 		opresult load_from_file(stringview_t filepath);
@@ -110,19 +110,22 @@ namespace sm
 	class ctexture final
 	{
 	public:
-		explicit ctexture(bgfx::TextureHandle handle, bgfx::TextureInfo* info);
+		explicit ctexture(bgfx::TextureHandle handle, const bgfx::TextureInfo& info);
 		explicit ctexture(const cimage& image);
+		ctexture();
+		~ctexture();
+
 
 		opresult load_from_image(const cimage& image);
 		opresult load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
 			bool mips, unsigned layers, texture_format_t format, uint64_t flags);
 
-		inline bgfx::TextureInfo* info() const { return m_info; }
+		inline const bgfx::TextureInfo& info() const { return m_info; }
 		inline bgfx::TextureHandle handle() const { return m_handle; }
 
 	private:
 		bgfx::TextureHandle m_handle;
-		bgfx::TextureInfo* m_info;
+		bgfx::TextureInfo m_info;
 	};
 
 	//- Texture along with image data that can be used as rendertarget or as something to be rendered
@@ -168,6 +171,11 @@ namespace sm
 	public:
 		virtual ~irenderer() = default;
 
+		virtual void prepare_device() = 0;
+		virtual opresult init_device(void* nwh, unsigned w, unsigned h,
+			bool fullscreen, bool vsync) = 0;
+		virtual opresult shutdown_device() = 0;
+
 		virtual void prepare_frame() = 0;
 		virtual void display_frame() = 0;
 		virtual void update_viewport(const vec2_t& position, const vec2_t& size) = 0;
@@ -180,6 +188,8 @@ namespace sm
 
 		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, void* data) = 0;
 		virtual void update_texture_cpu(uint64_t id) = 0;
+
+		RTTR_ENABLE();
 	};
 
 	//- Platform interface class. Implementing hardware functionality, such as window creation, HDI interface and
@@ -194,11 +204,12 @@ namespace sm
 		virtual opresult shutdown() = 0;					//- destroy and clean of client application
 		virtual opresult init_on_thread() = 0;				//- create and init on internal 'engine' thread, where rendering and main update happens
 		virtual opresult shutdown_on_thread() = 0;			//- destroy and clean on internal 'engine' thread, where rendering and main update happens
-		virtual opresult init_gfx(bool fullscreen, bool vsync) = 0;//- create graphical context
+
+		virtual opresult init_gfx(unsigned w, unsigned h,
+			bool fullscreen, bool vsync) = 0;				//- create graphical context
 
 		virtual opresult init_mainwindow(stringview_t title,
-			unsigned x, unsigned y, unsigned w, unsigned h,
-			bool fullscreen) = 0;							//- create application main window
+			unsigned w, unsigned h, bool fullscreen) = 0;	//- create application main window
 
 		//- TODO: does not seem to make sense, I think it was for platforms
 		//- that might require processing some events and OS handshakes before
@@ -206,6 +217,9 @@ namespace sm
 		//- Consider removing or at least renaming to be more descriptive.
 		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
 		virtual opresult process_event() = 0;				//- process one hardware event
+
+		virtual void main_window_position(unsigned* x, unsigned* y) = 0;
+		virtual void main_window_size(unsigned* x, unsigned* y) = 0;
 
 		RTTR_ENABLE();
 	};

@@ -1,12 +1,11 @@
 #pragma once
 #include "detail/sm_config.hpp"
-#include "detail/sm_platform_sdl2.hpp"
 
 namespace sm
 {
 	opresult configure(iapp* app, void* config, int argc, char* argv[]);
 
-	opresult init(stringview_t title, unsigned x, unsigned y, unsigned w, unsigned h, bool fullscreen, bool vsync);
+	opresult init(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync);
 
 	opresult run();
 

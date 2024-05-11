@@ -65,7 +65,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		0,										//- command line args count
 		nullptr);								//- command line args values
 
-	sm::init("Title", 30, 30, 720, 648, false, false);
+	sm::init("spritemancer testbed", 720, 648, false, false);
 
 	sm::run();
 

@@ -1,4 +1,6 @@
 #include "spritemancer.hpp"
+#include "detail/renderers/sm_renderer_bgfx.hpp"
+#include "detail/platforms/sm_platform_sdl2.hpp"
 
 namespace sm
 {
@@ -42,12 +44,9 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_configure_platform_and_renderer(iapp* app)
 		{
-			entry::sdata::instance().S_APP = app;
-			entry::sdata::instance().S_PLATFORM = std::move(std::make_unique<cplatform_sdl>());
-#if CORE_PLATFORM_WINDOWS || CORE_PLATFORM_XBOXONE || CORE_PLATFORM_XBOXSERIES
-			entry::sdata::instance().S_RENDERER = std::move(std::make_unique<crenderer_dx>());
-#else
-#endif
+			entry::set_app(app);
+			entry::set_platform(std::make_unique<cplatform_sdl>());
+			entry::set_renderer(std::make_unique<crenderer_bgfx>());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -68,6 +67,8 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_update()
 		{
+			CORE_ZONE;
+
 			//- platforms may need to handle events
 			entry::platform()->process_event();
 
@@ -149,7 +150,7 @@ namespace sm
 			{
 				return;
 			}
-			if (entry::platform()->init_gfx(S_FULLSCREEN, S_VSYNC) != opresult_ok)
+			if (entry::platform()->init_gfx(S_W, S_H, S_FULLSCREEN, S_VSYNC) != opresult_ok)
 			{
 				return;
 			}
@@ -198,24 +199,22 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult init(stringview_t title, unsigned x, unsigned y, unsigned w, unsigned h, bool fullscreen, bool vsync)
+	sm::opresult init(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync)
 	{
 		if (entry::platform()->init() != opresult_ok)
 		{
 			return opresult_fail;
 		}
-		if (entry::platform()->init_mainwindow(title.data(), x, y, w, h, fullscreen) != opresult_ok)
+		if (entry::platform()->init_mainwindow(title.data(), w, h, fullscreen) != opresult_ok)
 		{
 			return opresult_fail;
 		}
 
-		//- required for later
+		//- cache common data
+		entry::platform()->main_window_position(&S_X, &S_Y);
+		entry::platform()->main_window_size(&S_W, &S_H);
 		S_FULLSCREEN = fullscreen;
 		S_VSYNC = vsync;
-		S_X = x;
-		S_Y = y;
-		S_W = w;
-		S_H = h;
 
 		return opresult_ok;
 	}

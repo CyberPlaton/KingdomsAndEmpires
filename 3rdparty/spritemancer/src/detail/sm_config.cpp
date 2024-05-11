@@ -22,14 +22,13 @@ namespace sm
 
 	namespace entry
 	{
-		static bgfx::PlatformData S_PLATFORM_DATA;
 		static bx::DefaultAllocator S_ALLOCATOR_DEFAULT;
 		static cfilereader S_FILEREADER;
 		static cfilewriter S_FILEWRITER;
 		static bx::AllocatorI* S_ALLOCATOR = &S_ALLOCATOR_DEFAULT;
-		static iplatform* S_PLATFORM = nullptr;
+		static ptr_t<iplatform> S_PLATFORM = nullptr;
 		static iapp* S_APP = nullptr;
-		static irenderer* S_RENDERER = nullptr;
+		static ptr_t<irenderer> S_RENDERER = nullptr;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		bool cfilereader::open(const bx::FilePath& path, bx::Error* error)
@@ -80,21 +79,15 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bgfx::PlatformData& platformdata()
-		{
-			return S_PLATFORM_DATA;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
 		sm::irenderer* renderer()
 		{
-			return S_RENDERER;
+			return S_RENDERER.get();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		sm::iplatform* platform()
 		{
-			return S_PLATFORM;
+			return S_PLATFORM.get();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -104,9 +97,9 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void set_platform(iplatform* platform)
+		void set_platform(ptr_t<iplatform>&& platform)
 		{
-			S_PLATFORM = platform;
+			S_PLATFORM = std::move(platform);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -116,9 +109,9 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void set_renderer(irenderer* renderer)
+		void set_renderer(ptr_t<irenderer>&& renderer)
 		{
-			S_RENDERER = renderer;
+			S_RENDERER = std::move(renderer);
 		}
 
 	} //- entry
@@ -133,6 +126,12 @@ namespace sm
 	cimage::cimage(void* data, unsigned size)
 	{
 		load_from_memory(data, size);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cimage::cimage() :
+		m_container(nullptr)
+	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -193,7 +192,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::ctexture(bgfx::TextureHandle handle, bgfx::TextureInfo* info) :
+	ctexture::ctexture(bgfx::TextureHandle handle, const bgfx::TextureInfo& info) :
 		m_handle(handle), m_info(info)
 	{
 	}
@@ -202,6 +201,21 @@ namespace sm
 	ctexture::ctexture(const cimage& image)
 	{
 		load_from_image(image);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctexture::ctexture() :
+		m_handle({ MAX(uint16_t)})
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctexture::~ctexture()
+	{
+		if (bgfx::isValid(m_handle))
+		{
+			bgfx::destroy(m_handle);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -214,7 +228,7 @@ namespace sm
 		const auto format = image.image()->m_format;
 		const auto& depth = image.image()->m_depth;
 
-		load_from_memory(image.image()->m_data, image.image()->m_size, w, h, depth, mips, layers,
+		return load_from_memory(image.image()->m_data, image.image()->m_size, w, h, depth, mips, layers,
 			texture_format_t(format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
 	}
 
@@ -222,9 +236,9 @@ namespace sm
 	sm::opresult ctexture::load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
 		bool mips, unsigned layers, texture_format_t format, uint64_t flags)
 	{
-		const bgfx::Memory mem{ (uint8_t*)data, size };
+		const bgfx::Memory* mem = bgfx::makeRef(data, size);
 
-		if (m_handle = bgfx::createTexture2D((uint16_t)w, (uint16_t)h, mips, (uint16_t)layers, format, flags, &mem); !bgfx::isValid(m_handle))
+		if (m_handle = bgfx::createTexture2D((uint16_t)w, (uint16_t)h, mips, (uint16_t)layers, format, flags, mem); !bgfx::isValid(m_handle))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
@@ -236,7 +250,7 @@ namespace sm
 		}
 
 		//- calculate amount of memory required for texture
-		bgfx::calcTextureSize(*m_info, (uint16_t)w, (uint16_t)h, (uint16_t)depth, false, mips, (uint16_t)layers, format);
+		bgfx::calcTextureSize(m_info, (uint16_t)w, (uint16_t)h, (uint16_t)depth, false, mips, (uint16_t)layers, format);
 
 		return opresult_ok;
 	}
