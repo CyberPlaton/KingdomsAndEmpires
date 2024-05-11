@@ -14,16 +14,23 @@ namespace sm
 		static bool S_FULLSCREEN = false;
 		static bool S_VSYNC = false;
 		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
+		static float S_INVERSE_W = 0.0f, S_INVERSE_H = 0.0f;
 		static float S_DT = 0.0f;
+		static blending_mode S_BLEND_MODE = blending_mode_normal;
+		static topology_type S_TOPOLOGY = topology_type_strip;
 
 		static void* S_CONFIG = nullptr;
 		static argparse::ArgumentParser S_ARGS;
+
+		static crenderable S_PLACEHOLDER_TEXTURE;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void update_window_size(unsigned w, unsigned h)
 		{
 			S_W = w;
 			S_H = h;
+			S_INVERSE_W = 1.0f / (float)S_W;
+			S_INVERSE_H = 1.0f / (float)S_H;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -117,6 +124,9 @@ namespace sm
 		{
 			update_window_size(S_W, S_H);
 			update_window_viewport();
+
+			//- create default placeholder texture
+			S_PLACEHOLDER_TEXTURE.load("resources/figure_paladin_14.png");
 
 			//- create default font
 
@@ -256,6 +266,38 @@ namespace sm
 	void sm_logger(core::error_report_function_t callback)
 	{
 		serror_reporter::instance().m_callback = std::move(callback);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_placeholder(const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/, const core::scolor& tint /*= {255, 255, 255, 255}*/)
+	{
+		draw_texture(position, &S_PLACEHOLDER_TEXTURE, scale, tint);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(const vec2_t& position, crenderable* renderable, const vec2_t& scale, const core::scolor& tint)
+	{
+		vec2_t vScreenSpacePos =
+		{
+			(position.x * S_INVERSE_W) * 2.0f - 1.0f,
+			((position.y * S_INVERSE_H) * 2.0f - 1.0f) * -1.0f
+		};
+
+		vec2_t vScreenSpaceDim =
+		{
+			vScreenSpacePos.x + (2.0f * (float(renderable->image().m_container->m_width) * S_INVERSE_W)) * scale.x,
+			vScreenSpacePos.y - (2.0f * (float(renderable->image().m_container->m_height) * S_INVERSE_H)) * scale.y
+		};
+
+		auto& decal = S_LAYERS[S_CURRENT_LAYER].m_decals.emplace_back();
+		decal.m_texture = &renderable->texture();
+		decal.m_points = 4;
+		decal.m_tint = { tint, tint, tint, tint };
+		decal.m_position = { { vScreenSpacePos.x, vScreenSpacePos.y }, { vScreenSpacePos.x, vScreenSpaceDim.y }, { vScreenSpaceDim.x, vScreenSpaceDim.y }, { vScreenSpaceDim.x, vScreenSpacePos.y } };
+		decal.m_uv = { { 0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} };
+		decal.m_w = { 1, 1, 1, 1 };
+		decal.m_blending = S_BLEND_MODE;
+		decal.m_topology = S_TOPOLOGY;
 	}
 
 } //- sm

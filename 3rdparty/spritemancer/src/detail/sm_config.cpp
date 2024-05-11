@@ -88,11 +88,11 @@ namespace sm
 		sm::opresult cimage_loader::from_file(bimg::ImageContainer*& container, stringview_t filepath,
 			bimg::TextureFormat::Enum format)
 		{
-			const auto data = core::cfile::load_text(filepath.data());
+			const auto [data, size] = core::cfile::load_binary(filepath.data());
 
 			bx::Error error;
 
-			if (container = bimg::imageParse(allocator(), (void*)data.data(), data.length(), format, &error); !error.isOk())
+			if (container = bimg::imageParse(allocator(), (void*)data, size, format, &error); !error.isOk() || !container)
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -182,7 +182,19 @@ namespace sm
 	sm::opresult crenderable::load(stringview_t filepath, bool filtering /*= false*/, bool clamped /*= false*/,
 		bimg::TextureFormat::Enum format /*= bimg::TextureFormat::RGBA8*/)
 	{
-		return m_image.load_from_file(filepath, format);
+		if (const auto result = m_image.load_from_file(filepath, format); result == opresult_ok)
+		{
+			const auto w = m_image.m_container->m_width;
+			const auto h = m_image.m_container->m_height;
+
+			//- create GPU side
+			m_texture.m_id = entry::renderer()->create_texture(w, h, filtering, clamped);
+
+			//- update GPU side
+			entry::renderer()->bind_texture(m_texture.m_id);
+			entry::renderer()->update_texture(m_texture.m_id, w, h, m_image.m_container->m_data);
+		}
+		return opresult_fail;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

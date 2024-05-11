@@ -16,4 +16,8 @@ namespace sm
 
 	void sm_logger(core::error_report_function_t callback);
 
+	void draw_placeholder(const vec2_t& position, const vec2_t& scale = {1.0f, 1.0f}, const core::scolor& tint = {255, 255, 255, 255});
+
+	void draw_texture(const vec2_t& position, crenderable* renderable, const vec2_t& scale, const core::scolor& tint);
+
 } //- sm

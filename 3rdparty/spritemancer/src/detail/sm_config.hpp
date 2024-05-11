@@ -182,13 +182,13 @@ namespace sm
 		unsigned m_id = MAX(unsigned);
 	};
 
-	//- Texture along with image data that can be used as rendertarget
+	//- Texture along with image data that can be used as rendertarget or as something to be rendered
 	//------------------------------------------------------------------------------------------------------------------------
 	class crenderable final : core::cnon_copyable
 	{
 	public:
 		crenderable() = default;
-		crenderable(crenderable&& other) :
+		explicit crenderable(crenderable&& other) noexcept :
 			m_image(std::move(other.m_image)), m_texture(std::move(other.m_texture))
 		{
 		}
@@ -199,24 +199,27 @@ namespace sm
 		inline const cimage& image() const { return m_image; }
 		inline const ctexture& texture() const { return m_texture; }
 
+		inline cimage& image() { return m_image; }
+		inline ctexture& texture() { return m_texture; }
+
 	private:
 		cimage m_image;
 		ctexture m_texture;
 	};
 
-	//- The 'thing' that we actually draw; internal
+	//- The 'thing' that we actually draw; internal. Using vectors mostly for extendability
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sdecal
 	{
-		vector_t<vec2_t> m_position;
-		vector_t<vec2_t> m_uv;
+		vector_t<vec2_t> m_position;	//- individual vertex positions
+		vector_t<vec2_t> m_uv;			//- individual UVs of vertices
 		vector_t<float> m_w;
-		vector_t<ivec4_t> m_tint;
-		unsigned m_points = 0;
+		vector_t<core::scolor> m_tint;	//- color assigned to each vertex
+		unsigned m_points = 0;			//- count of vertices
 		bool m_depth = false;
 		blending_mode m_blending = blending_mode_normal;
 		topology_type m_topology = topology_type_fan;
-		ctexture* m_texture = nullptr;
+		ctexture* m_texture = nullptr;	//- texture to be rendered
 	};
 
 	//- Description of a layer we render upon, including all the decals to be rendered on it
@@ -289,6 +292,10 @@ namespace sm
 			unsigned x, unsigned y, unsigned w, unsigned h,
 			bool fullscreen) = 0;							//- create application main window
 
+		//- TODO: does not seem to make sense, I think it was for platforms
+		//- that might require processing some events and OS handshakes before
+		//- the window can start and then exit, so not a real loop.
+		//- Consider removing or at least renaming to be more descriptive.
 		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
 		virtual opresult process_event() = 0;				//- process one hardware event
 

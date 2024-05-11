@@ -36,6 +36,7 @@ namespace stl = std;
 #include <fstream>
 #include <string>
 
+//------------------------------------------------------------------------------------------------------------------------
 #if CORE_COMPILER_MSVC
 #define CORE_LIKELY(x) x
 #define CORE_UNLIKELY(x) x
@@ -47,14 +48,17 @@ namespace stl = std;
 #define CORE_UNLIKELY(x) x
 #endif
 
+//------------------------------------------------------------------------------------------------------------------------
 #define STRINGIFY(s) #s
 #define STRING(s) STRINGIFY(s)
 #define SSTRING(s) STRING(s)
 
+//------------------------------------------------------------------------------------------------------------------------
 #define MAX(type) std::numeric_limits<type>().max()
 #define MIN(type) std::numeric_limits<type>().min()
 #define BIT(x) 1 << x
 
+//------------------------------------------------------------------------------------------------------------------------
 #ifdef DEBUG
 #define CORE_ASSERT(expression, message) assert(expression && message)
 #define ASSERT(expression, ...) CORE_ASSERT(expression, __VA_ARGS__)
@@ -63,6 +67,26 @@ namespace stl = std;
 #define ASSERT(expression, ...)
 #endif
 
+//- @reference: imgui_inernal.h 303 or https://github.com/scottt/debugbreak
+//------------------------------------------------------------------------------------------------------------------------
+#if DEBUG
+#if defined (_MSC_VER)
+#define CORE_DEBUG_BREAK() __debugbreak()
+#elif defined(__clang__)
+#define CORE_DEBUG_BREAK() __builtin_debugtrap()
+#elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
+#define CORE_DEBUG_BREAK() __asm__ volatile("int $0x03")
+#elif defined(__GNUC__) && defined(__thumb__)
+#define CORE_DEBUG_BREAK() __asm__ volatile(".inst 0xde01")
+#elif defined(__GNUC__) && defined(__arm__) && !defined(__thumb__)
+#define CORE_DEBUG_BREAK() __asm__ volatile(".inst 0xe7f001f0");
+#else
+	//- It is expected that you define CORE_DEBUG_BREAK()!
+#define CORE_DEBUG_BREAK() CORE_ASSERT(0, "")
+#endif
+#endif
+
+//------------------------------------------------------------------------------------------------------------------------
 #define SCAST(type, value) static_cast<type>(value)
 #define RCAST(type, value) reinterpret_cast<type>(value)
 #ifdef ARRAYSIZE
@@ -72,12 +96,14 @@ namespace stl = std;
 #define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
 #define STATIC_INSTANCE_EX(__class) STATIC_INSTANCE(__class, s_instance)
 
+//------------------------------------------------------------------------------------------------------------------------
 #define CORE_MALLOC(size)		std::malloc(size)
 #define CORE_CALLOC(n, size)	std::calloc(n, size)
 #define CORE_REALLOC(p, size)	std::realloc(p, size)
 #define CORE_FREE(p)			std::free(p)
 #define CORE_FREEN(p, n)		CORE_FREE(p)
 
+//------------------------------------------------------------------------------------------------------------------------
 #if defined(core_EXPORTS)
 	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 		void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
@@ -85,6 +111,7 @@ namespace stl = std;
 	#endif
 #endif
 
+//------------------------------------------------------------------------------------------------------------------------
 #if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 #define CORE_ZONE ZoneScoped
 #define CORE_NAMED_ZONE(name) ZoneScopedN(name)
@@ -133,6 +160,7 @@ template<size_t TSize>
 using bitset_t = stl::bitset<TSize>;
 
 //- defining handles here as they migh have to be registered in RTTR
+//------------------------------------------------------------------------------------------------------------------------
 using handle_type_t		= uint64_t;
 #define invalid_handle_t MAX(uint64_t)
 using service_type_t	= handle_type_t;
@@ -147,6 +175,7 @@ using subtexture_t		= handle_type_t;
 using rendertarget_t	= handle_type_t;
 using query_t			= handle_type_t;
 
+//------------------------------------------------------------------------------------------------------------------------
 using ivec2_t = glm::lowp_u32vec2;
 using ivec3_t = glm::lowp_u32vec3;
 using ivec4_t = glm::lowp_u32vec4;

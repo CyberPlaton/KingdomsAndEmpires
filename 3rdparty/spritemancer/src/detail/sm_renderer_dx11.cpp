@@ -7,6 +7,7 @@
 #include <DirectXColors.h>
 #include <atlbase.h>
 #include <dxgi1_2.h>
+#include <system_error>
 
 #pragma comment(lib, "Dwmapi.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -494,30 +495,54 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void draw_layer_vertex_layout_index_set_stage()
 		{
+			const UINT vertexStride = sizeof(svertex);
+			const UINT offset = 0;
 
+			dx_device_context->IASetVertexBuffers(0, 1, &dx_vertex_buffer_layer, &vertexStride, &offset);
+
+			dx_device_context->IASetInputLayout(dx_input_layout);
+
+			dx_device_context->IASetIndexBuffer(dx_vertex_indices_quad_layer, DXGI_FORMAT_R32_UINT, 0);
+
+			dx_device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+			dx_device_context->VSSetShader(dx_vertex_shader, nullptr, 0);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void draw_layer_pixel_stage()
 		{
+			ID3D11ShaderResourceView* empty = nullptr;
+
+			dx_device_context->PSSetShader(dx_pixel_shader, nullptr, 0);
+
+			dx_device_context->PSSetShaderResources(0, 1, &dx_texture_srvs[1]); //- set backbuffer texture
+
+			dx_device_context->PSSetSamplers(0, 1, &dx_texture_samplers[1]);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void draw_layer_rast_stage()
 		{
+			dx_device_context->RSSetState(dx_rasterizer_state_f);
 
+			dx_device_context->RSSetViewports(1, &dx_viewport);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void draw_layer_output_merge_stage()
 		{
+			dx_device_context->OMSetRenderTargets(1, &dx_rendertarget_view, nullptr);
 
+			dx_device_context->OMSetBlendState(dx_blend_state_default, glm::value_ptr(blend_state), 0xffffffff);
+
+			dx_device_context->OMSetDepthStencilState(dx_depthstencil_state_default, 1);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void draw_layer_indexed_draw()
 		{
-
+			dx_device_context->DrawIndexed(5, 0, 0);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -697,10 +722,8 @@ namespace sm
 		ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 
 		vertexBufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER;
-
 		vertexBufferDesc.ByteWidth = sizeof(vertices);
 		vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
 		vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 		vertexBufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
 
@@ -1076,7 +1099,7 @@ namespace sm
 		D3D11_MAPPED_SUBRESOURCE resource;
 
 		dx_device_context->Map(dx_vertex_buffer_layer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-		memcpy(resource.pData, &verts, sizeof(svertex) * 5);
+		memcpy(resource.pData, &verts, sizeof(svertex) * 4);
 		dx_device_context->Unmap(dx_vertex_buffer_layer, 0);
 
 		draw_layer_vertex_layout_index_set_stage();
@@ -1099,15 +1122,31 @@ namespace sm
 			vertices[i] = {
 				{ decal.m_position[i].x, decal.m_position[i].y, 0.0f },
 				{ decal.m_uv[i].x, decal.m_uv[i].y },
-				{ decal.m_tint[i].r, decal.m_tint[i].g, decal.m_tint[i].b, decal.m_tint[i].a }
+				{ decal.m_tint[i].r(), decal.m_tint[i].g(), decal.m_tint[i].b(), decal.m_tint[i].a() }
 			};
 		}
 
 		D3D11_MAPPED_SUBRESOURCE resource;
 
 		//- copy vertices to buffer
-		dx_device_context->Map(dx_vertex_buffer_quad, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-		memcpy(resource.pData, vertices, sizeof(vertices));
+		const auto result = dx_device_context->Map(dx_vertex_buffer_quad, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+
+		//- TODO: should be a debug only functionality
+		if (FAILED(result))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				const auto err = std::system_category().message(result);
+
+				serror_reporter::instance().m_callback(core::logging_verbosity_warn,
+					fmt::format("Failed drawing decal. Error code: '{}'", err));
+
+				CORE_DEBUG_BREAK();
+			}
+			return;
+		}
+
+		memcpy(resource.pData, &vertices[0], sizeof(svertex) * decal.m_points);
 		dx_device_context->Unmap(dx_vertex_buffer_quad, 0);
 
 		//- proceed setting up stages and submit decal vertices
