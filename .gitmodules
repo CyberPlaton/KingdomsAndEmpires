@@ -8,3 +8,6 @@
 [submodule "3rdparty/bimg/bimg"]
 	path = 3rdparty/bimg/bimg
 	url = https://github.com/bkaradzic/bimg.git
+[submodule "3rdparty/bgfx/bgfx"]
+	path = 3rdparty/bgfx/bgfx
+	url = https://github.com/bkaradzic/bgfx.git
