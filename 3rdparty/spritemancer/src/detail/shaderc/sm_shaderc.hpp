@@ -17,30 +17,18 @@ namespace sm
 	namespace shaderc
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		constexpr static uint8_t kUniformFragmentBit = 0x10;
-		constexpr static uint8_t kUniformSamplerBit = 0x20;
-		constexpr static uint8_t kUniformReadOnlyBit = 0x40;
-		constexpr static uint8_t kUniformCompareBit = 0x80;
-		constexpr static uint8_t kUniformMask = 0
-			| kUniformFragmentBit
-			| kUniformSamplerBit
-			| kUniformReadOnlyBit
-			| kUniformCompareBit
-			;
+		constexpr static uint8_t kUniformFragmentBit	= 0x10;
+		constexpr static uint8_t kUniformSamplerBit		= 0x20;
+		constexpr static uint8_t kUniformReadOnlyBit	= 0x40;
+		constexpr static uint8_t kUniformCompareBit		= 0x80;
+		constexpr static uint8_t kUniformMask			= 0
+			| kUniformFragmentBit | kUniformSamplerBit
+			| kUniformReadOnlyBit | kUniformCompareBit;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		struct Uniform
 		{
-			Uniform()
-				: type(bgfx::UniformType::Count)
-				, num(0)
-				, regIndex(0)
-				, regCount(0)
-				, texComponent(0)
-				, texDimension(0)
-				, texFormat(0)
-			{
-			}
+			Uniform();
 
 			std::string name;
 			bgfx::UniformType::Enum type;

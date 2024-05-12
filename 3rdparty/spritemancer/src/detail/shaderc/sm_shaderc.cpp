@@ -347,9 +347,35 @@ namespace sm
 		} //- unnamed
 
 		//------------------------------------------------------------------------------------------------------------------------
-		Options::Options()
+		Uniform::Uniform()
+			: type(bgfx::UniformType::Count)
+			, num(0)
+			, regIndex(0)
+			, regCount(0)
+			, texComponent(0)
+			, texDimension(0)
+			, texFormat(0)
 		{
+		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		Options::Options()
+			: shaderType(' ')
+			, disasm(false)
+			, raw(false)
+			, preprocessOnly(false)
+			, depends(false)
+			, debugInformation(false)
+			, avoidFlowControl(false)
+			, noPreshader(false)
+			, partialPrecision(false)
+			, preferFlowControl(false)
+			, backwardsCompatibility(false)
+			, warningsAreErrors(false)
+			, keepIntermediate(false)
+			, optimize(false)
+			, optimizationLevel(3)
+		{
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
