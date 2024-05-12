@@ -97,6 +97,48 @@ function set_bx_includes()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+function set_bgfx_3rd_party_includes()
+
+	bgfx_3rd_party_dir = path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "3rdparty")
+
+	externalincludedirs{bgfx_3rd_party_dir,
+						path.join(bgfx_3rd_party_dir, "directx-headers/include"),
+						path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
+						path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
+
+						path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
+						path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
+
+						path.join(bgfx_3rd_party_dir, "glslang"),
+						
+						path.join(bgfx_3rd_party_dir, "spirv-cross"),
+						path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
+						path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
+						path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
+	}
+
+	includedirs{bgfx_3rd_party_dir,
+				path.join(bgfx_3rd_party_dir, "directx-headers/include"),
+				path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
+				path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
+				
+				path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
+				path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
+
+				path.join(bgfx_3rd_party_dir, "glslang"),
+
+				path.join(bgfx_3rd_party_dir, "spirv-cross"),
+				path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
+				path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
+				path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
+	}
+
+	-- some things required includes to files contained in src directory
+	externalincludedirs{path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx"),
+						path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "include")}
+end
+
+------------------------------------------------------------------------------------------------------------------------
 function set_sdl_deps()
 	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
 	links{"SDL2", "SDL2main"}
@@ -139,6 +181,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		if requires_bx_includes == true then
 			set_bx_includes()
 			set_sdl_deps()
+			set_bgfx_3rd_party_includes()
 		end
 
 		-- include and link deps from other plugins and thirdparty
@@ -342,6 +385,7 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		set_include_path_to_engine()
 		link_with_engine()
 		set_bx_includes()
+		set_bgfx_3rd_party_includes()
 		set_sdl_deps()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))

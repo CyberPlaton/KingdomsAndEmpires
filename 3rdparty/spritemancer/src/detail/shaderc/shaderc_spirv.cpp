@@ -3,7 +3,7 @@
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#include "shaderc.h"
+#include "sm_shaderc.hpp"
 
 #include <iostream> // std::cout
 
@@ -15,52 +15,22 @@ BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wdeprecated-declarations") // warning: 
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wtype-limits") // warning: comparison of unsigned expression in ‘< 0’ is always false
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wshadow") // warning: declaration of 'userData' shadows a member of 'glslang::TShader::Includer::IncludeResult'
 #define ENABLE_OPT 1
-#include <ShaderLang.h>
-#include <ResourceLimits.h>
-#include <SPIRV/SPVRemapper.h>
-#include <SPIRV/GlslangToSpv.h>
-#include <SPIRV/SpvTools.h>
+#include <glslang/glslang/Public/ShaderLang.h>
+#include <glslang/glslang/Public/ResourceLimits.h>
+#include <glslang/SPIRV/SPVRemapper.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
+#include <glslang/SPIRV/SpvTools.h>
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_msl.hpp>
 #include <spirv_reflect.hpp>
 #include <spirv-tools/optimizer.hpp>
 BX_PRAGMA_DIAGNOSTIC_POP()
 
-namespace bgfx
-{
-	static bx::DefaultAllocator s_allocator;
-	bx::AllocatorI* g_allocator = &s_allocator;
+#include <src/shader.h>
+#include <src/shader_spirv.h>
+#include <khronos/vulkan-local/vulkan.h>
 
-	struct TinyStlAllocator
-	{
-		static void* static_allocate(size_t _bytes);
-		static void static_deallocate(void* _ptr, size_t /*_bytes*/);
-	};
-
-	void* TinyStlAllocator::static_allocate(size_t _bytes)
-	{
-		return bx::alloc(g_allocator, _bytes);
-	}
-
-	void TinyStlAllocator::static_deallocate(void* _ptr, size_t /*_bytes*/)
-	{
-		if (NULL != _ptr)
-		{
-			bx::free(g_allocator, _ptr);
-		}
-	}
-} // namespace bgfx
-
-#define TINYSTL_ALLOCATOR bgfx::TinyStlAllocator
-#include <tinystl/allocator.h>
-#include <tinystl/string.h>
-#include <tinystl/unordered_map.h>
-#include <tinystl/vector.h>
-namespace stl = tinystl;
-
-#include "../../src/shader.h"
-#include "../../src/shader_spirv.h"
-#include "../../3rdparty/khronos/vulkan-local/vulkan.h"
+using namespace sm::shaderc;
 
 namespace bgfx { namespace spirv
 {
@@ -702,7 +672,7 @@ namespace bgfx { namespace spirv
 					}
 				}
 
-				if (g_verbose)
+				if (/*g_verbose*/true)
 				{
 					program->dumpReflection();
 				}
@@ -749,7 +719,7 @@ namespace bgfx { namespace spirv
 				}
 				else
 				{
-					if (g_verbose)
+					if (/*g_verbose*/true)
 					{
 						glslang::SpirvToolsDisassemble(std::cout, spirv, getSpirvTargetVersion(_version, _messageWriter));
 					}
@@ -892,10 +862,15 @@ namespace bgfx { namespace spirv
 	}
 
 } // namespace spirv
+} // namespace bgfx
 
-	bool compileSPIRVShader(const Options& _options, uint32_t _version, const std::string& _code, bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
+namespace sm::shaderc
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	bool compileSPIRVShader(const Options& _options, uint32_t _version, const std::string& _code,
+		bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
 	{
-		return spirv::compile(_options, _version, _code, _shaderWriter, _messageWriter, true);
+		return bgfx::spirv::compile(_options, _version, _code, _shaderWriter, _messageWriter, true);
 	}
 
-} // namespace bgfx
+} //- sm::shaderc

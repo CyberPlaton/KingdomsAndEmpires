@@ -17,11 +17,11 @@ function bgfx()
 
 		includedirs{"bgfx/3rdparty",
 					"bgfx/include",
+					"bgfx/3rdparty",
 					"bgfx/3rdparty/cgltf",
 					"bgfx/3rdparty/dear-imgui",
 					"bgfx/3rdparty/directx-headers/include/directx",
 					"bgfx/3rdparty/directx-headers/include/wsl",
-					"bgfx/3rdparty/fcpp",
 					"bgfx/3rdparty/glslang",
 					"bgfx/3rdparty/glsl-optimizer",
 					"bgfx/3rdparty/glsl-optimizer/include",

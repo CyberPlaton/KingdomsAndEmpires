@@ -3,7 +3,7 @@
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#include "shaderc.h"
+#include "sm_shaderc.hpp"
 
 #if SHADERC_CONFIG_HLSL
 
@@ -13,14 +13,32 @@
 #	define __out
 #endif // defined(__MINGW32__)
 
-#define COM_NO_WINDOWS_H
+#include <dwmapi.h>
+#include <d3d11.h>
 #include <d3dcompiler.h>
 #include <d3d11shader.h>
+#include <atlbase.h>
+#include <dxgi1_2.h>
 #include <bx/os.h>
+
+#pragma comment(lib, "Dwmapi.lib")
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "dxguid.lib")
+
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
+                ((DWORD)(BYTE)(ch0) | ((DWORD)(BYTE)(ch1) << 8) |   \
+                ((DWORD)(BYTE)(ch2) << 16) | ((DWORD)(BYTE)(ch3) << 24 ))
+#endif
 
 #ifndef D3D_SVF_USED
 #	define D3D_SVF_USED 2
 #endif // D3D_SVF_USED
+
+using namespace sm::shaderc;
 
 namespace bgfx { namespace hlsl
 {
@@ -107,7 +125,7 @@ namespace bgfx { namespace hlsl
 				continue;
 			}
 
-			if (g_verbose)
+			if (/*g_verbose*/true)
 			{
 				char filePath[bx::kMaxFilePath];
 				GetModuleFileNameA( (HMODULE)s_d3dcompilerdll, filePath, sizeof(filePath) );
@@ -839,19 +857,26 @@ namespace bgfx { namespace hlsl
 	}
 
 } // namespace hlsl
+} // namespace bgfx
 
-	bool compileHLSLShader(const Options& _options, uint32_t _version, const std::string& _code, bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
+namespace sm::shaderc
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	bool compileHLSLShader(const Options& _options, uint32_t _version, const std::string& _code,
+		bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
 	{
-		return hlsl::compile(_options, _version, _code, _shaderWriter, _messageWriter, true);
+		return bgfx::hlsl::compile(_options, _version, _code, _shaderWriter, _messageWriter, true);
 	}
 
-} // namespace bgfx
+} //- sm::shaderc
 
 #else
 
-namespace bgfx
+namespace sm::shaderc
 {
-	bool compileHLSLShader(const Options& _options, uint32_t _version, const std::string& _code, bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
+	//------------------------------------------------------------------------------------------------------------------------
+	bool compileHLSLShader(const Options& _options, uint32_t _version, const std::string& _code,
+		bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
 	{
 		BX_UNUSED(_options, _version, _code, _shaderWriter);
 		bx::Error messageErr;
@@ -859,6 +884,6 @@ namespace bgfx
 		return false;
 	}
 
-} // namespace bgfx
+} //- sm::shaderc
 
 #endif // SHADERC_CONFIG_HLSL

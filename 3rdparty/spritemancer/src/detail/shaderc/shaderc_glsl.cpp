@@ -3,8 +3,10 @@
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#include "shaderc.h"
-#include "glsl_optimizer.h"
+#include "sm_shaderc.hpp"
+#include <glsl-optimizer/src/glsl/glsl_optimizer.h>
+
+using namespace sm::shaderc;
 
 namespace bgfx { namespace glsl
 {
@@ -395,10 +397,15 @@ namespace bgfx { namespace glsl
 	}
 
 } // namespace glsl
+} // namespace bgfx
 
-	bool compileGLSLShader(const Options& _options, uint32_t _version, const std::string& _code, bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
+namespace sm::shaderc
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	bool compileGLSLShader(const Options& _options, uint32_t _version, const std::string& _code,
+		bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
 	{
-		return glsl::compile(_options, _version, _code, _shaderWriter, _messageWriter);
+		return bgfx::glsl::compile(_options, _version, _code, _shaderWriter, _messageWriter);
 	}
 
-} // namespace bgfx
+} //- sm::shaderc

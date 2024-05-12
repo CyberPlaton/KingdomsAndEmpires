@@ -67,6 +67,8 @@ namespace sm
 
 	namespace entry
 	{
+
+
 		//------------------------------------------------------------------------------------------------------------------------
 		class cfilereader final : public bx::FileReader
 		{
@@ -74,6 +76,7 @@ namespace sm
 			bool open(const bx::FilePath& path, bx::Error* error) override final;
 		};
 
+		//- Note: can be use anywhere, where bx::WriterI* is required, i.e. when you want to compile shaders as binary files
 		//------------------------------------------------------------------------------------------------------------------------
 		class cfilewriter final : public bx::FileWriter
 		{
@@ -81,8 +84,22 @@ namespace sm
 			bool open(const bx::FilePath& path, bool append, bx::Error* error) override final;
 		};
 
+		//- Write incoming data to a string form
+		//------------------------------------------------------------------------------------------------------------------------
+		class cstringwriter final : public bx::WriterI
+		{
+		public:
+			int32_t write(const void* data, int32_t size, bx::Error* error) override final;
+
+			[[nodiscard]] inline string_t take() { return std::move(m_string); }
+
+		private:
+			string_t m_string;
+		};
+
 		bx::FileReaderI*	filereader();
 		bx::FileWriterI*	filewriter();
+		bx::WriterI*		stringwriter();
 		bx::AllocatorI*		allocator();
 		irenderer*			renderer();
 		iplatform*			platform();

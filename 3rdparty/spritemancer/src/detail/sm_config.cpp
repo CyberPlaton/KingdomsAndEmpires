@@ -25,6 +25,7 @@ namespace sm
 		static bx::DefaultAllocator S_ALLOCATOR_DEFAULT;
 		static cfilereader S_FILEREADER;
 		static cfilewriter S_FILEWRITER;
+		static cstringwriter S_STRINGWRITER;
 		static bx::AllocatorI* S_ALLOCATOR = &S_ALLOCATOR_DEFAULT;
 		static ptr_t<iplatform> S_PLATFORM = nullptr;
 		static iapp* S_APP = nullptr;
@@ -73,6 +74,12 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		bx::WriterI* stringwriter()
+		{
+			return &S_STRINGWRITER;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		bx::AllocatorI* allocator()
 		{
 			return S_ALLOCATOR;
@@ -112,6 +119,17 @@ namespace sm
 		void set_renderer(ptr_t<irenderer>&& renderer)
 		{
 			S_RENDERER = std::move(renderer);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		int32_t cstringwriter::write(const void* data, int32_t size, bx::Error* error)
+		{
+			if (!error)
+			{
+				m_string.append((const char*)data, size);
+				return -1;
+			}
+			return size;
 		}
 
 	} //- entry
