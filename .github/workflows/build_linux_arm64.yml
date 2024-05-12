@@ -1,0 +1,31 @@
+name: linux_arm64
+
+on: "push"
+
+jobs:
+  build_linux_arm16:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        arch: [ARM64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install X11 development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
+
+      - name: Set up Premake for Linux
+        uses: abel0b/setup-premake@v2.3
+        with:
+          version: "5.0.0-beta2"
+
+      - name: Build on Linux
+        run: |
+          premake5 gmake2
+          make
+        working-directory: .
