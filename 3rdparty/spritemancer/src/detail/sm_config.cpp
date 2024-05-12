@@ -117,6 +117,131 @@ namespace sm
 	} //- entry
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cshader::destroy(cshader& shader)
+	{
+		if (bgfx::isValid(shader.handle()))
+		{
+			bgfx::destroy(shader.handle());
+
+			shader.m_handle.idx = MAX(uint16_t);
+			shader.m_type = shader_type_none;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cshader::cshader(shader_type type, stringview_t filepath)
+	{
+		load_from_file(type, filepath);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cshader::cshader(shader_type type, uint8_t* data, unsigned size)
+	{
+		load_from_memory(type, data, size);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cshader::cshader() :
+		m_handle({ MAX(uint16_t) }), m_type(shader_type_none)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cshader::~cshader()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cshader::load_from_string(shader_type type, const char* string)
+	{
+		return load_from_memory(type, (uint8_t*)string, strlen(string));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cshader::load_from_file(shader_type type, stringview_t filepath)
+	{
+		const auto [data, size] = core::cfile::load_binary(filepath.data());
+
+		return load_from_memory(type, data, size);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cshader::load_from_memory(shader_type type, uint8_t* data, unsigned size)
+	{
+		const bgfx::Memory* mem = bgfx::makeRef(data, size);
+
+		if (m_handle = bgfx::createShader(mem); !bgfx::isValid(m_handle))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading shader");
+			}
+
+			return opresult_fail;
+		}
+
+		m_type = type;
+
+		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cprogram::destroy(cprogram& program)
+	{
+		cshader::destroy(program.m_vertex);
+		cshader::destroy(program.m_fragment);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram(const cshader& vertex, const cshader& fragment) :
+		m_vertex(vertex), m_fragment(fragment)
+	{
+		load_from_handles(m_vertex.handle(), m_fragment.handle());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram() :
+		m_handle({ MAX(uint16_t) })
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::~cprogram()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	opresult cprogram::load_from_shaders(const cshader& vertex, const cshader& fragment)
+	{
+		m_vertex = vertex;
+		m_fragment = fragment;
+		return load_from_handles(m_vertex.handle(), m_fragment.handle());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	opresult cprogram::load_from_handles(bgfx::ShaderHandle vertex, bgfx::ShaderHandle fragment)
+	{
+		if (m_handle = bgfx::createProgram(vertex, fragment); !bgfx::isValid(m_handle))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading program");
+			}
+
+			return opresult_fail;
+		}
+		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cimage::destroy(cimage& image)
+	{
+		free_image(image.m_container);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cimage::cimage(stringview_t filepath)
 	{
 		load_from_file(filepath);
@@ -192,6 +317,19 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void ctexture::destroy(ctexture& texture)
+	{
+		if (bgfx::isValid(texture.handle()))
+		{
+			bgfx::destroy(texture.handle());
+
+			//- reset handle and info
+			texture.m_handle.idx = MAX(uint16_t);
+			texture.m_info = {};
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	ctexture::ctexture(bgfx::TextureHandle handle, const bgfx::TextureInfo& info) :
 		m_handle(handle), m_info(info)
 	{
@@ -212,10 +350,6 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	ctexture::~ctexture()
 	{
-		if (bgfx::isValid(m_handle))
-		{
-			bgfx::destroy(m_handle);
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

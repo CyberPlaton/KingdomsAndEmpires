@@ -45,13 +45,6 @@ function bgfx()
 		set_libs_path()
 		set_basic_defines()
 
-		filter{"configurations:debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"configurations:release"}
-			symbols "On"
-			optimize "Full"
-		filter{}
+		configure()
 end
 bgfx()

@@ -39,6 +39,17 @@ namespace sm
 		blending_factor_one = BGFX_STATE_BLEND_ONE,
 	};
 
+	//- @see https://subscription.packtpub.com/book/programming/9781849698009/1/ch01lvl1sec10/types-of-shaders
+	//------------------------------------------------------------------------------------------------------------------------
+	enum shader_type : uint8_t
+	{
+		shader_type_none = 0,
+		shader_type_vertex,
+		shader_type_fragment,
+		shader_type_geometry,	//- creates new rendering primitives from output of vertex shader to be processed by fragment shader
+		shader_type_compute,	//- general purpose shader that can affect all others
+	};
+
 	//------------------------------------------------------------------------------------------------------------------------
 	enum opresult : uint8_t
 	{
@@ -82,11 +93,67 @@ namespace sm
 
 	} //- entry
 
-	//- CPU resident image representation. Can easily be copied around, as the data is managed elsewhere.
+	//- A shader. Can be vertex, fragment, compute etc.
+	//- Lightweight class that can be copied around, as a consequence it does not own the shader,
+	//- when done with it you have to manually call destroy, otherwise the memory will not be freed.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cshader final
+	{
+	public:
+		static void destroy(cshader& shader);
+
+		explicit cshader(shader_type type, stringview_t filepath);
+		explicit cshader(shader_type type, uint8_t* data, unsigned size);
+		cshader();
+		~cshader();
+
+		opresult load_from_string(shader_type type, const char* string);
+		opresult load_from_file(shader_type type, stringview_t filepath);
+
+		//- Note: does not expect a null terminated string, appends it automatically
+		opresult load_from_memory(shader_type type, uint8_t* data, unsigned size);
+
+		inline bgfx::ShaderHandle handle() const { return m_handle; }
+		inline shader_type type() const { return m_type; }
+
+	private:
+		bgfx::ShaderHandle m_handle;
+		shader_type m_type;
+	};
+
+	//- Container for vertex and fragment shader. Destroying destroys individual shaders.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cprogram final
+	{
+	public:
+		static void destroy(cprogram& program);
+
+		explicit cprogram(const cshader& vertex, const cshader& fragment);
+		cprogram();
+		~cprogram();
+
+		opresult load_from_shaders(const cshader& vertex, const cshader& fragment);
+		opresult load_from_handles(bgfx::ShaderHandle vertex, bgfx::ShaderHandle fragment);
+
+		inline bgfx::ProgramHandle handle() const { return m_handle; }
+		inline const cshader& vertex() const { return m_vertex; }
+		inline const cshader& fragment() const { return m_fragment; }
+
+	private:
+		cshader m_vertex;
+		cshader m_fragment;
+		bgfx::ProgramHandle m_handle;
+	};
+
+	//- CPU resident image representation. Can easily be copied around, as the data is managed elsewhere, as a
+	//- consequence, you have to manually call destroy to signal that an image is no longer needed,
+	//- otherwise the memory will not be freed.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cimage final
 	{
 	public:
+		static void destroy(cimage& image);
+
 		explicit cimage(stringview_t filepath);
 		explicit cimage(void* data, unsigned size);
 		cimage();
@@ -105,11 +172,15 @@ namespace sm
 		bimg::ImageContainer* m_container;
 	};
 
-	//- GPU resident image representation. Can easily be copied around, as the data is managed elsewhere.
+	//- GPU resident image representation. Can easily be copied around, as the data is managed elsewhere, as a
+	//- consequence, you have to manually call destroy to signal that a texture is no longer needed,
+	//- otherwise the memory will not be freed.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ctexture final
 	{
 	public:
+		static void destroy(ctexture& texture);
+
 		explicit ctexture(bgfx::TextureHandle handle, const bgfx::TextureInfo& info);
 		explicit ctexture(const cimage& image);
 		ctexture();

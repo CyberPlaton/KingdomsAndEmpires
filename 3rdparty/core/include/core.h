@@ -1030,6 +1030,7 @@ namespace core
 		vec4_t normalize() const;
 
 		unsigned rgba() const;
+		unsigned abgr() const;
 
 		uint8_t m_r, m_g, m_b, m_a;
 

@@ -106,7 +106,8 @@ namespace core
 			CORE_FREE(data);
 		}
 
-		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message
+		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message.
+		//- Does append a null terminator at the end.
 		//------------------------------------------------------------------------------------------------------------------------
 		static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out)
 		{
@@ -125,10 +126,11 @@ namespace core
 
 					if (size > 0)
 					{
-						data = (uint8_t*)CORE_MALLOC(sizeof(uint8_t) * size);
+						data = (uint8_t*)CORE_MALLOC(sizeof(uint8_t) * size + 1);
+						data[sizeof(uint8_t) * size - 1] = '\0';
 
 						unsigned count = SCAST(unsigned, fread(data, sizeof(uint8_t), size, file));
-						*data_size_out = count;
+						*data_size_out = count + 1;
 					}
 
 					fclose(file);
@@ -1348,6 +1350,12 @@ namespace core
 	unsigned scolor::rgba() const
 	{
 		return ((SCAST(unsigned, m_r) << 24) | (SCAST(unsigned, m_g) << 16) | (SCAST(unsigned, m_b) << 8) | SCAST(unsigned, m_a));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned scolor::abgr() const
+	{
+		return ((SCAST(unsigned, m_a) << 24) | (SCAST(unsigned, m_b) << 16) | (SCAST(unsigned, m_g) << 8) | SCAST(unsigned, m_r));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
