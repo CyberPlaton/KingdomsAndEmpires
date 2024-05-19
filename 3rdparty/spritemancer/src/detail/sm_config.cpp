@@ -407,4 +407,15 @@ namespace sm
 		return opresult_ok;
 	}
 
+	cshader_compiler::cshader_compiler()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cshader_compiler::compile()
+	{
+		shaderc::
+	}
+
 } //- sm

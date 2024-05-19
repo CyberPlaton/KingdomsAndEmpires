@@ -5,7 +5,7 @@
 //- Available on DirectX platforms
 //------------------------------------------------------------------------------------------------------------------------
 #ifndef SHADERC_CONFIG_HLSL
-	#if CORE_PLATFORM_WINDOWS || CORE_PLATFORM_XBOXONE || CORE_PLATFORM_XBOXSERIES
+	#if CORE_PLATFORM_WINDOWS
 		#define SHADERC_CONFIG_HLSL 1
 	#else
 		#define SHADERC_CONFIG_HLSL 0
@@ -16,6 +16,8 @@ namespace sm
 {
 	namespace shaderc
 	{
+
+		//- shaderc is a bgfx tool https://bkaradzic.github.io/bgfx/tools.html#shader-compiler-shaderc
 		//------------------------------------------------------------------------------------------------------------------------
 		constexpr static uint8_t kUniformFragmentBit	= 0x10;
 		constexpr static uint8_t kUniformSamplerBit		= 0x20;
@@ -90,6 +92,8 @@ namespace sm
 		bool compileMetalShader(const Options& _options, uint32_t _version, const std::string& _code, bx::WriterI* _writer, bx::WriterI* _messages);
 		bool compilePSSLShader(const Options& _options, uint32_t _version, const std::string& _code, bx::WriterI* _writer, bx::WriterI* _messages);
 		bool compileSPIRVShader(const Options& _options, uint32_t _version, const std::string& _code, bx::WriterI* _writer, bx::WriterI* _messages);
+		bool compileShader(const char* _varying, const char* _comment, char* _shader, uint32_t _shaderLen, const Options& _options,
+			bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter);
 
 		const char* getPsslPreamble();
 

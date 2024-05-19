@@ -501,6 +501,13 @@ namespace sm
 			}
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		bool compileShader(const char* _varying, const char* _comment, char* _shader, uint32_t _shaderLen,
+			const Options& _options, bx::WriterI* _shaderWriter, bx::WriterI* _messageWriter)
+		{
+
+		}
+
 	} //- shaderc
 
 } //- sm

@@ -17,6 +17,50 @@ namespace sm
 	using primitive_topology_t = bgfx::Topology::Enum;
 
 	//------------------------------------------------------------------------------------------------------------------------
+	struct sshader_compile_options
+	{
+		enum type : uint8_t
+		{
+			type_none = 0,
+			type_vertex,
+			type_fragment,
+			type_compute,
+		};
+
+		enum optimization : uint8_t
+		{
+			optimization_none = 0,
+			optimization_full,
+		};
+
+		enum platform : uint8_t
+		{
+			platform_none = 0,
+			platform_android,
+			platform_emscripten,
+			platform_ios,
+			platform_linux,
+			platform_macos,
+			platform_playstation,
+			platform_windows,
+		};
+
+		enum language : uint8_t
+		{
+			language_none = 0,
+			language_glsl,
+			language_hlsl,
+			language_pssl,
+			language_spirv,
+		};
+
+		type m_type				= type_none;
+		optimization m_optimize = optimization_none;
+		platform m_platform		= platform_none;
+		language m_language		= language_none;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_mode : uint8_t
 	{
 		blending_mode_none = 0,
@@ -110,13 +154,79 @@ namespace sm
 
 	} //- entry
 
+	//- Responsible for compiling a ready-to-use shader in order to be loaded to a shader object or exported to file.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cshader_compiler final
+	{
+	public:
+		enum shader_type : uint8_t
+		{
+			shader_type_none = 0,
+			shader_type_vertex,
+			shader_type_fragment,
+			shader_type_compute,
+		};
+
+		enum shader_optimization : uint8_t
+		{
+			shader_optimization_none = 0,
+			shader_optimization_full,
+		};
+
+		enum shader_platform : uint8_t
+		{
+			shader_platform_none = 0,
+			shader_platform_android,
+			shader_platform_emscripten,
+			shader_platform_ios,
+			shader_platform_linux,
+			shader_platform_macos,
+			shader_platform_playstation,
+			shader_platform_windows,
+		};
+
+		enum shader_language : uint8_t
+		{
+			shader_language_none = 0,
+			shader_language_glsl,
+			shader_language_hlsl,
+			shader_language_pssl,
+			shader_language_spirv,
+		};
+
+		cshader_compiler();
+		~cshader_compiler() = default;
+
+		cshader_compiler& type(shader_type option);
+		cshader_compiler& optimization(shader_optimization option);
+		cshader_compiler& platform(shader_platform option);
+		cshader_compiler& language(shader_language option);
+
+		//- If not custom varying definition file is specified, the default one is used.
+		//- Here we expect an input string with the definition text and not a filepath.
+		cshader_compiler& varying(stringview_t string);
+
+		cshader_compiler& dependencies(stringview_t string);
+		cshader_compiler& includes(stringview_t string);
+		cshader_compiler& defines(stringview_t string);
+
+		opresult compile();
+
+		[[nodiscard]] core::spair<uint8_t*, unsigned> take();
+
+	private:
+
+	};
+
 	//- A shader. Can be vertex, fragment, compute etc.
 	//- Lightweight class that can be copied around, as a consequence it does not own the shader,
 	//- when done with it you have to manually call destroy, otherwise the memory will not be freed.
+	//- Note: when loading from string, a hex representation is excepted.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cshader final
 	{
 	public:
+		static shaderc::Options options(sshader_compile_options ops, );
 		static void destroy(cshader& shader);
 
 		explicit cshader(shader_type type, stringview_t filepath);
