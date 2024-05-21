@@ -361,6 +361,16 @@ namespace core
 		logging_verbosity_off		= SPDLOG_LEVEL_OFF,
 	};
 
+	//- Structure to retrieve underlying information about platform, configuration etc.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sinfo
+	{
+		static string_t platform();
+		static string_t architecture();
+		static string_t compiler();
+		static string_t configuration();
+	};
+
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sallocator
 	{
@@ -388,7 +398,7 @@ namespace core
 	{
 	public:
 		cnon_copyable() = default;
-		~cnon_copyable() = default;
+		virtual ~cnon_copyable() = default;
 	private:
 		cnon_copyable& operator=(const cnon_copyable&) = delete;
 		cnon_copyable(const cnon_copyable&) = delete;
@@ -410,28 +420,28 @@ namespace algorithm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename T>
-	void bit_set(T& byte, T bit)
+	void bit_set(unsigned& byte, T bit)
 	{
 		byte |= (1 << (bit));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename T>
-	void bit_clear(T& byte, T bit)
+	void bit_clear(unsigned& byte, T bit)
 	{
 		byte &= ~(1 << (bit));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename T>
-	void bit_flip(T& byte, T bit)
+	void bit_flip(unsigned& byte, T bit)
 	{
 		byte ^= (1 << (bit));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename T>
-	bool bit_check(T& byte, T bit)
+	bool bit_check(unsigned& byte, T bit)
 	{
 		return byte & (1 << (bit));
 	}

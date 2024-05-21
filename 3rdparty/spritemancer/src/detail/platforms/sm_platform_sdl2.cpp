@@ -4,8 +4,6 @@ namespace sm
 {
 	namespace
 	{
-		static SDL_Window* S_WINDOW = nullptr;
-
 		//------------------------------------------------------------------------------------------------------------------------
 		void* native_window_handle(SDL_Window* window)
 		{
@@ -69,7 +67,7 @@ namespace sm
 	sm::opresult cplatform_sdl::init_mainwindow(stringview_t title, unsigned w, unsigned h,
 		bool fullscreen)
 	{
-		unsigned flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
+		unsigned flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 
 		if (fullscreen)
 		{
@@ -93,10 +91,11 @@ namespace sm
 	{
 		SDL_Event e;
 
-		while (SDL_PollEvent(&e))
+		while (SDL_PollEvent(&e) != 0)
 		{
 			switch (e.type)
 			{
+			case SDL_APP_TERMINATING:
 			case SDL_QUIT:
 			{
 				return opresult_fail;

@@ -17,47 +17,49 @@ namespace sm
 	using primitive_topology_t = bgfx::Topology::Enum;
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sshader_compile_options
+	enum shader_optimization : uint8_t
 	{
-		enum type : uint8_t
-		{
-			type_none = 0,
-			type_vertex,
-			type_fragment,
-			type_compute,
-		};
+		shader_optimization_none = 0,
+		shader_optimization_full,
+	};
 
-		enum optimization : uint8_t
-		{
-			optimization_none = 0,
-			optimization_full,
-		};
+	//------------------------------------------------------------------------------------------------------------------------
+	enum shader_platform : uint8_t
+	{
+		shader_platform_none = 0,
+		shader_platform_android,
+		shader_platform_emscripten,
+		shader_platform_ios,
+		shader_platform_linux,
+		shader_platform_macos,
+		shader_platform_playstation,
+		shader_platform_windows,
+	};
 
-		enum platform : uint8_t
-		{
-			platform_none = 0,
-			platform_android,
-			platform_emscripten,
-			platform_ios,
-			platform_linux,
-			platform_macos,
-			platform_playstation,
-			platform_windows,
-		};
+	//------------------------------------------------------------------------------------------------------------------------
+	enum shader_language : uint8_t
+	{
+		shader_language_none = 0,
+		shader_language_glsl,
+		shader_language_hlsl,
+		shader_language_pssl,
+		shader_language_spirv,
+		shader_language_essl,
+		shader_language_metal,
+	};
 
-		enum language : uint8_t
-		{
-			language_none = 0,
-			language_glsl,
-			language_hlsl,
-			language_pssl,
-			language_spirv,
-		};
-
-		type m_type				= type_none;
-		optimization m_optimize = optimization_none;
-		platform m_platform		= platform_none;
-		language m_language		= language_none;
+	//------------------------------------------------------------------------------------------------------------------------
+	enum shader_options : uint32_t
+	{
+		shader_options_none						= 0,
+		shader_options_debug_information		= BIT(1),
+		shader_options_avoid_flow_control		= BIT(2),
+		shader_options_no_preshader				= BIT(3),
+		shader_options_partial_precision		= BIT(4),
+		shader_options_prefer_flow_control		= BIT(5),
+		shader_options_backwards_compatability	= BIT(6),
+		shader_options_warnings_are_errors		= BIT(7),
+		shader_options_keep_intermediate		= BIT(8),
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -111,8 +113,6 @@ namespace sm
 
 	namespace entry
 	{
-
-
 		//------------------------------------------------------------------------------------------------------------------------
 		class cfilereader final : public bx::FileReader
 		{
@@ -141,9 +141,20 @@ namespace sm
 			string_t m_string;
 		};
 
+		//- Write incoming data to log. Convenience class to use with thirdparty libraries,
+		//- such as bx, bgfx etc
+		//------------------------------------------------------------------------------------------------------------------------
+		class clogwriter final : public bx::WriterI
+		{
+		public:
+			int32_t write(const void* data, int32_t size, bx::Error* error) override final;
+		};
+
+
 		bx::FileReaderI*	filereader();
 		bx::FileWriterI*	filewriter();
 		bx::WriterI*		stringwriter();
+		bx::WriterI*		logwriter();
 		bx::AllocatorI*		allocator();
 		irenderer*			renderer();
 		iplatform*			platform();
@@ -154,70 +165,6 @@ namespace sm
 
 	} //- entry
 
-	//- Responsible for compiling a ready-to-use shader in order to be loaded to a shader object or exported to file.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cshader_compiler final
-	{
-	public:
-		enum shader_type : uint8_t
-		{
-			shader_type_none = 0,
-			shader_type_vertex,
-			shader_type_fragment,
-			shader_type_compute,
-		};
-
-		enum shader_optimization : uint8_t
-		{
-			shader_optimization_none = 0,
-			shader_optimization_full,
-		};
-
-		enum shader_platform : uint8_t
-		{
-			shader_platform_none = 0,
-			shader_platform_android,
-			shader_platform_emscripten,
-			shader_platform_ios,
-			shader_platform_linux,
-			shader_platform_macos,
-			shader_platform_playstation,
-			shader_platform_windows,
-		};
-
-		enum shader_language : uint8_t
-		{
-			shader_language_none = 0,
-			shader_language_glsl,
-			shader_language_hlsl,
-			shader_language_pssl,
-			shader_language_spirv,
-		};
-
-		cshader_compiler();
-		~cshader_compiler() = default;
-
-		cshader_compiler& type(shader_type option);
-		cshader_compiler& optimization(shader_optimization option);
-		cshader_compiler& platform(shader_platform option);
-		cshader_compiler& language(shader_language option);
-
-		//- If not custom varying definition file is specified, the default one is used.
-		//- Here we expect an input string with the definition text and not a filepath.
-		cshader_compiler& varying(stringview_t string);
-
-		cshader_compiler& dependencies(stringview_t string);
-		cshader_compiler& includes(stringview_t string);
-		cshader_compiler& defines(stringview_t string);
-
-		opresult compile();
-
-		[[nodiscard]] core::spair<uint8_t*, unsigned> take();
-
-	private:
-
-	};
-
 	//- A shader. Can be vertex, fragment, compute etc.
 	//- Lightweight class that can be copied around, as a consequence it does not own the shader,
 	//- when done with it you have to manually call destroy, otherwise the memory will not be freed.
@@ -226,19 +173,18 @@ namespace sm
 	class cshader final
 	{
 	public:
-		static shaderc::Options options(sshader_compile_options ops, );
 		static void destroy(cshader& shader);
 
 		explicit cshader(shader_type type, stringview_t filepath);
-		explicit cshader(shader_type type, uint8_t* data, unsigned size);
+		explicit cshader(shader_type type, const uint8_t* data, unsigned size);
 		cshader();
 		~cshader();
 
 		opresult load_from_string(shader_type type, const char* string);
 		opresult load_from_file(shader_type type, stringview_t filepath);
 
-		//- Note: does not expect a null terminated string, appends it automatically
-		opresult load_from_memory(shader_type type, uint8_t* data, unsigned size);
+		//- expected is a compiled binary shader representation that can be made using shaderc tool from bgfx
+		opresult load_from_memory(shader_type type, const uint8_t* data, unsigned size);
 
 		inline bgfx::ShaderHandle handle() const { return m_handle; }
 		inline shader_type type() const { return m_type; }
@@ -253,6 +199,7 @@ namespace sm
 	class cprogram final
 	{
 	public:
+		static bgfx::ProgramHandle create(const cshader& shader);
 		static void destroy(cprogram& program);
 
 		explicit cprogram(const cshader& vertex, const cshader& fragment);

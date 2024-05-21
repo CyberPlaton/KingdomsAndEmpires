@@ -26,6 +26,7 @@ namespace sm
 		static cfilereader S_FILEREADER;
 		static cfilewriter S_FILEWRITER;
 		static cstringwriter S_STRINGWRITER;
+		static clogwriter S_LOGWRITER;
 		static bx::AllocatorI* S_ALLOCATOR = &S_ALLOCATOR_DEFAULT;
 		static ptr_t<iplatform> S_PLATFORM = nullptr;
 		static iapp* S_APP = nullptr;
@@ -77,6 +78,12 @@ namespace sm
 		bx::WriterI* stringwriter()
 		{
 			return &S_STRINGWRITER;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bx::WriterI* logwriter()
+		{
+			return &S_LOGWRITER;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -132,6 +139,18 @@ namespace sm
 			return size;
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		int32_t clogwriter::write(const void* data, int32_t size, bx::Error* error)
+		{
+			if (!error && serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_info,
+					(const char*)data);
+				return -1;
+			}
+			return size;
+		}
+
 	} //- entry
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -153,7 +172,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(shader_type type, uint8_t* data, unsigned size)
+	cshader::cshader(shader_type type, const uint8_t* data, unsigned size)
 	{
 		load_from_memory(type, data, size);
 	}
@@ -172,19 +191,26 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cshader::load_from_string(shader_type type, const char* string)
 	{
-		return load_from_memory(type, (uint8_t*)string, strlen(string));
+		CORE_ASSERT(false, "Invalid operation. Loading shaders from string is not supported");
+
+		return opresult_fail;
+		//return load_from_memory(type, (uint8_t*)string, strlen(string));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cshader::load_from_file(shader_type type, stringview_t filepath)
 	{
-		const auto [data, size] = core::cfile::load_binary(filepath.data());
+		CORE_ASSERT(false, "Invalid operation. Loading shaders from file is not supported");
 
-		return load_from_memory(type, data, size);
+		return opresult_fail;
+
+// 		const auto [data, size] = core::cfile::load_binary(filepath.data());
+// 
+// 		return load_from_memory(type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_memory(shader_type type, uint8_t* data, unsigned size)
+	sm::opresult cshader::load_from_memory(shader_type type, const uint8_t* data, unsigned size)
 	{
 		const bgfx::Memory* mem = bgfx::makeRef(data, size);
 
@@ -202,6 +228,24 @@ namespace sm
 		m_type = type;
 
 		return opresult_ok;
+	}
+
+	//- create a program with a single shader. Can be used for programs without a vertex or fragment shader or a compute shader
+	//- program.
+	//------------------------------------------------------------------------------------------------------------------------
+	bgfx::ProgramHandle cprogram::create(const cshader& shader)
+	{
+		bgfx::ProgramHandle handle; handle.idx = bgfx::kInvalidHandle;
+
+		if (handle = bgfx::createProgram(shader.handle(), false); !bgfx::isValid(handle))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading program");
+			}
+		}
+		return handle;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -405,17 +449,6 @@ namespace sm
 		bgfx::calcTextureSize(m_info, (uint16_t)w, (uint16_t)h, (uint16_t)depth, false, mips, (uint16_t)layers, format);
 
 		return opresult_ok;
-	}
-
-	cshader_compiler::cshader_compiler()
-	{
-
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader_compiler::compile()
-	{
-		shaderc::
 	}
 
 } //- sm

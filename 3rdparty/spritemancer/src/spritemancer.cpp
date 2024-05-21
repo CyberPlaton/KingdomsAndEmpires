@@ -70,7 +70,10 @@ namespace sm
 			CORE_ZONE;
 
 			//- platforms may need to handle events
-			entry::platform()->process_event();
+			if (entry::platform()->process_event() == opresult_fail)
+			{
+				S_RUNNING = false;
+			}
 
 			//- update HID state, such as keyboard and mouse
 
@@ -78,13 +81,13 @@ namespace sm
 
 			//- render frame
 			entry::renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
-			entry::renderer()->clear(S_WHITE, true);
 
 			//- most basic layer, does always exist
 			S_LAYERS[0].m_want_update = true;
 			S_LAYERS[0].m_show = true;
 			entry::renderer()->blendmode(blending_mode_default);
 			entry::renderer()->prepare_frame();
+			entry::renderer()->clear(S_WHITE, true);
 
 			//- layered rendering, from bottom to top
 			for (auto i = 0u; i < S_LAYER_COUNT; ++i)
@@ -245,6 +248,7 @@ namespace sm
 			auto& layer = S_LAYERS[S_LAYER_COUNT];
 
 			layer.m_layer_target.m_image.create_solid(S_W, S_H, S_WHITE);
+			layer.m_layer_target.m_texture.load_from_image(layer.m_layer_target.m_image);
 
 			return S_LAYER_COUNT++;
 		}

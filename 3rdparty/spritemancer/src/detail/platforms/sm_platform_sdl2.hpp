@@ -26,6 +26,8 @@ namespace sm
 		void main_window_position(unsigned* x, unsigned* y) override final;
 		void main_window_size(unsigned* x, unsigned* y) override final;
 
+		SDL_Window* S_WINDOW = nullptr;
+
 		RTTR_ENABLE(iplatform);
 	};
 

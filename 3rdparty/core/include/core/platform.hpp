@@ -21,6 +21,10 @@
 //------------------------------------------------------------------------------------------------------------------------
 #define CORE_ARCH_64BIT 0
 #define CORE_ARCH_32BIT 0
+//------------------------------------------------------------------------------------------------------------------------
+#define CORE_DEBUG 0
+#define CORE_RELEASE 0
+#define CORE_HYBRID 0
 
 //- @reference: bx/platform.h
 //------------------------------------------------------------------------------------------------------------------------
@@ -100,4 +104,16 @@
 #elif defined (CORE_PLATFORM_IOS) || defined(CORE_PLATFORM_ANDROID)
 	#undef CORE_PLATFORM_MOBILE
 	#define CORE_PLATFORM_MOBILE 1
+#endif
+
+//------------------------------------------------------------------------------------------------------------------------
+#if DEBUG
+	#undef CORE_DEBUG
+	#define CORE_DEBUG 1
+#elif RELEASE
+	#undef CORE_RELEASE
+	#define CORE_RELEASE 1
+#elif HYBRID
+	#undef CORE_HYBRID
+	#define CORE_HYBRID 1
 #endif

@@ -1,4 +1,5 @@
 #include "sm_renderer_bgfx.hpp"
+#include "../sm_embedded_shaders.hpp"
 
 namespace sm
 {
@@ -115,6 +116,9 @@ namespace sm
 		static cshader S_DECAL_VS_DEFAULT;
 		static cshader S_DECAL_FS_DEFAULT;
 		static cprogram S_DECAL_PROGRAM_DEFAULT;
+		static cshader S_LAYER_VS_DEFAULT;
+		static cshader S_LAYER_PS_DEFAULT;
+		static cprogram S_LAYER_PROGRAM_DEFAULT;
 		static srenderable S_BLANK_QUAD;
 		static core::scolor S_WHITE = { 250, 250, 250, 250 };
 		constexpr stringview_t C_TEXTURE_UNIFORM_NAME = "s_tex";
@@ -161,14 +165,19 @@ namespace sm
 		desc.platformData.nwh = nwh;
 #if CORE_PLATFORM_WINDOWS || CORE_PLATFORM_XBOXONE || CORE_PLATFORM_XBOXSERIES
 		desc.type = bgfx::RendererType::Direct3D11;
+		desc.platformData.ndt = nullptr;
 #elif CORE_PLATFORM_LINUX
 		desc.type = bgfx::RendererType::Vulkan;
+		desc.platformData.ndt = XOpenDisplay(nullptr);
 #elif CORE_PLATFORM_OSX
 		desc.type = bgfx::RendererType::Metal;
+		desc.platformData.ndt = nullptr;
 #elif CORE_PLATFORM_PS4 || CORE_PLATFORM_PS5
 		desc.type = bgfx::RendererType::Gnm;
+		desc.platformData.ndt = nullptr;
 #elif CORE_PLATFORM_NX
 		desc.type = bgfx::RendererType::Vulkan;
+		desc.platformData.ndt = nullptr;
 #endif
 
 		//- report GPU capabilities and the selected configuration
@@ -209,7 +218,7 @@ namespace sm
 		//- report success and continue reporting capabilities. Implement if required
 		//const auto* caps = bgfx::getCaps();
 
-#if DEBUG
+#if CORE_DEBUG
 		bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
 #endif
 
@@ -234,7 +243,7 @@ namespace sm
 		}
 
 		//- set up default vertex and fragment shaders
-		if (const auto result = S_DECAL_VS_DEFAULT.load_from_string(shader_type_vertex, shaders::C_VERTEX_DEFAULT.data());
+		if (const auto result = S_DECAL_VS_DEFAULT.load_from_memory(shader_type_vertex, &shaders::sprite::vs_sprite_dx11[0], sizeof(shaders::sprite::vs_sprite_dx11));
 			result != opresult_ok)
 		{
 			if (serror_reporter::instance().m_callback)
@@ -244,7 +253,7 @@ namespace sm
 			}
 			return opresult_fail;
 		}
-		if (const auto result = S_DECAL_FS_DEFAULT.load_from_string(shader_type_fragment, shaders::C_FRAGMENT_DEFAULT.data());
+		if (const auto result = S_DECAL_FS_DEFAULT.load_from_memory(shader_type_fragment, &shaders::sprite::ps_sprite_dx11[0], sizeof(shaders::sprite::ps_sprite_dx11));
 			result != opresult_ok)
 		{
 			if (serror_reporter::instance().m_callback)
@@ -261,6 +270,36 @@ namespace sm
 			{
 				serror_reporter::instance().m_callback(core::logging_verbosity_error,
 					"Failed creating default decal program");
+			}
+			return opresult_fail;
+		}
+		if (const auto result = S_LAYER_VS_DEFAULT.load_from_memory(shader_type_vertex, &shaders::sprite::vs_sprite_dx11[0], sizeof(shaders::sprite::vs_sprite_dx11));
+			result != opresult_ok)
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed creating default layer quad vertex shader");
+			}
+			return opresult_fail;
+		}
+		if (const auto result = S_LAYER_PS_DEFAULT.load_from_memory(shader_type_fragment, &shaders::sprite::ps_sprite_dx11[0], sizeof(shaders::sprite::ps_sprite_dx11));
+			result != opresult_ok)
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed creating default layer quad fragment shader");
+			}
+			return opresult_fail;
+		}
+		if (const auto result = S_LAYER_PROGRAM_DEFAULT.load_from_shaders(S_LAYER_VS_DEFAULT, S_LAYER_PS_DEFAULT);
+			result != opresult_ok)
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed creating default layer quad program");
 			}
 			return opresult_fail;
 		}
@@ -307,9 +346,10 @@ namespace sm
 		bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.",
 			stats->width, stats->height, stats->textWidth, stats->textHeight);
 
-		bgfx::ProgramHandle invalid; invalid.idx = bgfx::kInvalidHandle;
+		static bgfx::ProgramHandle invalid; invalid.idx = bgfx::kInvalidHandle;
 
 		bgfx::submit(C_VIEW_DEFAULT, invalid);
+
 		bgfx::frame();
 	}
 
@@ -325,7 +365,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::clear(const core::scolor& color, bool depth)
 	{
-		bgfx::setViewClear(C_VIEW_DEFAULT, depth ? C_CLEAR_WITH_DEPTH : C_CLEAR_NO_DEPTH, color.rgba(), 1.0f, 0);
+		bgfx::setViewClear(C_VIEW_DEFAULT, depth ? C_CLEAR_WITH_DEPTH : C_CLEAR_NO_DEPTH, color.abgr(), 1.0f, 0);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -345,6 +385,30 @@ namespace sm
 	{
 		//- TODO: unclear what the original purpose of this is... maybe it was simulating framebuffers?!
 		//- If so, then we have to consider how to deal with framebuffers...
+
+		quad_vertex_t vertices[4] =
+		{
+			quad_vertex_t::make(-1.0f, -1.0f,	color, 0.0f * size.x + position.x, 1.0f * size.y + position.y),
+			quad_vertex_t::make(1.0f, -1.0f,	color, 1.0f * size.x + position.x, 1.0f * size.y + position.y),
+			quad_vertex_t::make(-1.0f, 1.0f,	color, 0.0f * size.x + position.x, 0.0f * size.y + position.y),
+			quad_vertex_t::make(1.0f, 1.0f,		color, 1.0f * size.x + position.x, 0.0f * size.y + position.y)
+		};
+
+		//- create and set vertex buffer
+		if (4 <= bgfx::getAvailTransientVertexBuffer(4, quad_vertex_t::S_LAYOUT))
+		{
+			bgfx::allocTransientVertexBuffer(&S_TVB, 4, quad_vertex_t::S_LAYOUT);
+
+			bx::memCopy((quad_vertex_t*)S_TVB.data, &vertices[0], 4 * sizeof(quad_vertex_t));
+
+			bgfx::setVertexBuffer(0, S_TVB.handle, 0, 4, quad_vertex_t::S_LAYOUT_HANDLE);
+		}
+
+		//- set state for primitive
+		bgfx::setState(C_STATE_DEFAULT);
+
+		//- submit primitive with program
+		bgfx::submit(C_VIEW_DEFAULT, S_LAYER_PROGRAM_DEFAULT.handle());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -373,6 +437,34 @@ namespace sm
 		}
 
 		//- create and set index buffer
+
+
+		//- create and set camera transform and projection
+		static float pitch = 0.0f;
+		static float yaw = 0.0f;
+		float cam_rotation[16];
+		bx::mtxRotateXYZ(cam_rotation, pitch, yaw, 0.0f);
+
+		float cam_translation[16];
+		bx::mtxTranslate(cam_translation, 0.0f, 0.0f, -5.0f);
+
+		float cam_transform[16];
+		bx::mtxMul(cam_transform, cam_translation, cam_rotation);
+
+		float view[16];
+		bx::mtxInverse(view, cam_transform);
+
+		float proj[16];
+		bx::mtxProj(
+			proj, 60.0f, float(S_W) / float(S_H), 0.1f,
+			100.0f, bgfx::getCaps()->homogeneousDepth);
+
+		bgfx::setViewTransform(C_VIEW_DEFAULT, view, proj);
+
+		//- set model transform
+		float model[16];
+		bx::mtxIdentity(model);
+		bgfx::setTransform(model);
 
 		//- set texture and texture sampler
 		bgfx::setTexture(0, S_TEXTURE_UNIFORM, decal.m_texture);

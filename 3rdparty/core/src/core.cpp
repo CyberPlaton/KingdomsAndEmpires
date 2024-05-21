@@ -991,6 +991,70 @@ namespace core
 	const core::cuuid cuuid::C_INVALID_UUID = { C_INVALID_DATA };
 
 	//------------------------------------------------------------------------------------------------------------------------
+	string_t sinfo::platform()
+	{
+#if CORE_PLATFORM_WINDOWS
+		return "Windows";
+#elif CORE_PLATFORM_XBOXONE
+		return "Xbox One";
+#elif CORE_PLATFORM_XBOXSERIES
+		return "Xbox Series";
+#elif CORE_PLATFORM_LINUX
+		return "Linux";
+#elif CORE_PLATFORM_ANDROID
+		return "Android";
+#elif CORE_PLATFORM_IOS
+		return "iOS";
+#elif CORE_PLATFORM_OSX
+		return "macOS";
+#elif CORE_PLATFORM_PS4
+		return "PlayStation 4";
+#elif CORE_PLATFORM_PS5
+		return "PlayStation 5";
+#elif CORE_PLATFORM_NX
+		return "NX";
+#endif
+		return "<unknown>";
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	string_t sinfo::architecture()
+	{
+#if CORE_ARCH_64BIT
+		return "x64";
+#elif CORE_ARCH_32BIT
+		return "x32";
+#endif
+		return "<unknown>";
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	string_t sinfo::compiler()
+	{
+#if CORE_COMPILER_MSVC
+		return "msvc";
+#elif CORE_COMPILER_GCC
+		return "gcc";
+#elif CORE_COMPILER_CLANG
+		return "clang";
+#endif
+		return "<unknown>";
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	string_t sinfo::configuration()
+	{
+#if DEBUG
+		return "Debug";
+#elif RELEASE
+		return "Release";
+#elif HYBRID
+		return "Hybrid";
+#endif
+		return "<unknown>";
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cuuid::cuuid()
 	{
 		generate(std::random_device()());
