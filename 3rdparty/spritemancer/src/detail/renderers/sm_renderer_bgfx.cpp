@@ -23,9 +23,9 @@ namespace sm
 		bool sposcolortexcoord::init()
 		{
 			S_LAYOUT.begin(bgfx::getRendererType())
-				.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-				.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
-				.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::Position,	3, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::Color0,		4, bgfx::AttribType::Uint8, true)
+				.add(bgfx::Attrib::TexCoord0,	2, bgfx::AttribType::Float)
 				.end();
 
 			S_LAYOUT_HANDLE = bgfx::createVertexLayout(S_LAYOUT);
@@ -56,8 +56,8 @@ namespace sm
 		bool spostexcoord::init()
 		{
 			S_LAYOUT.begin(bgfx::getRendererType())
-				.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-				.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::Position,	3, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::TexCoord0,	2, bgfx::AttribType::Float)
 				.end();
 
 			S_LAYOUT_HANDLE = bgfx::createVertexLayout(S_LAYOUT);
@@ -133,8 +133,10 @@ namespace sm
 
 		#define C_VERTICES_COUNT_MAX 128
 		static unsigned S_VERTEX_COUNT = 0;
-		static array_t<quad_vertex_t, C_VERTICES_COUNT_MAX> S_VERTICES; //- Note: for one immediate draw call. Not batched.
+		static array_t<quad_vertex_t, C_VERTICES_COUNT_MAX> S_PING; //- Note: for one immediate draw call. Not batched.
+		static array_t<quad_vertex_t, C_VERTICES_COUNT_MAX> S_PONG;
 		static bgfx::TransientVertexBuffer S_TVB;
+		static bgfx::TransientIndexBuffer S_TIB;
 
 	} //- unnamed
 
@@ -152,9 +154,6 @@ namespace sm
 			serror_reporter::instance().m_callback(core::logging_verbosity_info, "Initializing bgfx...");
 		}
 
-		//- on platforms that do not allow creating separate rendering threads call
-		//- bgfx::renderFrame();
-
 		S_W = w;
 		S_H = h;
 
@@ -163,6 +162,17 @@ namespace sm
 		desc.resolution.height = S_H;
 		desc.resolution.reset = vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE;
 		desc.platformData.nwh = nwh;
+#if CORE_DEBUG
+		desc.debug = true;
+#else
+		desc.debug = false;
+#endif
+#if TRACY_ENABLE
+		desc.profile = true;
+#else
+		desc.profile = false;
+#endif
+
 #if CORE_PLATFORM_WINDOWS || CORE_PLATFORM_XBOXONE || CORE_PLATFORM_XBOXSERIES
 		desc.type = bgfx::RendererType::Direct3D11;
 		desc.platformData.ndt = nullptr;
@@ -215,12 +225,8 @@ namespace sm
 			return opresult_fail;
 		}
 
-		//- report success and continue reporting capabilities. Implement if required
+		//- TODO: report success and continue reporting capabilities. Implement if required
 		//const auto* caps = bgfx::getCaps();
-
-#if CORE_DEBUG
-		bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
-#endif
 
 		//- set up used vertex type layouts
 		if (!vertex_layouts::spostexcoord::init())
@@ -328,12 +334,17 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::prepare_frame()
 	{
+		bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS /*| BGFX_DEBUG_WIREFRAME*/);
+
 		S_VERTEX_COUNT = 0;
+
+		bx::memCopy(&S_PONG[0], &S_PING[0], sizeof(quad_vertex_t) * C_VERTICES_COUNT_MAX);
+
+		bx::memSet(&S_PING[0], 0, sizeof(quad_vertex_t) * C_VERTICES_COUNT_MAX);
 
 		bgfx::touch(C_VIEW_DEFAULT);
 		bgfx::setViewRect(C_VIEW_DEFAULT, S_X, S_Y, S_W, S_H);
 		bgfx::setViewTransform(C_VIEW_DEFAULT, glm::value_ptr(C_VIEWMAT_DEFAULT), glm::value_ptr(C_PROJMAT_DEFAULT));
-		bgfx::setState(C_STATE_DEFAULT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -346,26 +357,22 @@ namespace sm
 		bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.",
 			stats->width, stats->height, stats->textWidth, stats->textHeight);
 
-		static bgfx::ProgramHandle invalid; invalid.idx = bgfx::kInvalidHandle;
-
-		bgfx::submit(C_VIEW_DEFAULT, invalid);
-
 		bgfx::frame();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::update_viewport(const vec2_t& position, const vec2_t& size)
 	{
-		S_X = (uint16_t)position.x;
-		S_Y = (uint16_t)position.y;
+		S_X = (uint16_t)/*position.x*/0;
+		S_Y = (uint16_t)/*position.y*/0;
 		S_W = (uint16_t)size.x;
 		S_H = (uint16_t)size.y;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::clear(const core::scolor& color, bool depth)
+	void crenderer_bgfx::clear(unsigned view_id, const core::scolor& color, bool depth)
 	{
-		bgfx::setViewClear(C_VIEW_DEFAULT, depth ? C_CLEAR_WITH_DEPTH : C_CLEAR_NO_DEPTH, color.abgr(), 1.0f, 0);
+		bgfx::setViewClear(SCAST(bgfx::ViewId, view_id), depth ? C_CLEAR_WITH_DEPTH : C_CLEAR_NO_DEPTH, color.rgba(), 1.0f, 0);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -380,21 +387,19 @@ namespace sm
 		bgfx::setTexture(0, S_TEXTURE_UNIFORM, { static_cast<uint16_t>(id) });
 	}
 
+	//- This is basically clearing a layer with a color. Unsure whether we require this...
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::render_layer_quad(const vec2_t& position, const vec2_t& size, const core::scolor& color)
 	{
-		//- TODO: unclear what the original purpose of this is... maybe it was simulating framebuffers?!
-		//- If so, then we have to consider how to deal with framebuffers...
-
+		//- create and set vertex buffer
 		quad_vertex_t vertices[4] =
 		{
 			quad_vertex_t::make(-1.0f, -1.0f,	color, 0.0f * size.x + position.x, 1.0f * size.y + position.y),
 			quad_vertex_t::make(1.0f, -1.0f,	color, 1.0f * size.x + position.x, 1.0f * size.y + position.y),
-			quad_vertex_t::make(-1.0f, 1.0f,	color, 0.0f * size.x + position.x, 0.0f * size.y + position.y),
-			quad_vertex_t::make(1.0f, 1.0f,		color, 1.0f * size.x + position.x, 0.0f * size.y + position.y)
+			quad_vertex_t::make(1.0f, 1.0f,		color, 1.0f * size.x + position.x, 0.0f * size.y + position.y),
+			quad_vertex_t::make(-1.0f, 1.0f,	color, 0.0f * size.x + position.x, 0.0f * size.y + position.y)
 		};
 
-		//- create and set vertex buffer
 		if (4 <= bgfx::getAvailTransientVertexBuffer(4, quad_vertex_t::S_LAYOUT))
 		{
 			bgfx::allocTransientVertexBuffer(&S_TVB, 4, quad_vertex_t::S_LAYOUT);
@@ -403,6 +408,21 @@ namespace sm
 
 			bgfx::setVertexBuffer(0, S_TVB.handle, 0, 4, quad_vertex_t::S_LAYOUT_HANDLE);
 		}
+
+		//- create and set index buffer
+		uint16_t indices[6] = { 0, 1, 2, 3, 0, 2};
+
+		if (6 <= bgfx::getAvailTransientIndexBuffer(6))
+		{
+			bgfx::allocTransientIndexBuffer(&S_TIB, 6);
+
+			bx::memCopy((uint16_t*)S_TIB.data, &indices[0], 6 * sizeof(uint16_t));
+
+			bgfx::setIndexBuffer(S_TIB.handle, 0, 6);
+		}
+
+		//- set blank texture and texture sampler
+		bgfx::setTexture(0, S_TEXTURE_UNIFORM, S_BLANK_QUAD.m_texture.handle());
 
 		//- set state for primitive
 		bgfx::setState(C_STATE_DEFAULT);
@@ -420,7 +440,7 @@ namespace sm
 
 		for (auto i = 0u; i < decal.m_points; ++i)
 		{
-			S_VERTICES[i] = quad_vertex_t::make(decal.m_position[i].x, decal.m_position[i].y,
+			S_PING[i] = quad_vertex_t::make(decal.m_position[i].x, decal.m_position[i].y,
 				decal.m_tint[i], decal.m_uv[i].x, decal.m_uv[i].y);
 		}
 
@@ -431,40 +451,22 @@ namespace sm
 		{
 			bgfx::allocTransientVertexBuffer(&S_TVB, S_VERTEX_COUNT, quad_vertex_t::S_LAYOUT);
 
-			bx::memCopy((quad_vertex_t*)S_TVB.data, &S_VERTICES[0], S_VERTEX_COUNT * sizeof(quad_vertex_t));
+			bx::memCopy((quad_vertex_t*)S_TVB.data, &S_PING[0], S_VERTEX_COUNT * sizeof(quad_vertex_t));
 
 			bgfx::setVertexBuffer(0, S_TVB.handle, 0, S_VERTEX_COUNT, quad_vertex_t::S_LAYOUT_HANDLE);
 		}
 
 		//- create and set index buffer
+		uint16_t indices[6] = { 0, 1, 2, 3, 0, 2 };
 
+		if (6 <= bgfx::getAvailTransientIndexBuffer(6))
+		{
+			bgfx::allocTransientIndexBuffer(&S_TIB, 6);
 
-		//- create and set camera transform and projection
-		static float pitch = 0.0f;
-		static float yaw = 0.0f;
-		float cam_rotation[16];
-		bx::mtxRotateXYZ(cam_rotation, pitch, yaw, 0.0f);
+			bx::memCopy((uint16_t*)S_TIB.data, &indices[0], 6 * sizeof(uint16_t));
 
-		float cam_translation[16];
-		bx::mtxTranslate(cam_translation, 0.0f, 0.0f, -5.0f);
-
-		float cam_transform[16];
-		bx::mtxMul(cam_transform, cam_translation, cam_rotation);
-
-		float view[16];
-		bx::mtxInverse(view, cam_transform);
-
-		float proj[16];
-		bx::mtxProj(
-			proj, 60.0f, float(S_W) / float(S_H), 0.1f,
-			100.0f, bgfx::getCaps()->homogeneousDepth);
-
-		bgfx::setViewTransform(C_VIEW_DEFAULT, view, proj);
-
-		//- set model transform
-		float model[16];
-		bx::mtxIdentity(model);
-		bgfx::setTransform(model);
+			bgfx::setIndexBuffer(S_TIB.handle, 0, 6);
+		}
 
 		//- set texture and texture sampler
 		bgfx::setTexture(0, S_TEXTURE_UNIFORM, decal.m_texture);

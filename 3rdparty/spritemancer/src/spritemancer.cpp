@@ -11,10 +11,12 @@ namespace sm
 		static unsigned S_CURRENT_LAYER = 0;
 		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
 
-		static core::scolor S_WHITE = { 250, 250, 150, 250 };
+		static core::scolor S_WHITE = { 255, 255, 255, 255 };
+		static core::scolor S_BLACK = { 0, 0, 0, 0 };
+		static core::scolor S_BLANK = { 0, 0, 0, 255 };
 		static std::atomic_bool S_RUNNING;
 		static bool S_FULLSCREEN = false;
-		static bool S_VSYNC = false;
+		static bool S_VSYNC = true;
 		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
 		static float S_INVERSE_W = 0.0f, S_INVERSE_H = 0.0f;
 		static float S_DT = 0.0f;
@@ -87,7 +89,6 @@ namespace sm
 			S_LAYERS[0].m_show = true;
 			entry::renderer()->blendmode(blending_mode_default);
 			entry::renderer()->prepare_frame();
-			entry::renderer()->clear(S_WHITE, true);
 
 			//- layered rendering, from bottom to top
 			for (auto i = 0u; i < S_LAYER_COUNT; ++i)
@@ -96,19 +97,23 @@ namespace sm
 
 				if (layer.m_show)
 				{
+					entry::renderer()->clear(i, layer.m_tint, true);
+
+					//- TODO: unclear what this was originally for. Clearing the layer, however, should be
+					//- done as shown above
 					//- bind render target texture and fill it with color
-					entry::renderer()->bind_texture(layer.m_layer_target.m_texture.handle().idx);
-					if (layer.m_want_update)
-					{
-						entry::renderer()->update_texture_gpu(layer.m_layer_target.m_texture.handle().idx,
-							layer.m_layer_target.m_image.image()->m_width,
-							layer.m_layer_target.m_image.image()->m_height,
-							layer.m_layer_target.m_image.image()->m_data);
+// 					entry::renderer()->bind_texture(layer.m_layer_target.m_texture.handle().idx);
+// 					if (layer.m_want_update)
+// 					{
+// 						entry::renderer()->update_texture_gpu(layer.m_layer_target.m_texture.handle().idx,
+// 							layer.m_layer_target.m_image.image()->m_width,
+// 							layer.m_layer_target.m_image.image()->m_height,
+// 							layer.m_layer_target.m_image.image()->m_data);
+// 
+// 						layer.m_want_update = false;
+// 					}
 
-						layer.m_want_update = false;
-					}
-
-					entry::renderer()->render_layer_quad({ S_X, S_Y }, { S_W, S_H }, S_WHITE);
+					//entry::renderer()->render_layer_quad({ S_X, S_Y }, { S_W, S_H }, layer.m_tint);
 
 					//- render decals/textures for current layer
 					for (const auto& decal : layer.m_decals)
@@ -130,7 +135,7 @@ namespace sm
 			update_window_viewport();
 
 			//- create default placeholder texture
-			S_PLACEHOLDER_TEXTURE.m_image.create_solid(256, 256, {150, 150, 150, 255 });
+			S_PLACEHOLDER_TEXTURE.m_image.create_checkerboard(256, 256, 16, S_WHITE, S_BLACK);
 			S_PLACEHOLDER_TEXTURE.m_texture.load_from_image(S_PLACEHOLDER_TEXTURE.m_image);
 
 			//- create default font
@@ -247,8 +252,9 @@ namespace sm
 		{
 			auto& layer = S_LAYERS[S_LAYER_COUNT];
 
-			layer.m_layer_target.m_image.create_solid(S_W, S_H, S_WHITE);
+			layer.m_layer_target.m_image.create_solid(S_W, S_H, S_BLANK);
 			layer.m_layer_target.m_texture.load_from_image(layer.m_layer_target.m_image);
+			layer.m_tint = S_BLANK;
 
 			return S_LAYER_COUNT++;
 		}

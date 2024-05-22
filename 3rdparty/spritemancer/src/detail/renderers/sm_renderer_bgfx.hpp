@@ -18,7 +18,7 @@ namespace sm
 		void prepare_frame() override final;
 		void display_frame() override final;
 		void update_viewport(const vec2_t& position, const vec2_t& size) override final;
-		void clear(const core::scolor& color, bool depth) override final;
+		void clear(unsigned view_id, const core::scolor& color, bool depth) override final;
 		void blendmode(blending_mode mode) override final;
 
 		void bind_texture(uint64_t id) override final;

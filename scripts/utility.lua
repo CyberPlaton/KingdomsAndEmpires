@@ -144,6 +144,8 @@ end
 function set_sdl_deps()
 	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
 	links{"SDL2", "SDL2main"}
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "glfw", "include")}
+	links{"glfw3"}
 end
 
 ------------------------------------------------------------------------------------------------------------------------

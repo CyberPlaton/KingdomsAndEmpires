@@ -324,7 +324,7 @@ namespace sm
 		virtual void prepare_frame() = 0;
 		virtual void display_frame() = 0;
 		virtual void update_viewport(const vec2_t& position, const vec2_t& size) = 0;
-		virtual void clear(const core::scolor& color, bool depth) = 0;
+		virtual void clear(unsigned view_id, const core::scolor& color, bool depth) = 0;
 		virtual void blendmode(blending_mode mode) = 0;
 
 		virtual void bind_texture(uint64_t id) = 0;

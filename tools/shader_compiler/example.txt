@@ -1,0 +1,5 @@
+//- use to compile a binary representation
+python ./compile.py --file particle
+
+//- use to compile an embedded header file representation
+python ./compile.py --file sprite -embedded
