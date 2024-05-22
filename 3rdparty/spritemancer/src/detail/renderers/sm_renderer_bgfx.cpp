@@ -122,7 +122,7 @@ namespace sm
 		static srenderable S_BLANK_QUAD;
 		static core::scolor S_WHITE = { 250, 250, 250, 250 };
 		constexpr stringview_t C_TEXTURE_UNIFORM_NAME = "s_tex";
-		static bgfx::UniformHandle S_TEXTURE_UNIFORM;
+		static cuniform S_TEXTURE_UNIFORM;
 
 		constexpr unsigned C_STATE_DEFAULT = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CCW | BGFX_STATE_MSAA;
 		constexpr unsigned C_CLEAR_WITH_DEPTH = BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH;
@@ -313,7 +313,7 @@ namespace sm
 		//- create a blank texture for decals without a texture set
 		S_BLANK_QUAD.m_image.create_solid(1, 1, S_WHITE);
 		S_BLANK_QUAD.m_texture.load_from_image(S_BLANK_QUAD.m_image);
-		S_TEXTURE_UNIFORM = bgfx::createUniform(C_TEXTURE_UNIFORM_NAME.data(), bgfx::UniformType::Sampler);
+		S_TEXTURE_UNIFORM.create(C_TEXTURE_UNIFORM_NAME.data(), bgfx::UniformType::Sampler);
 
 		return opresult_ok;
 	}
@@ -323,8 +323,9 @@ namespace sm
 	{
 		//- destroy all used resources
 		cprogram::destroy(S_DECAL_PROGRAM_DEFAULT);
-		ctexture::destroy(S_BLANK_QUAD.m_texture);
-		cimage::destroy(S_BLANK_QUAD.m_image);
+		cprogram::destroy(S_LAYER_PROGRAM_DEFAULT);
+		srenderable::destroy(S_BLANK_QUAD);
+		cuniform::destroy(S_TEXTURE_UNIFORM);
 
 		bgfx::shutdown();
 
@@ -339,7 +340,6 @@ namespace sm
 		S_VERTEX_COUNT = 0;
 
 		bx::memCopy(&S_PONG[0], &S_PING[0], sizeof(quad_vertex_t) * C_VERTICES_COUNT_MAX);
-
 		bx::memSet(&S_PING[0], 0, sizeof(quad_vertex_t) * C_VERTICES_COUNT_MAX);
 
 		bgfx::touch(C_VIEW_DEFAULT);
@@ -384,7 +384,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::bind_texture(uint64_t id)
 	{
-		bgfx::setTexture(0, S_TEXTURE_UNIFORM, { static_cast<uint16_t>(id) });
+		bgfx::setTexture(0, S_TEXTURE_UNIFORM.handle(), { static_cast<uint16_t>(id) });
 	}
 
 	//- This is basically clearing a layer with a color. Unsure whether we require this...
@@ -422,7 +422,7 @@ namespace sm
 		}
 
 		//- set blank texture and texture sampler
-		bgfx::setTexture(0, S_TEXTURE_UNIFORM, S_BLANK_QUAD.m_texture.handle());
+		bgfx::setTexture(0, S_TEXTURE_UNIFORM.handle(), S_BLANK_QUAD.m_texture.handle());
 
 		//- set state for primitive
 		bgfx::setState(C_STATE_DEFAULT);
@@ -469,7 +469,7 @@ namespace sm
 		}
 
 		//- set texture and texture sampler
-		bgfx::setTexture(0, S_TEXTURE_UNIFORM, decal.m_texture);
+		bgfx::setTexture(0, S_TEXTURE_UNIFORM.handle(), decal.m_texture);
 
 		//- set state for primitive
 		bgfx::setState(C_STATE_DEFAULT);

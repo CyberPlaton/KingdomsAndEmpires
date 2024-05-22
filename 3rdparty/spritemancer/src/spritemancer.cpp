@@ -232,11 +232,9 @@ namespace sm
 	{
 		S_RUNNING = true;
 
-		auto thread = std::thread(&engine_thread);
-
 		entry::platform()->optional_init_event_mainloop();
 
-		thread.join();
+		engine_thread();
 
 		if (entry::platform()->shutdown() != opresult_ok)
 		{

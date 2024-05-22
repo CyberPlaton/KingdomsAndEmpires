@@ -38,9 +38,7 @@ void core_io_error_function(uint8_t level, const std::string& message)
 	}
 }
 
-#if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+int SDL_main(int argc, char* argv[])
 {
 	AllocConsole();
 
@@ -71,5 +69,3 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	return 0;
 }
-#else
-#endif

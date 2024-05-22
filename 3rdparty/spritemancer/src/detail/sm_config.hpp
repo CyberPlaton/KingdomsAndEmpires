@@ -165,6 +165,26 @@ namespace sm
 
 	} //- entry
 
+	//- Lightweight class containing a shader uniform. Can easily be copied around and has to be manually destroyed when
+	//- created.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cuniform final
+	{
+	public:
+		static void destroy(cuniform& uniform);
+
+		explicit cuniform(stringview_t name, bgfx::UniformType::Enum type);
+		cuniform();
+		~cuniform();
+
+		opresult create(stringview_t name, bgfx::UniformType::Enum type);
+
+		inline bgfx::UniformHandle handle() const { return m_handle; }
+
+	private:
+		bgfx::UniformHandle m_handle;
+	};
+
 	//- A shader. Can be vertex, fragment, compute etc.
 	//- Lightweight class that can be copied around, as a consequence it does not own the shader,
 	//- when done with it you have to manually call destroy, otherwise the memory will not be freed.
@@ -277,6 +297,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	struct srenderable
 	{
+		static void destroy(srenderable& renderable);
+
 		cimage m_image;
 		ctexture m_texture;
 	};

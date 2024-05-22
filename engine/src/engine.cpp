@@ -130,7 +130,13 @@ namespace engine
 
 		//- TODO: ImGui UI render
 
-		sm::draw_placeholder({25, 25}, {2.0f, 1.0f}, {0, 150, 150, 255});
+		core::crandom rand;
+
+		for (auto i = 0u; i < 256; ++i)
+		{
+			sm::draw_placeholder({ i, rand.in_range_int(0, 255) }, { 0.5f, 0.5f },
+				{ (uint8_t)rand.in_range_int(0, 255), (uint8_t)rand.in_range_int(0, 255), (uint8_t)rand.in_range_int(0, 255), (uint8_t)255 });
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

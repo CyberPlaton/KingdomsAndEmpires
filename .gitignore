@@ -47,6 +47,7 @@ Makefile
 
 
 bin/
+tools/drmemory
 intermediate/
 GopnikCity/*.txt
 GopnikCity/GopnikCity/*.txt

@@ -324,7 +324,6 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	cimage::~cimage()
 	{
-		free_image(m_container);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -449,6 +448,44 @@ namespace sm
 		bgfx::calcTextureSize(m_info, (uint16_t)w, (uint16_t)h, (uint16_t)depth, false, mips, (uint16_t)layers, format);
 
 		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void srenderable::destroy(srenderable& renderable)
+	{
+		ctexture::destroy(renderable.m_texture);
+		cimage::destroy(renderable.m_image);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cuniform::destroy(cuniform& uniform)
+	{
+		bgfx::destroy(uniform.handle());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::cuniform(stringview_t name, bgfx::UniformType::Enum type)
+	{
+		create(name, type);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::cuniform() :
+		m_handle({ MAX(uint16_t) })
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::~cuniform()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cuniform::create(stringview_t name, bgfx::UniformType::Enum type)
+	{
+		m_handle = bgfx::createUniform(name.data(), type, 1);
+
+		return bgfx::isValid(m_handle) ? opresult_ok : opresult_fail;
 	}
 
 } //- sm
