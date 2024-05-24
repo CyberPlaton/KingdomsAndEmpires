@@ -19,7 +19,7 @@ namespace engine
 					//- stupid windows
 					constexpr auto C_MAX_LENGTH = 256;
 					wchar_t wide_name[C_MAX_LENGTH];
-					if (auto result = MultiByteToWideChar(CP_UTF8, 0, name.data(), SCAST(int, name.length()), wide_name, C_MAX_LENGTH - 1); result != 0)
+					if (const auto result = MultiByteToWideChar(CP_UTF8, 0, name.data(), SCAST(int, name.length()), wide_name, C_MAX_LENGTH - 1); result != 0)
 					{
 						wide_name[result] = 0;
 						SetThreadDescription(thread.native_handle(), wide_name);

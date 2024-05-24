@@ -308,10 +308,10 @@ namespace sm
 	struct sdecal
 	{
 		vector_t<vec2_t> m_position; //- individual vertex positions
+		vector_t<uint16_t> m_indices; //- CCW indices for decal
 		vector_t<vec2_t> m_uv; //- individual UVs of vertices
 		vector_t<float> m_w;
 		vector_t<core::scolor> m_tint; //- color assigned to each vertex
-		unsigned m_points = 0; //- count of vertices
 		bool m_depth = false;
 		blending_mode m_blending = blending_mode_default;
 		primitive_topology_t m_topology = primitive_topology_t::TriList;

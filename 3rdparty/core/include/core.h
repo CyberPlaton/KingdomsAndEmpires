@@ -97,17 +97,66 @@ namespace stl = std;
 #define STATIC_INSTANCE_EX(__class) STATIC_INSTANCE(__class, s_instance)
 
 //------------------------------------------------------------------------------------------------------------------------
-#define CORE_MALLOC(size)		std::malloc(size)
-#define CORE_CALLOC(n, size)	std::calloc(n, size)
-#define CORE_REALLOC(p, size)	std::realloc(p, size)
-#define CORE_FREE(p)			std::free(p)
-#define CORE_FREEN(p, n)		CORE_FREE(p)
+#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
+	//------------------------------------------------------------------------------------------------------------------------
+	inline static void* tracy_malloc_trace(std::size_t size)
+	{
+		void* p = std::malloc(size);
+	
+		TracyAlloc(p, size);
+	
+		return p;
+	}
+	
+	//------------------------------------------------------------------------------------------------------------------------
+	inline static void* tracy_calloc_trace(std::size_t n, std::size_t size)
+	{
+		void* p = std::calloc(n, size);
+	
+		TracyAlloc(p, n * size);
+	
+		return p;
+	}
+	
+	//------------------------------------------------------------------------------------------------------------------------
+	inline static void* tracy_realloc_trace(void* ptr, std::size_t size)
+	{
+		TracyFree(ptr);
+	
+		void* p = std::realloc(ptr, size);
+	
+		TracyAlloc(p, size);
+	
+		return p;
+	}
+	
+	//------------------------------------------------------------------------------------------------------------------------
+	inline static void tracy_free_trace(void* ptr)
+	{
+		TracyFree(ptr);
+		std::free(ptr);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	#define CORE_MALLOC(size)		tracy_malloc_trace(size)
+	#define CORE_CALLOC(n, size)	tracy_calloc_trace(n, size)
+	#define CORE_REALLOC(p, size)	tracy_realloc_trace(p, size)
+	#define CORE_FREE(p)			tracy_free_trace(p)
+	#define CORE_FREEN(p, n)		tracy_free_trace(p)
+#else
+	//------------------------------------------------------------------------------------------------------------------------
+	#define CORE_MALLOC(size)		std::malloc(size)
+	#define CORE_CALLOC(n, size)	std::calloc(n, size)
+	#define CORE_REALLOC(p, size)	std::realloc(p, size)
+	#define CORE_FREE(p)			std::free(p)
+	#define CORE_FREEN(p, n)		CORE_FREE(p)
+#endif
 
 //------------------------------------------------------------------------------------------------------------------------
 #if defined(core_EXPORTS)
 	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-		void* operator new(unsigned long long n) { auto* p = CORE_MALLOC(n); TracyAlloc(p, n); return p; }
-		void operator delete(void* p) { TracyFree(p); CORE_FREE(p); }
+		void* operator new(unsigned long long n) { return CORE_MALLOC(n); }
+		void operator delete(void* p) { CORE_FREE(p); }
 	#endif
 #endif
 
@@ -375,7 +424,7 @@ namespace core
 	struct sallocator
 	{
 		inline static void* allocate(std::size_t s) { return CORE_MALLOC(s); }
-		inline static void deallocate(void* p, std::size_t /*bytes*/) {return CORE_FREE(p); }
+		inline static void deallocate(void* p, std::size_t /*bytes*/) { CORE_FREE(p); }
 	};
 
 	//- RTTR aware replacement for std::pair<>

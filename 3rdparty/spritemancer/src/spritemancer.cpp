@@ -300,10 +300,10 @@ namespace sm
 
 		auto& decal = S_LAYERS[S_CURRENT_LAYER].m_decals.emplace_back();
 		decal.m_texture = renderable.m_texture.handle();
-		decal.m_points = 4;
 		decal.m_tint = { tint, tint, tint, tint };
 		decal.m_position = { { vScreenSpacePos.x, vScreenSpacePos.y }, { vScreenSpacePos.x, vScreenSpaceDim.y }, { vScreenSpaceDim.x, vScreenSpaceDim.y }, { vScreenSpaceDim.x, vScreenSpacePos.y } };
 		decal.m_uv = { { 0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} };
+		decal.m_indices = { 0, 1, 2, 3, 0, 2 };
 		decal.m_w = { 1, 1, 1, 1 };
 		decal.m_blending = S_BLEND_MODE;
 		decal.m_topology = S_TOPOLOGY;

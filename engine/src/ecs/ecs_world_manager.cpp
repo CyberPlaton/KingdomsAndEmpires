@@ -15,8 +15,8 @@ namespace ecs
 					callback(arg);
 				});
 
-			return reinterpret_cast<ecs_os_thread_t>(new std::future<void>(std::move(future)));
-			//return reinterpret_cast<ecs_os_thread_t>(&future);
+			//return reinterpret_cast<ecs_os_thread_t>(new std::future<void>(std::move(future)));
+			return reinterpret_cast<ecs_os_thread_t>(&future);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

@@ -130,13 +130,13 @@ namespace sm
 		constexpr bgfx::ViewId C_VIEW_DEFAULT = 0;
 		constexpr mat4_t C_VIEWMAT_DEFAULT = mat4_t(1.0f);
 		constexpr mat4_t C_PROJMAT_DEFAULT = mat4_t(1.0f);
+		constexpr auto C_DRAWCALLS_MAX = 65535;
+		static auto S_DRAWCALLS_CURRENT = 0;
+		static auto S_DRAWCALL_VERTICES = 0;
+		static auto S_DRAWCALL_INDICES = 0;
 
 		#define C_VERTICES_COUNT_MAX 128
-		static unsigned S_VERTEX_COUNT = 0;
 		static array_t<quad_vertex_t, C_VERTICES_COUNT_MAX> S_PING; //- Note: for one immediate draw call. Not batched.
-		static array_t<quad_vertex_t, C_VERTICES_COUNT_MAX> S_PONG;
-		static bgfx::TransientVertexBuffer S_TVB;
-		static bgfx::TransientIndexBuffer S_TIB;
 
 	} //- unnamed
 
@@ -337,10 +337,9 @@ namespace sm
 	{
 		bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS /*| BGFX_DEBUG_WIREFRAME*/);
 
-		S_VERTEX_COUNT = 0;
-
-		bx::memCopy(&S_PONG[0], &S_PING[0], sizeof(quad_vertex_t) * C_VERTICES_COUNT_MAX);
-		bx::memSet(&S_PING[0], 0, sizeof(quad_vertex_t) * C_VERTICES_COUNT_MAX);
+		S_DRAWCALLS_CURRENT = 0;
+		S_DRAWCALL_VERTICES = 0;
+		S_DRAWCALL_INDICES = 0;
 
 		bgfx::touch(C_VIEW_DEFAULT);
 		bgfx::setViewRect(C_VIEW_DEFAULT, S_X, S_Y, S_W, S_H);
@@ -391,8 +390,16 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::render_layer_quad(const vec2_t& position, const vec2_t& size, const core::scolor& color)
 	{
+		if (S_DRAWCALLS_CURRENT >= C_DRAWCALLS_MAX)
+		{
+			return;
+		}
+
+		bgfx::TransientVertexBuffer tvb = { 0 };
+		bgfx::TransientIndexBuffer tib = { 0 };
+
 		//- create and set vertex buffer
-		quad_vertex_t vertices[4] =
+		static quad_vertex_t vertices[4] =
 		{
 			quad_vertex_t::make(-1.0f, -1.0f,	color, 0.0f * size.x + position.x, 1.0f * size.y + position.y),
 			quad_vertex_t::make(1.0f, -1.0f,	color, 1.0f * size.x + position.x, 1.0f * size.y + position.y),
@@ -402,23 +409,23 @@ namespace sm
 
 		if (4 <= bgfx::getAvailTransientVertexBuffer(4, quad_vertex_t::S_LAYOUT))
 		{
-			bgfx::allocTransientVertexBuffer(&S_TVB, 4, quad_vertex_t::S_LAYOUT);
+			bgfx::allocTransientVertexBuffer(&tvb, 4, quad_vertex_t::S_LAYOUT);
 
-			bx::memCopy((quad_vertex_t*)S_TVB.data, &vertices[0], 4 * sizeof(quad_vertex_t));
+			bx::memCopy((quad_vertex_t*)tvb.data, &vertices[0], sizeof(vertices));
 
-			bgfx::setVertexBuffer(0, S_TVB.handle, 0, 4, quad_vertex_t::S_LAYOUT_HANDLE);
+			bgfx::setVertexBuffer(0, tvb.handle, 0, 4, quad_vertex_t::S_LAYOUT_HANDLE);
 		}
 
 		//- create and set index buffer
-		uint16_t indices[6] = { 0, 1, 2, 3, 0, 2};
+		constexpr uint16_t indices[6] = { 0, 1, 2, 3, 0, 2};
 
 		if (6 <= bgfx::getAvailTransientIndexBuffer(6))
 		{
-			bgfx::allocTransientIndexBuffer(&S_TIB, 6);
+			bgfx::allocTransientIndexBuffer(&tib, 6);
 
-			bx::memCopy((uint16_t*)S_TIB.data, &indices[0], 6 * sizeof(uint16_t));
+			bx::memCopy((uint16_t*)tib.data, &indices[0], sizeof(indices));
 
-			bgfx::setIndexBuffer(S_TIB.handle, 0, 6);
+			bgfx::setIndexBuffer(tib.handle, 0, 6);
 		}
 
 		//- set blank texture and texture sampler
@@ -429,53 +436,53 @@ namespace sm
 
 		//- submit primitive with program
 		bgfx::submit(C_VIEW_DEFAULT, S_LAYER_PROGRAM_DEFAULT.handle());
+
+		++S_DRAWCALLS_CURRENT;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::render_decal(const sdecal& decal)
 	{
+		if (S_DRAWCALLS_CURRENT >= C_DRAWCALLS_MAX)
+		{
+			return;
+		}
+
 		blendmode(decal.m_blending);
 
 		const auto id = bgfx::isValid(decal.m_texture)? decal.m_texture : S_BLANK_QUAD.m_texture.handle();
 
-		for (auto i = 0u; i < decal.m_points; ++i)
+		for (auto i = 0u; i < decal.m_position.size(); ++i)
 		{
 			S_PING[i] = quad_vertex_t::make(decal.m_position[i].x, decal.m_position[i].y,
 				decal.m_tint[i], decal.m_uv[i].x, decal.m_uv[i].y);
 		}
 
-		S_VERTEX_COUNT += decal.m_points;
+		bgfx::TransientVertexBuffer tvb = { 0 };
+		bgfx::TransientIndexBuffer tib	= { 0 };
 
-		//- create and set vertex buffer
-		if (S_VERTEX_COUNT <= bgfx::getAvailTransientVertexBuffer(S_VERTEX_COUNT, quad_vertex_t::S_LAYOUT))
+		//- create and set vertex and index buffers
+		if (bgfx::allocTransientBuffers(&tvb, quad_vertex_t::S_LAYOUT, decal.m_position.size(), &tib, decal.m_indices.size()))
 		{
-			bgfx::allocTransientVertexBuffer(&S_TVB, S_VERTEX_COUNT, quad_vertex_t::S_LAYOUT);
+			bx::memCopy(tvb.data, &S_PING,			decal.m_position.size() * sizeof(S_PING[0]));
+			bx::memCopy(tib.data, &decal.m_indices, decal.m_indices.size() * sizeof(decal.m_indices[0]));
 
-			bx::memCopy((quad_vertex_t*)S_TVB.data, &S_PING[0], S_VERTEX_COUNT * sizeof(quad_vertex_t));
+			bgfx::setVertexBuffer(0, &tvb);
+			bgfx::setIndexBuffer(&tib);
 
-			bgfx::setVertexBuffer(0, S_TVB.handle, 0, S_VERTEX_COUNT, quad_vertex_t::S_LAYOUT_HANDLE);
+			//- set texture and texture sampler
+			bgfx::setTexture(0, S_TEXTURE_UNIFORM.handle(), decal.m_texture);
+
+			//- set state for primitive
+			bgfx::setState(C_STATE_DEFAULT);
+
+			//- submit primitive with program
+			bgfx::submit(C_VIEW_DEFAULT, S_DECAL_PROGRAM_DEFAULT.handle(), BGFX_DISCARD_ALL);
+
+			++S_DRAWCALLS_CURRENT;
+			S_DRAWCALL_VERTICES += decal.m_position.size();
+			S_DRAWCALL_INDICES += decal.m_indices.size();
 		}
-
-		//- create and set index buffer
-		uint16_t indices[6] = { 0, 1, 2, 3, 0, 2 };
-
-		if (6 <= bgfx::getAvailTransientIndexBuffer(6))
-		{
-			bgfx::allocTransientIndexBuffer(&S_TIB, 6);
-
-			bx::memCopy((uint16_t*)S_TIB.data, &indices[0], 6 * sizeof(uint16_t));
-
-			bgfx::setIndexBuffer(S_TIB.handle, 0, 6);
-		}
-
-		//- set texture and texture sampler
-		bgfx::setTexture(0, S_TEXTURE_UNIFORM.handle(), decal.m_texture);
-
-		//- set state for primitive
-		bgfx::setState(C_STATE_DEFAULT);
-
-		//- submit primitive with program
-		bgfx::submit(C_VIEW_DEFAULT, S_DECAL_PROGRAM_DEFAULT.handle());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
