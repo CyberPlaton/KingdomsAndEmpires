@@ -134,8 +134,14 @@ namespace engine
 
 		for (auto i = 0u; i < 256; ++i)
 		{
-			sm::draw_placeholder({ i, rand.in_range_int(0, 255) }, { 0.5f, 0.5f },
-				{ (uint8_t)rand.in_range_int(0, 255), (uint8_t)rand.in_range_int(0, 255), (uint8_t)rand.in_range_int(0, 255), (uint8_t)255 });
+			vec2_t position = { 64.0f * i, rand.in_range_int(0, 255) };
+			vec2_t scale = { 1.0f, 1.0f };
+			vec2_t shear = { 0.0f, 0.0f };
+			float rotation = rand.in_range_int(0, 360);
+
+			const auto [p, s, r] = math::transform(position, scale, shear, glm::radians(rotation));
+
+			sm::draw_placeholder(p, s, { (uint8_t)rand.in_range_int(0, 255), (uint8_t)rand.in_range_int(0, 255), (uint8_t)rand.in_range_int(0, 255), (uint8_t)255 });
 		}
 	}
 

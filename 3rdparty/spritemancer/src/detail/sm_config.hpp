@@ -307,15 +307,15 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sdecal
 	{
-		vector_t<vec2_t> m_position; //- individual vertex positions
-		vector_t<uint16_t> m_indices; //- CCW indices for decal
-		vector_t<vec2_t> m_uv; //- individual UVs of vertices
-		vector_t<float> m_w;
-		vector_t<core::scolor> m_tint; //- color assigned to each vertex
-		bool m_depth = false;
-		blending_mode m_blending = blending_mode_default;
-		primitive_topology_t m_topology = primitive_topology_t::TriList;
-		bgfx::TextureHandle m_texture; //- texture to be rendered
+		vector_t<vec2_t>		m_vertices; //- individual vertex positions
+		vector_t<uint16_t>		m_indices; //- CCW indices for decal
+		vector_t<vec2_t>		m_uvs; //- individual UVs of vertices
+		vector_t<float>			m_w;
+		vector_t<unsigned>		m_tints; //- color assigned to each vertex
+		bool					m_depth = false;
+		blending_mode			m_blending = blending_mode_default;
+		primitive_topology_t	m_topology = primitive_topology_t::TriList;
+		bgfx::TextureHandle		m_texture; //- texture to be rendered, if any
 	};
 
 	//- Description of a layer we render upon, including all the decals to be rendered on it

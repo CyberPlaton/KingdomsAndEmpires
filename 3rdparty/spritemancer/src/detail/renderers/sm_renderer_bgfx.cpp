@@ -9,7 +9,7 @@ namespace sm
 		struct sposcolortexcoord
 		{
 			static bool init();
-			static sposcolortexcoord make(float x, float y, const core::scolor& color, float u, float v);
+			static sposcolortexcoord make(float x, float y, unsigned color, float u, float v);
 
 			inline static bgfx::VertexLayout S_LAYOUT;
 			inline static bgfx::VertexLayoutHandle S_LAYOUT_HANDLE;
@@ -34,9 +34,9 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		sposcolortexcoord sposcolortexcoord::make(float x, float y, const core::scolor& color, float u, float v)
+		sposcolortexcoord sposcolortexcoord::make(float x, float y, unsigned color, float u, float v)
 		{
-			return { vec3_t(x, y, 0.0f), color.abgr(), vec2_t(u, v) };
+			return { vec3_t(x, y, 0.0f), color, vec2_t(u, v) };
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -341,8 +341,13 @@ namespace sm
 		S_DRAWCALL_VERTICES = 0;
 		S_DRAWCALL_INDICES = 0;
 
+		//- make sure default view is cleared if nothing was submitted the previous draw call
 		bgfx::touch(C_VIEW_DEFAULT);
+
 		bgfx::setViewRect(C_VIEW_DEFAULT, S_X, S_Y, S_W, S_H);
+
+		//- set current camera view and projection matrices for frame
+		//- TODO: this should be done for all views and not only default
 		bgfx::setViewTransform(C_VIEW_DEFAULT, glm::value_ptr(C_VIEWMAT_DEFAULT), glm::value_ptr(C_PROJMAT_DEFAULT));
 	}
 
@@ -401,10 +406,10 @@ namespace sm
 		//- create and set vertex buffer
 		static quad_vertex_t vertices[4] =
 		{
-			quad_vertex_t::make(-1.0f, -1.0f,	color, 0.0f * size.x + position.x, 1.0f * size.y + position.y),
-			quad_vertex_t::make(1.0f, -1.0f,	color, 1.0f * size.x + position.x, 1.0f * size.y + position.y),
-			quad_vertex_t::make(1.0f, 1.0f,		color, 1.0f * size.x + position.x, 0.0f * size.y + position.y),
-			quad_vertex_t::make(-1.0f, 1.0f,	color, 0.0f * size.x + position.x, 0.0f * size.y + position.y)
+			quad_vertex_t::make(-1.0f, -1.0f,	color.abgr(), 0.0f * size.x + position.x, 1.0f * size.y + position.y),
+			quad_vertex_t::make(1.0f, -1.0f,	color.abgr(), 1.0f * size.x + position.x, 1.0f * size.y + position.y),
+			quad_vertex_t::make(1.0f, 1.0f,		color.abgr(), 1.0f * size.x + position.x, 0.0f * size.y + position.y),
+			quad_vertex_t::make(-1.0f, 1.0f,	color.abgr(), 0.0f * size.x + position.x, 0.0f * size.y + position.y)
 		};
 
 		if (4 <= bgfx::getAvailTransientVertexBuffer(4, quad_vertex_t::S_LAYOUT))
@@ -450,21 +455,22 @@ namespace sm
 
 		blendmode(decal.m_blending);
 
+		const auto vertex_count = decal.m_vertices.size();
 		const auto id = bgfx::isValid(decal.m_texture)? decal.m_texture : S_BLANK_QUAD.m_texture.handle();
 
-		for (auto i = 0u; i < decal.m_position.size(); ++i)
+		for (auto i = 0u; i < vertex_count; ++i)
 		{
-			S_PING[i] = quad_vertex_t::make(decal.m_position[i].x, decal.m_position[i].y,
-				decal.m_tint[i], decal.m_uv[i].x, decal.m_uv[i].y);
+			S_PING[i] = quad_vertex_t::make(decal.m_vertices[i].x, decal.m_vertices[i].y,
+				decal.m_tints[i], decal.m_uvs[i].x, decal.m_uvs[i].y);
 		}
 
 		bgfx::TransientVertexBuffer tvb = { 0 };
 		bgfx::TransientIndexBuffer tib	= { 0 };
 
 		//- create and set vertex and index buffers
-		if (bgfx::allocTransientBuffers(&tvb, quad_vertex_t::S_LAYOUT, decal.m_position.size(), &tib, decal.m_indices.size()))
+		if (bgfx::allocTransientBuffers(&tvb, quad_vertex_t::S_LAYOUT, vertex_count, &tib, decal.m_indices.size()))
 		{
-			bx::memCopy(tvb.data, &S_PING,			decal.m_position.size() * sizeof(S_PING[0]));
+			bx::memCopy(tvb.data, &S_PING, vertex_count * sizeof(S_PING[0]));
 			bx::memCopy(tib.data, &decal.m_indices, decal.m_indices.size() * sizeof(decal.m_indices[0]));
 
 			bgfx::setVertexBuffer(0, &tvb);
@@ -477,10 +483,10 @@ namespace sm
 			bgfx::setState(C_STATE_DEFAULT);
 
 			//- submit primitive with program
-			bgfx::submit(C_VIEW_DEFAULT, S_DECAL_PROGRAM_DEFAULT.handle(), BGFX_DISCARD_ALL);
+			bgfx::submit(C_VIEW_DEFAULT, S_DECAL_PROGRAM_DEFAULT.handle());
 
 			++S_DRAWCALLS_CURRENT;
-			S_DRAWCALL_VERTICES += decal.m_position.size();
+			S_DRAWCALL_VERTICES += vertex_count;
 			S_DRAWCALL_INDICES += decal.m_indices.size();
 		}
 	}

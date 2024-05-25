@@ -286,24 +286,30 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
 	{
-		vec2_t vScreenSpacePos =
-		{
-			(position.x * S_INVERSE_W) * 2.0f - 1.0f,
-			((position.y * S_INVERSE_H) * 2.0f - 1.0f) * -1.0f
-		};
+		//- NOTE: assumption:	position specifies the top-left corner of the texture,
+		//-						scale specifies the scaling for width (right X+) and height (bottom Y+) of the texture
 
-		vec2_t vScreenSpaceDim =
-		{
-			vScreenSpacePos.x + (2.0f * (float(renderable.m_image.image()->m_width) * S_INVERSE_W)) * scale.x,
-			vScreenSpacePos.y - (2.0f * (float(renderable.m_image.image()->m_height) * S_INVERSE_H)) * scale.y
-		};
+		const auto w = (float)renderable.m_image.image()->m_width * scale.x;
+		const auto h = (float)renderable.m_image.image()->m_height * scale.y;
+
+		//- Note: vertices are specified in CCW ordering, indices are matching that
+		const vec2_t v1 = { position.x,		position.y };
+		const vec2_t v2 = { position.x,		position.y + h };
+		const vec2_t v3 = { position.x + w, position.y + h };
+		const vec2_t v4 = { position.x + w, position.y };
+
+		//- Note: uvs are mapped in CCW ordering to match vertices
+		const vec2_t uv1 = { 0.0f, 0.0f };
+		const vec2_t uv2 = { 0.0f, 1.0f };
+		const vec2_t uv3 = { 1.0f, 1.0f };
+		const vec2_t uv4 = { 1.0f, 0.0f };
 
 		auto& decal = S_LAYERS[S_CURRENT_LAYER].m_decals.emplace_back();
 		decal.m_texture = renderable.m_texture.handle();
-		decal.m_tint = { tint, tint, tint, tint };
-		decal.m_position = { { vScreenSpacePos.x, vScreenSpacePos.y }, { vScreenSpacePos.x, vScreenSpaceDim.y }, { vScreenSpaceDim.x, vScreenSpaceDim.y }, { vScreenSpaceDim.x, vScreenSpacePos.y } };
-		decal.m_uv = { { 0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} };
-		decal.m_indices = { 0, 1, 2, 3, 0, 2 };
+		decal.m_tints = { tint.abgr(), tint.abgr(), tint.abgr(), tint.abgr() };
+		decal.m_vertices = { v1, v2, v3, v4 };
+		decal.m_uvs = { uv1, uv2, uv3, uv4 };
+		decal.m_indices = { 0, 1, 3, 3, 1, 2 };
 		decal.m_w = { 1, 1, 1, 1 };
 		decal.m_blending = S_BLEND_MODE;
 		decal.m_topology = S_TOPOLOGY;
