@@ -5,7 +5,7 @@ function plugin_kingdoms_core()
 					{},
 					{},
 					{"plugin_logging"},
-					{"EASTL", "spdlog", "core", "flecs"},
+					{"EASTL", "spdlog", "core", "flecs", "spritemancer"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

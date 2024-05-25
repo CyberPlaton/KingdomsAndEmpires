@@ -5,7 +5,7 @@ function plugin_logging()
 					{},
 					{},
 					{},
-					{"EASTL", "spdlog", "core",},
+					{"EASTL", "spdlog", "core"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

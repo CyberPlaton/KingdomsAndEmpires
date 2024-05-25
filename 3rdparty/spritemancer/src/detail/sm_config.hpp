@@ -3,7 +3,6 @@
 #include "raylib_integration/raylib.hpp"
 #include <core.h>
 #include <argparse.h>
-#include <bx.h>
 #include <plugin_logging.h>
 
 namespace sm
@@ -12,6 +11,7 @@ namespace sm
 	class iplatform;
 	class iapp;
 	class cshader;
+	class crendertarget;
 	class cimage;
 	class ctexture;
 
@@ -19,6 +19,7 @@ namespace sm
 	bool is_valid(const cshader& shader);
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
+	bool is_valid(const crendertarget& target);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum window_flag : uint32_t
@@ -180,23 +181,14 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum topology : uint8_t
+	enum renderable_flag
 	{
-		topology_none = 0,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum decal_mode : uint8_t
-	{
-		decal_mode_none = 0,
-		decal_mode_wireframe,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum camera_mode : uint8_t
-	{
-		camera_mode_none = 0,
-		camera_mode_2d,
+		renderable_flag_none			= 0,
+		renderable_flag_invisible		= BIT(1),
+		renderable_flag_flipx			= BIT(2),
+		renderable_flag_flipy			= BIT(3),
+		renderable_flag_origin_center	= BIT(4),
+		renderable_flag_origin_custom	= BIT(5),
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -216,49 +208,6 @@ namespace sm
 
 	namespace entry
 	{
-		//------------------------------------------------------------------------------------------------------------------------
-		class cfilereader final : public bx::FileReader
-		{
-		public:
-			bool open(const bx::FilePath& path, bx::Error* error) override final;
-		};
-
-		//- Note: can be use anywhere, where bx::WriterI* is required, i.e. when you want to compile shaders as binary files
-		//------------------------------------------------------------------------------------------------------------------------
-		class cfilewriter final : public bx::FileWriter
-		{
-		public:
-			bool open(const bx::FilePath& path, bool append, bx::Error* error) override final;
-		};
-
-		//- Write incoming data to a string form
-		//------------------------------------------------------------------------------------------------------------------------
-		class cstringwriter final : public bx::WriterI
-		{
-		public:
-			int32_t write(const void* data, int32_t size, bx::Error* error) override final;
-
-			[[nodiscard]] inline string_t take() { return std::move(m_string); }
-
-		private:
-			string_t m_string;
-		};
-
-		//- Write incoming data to log. Convenience class to use with thirdparty libraries,
-		//- such as bx, bgfx etc
-		//------------------------------------------------------------------------------------------------------------------------
-		class clogwriter final : public bx::WriterI
-		{
-		public:
-			int32_t write(const void* data, int32_t size, bx::Error* error) override final;
-		};
-
-
-		bx::FileReaderI*	filereader();
-		bx::FileWriterI*	filewriter();
-		bx::WriterI*		stringwriter();
-		bx::WriterI*		logwriter();
-		bx::AllocatorI*		allocator();
 		irenderer*			renderer();
 		iplatform*			platform();
 		iapp*				app();
@@ -362,43 +311,68 @@ namespace sm
 		raylib::Texture2D m_texture;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class crendertarget final
+	{
+	public:
+		static void destroy(crendertarget& target);
+
+		explicit crendertarget(unsigned w, unsigned h);
+		crendertarget();
+		~crendertarget();
+
+		opresult create(unsigned w, unsigned h);
+
+		inline unsigned w() const { return m_texture.texture.width; }
+		inline unsigned h() const { return m_texture.texture.height; }
+		inline raylib::RenderTexture2D target() const { return m_texture; }
+		inline raylib::Texture2D texture() const { return m_texture.texture; }
+
+	private:
+		raylib::RenderTexture2D m_texture;
+	};
+
 	//- Texture along with image data that can be used as rendertarget or as something to be rendered
 	//------------------------------------------------------------------------------------------------------------------------
 	struct srenderable
 	{
 		static void destroy(srenderable& renderable);
 
+		core::srect m_src = { 0.0f, 0.0f, 1.0f, 1.0f };
 		cimage m_image;
 		ctexture m_texture;
+		vec2_t m_origin = { 0.0f, 0.0f };
+		float m_rotation = 0.0f;//- degrees
+		int m_flags = 0;		//- bitwise concated renderable_flag
 	};
 
-	//- The 'thing' that we actually draw; internal. Using vectors mostly for extendability
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sdecal
+	class ccommand final
 	{
-		vector_t<vec2_t>		m_vertices; //- individual vertex positions
-		vector_t<vec2_t>		m_uvs; //- individual UVs of vertices
-		vector_t<float>			m_w;
-		vector_t<core::scolor>	m_tints; //- color assigned to each vertex
-		bool					m_depth = false;
-		sblending				m_blending;
-		topology				m_topology = topology_none;
-		decal_mode				m_mode = decal_mode_none;
-		camera_mode				m_camera_mode = camera_mode_none;
-		int						m_texture = -1; //- texture to be rendered, if any
+	public:
+		using render_callback_t = std::function<void()>;
+
+		explicit ccommand(render_callback_t&& callback);
+		ccommand() = default;
+		~ccommand() = default;
+
+		void create(render_callback_t&& callback);
+
+		void execute() const;
+
+	private:
+		render_callback_t m_callback;
 	};
 
 	//- Description of a layer we render upon, including all the decals to be rendered on it
 	//------------------------------------------------------------------------------------------------------------------------
 	struct slayer
 	{
-		vector_t<sdecal> m_decals;
-		srenderable m_layer_target;
+		crendertarget m_target;
+		vector_t<ccommand> m_commands;
+		cshader m_shader;
 		core::scolor m_tint;
-		vec2_t m_offset= { 0.0f, 0.0f };
-		vec2_t m_scale = { 0.0f, 0.0f };
 		bool m_show = false;
-		bool m_want_update = false;
 		unsigned m_id = 0;
 	};
 
@@ -416,12 +390,13 @@ namespace sm
 		virtual void prepare_frame() = 0;
 		virtual void display_frame() = 0;
 		virtual void update_viewport(const vec2_t& position, const vec2_t& size) = 0;
-		virtual void clear(unsigned view_id, const core::scolor& color, bool depth) = 0;
 		virtual void blendmode(sblending mode) = 0;
 
-		virtual void bind_texture(uint64_t id) = 0;
-		virtual void render_layer_quad(const vec2_t& position, const vec2_t& size, const core::scolor& color) = 0;
-		virtual void render_decal(const sdecal& decal) = 0;
+		virtual void clear(const slayer& layer, bool depth) = 0;
+		virtual void begin(const slayer& layer) = 0;
+		virtual void draw(const slayer& layer) = 0;
+		virtual void end(const slayer& layer) = 0;
+		virtual void combine(const slayer& layer) = 0;
 
 		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, void* data) = 0;
 		virtual void update_texture_cpu(uint64_t id) = 0;

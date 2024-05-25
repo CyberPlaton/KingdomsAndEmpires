@@ -130,13 +130,9 @@ namespace engine
 
 		//- TODO: ImGui UI render
 
-		core::crandom rand;
+		auto v = raylib::GetMousePosition();
 
-		for (auto i = 0u; i < 256; ++i)
-		{
-			sm::draw_placeholder({i, i}, {1.0f, 0.5f},
-				{ (uint8_t)rand.in_range_int(0, 255), (uint8_t)rand.in_range_int(0, 255), (uint8_t)rand.in_range_int(0, 255), (uint8_t)255 });
-		}
+		sm::draw_placeholder({v.x, v.y});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

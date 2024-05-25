@@ -85,11 +85,9 @@ namespace sm
 			entry::renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
 
 			//- most basic layer, does always exist
-			S_LAYERS[0].m_want_update = true;
 			S_LAYERS[0].m_show = true;
-			entry::renderer()->blendmode(S_BLEND_MODE);
 			entry::renderer()->prepare_frame();
-			entry::renderer()->clear(0, S_WHITE, true);
+			entry::renderer()->blendmode(S_BLEND_MODE);
 
 			//- layered rendering, from bottom to top
 			for (auto i = 0u; i < S_LAYER_COUNT; ++i)
@@ -98,30 +96,26 @@ namespace sm
 
 				if (layer.m_show)
 				{
-					//entry::renderer()->clear(i, layer.m_tint, true);
+					entry::renderer()->begin(layer);
 
-					//- TODO: unclear what this was originally for. Clearing the layer, however, should be
-					//- done as shown above
-					//- bind render target texture and fill it with color
-// 					entry::renderer()->bind_texture(layer.m_layer_target.m_texture.handle().idx);
-// 					if (layer.m_want_update)
-// 					{
-// 						entry::renderer()->update_texture_gpu(layer.m_layer_target.m_texture.handle().idx,
-// 							layer.m_layer_target.m_image.image()->m_width,
-// 							layer.m_layer_target.m_image.image()->m_height,
-// 							layer.m_layer_target.m_image.image()->m_data);
-// 
-// 						layer.m_want_update = false;
-// 					}
+					entry::renderer()->clear(layer, true);
 
-					//entry::renderer()->render_layer_quad({ S_X, S_Y }, { S_W, S_H }, layer.m_tint);
+					entry::renderer()->draw(layer);
 
-					//- render decals/textures for current layer
-					for (const auto& decal : layer.m_decals)
-					{
-						entry::renderer()->render_decal(decal);
-					}
-					layer.m_decals.clear();
+					entry::renderer()->end(layer);
+				}
+
+				layer.m_commands.clear();
+			}
+
+			//- layered rendering, combine them upon each other
+			for (auto i = 0u; i < S_LAYER_COUNT; ++i)
+			{
+				auto& layer = S_LAYERS[i];
+
+				if (layer.m_show)
+				{
+					entry::renderer()->combine(layer);
 				}
 			}
 
@@ -144,7 +138,6 @@ namespace sm
 			//- create default rendering layer
 			create_layer();
 			S_LAYERS[0].m_show = true;
-			S_LAYERS[0].m_want_update = true;
 			bind_layer(0);
 
 			//- sample time for custom frame timing
@@ -251,9 +244,8 @@ namespace sm
 		{
 			auto& layer = S_LAYERS[S_LAYER_COUNT];
 
-			layer.m_layer_target.m_image.create_solid(S_W, S_H, S_BLANK);
-			layer.m_layer_target.m_texture.load_from_image(layer.m_layer_target.m_image);
-			layer.m_tint = S_BLANK;
+			layer.m_target.create(S_W, S_H);
+			layer.m_tint = S_WHITE;
 
 			return S_LAYER_COUNT++;
 		}
@@ -287,23 +279,45 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
 	{
-		const auto w = renderable.m_texture.w();
-		const auto h = renderable.m_texture.h();
-
-		auto& decal = S_LAYERS[S_CURRENT_LAYER].m_decals.emplace_back();
-		decal.m_texture = renderable.m_texture.texture().id;
-		decal.m_tints = { tint, tint, tint, tint };
-		decal.m_vertices =
+		if (algorithm::bit_on(renderable.m_flags, renderable_flag_invisible))
 		{
-			{ position.x, position.y },
-			{ position.x + scale.x * w, position.y },
-			{ position.x, position.y + scale.y * h },
-			{ position.x + scale.x * w, position.y + scale.y * h}
-		};
-		decal.m_uvs = { { 0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} };
-		decal.m_w = { 1, 1, 1, 1 };
-		decal.m_blending = S_BLEND_MODE;
-		decal.m_camera_mode = camera_mode_2d;
+			return;
+		}
+
+		auto& command = S_LAYERS[S_CURRENT_LAYER].m_commands.emplace_back();
+
+		command.create([=]()
+			{
+				const auto w = renderable.m_texture.w();
+				const auto h = renderable.m_texture.h();
+
+				//- construct rectangles for where to sample from and where to draw
+				raylib::Rectangle src = { renderable.m_src.x(), renderable.m_src.y(), renderable.m_src.w() * w, renderable.m_src.h() * h };
+				raylib::Rectangle dst = { position.x, position.y, scale.x * w, scale.y * h };
+
+				//- texture origin, i.e. the pivot point
+				raylib::Vector2 origin = { 0.0f, 0.0f};
+
+				//- check some flags and do adjustments
+				if (algorithm::bit_on(renderable.m_flags, renderable_flag_origin_center))
+				{
+					origin = { w / 2.0f, h / 2.0f };
+				}
+				if (algorithm::bit_on(renderable.m_flags, renderable_flag_origin_custom))
+				{
+					origin = { renderable.m_origin.x, renderable.m_origin.y };
+				}
+				if (algorithm::bit_on(renderable.m_flags, renderable_flag_flipx))
+				{
+					src.width = -src.width;
+				}
+				if (algorithm::bit_on(renderable.m_flags, renderable_flag_flipy))
+				{
+					src.height = -src.height;
+				}
+
+				raylib::DrawTexturePro(renderable.m_texture.texture(), src, dst, origin, renderable.m_rotation, to_cliteral(tint));
+			});
 	}
 
 } //- sm

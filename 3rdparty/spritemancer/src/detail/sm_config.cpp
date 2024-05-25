@@ -222,75 +222,9 @@ namespace sm
 
 	namespace entry
 	{
-		static bx::DefaultAllocator S_ALLOCATOR_DEFAULT;
-		static cfilereader S_FILEREADER;
-		static cfilewriter S_FILEWRITER;
-		static cstringwriter S_STRINGWRITER;
-		static clogwriter S_LOGWRITER;
-		static bx::AllocatorI* S_ALLOCATOR = &S_ALLOCATOR_DEFAULT;
 		static ptr_t<iplatform> S_PLATFORM = nullptr;
 		static iapp* S_APP = nullptr;
 		static ptr_t<irenderer> S_RENDERER = nullptr;
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bool cfilereader::open(const bx::FilePath& path, bx::Error* error)
-		{
-			if (const auto result = bx::FileReader::open(path, error); !result)
-			{
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(core::logging_verbosity_warn,
-						fmt::format("Failed to read from file '{}'", path.getCPtr()));
-				}
-				return false;
-			}
-			return true;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bool cfilewriter::open(const bx::FilePath& path, bool append, bx::Error* error)
-		{
-			if (const auto result = bx::FileWriter::open(path, append, error); !result)
-			{
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(core::logging_verbosity_warn,
-						fmt::format("Failed to write to file '{}'", path.getCPtr()));
-				}
-				return false;
-			}
-			return true;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bx::FileReaderI* filereader()
-		{
-			return &S_FILEREADER;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bx::FileWriterI* filewriter()
-		{
-			return &S_FILEWRITER;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bx::WriterI* stringwriter()
-		{
-			return &S_STRINGWRITER;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bx::WriterI* logwriter()
-		{
-			return &S_LOGWRITER;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bx::AllocatorI* allocator()
-		{
-			return S_ALLOCATOR;
-		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		sm::irenderer* renderer()
@@ -326,29 +260,6 @@ namespace sm
 		void set_renderer(ptr_t<irenderer>&& renderer)
 		{
 			S_RENDERER = std::move(renderer);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		int32_t cstringwriter::write(const void* data, int32_t size, bx::Error* error)
-		{
-			if (!error)
-			{
-				m_string.append((const char*)data, size);
-				return -1;
-			}
-			return size;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		int32_t clogwriter::write(const void* data, int32_t size, bx::Error* error)
-		{
-			if (!error && serror_reporter::instance().m_callback)
-			{
-				serror_reporter::instance().m_callback(core::logging_verbosity_info,
-					(const char*)data);
-				return -1;
-			}
-			return size;
 		}
 
 	} //- entry
@@ -713,6 +624,73 @@ namespace sm
 	bool is_valid(const ctexture& texture)
 	{
 		return raylib::IsTextureReady(texture.texture());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool is_valid(const crendertarget& target)
+	{
+		return raylib::IsRenderTextureReady(target.target());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crendertarget::destroy(crendertarget& target)
+	{
+		if (is_valid(target))
+		{
+			raylib::UnloadRenderTexture(target.target());
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	crendertarget::crendertarget(unsigned w, unsigned h)
+	{
+		create(w, h);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	crendertarget::crendertarget() :
+		m_texture({ 0 })
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	crendertarget::~crendertarget()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult crendertarget::create(unsigned w, unsigned h)
+	{
+		if (m_texture = raylib::LoadRenderTexture(w, h); !raylib::IsRenderTextureReady(m_texture))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading render target");
+			}
+
+			return opresult_fail;
+		}
+
+		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ccommand::create(render_callback_t&& callback)
+	{
+		m_callback = std::move(callback);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ccommand::execute() const
+	{
+		m_callback();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ccommand::ccommand(render_callback_t&& callback) :
+		m_callback(std::move(callback))
+	{
 	}
 
 } //- sm

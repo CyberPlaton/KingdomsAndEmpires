@@ -134,21 +134,13 @@ namespace ecs
 	{
 		DECLARE_COMPONENT(ssprite);
 
-		enum flags : uint8_t
-		{
-			flags_none		= BIT(0),
-			flags_visible	= BIT(1),
-			flags_flipx		= BIT(2),
-			flags_flipy		= BIT(3),
-		};
-
 		static void show_ui(flecs::entity e);
 
 		vector_t<core::spair<texture_t, material_t>> m_materials;
 
 		core::srect m_source_rectangle	= { 0.0f, 0.0f, 0.0f, 0.0f }; //- represents a rectangle in actual texture pixel size
 		core::scolor m_tint				= core::scolor(core::common_color_neutral1000);
-		int m_flags						= flags_visible;
+		int m_flags						= 0;
 		unsigned char m_layer			= 0;
 
 		RTTR_ENABLE(icomponent);

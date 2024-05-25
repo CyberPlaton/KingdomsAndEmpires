@@ -7,7 +7,7 @@ function spritemancer()
 	additional_includes = {"src/detail/raylib_integration"}
 	plugin_deps = {"plugin_logging"}
 	plugin_headeronly_deps = {}
-	thirdparty_deps = {"EASTL", "spdlog", "core", "bx"}
+	thirdparty_deps = {"EASTL", "spdlog", "core"}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}
 	raylib_path = "src/detail/raylib_integration/raylib"
 	glfw_path = path.join(raylib_path, "external", "glfw", "src")
@@ -120,7 +120,6 @@ function spritemancer()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
-		set_bx_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do

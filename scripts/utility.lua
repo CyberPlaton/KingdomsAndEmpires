@@ -14,16 +14,28 @@ function set_basic_defines()
 	end
 
 	filter{"configurations:debug"}
-		defines{"DEBUG=1", "TRACY_ENABLE", "BX_CONFIG_DEBUG=1"}
+		defines{"DEBUG=1", "TRACY_ENABLE"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE", "BX_CONFIG_DEBUG=0"}
+		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE"}
 	filter{"configurations:hybrid"}
-		defines{"NDEBUG", "HYBRID=1", "TRACY_ENABLE", "BX_CONFIG_DEBUG=0"}
+		defines{"NDEBUG", "HYBRID=1", "TRACY_ENABLE"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
 			"__STDC_FORMAT_MACROS",
 			"_CRT_SECURE_NO_DEPRECATE"}
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_basic_links()
+	if PLATFORM == "windows" then
+		links{"gdi32", "ws2_32", "kernel32", "opengl32", "psapi", "winmm"}
+	elseif PLATFORM == "linux" then
+		links{"GL", "rt", "lm", "x11"}
+	elseif PLATFORM == "macosx" then
+		links{"Cocoa", "IOKit", "CoreFoundation"}
+	else
+	end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -85,20 +97,6 @@ function set_include_path(is_third_party, name)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function set_bx_includes()
-	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
-	if PLATFORM == "windows" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
-	elseif PLATFORM == "linux" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
-	elseif PLATFORM == "macosx" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
-	else
-		print("Unknown platform!")
-	end
-end
-
-------------------------------------------------------------------------------------------------------------------------
 function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
 end
@@ -131,7 +129,6 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
-		set_bx_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -333,10 +330,10 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		externalincludedirs {additional_includes}
 		set_include_path_to_engine()
 		link_with_engine()
-		set_bx_includes()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
+		set_basic_links()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -356,12 +353,6 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		for ii = 1, #thirdparty_headeronly_deps do
 			p = thirdparty_headeronly_deps[ii]
 			set_include_path(true, p)
-		end
-
-		if PLATFORM == "windows" then
-			links{"gdi32", "ws2_32", "kernel32", "opengl32", "psapi", "winmm"}
-		elseif PLATFORM == "linux" then
-		else
 		end
 
 		configure()

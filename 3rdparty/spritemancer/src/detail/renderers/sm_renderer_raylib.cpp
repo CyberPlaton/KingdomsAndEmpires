@@ -61,8 +61,6 @@ namespace sm
 		static uint16_t S_X = 0;
 		static uint16_t S_Y = 0;
 		static core::scolor S_WHITE = { 255, 255, 255, 255 };
-		static cimage S_IMAGE_BLANK;
-		static ctexture S_TEXTURE_BLANK;
 		static raylib::Camera2D S_CAMERA = {{0.0f, 0.0f}, {0.0f, 0.0f}, 0.0f, 0.0f};
 
 	} //- unnamed
@@ -84,8 +82,6 @@ namespace sm
 		S_W = w;
 		S_H = h;
 
-		S_IMAGE_BLANK.create_solid(1, 1, S_WHITE);
-		S_TEXTURE_BLANK.load_from_image(S_IMAGE_BLANK);
 		S_CAMERA.offset = { S_W / 2.0f, S_H / 2.0f };
 
 		return opresult_ok;
@@ -101,6 +97,7 @@ namespace sm
 	void crenderer_raylib::prepare_frame()
 	{
 		raylib::BeginDrawing();
+		raylib::ClearBackground(to_cliteral(S_WHITE));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -126,9 +123,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::clear(unsigned view_id, const core::scolor& color, bool depth)
+	void crenderer_raylib::clear(const slayer& layer, bool depth)
 	{
-		raylib::ClearBackground(to_cliteral(color));
+		raylib::ClearBackground(to_cliteral(layer.m_tint));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -140,84 +137,47 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::bind_texture(uint64_t id)
+	void crenderer_raylib::begin(const slayer& layer)
 	{
-		raylib::rlEnableTexture(static_cast<unsigned>(id));
-	}
-
-	//- This is basically clearing a layer with a color. Unsure whether we require this...
-	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::render_layer_quad(const vec2_t& position, const vec2_t& size, const core::scolor& color)
-	{
+		if (is_valid(layer.m_target))
+		{
+			raylib::BeginTextureMode(layer.m_target.target());
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::render_decal(const sdecal& decal)
+	void crenderer_raylib::draw(const slayer& layer)
 	{
-		using namespace raylib;
-
-		blendmode(decal.m_blending);
-
-		const auto valid_texture = decal.m_texture > 0;
-
-		//- either use blank quad or decals texture for drawing
-		if (valid_texture)
+		for (const auto& command : layer.m_commands)
 		{
-			rlEnableTexture(decal.m_texture);
+			command.execute();
 		}
-		else
-		{
-			rlEnableTexture(S_TEXTURE_BLANK.texture().id);
-		}
+	}
 
-		//- either draw in screen space or in world space
-		if (decal.m_camera_mode == camera_mode_2d)
-		{
-			BeginMode2D(S_CAMERA);
-		}
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_raylib::end(const slayer& layer)
+	{
+		raylib::EndTextureMode();
+	}
 
-		rlBegin(RL_QUADS);
-
-		if (valid_texture)
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_raylib::combine(const slayer& layer)
+	{
+		if (is_valid(layer.m_target))
 		{
-			for (auto i = 0u; i < decal.m_vertices.size(); ++i)
+			const auto target = layer.m_target.target();
+
+			if (is_valid(layer.m_shader))
 			{
-				rlColor4ub(decal.m_tints[i].r(),
-					decal.m_tints[i].g(),
-					decal.m_tints[i].b(),
-					decal.m_tints[i].a());
-
-				rlNormal3f(0.0f, 0.0f, 1.0f);
-
-				//- set texture UV coordinate for vertex
-				rlTexCoord2f(decal.m_uvs[i].x, decal.m_uvs[i].y);
-
-				//- set vertex position
-				rlVertex2f(decal.m_vertices[i].x, decal.m_vertices[i].y);
+				raylib::BeginShaderMode(layer.m_shader.shader());
 			}
-		}
-		else
-		{
-			for (auto i = 0u; i < decal.m_vertices.size(); ++i)
-			{
-				rlColor4ub(decal.m_tints[i].r(),
-					decal.m_tints[i].g(),
-					decal.m_tints[i].b(),
-					decal.m_tints[i].a());
 
-				rlNormal3f(0.0f, 0.0f, 1.0f);
+			raylib::DrawTexturePro(target.texture, { 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height },
+				{ 0.0f, 0.0f, (float)target.texture.width, (float)target.texture.height }, { 0.0f, 0.0f }, 0.0f, to_cliteral(layer.m_tint));
 
-				//- set vertex position
-				rlVertex2f(decal.m_vertices[i].x, decal.m_vertices[i].y);
-			}
-		}
 
-		rlEnd();
-		rlSetTexture(0);
-
-		if (decal.m_camera_mode == camera_mode_2d)
-		{
-			EndMode2D();
+			raylib::EndShaderMode();
+			raylib::EndTextureMode();
 		}
 	}
 
