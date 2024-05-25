@@ -1,6 +1,6 @@
 #include "spritemancer.hpp"
-#include "detail/renderers/sm_renderer_bgfx.hpp"
-#include "detail/platforms/sm_platform_sdl2.hpp"
+#include "detail/renderers/sm_renderer_raylib.hpp"
+#include "detail/platforms/sm_platform_raylib.hpp"
 
 namespace sm
 {
@@ -20,8 +20,8 @@ namespace sm
 		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
 		static float S_INVERSE_W = 0.0f, S_INVERSE_H = 0.0f;
 		static float S_DT = 0.0f;
-		static blending_mode S_BLEND_MODE = blending_mode_default;
-		static primitive_topology_t S_TOPOLOGY = primitive_topology_t::TriList;
+		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
+		static sblending S_BLEND_MODE = S_BLEND_MODE_DEFAULT;
 
 		static void* S_CONFIG = nullptr;
 		static argparse::ArgumentParser S_ARGS;
@@ -47,8 +47,8 @@ namespace sm
 		void engine_configure_platform_and_renderer(iapp* app)
 		{
 			entry::set_app(app);
-			entry::set_platform(std::make_unique<cplatform_sdl>());
-			entry::set_renderer(std::make_unique<crenderer_bgfx>());
+			entry::set_platform(std::make_unique<cplatform_raylib>());
+			entry::set_renderer(std::make_unique<crenderer_raylib>());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -87,8 +87,9 @@ namespace sm
 			//- most basic layer, does always exist
 			S_LAYERS[0].m_want_update = true;
 			S_LAYERS[0].m_show = true;
-			entry::renderer()->blendmode(blending_mode_default);
+			entry::renderer()->blendmode(S_BLEND_MODE);
 			entry::renderer()->prepare_frame();
+			entry::renderer()->clear(0, S_WHITE, true);
 
 			//- layered rendering, from bottom to top
 			for (auto i = 0u; i < S_LAYER_COUNT; ++i)
@@ -97,7 +98,7 @@ namespace sm
 
 				if (layer.m_show)
 				{
-					entry::renderer()->clear(i, layer.m_tint, true);
+					//entry::renderer()->clear(i, layer.m_tint, true);
 
 					//- TODO: unclear what this was originally for. Clearing the layer, however, should be
 					//- done as shown above
@@ -286,33 +287,23 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
 	{
-		//- NOTE: assumption:	position specifies the top-left corner of the texture,
-		//-						scale specifies the scaling for width (right X+) and height (bottom Y+) of the texture
-
-		const auto w = (float)renderable.m_image.image()->m_width * scale.x;
-		const auto h = (float)renderable.m_image.image()->m_height * scale.y;
-
-		//- Note: vertices are specified in CCW ordering, indices are matching that
-		const vec2_t v1 = { position.x,		position.y };
-		const vec2_t v2 = { position.x,		position.y + h };
-		const vec2_t v3 = { position.x + w, position.y + h };
-		const vec2_t v4 = { position.x + w, position.y };
-
-		//- Note: uvs are mapped in CCW ordering to match vertices
-		const vec2_t uv1 = { 0.0f, 0.0f };
-		const vec2_t uv2 = { 0.0f, 1.0f };
-		const vec2_t uv3 = { 1.0f, 1.0f };
-		const vec2_t uv4 = { 1.0f, 0.0f };
+		const auto w = renderable.m_texture.w();
+		const auto h = renderable.m_texture.h();
 
 		auto& decal = S_LAYERS[S_CURRENT_LAYER].m_decals.emplace_back();
-		decal.m_texture = renderable.m_texture.handle();
-		decal.m_tints = { tint.abgr(), tint.abgr(), tint.abgr(), tint.abgr() };
-		decal.m_vertices = { v1, v2, v3, v4 };
-		decal.m_uvs = { uv1, uv2, uv3, uv4 };
-		decal.m_indices = { 0, 1, 3, 3, 1, 2 };
+		decal.m_texture = renderable.m_texture.texture().id;
+		decal.m_tints = { tint, tint, tint, tint };
+		decal.m_vertices =
+		{
+			{ position.x, position.y },
+			{ position.x + scale.x * w, position.y },
+			{ position.x, position.y + scale.y * h },
+			{ position.x + scale.x * w, position.y + scale.y * h}
+		};
+		decal.m_uvs = { { 0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} };
 		decal.m_w = { 1, 1, 1, 1 };
 		decal.m_blending = S_BLEND_MODE;
-		decal.m_topology = S_TOPOLOGY;
+		decal.m_camera_mode = camera_mode_2d;
 	}
 
 } //- sm

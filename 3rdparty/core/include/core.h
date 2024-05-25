@@ -1228,6 +1228,8 @@ namespace core
 
 		static spair<uint8_t*, unsigned> load_binary(const string_t& path);
 
+		static uint8_t* load_binary(const string_t& path, unsigned& size_out);
+
 		static std::future<spair<uint8_t*, unsigned>> load_binary_async(const string_t& path);
 
 		static file_io_status save_binary(const string_t& path, uint8_t* data, unsigned size);

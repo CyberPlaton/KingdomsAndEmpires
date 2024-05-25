@@ -38,7 +38,7 @@ void core_io_error_function(uint8_t level, const std::string& message)
 	}
 }
 
-int SDL_main(int argc, char* argv[])
+int __real_main(int argc, char* argv[])
 {
 	AllocConsole();
 
@@ -60,8 +60,8 @@ int SDL_main(int argc, char* argv[])
 
 	sm::configure(&engine::cengine::instance(),	//- engine class as the application
 		(void*)&cfg,							//- engine configuration
-		0,										//- command line args count
-		nullptr);								//- command line args values
+		argc,									//- command line args count
+		argv);									//- command line args values
 
 	sm::init("spritemancer testbed", 720, 648, false, false);
 
@@ -69,3 +69,16 @@ int SDL_main(int argc, char* argv[])
 
 	return 0;
 }
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+{
+	return __real_main(0, nullptr);
+}
+#else
+int main(int argc, char* argv[])
+{
+	return __real_main(argc, argv);
+}
+#endif

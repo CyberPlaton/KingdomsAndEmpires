@@ -1879,6 +1879,16 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	uint8_t* cfile::load_binary(const string_t& path, unsigned& size_out)
+	{
+		auto [data, size] = load_binary(path);
+
+		size_out = size;
+
+		return data;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	std::future<spair<uint8_t*, unsigned>> cfile::load_binary_async(const string_t& path)
 	{
 		auto result = casync::launch_async([&]() -> spair<uint8_t*, unsigned>
