@@ -718,6 +718,109 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cmaterial::destroy(cmaterial& /*material*/)
+	{
+		//- noop
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmaterial::cmaterial(effect_t shader, blending_mode mode /*= blending_mode_alpha*/, blending_equation equation /*= blending_equation_blend_color*/,
+		blending_factor src /*= blending_factor_src_color*/, blending_factor dst /*= blending_factor_one_minus_src_alpha*/) :
+		m_shader(shader), m_blending({ mode, equation, dst, src })
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmaterial::cmaterial(effect_t shader, sblending blending) :
+		m_shader(shader), m_blending(blending)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmaterial::cmaterial() :
+		m_shader(invalid_handle_t), m_blending({})
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cmaterial::create(effect_t shader, blending_mode mode /*= blending_mode_alpha*/,
+		blending_equation equation /*= blending_equation_blend_color*/, blending_factor src /*= blending_factor_src_color*/,
+		blending_factor dst /*= blending_factor_one_minus_src_alpha*/)
+	{
+		m_shader = shader;
+		m_blending = sblending{ mode, equation, dst, src };
+
+		return algorithm::is_valid_handle(m_shader) ? opresult_ok : opresult_fail;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cmaterial::create(effect_t shader, sblending blending)
+	{
+		m_shader = shader;
+		m_blending = blending;
+
+		return algorithm::is_valid_handle(m_shader) ? opresult_ok : opresult_fail;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cspriteatlas::destroy(cspriteatlas& /*atlas*/)
+	{
+		//- noop
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cspriteatlas::cspriteatlas(texture_t texture) :
+		m_texture(texture)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cspriteatlas::cspriteatlas() :
+		m_texture(invalid_handle_t)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const core::srect& cspriteatlas::get(subtexture_t texture) const
+	{
+		return m_subtextures.at(texture);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	texture_t cspriteatlas::atlas() const
+	{
+		return m_texture;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned cspriteatlas::subtexture_count() const
+	{
+		return static_cast<unsigned>(m_subtextures.size());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cspriteatlas& cspriteatlas::begin(texture_t texture)
+	{
+		m_texture = texture;
+		CORE_ASSERT(algorithm::is_valid_handle(m_texture), "Invalid operation. Texture is not valid");
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cspriteatlas& cspriteatlas::subtexture(const core::srect& rect)
+	{
+		m_subtextures.push_back(rect);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cspriteatlas& cspriteatlas::end()
+	{
+		CORE_ASSERT(!m_subtextures.empty(), "Invalid operation. Empty spriteatlas");
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cimage_manager::cimage_manager()
 	{
 		const auto result = m_images.init(C_IMAGE_RESERVE_COUNT);
@@ -1109,6 +1212,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::cmaterial& cmaterial_manager::get(material_t handle)
+	{
+		CORE_ASSERT(algorithm::is_valid_handle(handle), "Invalid operation. Handle is not valid");
+
+		return *m_materials.modify(handle);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cspriteatlas_manager::cspriteatlas_manager()
 	{
 		const auto result = m_spritesheets.init(C_SPRITEATLAS_RESERVE_COUNT);
@@ -1188,6 +1299,14 @@ namespace sm
 		CORE_ASSERT(algorithm::is_valid_handle(handle), "Invalid operation. Handle is not valid");
 
 		return *m_spritesheets.find(handle);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cspriteatlas& cspriteatlas_manager::get(spriteatlas_t handle)
+	{
+		CORE_ASSERT(algorithm::is_valid_handle(handle), "Invalid operation. Handle is not valid");
+
+		return *m_spritesheets.modify(handle);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
