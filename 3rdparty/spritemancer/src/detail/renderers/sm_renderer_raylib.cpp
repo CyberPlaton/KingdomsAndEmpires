@@ -68,7 +68,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_raylib::prepare_device()
 	{
-		//- empty
+		//- noop
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_raylib::clear(const slayer& layer, bool depth)
 	{
-		raylib::ClearBackground(to_cliteral(layer.m_tint));
+		raylib::ClearBackground(to_cliteral(layer.m_clear_tint));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -137,12 +137,22 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::begin(const slayer& layer)
+	bool crenderer_raylib::begin(const slayer& layer)
 	{
 		if (is_valid(layer.m_target))
 		{
 			raylib::BeginTextureMode(layer.m_target.target());
+
+			//- check some flags and do adjustments
+			if (algorithm::bit_on(layer.m_flags, layer_flags_2d))
+			{
+				raylib::BeginMode2D(layer.m_camera.camera());
+			}
+
+			return true;
 		}
+
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -161,7 +171,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::combine(const slayer& layer)
+	bool crenderer_raylib::combine(const slayer& layer)
 	{
 		if (is_valid(layer.m_target))
 		{
@@ -172,25 +182,50 @@ namespace sm
 				raylib::BeginShaderMode(layer.m_shader.shader());
 			}
 
-			raylib::DrawTexturePro(target.texture, { 0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height },
-				{ 0.0f, 0.0f, (float)target.texture.width, (float)target.texture.height }, { 0.0f, 0.0f }, 0.0f, to_cliteral(layer.m_tint));
+			const auto w = (float)target.texture.width;
+			const auto h = target.texture.height;
+
+			raylib::Rectangle src = { 0.0f, 0.0f, w, -h };
+			raylib::Rectangle dst = { 0.0f, 0.0f, w * layer.m_scale.x, h * layer.m_scale.y };
+			raylib::Vector2 origin = { 0.0f, 0.0f };
+
+			//- check some flags and do adjustments
+			if (algorithm::bit_on(layer.m_flags, layer_flags_non_fullscreen))
+			{
+				dst = { layer.m_position.x, layer.m_position.y, w * layer.m_scale.x, h * layer.m_scale.y };
+			}
+			if (algorithm::bit_on(layer.m_flags, layer_flags_origin_custom))
+			{
+				origin = { layer.m_origin.x, layer.m_origin.y };
+			}
+
+			raylib::DrawTexturePro(target.texture, src, dst, origin, 0.0f, to_cliteral(layer.m_combine_tint));
 
 
+			//- reset previously (optionally) set state
+			raylib::EndMode2D();
 			raylib::EndShaderMode();
 			raylib::EndTextureMode();
+
+			return true;
 		}
+
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::update_texture_gpu(uint64_t id, unsigned w, unsigned h, void* data)
+	void crenderer_raylib::update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data)
 	{
-
+		raylib::rlUpdateTexture(id, 0, 0, w, h, format, data);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::update_texture_cpu(uint64_t id)
+	void crenderer_raylib::update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data)
 	{
-
+		if (void* _data = raylib::rlReadTexturePixels(id, w, h, format); _data)
+		{
+			data = _data;
+		}
 	}
 
 } //- sm

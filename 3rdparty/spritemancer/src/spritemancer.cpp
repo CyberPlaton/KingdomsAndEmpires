@@ -72,7 +72,7 @@ namespace sm
 			CORE_ZONE;
 
 			//- platforms may need to handle events
-			if (entry::platform()->process_event() == opresult_fail)
+			if (entry::platform()->optional_process_event() == opresult_fail)
 			{
 				S_RUNNING = false;
 			}
@@ -94,10 +94,9 @@ namespace sm
 			{
 				auto& layer = S_LAYERS[i];
 
-				if (layer.m_show)
+				if (layer.m_show &&
+					entry::renderer()->begin(layer))
 				{
-					entry::renderer()->begin(layer);
-
 					entry::renderer()->clear(layer, true);
 
 					entry::renderer()->draw(layer);
@@ -113,9 +112,10 @@ namespace sm
 			{
 				auto& layer = S_LAYERS[i];
 
-				if (layer.m_show)
+				if (layer.m_show &&
+					entry::renderer()->combine(layer))
 				{
-					entry::renderer()->combine(layer);
+					//- do postprocess or whatever
 				}
 			}
 
@@ -148,10 +148,6 @@ namespace sm
 		void engine_thread()
 		{
 			//- starting up
-			if (entry::platform()->init_on_thread() != opresult_ok)
-			{
-				return;
-			}
 			if (entry::platform()->init_gfx(S_W, S_H, S_FULLSCREEN, S_VSYNC) != opresult_ok)
 			{
 				return;
@@ -172,7 +168,6 @@ namespace sm
 
 			//- shutting down
 			entry::app()->on_shutdown();
-			entry::platform()->shutdown_on_thread();
 		}
 
 	} //- unnamed
@@ -244,8 +239,12 @@ namespace sm
 		{
 			auto& layer = S_LAYERS[S_LAYER_COUNT];
 
+			//- create with reasonable defaults
+			//- Note: layer will not be shown unless explicitly set as visible or bound at least once
 			layer.m_target.create(S_W, S_H);
-			layer.m_tint = S_WHITE;
+			layer.m_combine_tint = S_WHITE;
+			layer.m_clear_tint = S_WHITE;
+			layer.m_flags = 0;
 
 			return S_LAYER_COUNT++;
 		}
@@ -258,6 +257,8 @@ namespace sm
 		if (i >= 0 && i <= S_LAYER_COUNT)
 		{
 			S_CURRENT_LAYER = i;
+			S_LAYERS[S_LAYER_COUNT].m_show = true;
+
 			return true;
 		}
 		return false;

@@ -14,12 +14,14 @@ namespace sm
 	class crendertarget;
 	class cimage;
 	class ctexture;
+	class ccamera;
 
 	raylib::Color to_cliteral(const core::scolor& color);
 	bool is_valid(const cshader& shader);
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
 	bool is_valid(const crendertarget& target);
+	bool is_valid(const ccamera& camera);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum window_flag : uint32_t
@@ -105,47 +107,47 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_factor
 	{
-		blending_factor_zero = 0,
-		blending_factor_one = 1,
-		blending_factor_src_color = RL_SRC_COLOR,
-		blending_factor_one_minus_src_color = RL_ONE_MINUS_SRC_COLOR,
-		blending_factor_src_alpha = RL_SRC_ALPHA,
-		blending_factor_one_minus_src_alpha = RL_ONE_MINUS_SRC_ALPHA,
-		blending_factor_dst_alpha = RL_DST_ALPHA,
-		blending_factor_dst_color = RL_DST_COLOR,
-		blending_factor_one_minus_dst_alpha = RL_ONE_MINUS_DST_ALPHA,
-		blending_factor_src_alpha_saturate = RL_SRC_ALPHA_SATURATE,
-		blending_factor_constant_color = RL_CONSTANT_COLOR,
-		blending_factor_one_minus_constant_color = RL_ONE_MINUS_CONSTANT_COLOR,
-		blending_factor_constant_alpha = RL_CONSTANT_ALPHA,
-		blending_factor_one_minus_constant_alpha = RL_ONE_MINUS_CONSTANT_ALPHA,
+		blending_factor_zero						= 0,
+		blending_factor_one							= 1,
+		blending_factor_src_color					= RL_SRC_COLOR,
+		blending_factor_one_minus_src_color			= RL_ONE_MINUS_SRC_COLOR,
+		blending_factor_src_alpha					= RL_SRC_ALPHA,
+		blending_factor_one_minus_src_alpha			= RL_ONE_MINUS_SRC_ALPHA,
+		blending_factor_dst_alpha					= RL_DST_ALPHA,
+		blending_factor_dst_color					= RL_DST_COLOR,
+		blending_factor_one_minus_dst_alpha			= RL_ONE_MINUS_DST_ALPHA,
+		blending_factor_src_alpha_saturate			= RL_SRC_ALPHA_SATURATE,
+		blending_factor_constant_color				= RL_CONSTANT_COLOR,
+		blending_factor_one_minus_constant_color	= RL_ONE_MINUS_CONSTANT_COLOR,
+		blending_factor_constant_alpha				= RL_CONSTANT_ALPHA,
+		blending_factor_one_minus_constant_alpha	= RL_ONE_MINUS_CONSTANT_ALPHA,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_equation
 	{
-		blending_equation_add = RL_FUNC_ADD,
-		blending_equation_min = RL_MIN,
-		blending_equation_max = RL_MAX,
-		blending_equation_subtract = RL_FUNC_SUBTRACT,
-		blending_equation_reverse_subtract = RL_FUNC_REVERSE_SUBTRACT,
-		blending_equation_blend_equation_rgb = RL_BLEND_EQUATION_RGB,
-		blending_equation_blend_equation_alpha = RL_BLEND_EQUATION_ALPHA,
-		blending_equation_blend_dst_rgb = RL_BLEND_DST_RGB,
-		blending_equation_blend_src_rgb = RL_BLEND_SRC_RGB,
-		blending_equation_blend_dst_alpha = RL_BLEND_DST_ALPHA,
-		blending_equation_blend_src_alpha = RL_BLEND_SRC_ALPHA,
-		blending_equation_blend_color = RL_BLEND_COLOR,
+		blending_equation_add					= RL_FUNC_ADD,
+		blending_equation_min					= RL_MIN,
+		blending_equation_max					= RL_MAX,
+		blending_equation_subtract				= RL_FUNC_SUBTRACT,
+		blending_equation_reverse_subtract		= RL_FUNC_REVERSE_SUBTRACT,
+		blending_equation_blend_equation_rgb	= RL_BLEND_EQUATION_RGB,
+		blending_equation_blend_equation_alpha	= RL_BLEND_EQUATION_ALPHA,
+		blending_equation_blend_dst_rgb			= RL_BLEND_DST_RGB,
+		blending_equation_blend_src_rgb			= RL_BLEND_SRC_RGB,
+		blending_equation_blend_dst_alpha		= RL_BLEND_DST_ALPHA,
+		blending_equation_blend_src_alpha		= RL_BLEND_SRC_ALPHA,
+		blending_equation_blend_color			= RL_BLEND_COLOR,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_mode : uint8_t
 	{
-		blending_mode_alpha = raylib::BLEND_ALPHA,
-		blending_mode_additive = raylib::BLEND_ADDITIVE,
-		blending_mode_multiplied = raylib::BLEND_MULTIPLIED,
-		blending_mode_add_colors = raylib::BLEND_ADD_COLORS,
-		blending_mode_subtract_colors = raylib::BLEND_SUBTRACT_COLORS,
+		blending_mode_alpha				= raylib::BLEND_ALPHA,
+		blending_mode_additive			= raylib::BLEND_ADDITIVE,
+		blending_mode_multiplied		= raylib::BLEND_MULTIPLIED,
+		blending_mode_add_colors		= raylib::BLEND_ADD_COLORS,
+		blending_mode_subtract_colors	= raylib::BLEND_SUBTRACT_COLORS,
 		blending_mode_alpha_premultiply = raylib::BLEND_ALPHA_PREMULTIPLY
 	};
 
@@ -181,7 +183,7 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum renderable_flag
+	enum renderable_flag : uint32_t
 	{
 		renderable_flag_none			= 0,
 		renderable_flag_invisible		= BIT(1),
@@ -192,12 +194,22 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
+	enum layer_flags : uint32_t
+	{
+		layer_flags_none			= 0,
+		layer_flags_2d				= BIT(1),
+		layer_flags_non_fullscreen	= BIT(2),
+		layer_flags_origin_custom	= BIT(3),
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	enum opresult : uint8_t
 	{
 		opresult_ok = 0,
 		opresult_fail = 255,
 	};
 
+	//- Similar to the error reporter for core library. Set own callback to get reports from inside the library.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct serror_reporter
 	{
@@ -332,7 +344,24 @@ namespace sm
 		raylib::RenderTexture2D m_texture;
 	};
 
-	//- Texture along with image data that can be used as rendertarget or as something to be rendered
+	//- Camera class designed to be lighweight and copied around and to be a thin layer over raylib::Camera2D.
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccamera final
+	{
+	public:
+		ccamera();
+		~ccamera() = default;
+
+		raylib::Camera2D camera() const;
+		inline bool ready() const { return m_ready; }
+
+		vec2_t m_position;
+		vec2_t m_offset;
+		float m_zoom;
+		float m_rotation;
+		bool m_ready;
+	};
+
 	//------------------------------------------------------------------------------------------------------------------------
 	struct srenderable
 	{
@@ -364,14 +393,20 @@ namespace sm
 		render_callback_t m_callback;
 	};
 
-	//- Description of a layer we render upon, including all the decals to be rendered on it
+	//- Description of a rendering layer. Some of the data becomes only relevant when appropriate flags are set
 	//------------------------------------------------------------------------------------------------------------------------
 	struct slayer
 	{
 		crendertarget m_target;
 		vector_t<ccommand> m_commands;
-		cshader m_shader;
-		core::scolor m_tint;
+		ccamera m_camera;					//- optional: camera to be used when rendering
+		cshader m_shader;					//- optional: shader used to render the layer render texture on previous layers
+		core::scolor m_combine_tint;		//- color put over layer render texture when drawing on previous layers
+		core::scolor m_clear_tint;			//- color used to clear the layer render texture before drawing
+		vec2_t m_position = { 0.0f, 0.0f }; //- optional: where to draw the render target when combining; by default we cover whole screen
+		vec2_t m_scale = { 1.0f, 1.0f };	//- optional: scaling of the render target; by default normal scale
+		vec2_t m_origin = { 0.0f, 0.0f };	//- optional: origin of the render target; by default top-left
+		unsigned m_flags = 0;				//- bitwise concated layer_flags
 		bool m_show = false;
 		unsigned m_id = 0;
 	};
@@ -393,13 +428,13 @@ namespace sm
 		virtual void blendmode(sblending mode) = 0;
 
 		virtual void clear(const slayer& layer, bool depth) = 0;
-		virtual void begin(const slayer& layer) = 0;
+		virtual bool begin(const slayer& layer) = 0;
 		virtual void draw(const slayer& layer) = 0;
 		virtual void end(const slayer& layer) = 0;
-		virtual void combine(const slayer& layer) = 0;
+		virtual bool combine(const slayer& layer) = 0;
 
-		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, void* data) = 0;
-		virtual void update_texture_cpu(uint64_t id) = 0;
+		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) = 0;
+		virtual void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) = 0;
 
 		RTTR_ENABLE();
 	};
@@ -414,8 +449,6 @@ namespace sm
 
 		virtual opresult init() = 0;						//- create and init of client application
 		virtual opresult shutdown() = 0;					//- destroy and clean of client application
-		virtual opresult init_on_thread() = 0;				//- create and init on internal 'engine' thread, where rendering and main update happens
-		virtual opresult shutdown_on_thread() = 0;			//- destroy and clean on internal 'engine' thread, where rendering and main update happens
 
 		virtual opresult init_gfx(unsigned w, unsigned h,
 			bool fullscreen, bool vsync) = 0;				//- create graphical context
@@ -423,12 +456,8 @@ namespace sm
 		virtual opresult init_mainwindow(stringview_t title,
 			unsigned w, unsigned h, bool fullscreen) = 0;	//- create application main window
 
-		//- TODO: does not seem to make sense, I think it was for platforms
-		//- that might require processing some events and OS handshakes before
-		//- the window can start and then exit, so not a real loop.
-		//- Consider removing or at least renaming to be more descriptive.
 		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
-		virtual opresult process_event() = 0;				//- process one hardware event
+		virtual opresult optional_process_event() = 0;				//- process one hardware event
 
 		virtual void main_window_position(unsigned* x, unsigned* y) = 0;
 		virtual void main_window_size(unsigned* x, unsigned* y) = 0;

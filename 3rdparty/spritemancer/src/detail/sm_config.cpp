@@ -633,6 +633,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	bool is_valid(const ccamera& camera)
+	{
+		return camera.ready();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void crendertarget::destroy(crendertarget& target)
 	{
 		if (is_valid(target))
@@ -691,6 +697,18 @@ namespace sm
 	ccommand::ccommand(render_callback_t&& callback) :
 		m_callback(std::move(callback))
 	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ccamera::ccamera() :
+		m_position({ 0 }), m_offset({ 0 }), m_zoom(0.0f), m_rotation(0.0f), m_ready(false)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	raylib::Camera2D ccamera::camera() const
+	{
+		return { {m_offset.x, m_offset.y}, {m_position.x, m_position.y}, m_rotation, m_zoom };
 	}
 
 } //- sm

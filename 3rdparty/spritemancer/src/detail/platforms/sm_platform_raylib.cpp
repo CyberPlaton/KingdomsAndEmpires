@@ -21,21 +21,11 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cplatform_raylib::shutdown()
 	{
+		const auto result = entry::renderer()->shutdown_device();
+
 		raylib::ShutdownWindow();
 
-		return opresult_ok;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::init_on_thread()
-	{
-		return opresult_ok;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::shutdown_on_thread()
-	{
-		return entry::renderer()->shutdown_device();
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -82,7 +72,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::process_event()
+	sm::opresult cplatform_raylib::optional_process_event()
 	{
 		if (raylib::WindowShouldClose())
 		{
