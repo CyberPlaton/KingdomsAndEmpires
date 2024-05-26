@@ -443,174 +443,24 @@ namespace sm
 	public:
 		static void destroy(cspriteatlas& atlas);
 
-		explicit cspriteatlas(texture_t texture);
+		explicit cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
 		cspriteatlas();
 		~cspriteatlas() = default;
 
-		const core::srect& get(subtexture_t texture) const;
+		opresult create(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
+		const core::srect& at(stringview_t name) const;
+		vec2_t dimension() const;
+		unsigned subtextures() const;
 
-		texture_t atlas() const;
-		unsigned subtexture_count() const;
-
-		cspriteatlas& begin(texture_t texture);
-		//- implicitly create a subtexture, where the order of creation is the same as the handle
-		cspriteatlas& subtexture(const core::srect& rect);
+		//- Routines for manual atlas creation
+		cspriteatlas& begin(unsigned w, unsigned h);
+		cspriteatlas& subtexture(stringview_t name, const core::srect& rect);
 		cspriteatlas& end();
 
 	private:
-		vector_t<core::srect> m_subtextures;
-		texture_t m_texture;
+		umap_t<unsigned, core::srect> m_subtextures;
+		vec2_t m_size;
 	};
-
-	//- Constant time access to textures by handle. Logarithmic time loading and unloading.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cimage_manager final : public core::cservice
-	{
-	public:
-		cimage_manager();
-		~cimage_manager();
-
-		image_t load(stringview_t name, stringview_t path);
-		image_t load(stringview_t name, image_type type, void* data, unsigned size);
-
-		image_t at(stringview_t name) const;
-		void unload(texture_t handle);
-
-		const cimage& get(image_t handle) const;
-		cimage& get(image_t handle);
-
-	private:
-		core::detail::cdynamic_pool<cimage> m_images;
-		umap_t<string_t, image_t> m_handles;
-
-		RTTR_ENABLE(core::cservice);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture_manager final : public core::cservice
-	{
-	public:
-		ctexture_manager();
-		~ctexture_manager();
-
-		texture_t load(stringview_t name, stringview_t path);
-		texture_t load(stringview_t name, const cimage& image);
-		texture_t load(stringview_t name, image_type type, void* data, unsigned size);
-
-		texture_t at(stringview_t name) const;
-		void unload(texture_t handle);
-
-		const ctexture& get(texture_t handle) const;
-		ctexture& get(texture_t handle);
-
-	private:
-		core::detail::cdynamic_pool<ctexture> m_textures;
-		umap_t<string_t, texture_t> m_handles;
-
-		RTTR_ENABLE(core::cservice);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cshader_manager final : public core::cservice
-	{
-	public:
-		cshader_manager();
-		~cshader_manager();
-
-		effect_t load(stringview_t name, shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
-		effect_t load(stringview_t name, shader_type type, const char* vs, const char* fs);
-		effect_t load(stringview_t name, shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
-
-		void unload(effect_t handle);
-		effect_t at(stringview_t name) const;
-		const cshader& get(effect_t handle) const;
-		cshader& get(effect_t handle);
-
-	private:
-		core::detail::cdynamic_pool<cshader> m_shaders;
-		umap_t<string_t, effect_t> m_handles;
-
-		RTTR_ENABLE(core::cservice);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cmaterial_manager final : public core::cservice
-	{
-	public:
-		cmaterial_manager();
-		~cmaterial_manager();
-
-		material_t load(stringview_t name, effect_t technique, blending_mode mode = blending_mode_alpha,
-			blending_equation equation = blending_equation_blend_color, blending_factor src = blending_factor_src_color,
-			blending_factor dst = blending_factor_one_minus_src_alpha);
-		material_t at(stringview_t name) const;
-		void unload(material_t handle);
-
-		const cmaterial& get(material_t handle) const;
-		cmaterial& get(material_t handle);
-
-	private:
-		core::detail::cdynamic_pool<cmaterial> m_materials;
-		umap_t<string_t, material_t> m_handles;
-
-		RTTR_ENABLE(core::cservice);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas_manager final : public core::cservice
-	{
-	public:
-		cspriteatlas_manager();
-		~cspriteatlas_manager();
-
-		spriteatlas_t load(stringview_t name, texture_t texture, const vec2_t& frames);
-		void unload(material_t handle);
-
-		const cspriteatlas& get(spriteatlas_t handle) const;
-		cspriteatlas& get(spriteatlas_t handle);
-
-	private:
-		core::detail::cdynamic_pool<cspriteatlas> m_spritesheets;
-		umap_t<string_t, spriteatlas_t> m_handles;
-
-		RTTR_ENABLE(core::cservice);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class crendertarget_manager final : public core::cservice
-	{
-	public:
-		crendertarget_manager();
-		~crendertarget_manager();
-
-		rendertarget_t load(stringview_t name, unsigned width, unsigned height);
-		void unload(rendertarget_t handle);
-
-		const crendertarget& get(rendertarget_t handle) const;
-		crendertarget& get(rendertarget_t handle);
-
-		template<typename TCallable>
-		void visit(TCallable callback);
-
-	private:
-		core::detail::cdynamic_pool<crendertarget> m_rendertargets;
-		umap_t<string_t, spriteatlas_t> m_handles;
-
-		RTTR_ENABLE(core::cservice);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TCallable>
-	void sm::crendertarget_manager::visit(TCallable callback)
-	{
-		auto* target = m_rendertargets.begin();
-		while (target)
-		{
-			callback(*target);
-
-			target = m_rendertargets.advance(target);
-		}
-	}
 
 	//- Basically a sprite to be rendered on screen, along with some flags and customization.
 	//- TODO: materials, spriteatlases
@@ -620,7 +470,6 @@ namespace sm
 		static void destroy(srenderable& renderable);
 
 		core::srect m_src = { 0.0f, 0.0f, 1.0f, 1.0f };
-		cmaterial m_material;
 		cimage m_image;
 		ctexture m_texture;
 		vec2_t m_origin = { 0.0f, 0.0f };

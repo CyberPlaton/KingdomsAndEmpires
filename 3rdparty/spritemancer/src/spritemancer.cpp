@@ -7,7 +7,7 @@ namespace sm
 	namespace
 	{
 		constexpr unsigned C_LAYER_COUNT_MAX = 256;
-		static renderlayer_t S_LAYER_COUNT = 0;
+		static unsigned S_LAYER_COUNT = 0;
 		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
 		static core::cmutex S_MUTEX;
 
@@ -231,7 +231,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	renderlayer_t create_layer()
+	unsigned create_layer()
 	{
 		if (S_LAYER_COUNT < C_LAYER_COUNT_MAX)
 		{
@@ -246,11 +246,11 @@ namespace sm
 
 			return S_LAYER_COUNT++;
 		}
-		return MAX(renderlayer_t);
+		return MAX(unsigned);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_line(renderlayer_t layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
+	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
 	{
 		auto& command = S_LAYERS[layer].m_commands.emplace_back();
 
@@ -261,7 +261,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_circle(renderlayer_t layer, const vec2_t& center, float radius, const core::scolor& color)
+	void draw_circle(unsigned layer, const vec2_t& center, float radius, const core::scolor& color)
 	{
 		auto& command = S_LAYERS[layer].m_commands.emplace_back();
 
@@ -272,7 +272,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_rect(renderlayer_t layer, const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
+	void draw_rect(unsigned layer, const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
 	{
 		auto& command = S_LAYERS[layer].m_commands.emplace_back();
 
@@ -283,20 +283,20 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void sm_logger(core::error_report_function_t callback)
+	void set_logger(core::error_report_function_t callback)
 	{
 		serror_reporter::instance().m_callback = std::move(callback);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_placeholder(renderlayer_t layer, const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
+	void draw_placeholder(unsigned layer, const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
 		const core::scolor& tint /*= {255, 255, 255, 255}*/)
 	{
 		draw_texture(layer, position, S_PLACEHOLDER_TEXTURE, scale, tint);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(renderlayer_t layer, const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
+	void draw_texture(unsigned layer, const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
 	{
 		if (algorithm::bit_on(renderable.m_flags, renderable_flag_invisible))
 		{

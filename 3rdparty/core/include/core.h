@@ -214,15 +214,6 @@ using handle_type_t		= uint64_t;
 #define invalid_handle_t MAX(uint64_t)
 using service_type_t	= handle_type_t;
 using entity_proxy_t	= int;
-using renderlayer_t		= uint16_t;
-using material_t		= handle_type_t;
-using image_t			= handle_type_t;
-using texture_t			= handle_type_t;
-using effect_t			= handle_type_t;
-using uniform_t			= handle_type_t;
-using spriteatlas_t		= handle_type_t;
-using subtexture_t		= handle_type_t;
-using rendertarget_t	= handle_type_t;
 using query_t			= handle_type_t;
 
 //------------------------------------------------------------------------------------------------------------------------
