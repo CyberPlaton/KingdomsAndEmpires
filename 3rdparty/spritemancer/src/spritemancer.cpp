@@ -7,9 +7,9 @@ namespace sm
 	namespace
 	{
 		constexpr unsigned C_LAYER_COUNT_MAX = 256;
-		static unsigned S_LAYER_COUNT = 0;
-		static unsigned S_CURRENT_LAYER = 0;
+		static renderlayer_t S_LAYER_COUNT = 0;
 		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
+		static core::cmutex S_MUTEX;
 
 		static core::scolor S_WHITE = { 255, 255, 255, 255 };
 		static core::scolor S_BLACK = { 0, 0, 0, 0 };
@@ -137,8 +137,6 @@ namespace sm
 
 			//- create default rendering layer
 			create_layer();
-			S_LAYERS[0].m_show = true;
-			bind_layer(0);
 
 			//- sample time for custom frame timing
 		}
@@ -233,35 +231,55 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	unsigned create_layer()
+	renderlayer_t create_layer()
 	{
 		if (S_LAYER_COUNT < C_LAYER_COUNT_MAX)
 		{
 			auto& layer = S_LAYERS[S_LAYER_COUNT];
 
 			//- create with reasonable defaults
-			//- Note: layer will not be shown unless explicitly set as visible or bound at least once
 			layer.m_target.create(S_W, S_H);
 			layer.m_combine_tint = S_WHITE;
 			layer.m_clear_tint = S_WHITE;
 			layer.m_flags = 0;
+			layer.m_show = true;
 
 			return S_LAYER_COUNT++;
 		}
-		return MAX(unsigned);
+		return MAX(renderlayer_t);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool bind_layer(unsigned i)
+	void draw_line(renderlayer_t layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
 	{
-		if (i >= 0 && i <= S_LAYER_COUNT)
-		{
-			S_CURRENT_LAYER = i;
-			S_LAYERS[S_LAYER_COUNT].m_show = true;
+		auto& command = S_LAYERS[layer].m_commands.emplace_back();
 
-			return true;
-		}
-		return false;
+		command.create([=]()
+			{
+				raylib::DrawLineEx({ start.x, start.y }, { end.x, end.y }, thick, to_cliteral(color));
+			});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_circle(renderlayer_t layer, const vec2_t& center, float radius, const core::scolor& color)
+	{
+		auto& command = S_LAYERS[layer].m_commands.emplace_back();
+
+		command.create([=]()
+			{
+				raylib::DrawCircle(center.x, center.y, radius, to_cliteral(color));
+			});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_rect(renderlayer_t layer, const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
+	{
+		auto& command = S_LAYERS[layer].m_commands.emplace_back();
+
+		command.create([=]()
+			{
+				raylib::DrawRectangleV({ position.x, position.y }, { dimension.x, dimension.y }, to_cliteral(color));
+			});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -271,21 +289,21 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_placeholder(const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
+	void draw_placeholder(renderlayer_t layer, const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
 		const core::scolor& tint /*= {255, 255, 255, 255}*/)
 	{
-		draw_texture(position, S_PLACEHOLDER_TEXTURE, scale, tint);
+		draw_texture(layer, position, S_PLACEHOLDER_TEXTURE, scale, tint);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
+	void draw_texture(renderlayer_t layer, const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
 	{
 		if (algorithm::bit_on(renderable.m_flags, renderable_flag_invisible))
 		{
 			return;
 		}
 
-		auto& command = S_LAYERS[S_CURRENT_LAYER].m_commands.emplace_back();
+		auto& command = S_LAYERS[layer].m_commands.emplace_back();
 
 		command.create([=]()
 			{
