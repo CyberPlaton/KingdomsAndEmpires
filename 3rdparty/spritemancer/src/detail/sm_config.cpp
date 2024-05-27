@@ -428,6 +428,13 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::cshader& cshader::operator=(const cshader& other)
+	{
+		m_shader = other.m_shader;
+		m_type = other.m_type;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cimage::destroy(cimage& image)
 	{
 		if (is_valid(image))
@@ -590,13 +597,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void srenderable::destroy(srenderable& renderable)
-	{
-		ctexture::destroy(renderable.m_texture);
-		cimage::destroy(renderable.m_image);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	raylib::Color to_cliteral(const core::scolor& color)
 	{
 		return { color.r(), color.g(), color.b(), color.a() };
@@ -633,9 +633,17 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool is_valid(renderlayer_t layer)
+	bool is_valid(const cmaterial& material)
 	{
-		return layer < MAX(renderlayer_t);
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool is_valid(const cspriteatlas& atlas)
+	{
+		const auto size = atlas.dimension();
+
+		return atlas.subtextures() > 0 && size.x > 0.0f && size.y > 0.0f;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -709,51 +717,6 @@ namespace sm
 	raylib::Camera2D ccamera::camera() const
 	{
 		return { {m_offset.x, m_offset.y}, {m_position.x, m_position.y}, m_rotation, m_zoom };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::destroy(cmaterial& /*material*/)
-	{
-		//- noop
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::cmaterial(effect_t shader, blending_mode mode /*= blending_mode_alpha*/, blending_equation equation /*= blending_equation_blend_color*/,
-		blending_factor src /*= blending_factor_src_color*/, blending_factor dst /*= blending_factor_one_minus_src_alpha*/) :
-		m_shader(shader), m_blending({ mode, equation, dst, src })
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::cmaterial(effect_t shader, sblending blending) :
-		m_shader(shader), m_blending(blending)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::cmaterial() :
-		m_shader(invalid_handle_t), m_blending({})
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cmaterial::create(effect_t shader, blending_mode mode /*= blending_mode_alpha*/,
-		blending_equation equation /*= blending_equation_blend_color*/, blending_factor src /*= blending_factor_src_color*/,
-		blending_factor dst /*= blending_factor_one_minus_src_alpha*/)
-	{
-		m_shader = shader;
-		m_blending = sblending{ mode, equation, dst, src };
-
-		return algorithm::is_valid_handle(m_shader) ? opresult_ok : opresult_fail;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cmaterial::create(effect_t shader, sblending blending)
-	{
-		m_shader = shader;
-		m_blending = blending;
-
-		return algorithm::is_valid_handle(m_shader) ? opresult_ok : opresult_fail;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -838,6 +801,19 @@ namespace sm
 	{
 		CORE_ASSERT(!m_subtextures.empty() && m_size.x > 0.0f && m_size.y > 0.0f, "Invalid operation. An empty spriteatlas is not valid");
 		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool sblending::operator!=(const sblending& other)
+	{
+		return !this->operator==(other);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool sblending::operator==(const sblending& other)
+	{
+		return m_mode == other.m_mode && m_equation == other.m_equation &&
+			m_dst_factor == other.m_dst_factor && m_src_factor == other.m_src_factor;
 	}
 
 } //- sm

@@ -7,14 +7,6 @@
 
 namespace sm
 {
-	constexpr auto C_MATERIAL_RESERVE_COUNT		= 256;
-	constexpr auto C_IMAGE_RESERVE_COUNT		= 512;
-	constexpr auto C_TEXTURE_RESERVE_COUNT		= 512;
-	constexpr auto C_TECHNIQUE_RESERVE_COUNT	= 256;
-	constexpr auto C_SPRITEATLAS_RESERVE_COUNT	= 128;
-	constexpr auto C_RENDERTARGET_RESERVE_COUNT = 16;
-	constexpr material_t C_DEFAULT_MATERIAL		= 0;
-
 	class irenderer;
 	class iplatform;
 	class iapp;
@@ -37,7 +29,6 @@ namespace sm
 	bool is_valid(const ctexture& texture);
 	bool is_valid(const crendertarget& target);
 	bool is_valid(const ccamera& camera);
-	bool is_valid(renderlayer_t layer);
 	bool is_valid(const cmaterial& material);
 	bool is_valid(const cspriteatlas& atlas);
 
@@ -251,6 +242,9 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sblending final
 	{
+		bool operator==(const sblending& other);
+		bool operator!=(const sblending& other);
+
 		blending_mode m_mode;
 		blending_equation m_equation;
 		blending_factor m_dst_factor;
@@ -285,6 +279,8 @@ namespace sm
 		void set_uniform_matrix(stringview_t name, const mat4_t& value);
 		void set_uniform_texture(stringview_t name, const ctexture& value);
 		void remove_uniform(stringview_t name);
+
+		cshader& operator=(const cshader& other);
 
 	private:
 		raylib::Shader m_shader;
@@ -409,34 +405,6 @@ namespace sm
 		bool m_ready;
 	};
 
-	//- Basically a shader with uniforms and blending settings.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cmaterial final
-	{
-	public:
-		static void destroy(cmaterial& material);
-
-		explicit cmaterial(effect_t shader, blending_mode mode = blending_mode_alpha, blending_equation equation = blending_equation_blend_color,
-			blending_factor src = blending_factor_src_color, blending_factor dst = blending_factor_one_minus_src_alpha);
-
-		explicit cmaterial(effect_t shader, sblending blending);
-		cmaterial();
-		~cmaterial() = default;
-
-		opresult create(effect_t shader, blending_mode mode = blending_mode_alpha, blending_equation equation = blending_equation_blend_color,
-			blending_factor src = blending_factor_src_color, blending_factor dst = blending_factor_one_minus_src_alpha);
-
-		opresult create(effect_t shader, sblending blending);
-
-		inline effect_t effect() const { return m_shader; }
-		inline sblending blending() const { return m_blending; }
-
-	private:
-		sblending m_blending;
-		effect_t m_shader;
-
-	};
-
 	//------------------------------------------------------------------------------------------------------------------------
 	class cspriteatlas final
 	{
@@ -467,11 +435,11 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	struct srenderable
 	{
-		static void destroy(srenderable& renderable);
-
 		core::srect m_src = { 0.0f, 0.0f, 1.0f, 1.0f };
+		cshader m_shader;
 		cimage m_image;
 		ctexture m_texture;
+		sblending m_blending;
 		vec2_t m_origin = { 0.0f, 0.0f };
 		float m_rotation = 0.0f;//- degrees
 		int m_flags = 0;		//- bitwise concated renderable_flag
