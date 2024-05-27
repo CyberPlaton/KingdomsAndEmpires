@@ -714,6 +714,12 @@ bool IsWindowFullscreen(void)
     return CORE.Window.fullscreen;
 }
 
+// Get current state of the window
+int GetWindowState()
+{
+	return CORE.Window.flags;
+}
+
 // Check if window is currently hidden
 bool IsWindowHidden(void)
 {
@@ -735,7 +741,7 @@ bool IsWindowMaximized(void)
 // Check if window has the focus
 bool IsWindowFocused(void)
 {
-    return ((CORE.Window.flags & FLAG_WINDOW_UNFOCUSED) == 0);
+    return ((CORE.Window.flags & FLAG_WINDOW_FOCUSED) > 0);
 }
 
 // Check if window has been resizedLastFrame

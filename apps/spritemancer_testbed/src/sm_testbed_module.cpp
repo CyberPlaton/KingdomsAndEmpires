@@ -47,11 +47,6 @@ int __real_main(int argc, char* argv[])
 	engine::cengine::sconfig cfg;
 	cfg.m_services_cfg.emplace_back("cthread_service");
 	cfg.m_services_cfg.emplace_back("cevent_service");
-	cfg.m_services_cfg.emplace_back("ctexture_manager");
-	cfg.m_services_cfg.emplace_back("cshader_manager");
-	cfg.m_services_cfg.emplace_back("cmaterial_manager");
-	cfg.m_services_cfg.emplace_back("cspriteatlas_manager");
-	cfg.m_services_cfg.emplace_back("crendertarget_manager");
 
 	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");

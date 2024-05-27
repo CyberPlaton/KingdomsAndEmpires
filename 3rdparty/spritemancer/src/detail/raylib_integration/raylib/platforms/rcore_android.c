@@ -737,7 +737,7 @@ int InitPlatform(void)
     CORE.Window.flags &= ~FLAG_WINDOW_HIDDEN;       // false
     CORE.Window.flags &= ~FLAG_WINDOW_MINIMIZED;    // false
     CORE.Window.flags |= FLAG_WINDOW_MAXIMIZED;     // true
-    CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;    // false
+    CORE.Window.flags |= FLAG_WINDOW_FOCUSED;       // true
     //----------------------------------------------------------------------------
 
     // Initialize App command system
@@ -1033,14 +1033,14 @@ static void AndroidCommandCallback(struct android_app *app, int32_t cmd)
         case APP_CMD_GAINED_FOCUS:
         {
             platform.appEnabled = true;
-            CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;
+            CORE.Window.flags |= FLAG_WINDOW_FOCUSED;
             //ResumeMusicStream();
         } break;
         case APP_CMD_PAUSE: break;
         case APP_CMD_LOST_FOCUS:
         {
             platform.appEnabled = false;
-            CORE.Window.flags |= FLAG_WINDOW_UNFOCUSED;
+            CORE.Window.flags &= ~FLAG_WINDOW_FOCUSED;
             //PauseMusicStream();
         } break;
         case APP_CMD_TERM_WINDOW:

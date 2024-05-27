@@ -6,7 +6,6 @@
 #include "editor/editor_tool.hpp"
 #include "editor/editor_visualizer.hpp"
 #include "layer.hpp"
-#include "services/event_service.hpp"
 #include "services/thread_service.hpp"
 #include <argparse.h>
 

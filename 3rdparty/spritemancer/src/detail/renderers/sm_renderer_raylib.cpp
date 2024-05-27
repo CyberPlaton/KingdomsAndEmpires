@@ -103,11 +103,6 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_raylib::display_frame()
 	{
-		raylib::DrawRectangle(0, 0, S_W, 5, raylib::RED);
-		raylib::DrawRectangle(0, 5, 5, S_H - 10, raylib::RED);
-		raylib::DrawRectangle(S_W - 5, 5, 5, S_H - 10, raylib::RED);
-		raylib::DrawRectangle(0, S_H - 5, S_W, 5, raylib::RED);
-
 		raylib::EndDrawing();
 	}
 
@@ -144,7 +139,7 @@ namespace sm
 			raylib::BeginTextureMode(layer.m_target.target());
 
 			//- check some flags and do adjustments
-			if (algorithm::bit_on(layer.m_flags, layer_flags_2d))
+			if (algorithm::bit_check(layer.m_flags, layer_flags_2d))
 			{
 				raylib::BeginMode2D(layer.m_camera.camera());
 			}
@@ -190,11 +185,11 @@ namespace sm
 			raylib::Vector2 origin = { 0.0f, 0.0f };
 
 			//- check some flags and do adjustments
-			if (algorithm::bit_on(layer.m_flags, layer_flags_non_fullscreen))
+			if (algorithm::bit_check(layer.m_flags, layer_flags_non_fullscreen))
 			{
 				dst = { layer.m_position.x, layer.m_position.y, w * layer.m_scale.x, h * layer.m_scale.y };
 			}
-			if (algorithm::bit_on(layer.m_flags, layer_flags_origin_custom))
+			if (algorithm::bit_check(layer.m_flags, layer_flags_origin_custom))
 			{
 				origin = { layer.m_origin.x, layer.m_origin.y };
 			}

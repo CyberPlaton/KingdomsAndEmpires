@@ -18,7 +18,7 @@ namespace sm
 		static bool S_FULLSCREEN = false;
 		static bool S_VSYNC = true;
 		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
-		static float S_INVERSE_W = 0.0f, S_INVERSE_H = 0.0f;
+		static bool S_RESIZE_REQUIRED = false;
 		static float S_DT = 0.0f;
 		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
 		static sblending S_BLEND_MODE = S_BLEND_MODE_DEFAULT;
@@ -33,8 +33,6 @@ namespace sm
 		{
 			S_W = w;
 			S_H = h;
-			S_INVERSE_W = 1.0f / (float)S_W;
-			S_INVERSE_H = 1.0f / (float)S_H;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -75,6 +73,14 @@ namespace sm
 			if (entry::platform()->optional_process_event() == opresult_fail)
 			{
 				S_RUNNING = false;
+			}
+
+			//- check for resize of most basic layer. Other layers are not our responsibility
+			if (S_RESIZE_REQUIRED)
+			{
+				S_LAYERS[0].m_target.resize(S_W, S_H);
+
+				S_RESIZE_REQUIRED = false;
 			}
 
 			//- update HID state, such as keyboard and mouse
@@ -141,6 +147,20 @@ namespace sm
 			//- sample time for custom frame timing
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		void engine_finalize_init()
+		{
+			//- create internal event listeners
+			core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
+				{
+					const auto& e = var.convert<events::window::sresize>();
+					S_W = e.w;
+					S_H = e.h;
+
+					S_RESIZE_REQUIRED = true;
+				});
+		}
+
 		//- Main engine thread where the update and rendering happens. Created from outside
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_thread()
@@ -157,6 +177,8 @@ namespace sm
 			{
 				S_RUNNING = false;
 			}
+
+			engine_finalize_init();
 
 			//- main loop
 			while (S_RUNNING)
@@ -298,7 +320,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
 	{
-		if (algorithm::bit_on(renderable.m_flags, renderable_flag_invisible))
+		if (algorithm::bit_check(renderable.m_flags, renderable_flag_invisible))
 		{
 			return;
 		}
@@ -318,19 +340,19 @@ namespace sm
 				raylib::Vector2 origin = { 0.0f, 0.0f};
 
 				//- check some flags and do adjustments
-				if (algorithm::bit_on(renderable.m_flags, renderable_flag_origin_center))
+				if (algorithm::bit_check(renderable.m_flags, renderable_flag_origin_center))
 				{
 					origin = { w / 2.0f, h / 2.0f };
 				}
-				if (algorithm::bit_on(renderable.m_flags, renderable_flag_origin_custom))
+				if (algorithm::bit_check(renderable.m_flags, renderable_flag_origin_custom))
 				{
 					origin = { renderable.m_origin.x, renderable.m_origin.y };
 				}
-				if (algorithm::bit_on(renderable.m_flags, renderable_flag_flipx))
+				if (algorithm::bit_check(renderable.m_flags, renderable_flag_flipx))
 				{
 					src.width = -src.width;
 				}
-				if (algorithm::bit_on(renderable.m_flags, renderable_flag_flipy))
+				if (algorithm::bit_check(renderable.m_flags, renderable_flag_flipy))
 				{
 					src.height = -src.height;
 				}
@@ -338,7 +360,7 @@ namespace sm
 				{
 					raylib::BeginShaderMode(renderable.m_shader.shader());
 				}
-				if (algorithm::bit_on(renderable.m_flags, renderable_flag_blending_custom))
+				if (algorithm::bit_check(renderable.m_flags, renderable_flag_blending_custom))
 				{
 					raylib::rlSetBlendMode(renderable.m_blending.m_mode);
 					raylib::rlSetBlendFactors(renderable.m_blending.m_src_factor, renderable.m_blending.m_dst_factor, renderable.m_blending.m_equation);

@@ -350,6 +350,7 @@ namespace sm
 		~crendertarget();
 
 		opresult create(unsigned w, unsigned h);
+		opresult resize(unsigned w, unsigned h);
 
 		inline unsigned w() const { return m_texture.texture.width; }
 		inline unsigned h() const { return m_texture.texture.height; }

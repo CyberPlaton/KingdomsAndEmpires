@@ -693,6 +693,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult crendertarget::resize(unsigned w, unsigned h)
+	{
+		crendertarget::destroy(*this);
+
+		return create(w, h);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void ccommand::create(render_callback_t&& callback)
 	{
 		m_callback = std::move(callback);

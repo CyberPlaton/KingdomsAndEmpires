@@ -353,10 +353,10 @@ void SetWindowState(unsigned int flags)
     }
 
     // State change: FLAG_WINDOW_UNFOCUSED
-    if (((CORE.Window.flags & FLAG_WINDOW_UNFOCUSED) != (flags & FLAG_WINDOW_UNFOCUSED)) && ((flags & FLAG_WINDOW_UNFOCUSED) > 0))
+    if (((CORE.Window.flags & FLAG_WINDOW_FOCUSED) != (flags & FLAG_WINDOW_FOCUSED)) && ((flags & FLAG_WINDOW_FOCUSED) > 0))
     {
         glfwSetWindowAttrib(platform.handle, GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
-        CORE.Window.flags |= FLAG_WINDOW_UNFOCUSED;
+        CORE.Window.flags |= FLAG_WINDOW_FOCUSED;
     }
 
     // State change: FLAG_WINDOW_TOPMOST
@@ -466,10 +466,10 @@ void ClearWindowState(unsigned int flags)
     }
 
     // State change: FLAG_WINDOW_UNFOCUSED
-    if (((CORE.Window.flags & FLAG_WINDOW_UNFOCUSED) > 0) && ((flags & FLAG_WINDOW_UNFOCUSED) > 0))
+    if (((CORE.Window.flags & FLAG_WINDOW_FOCUSED) > 0) && ((flags & FLAG_WINDOW_FOCUSED) > 0))
     {
         glfwSetWindowAttrib(platform.handle, GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
-        CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;
+        CORE.Window.flags &= ~FLAG_WINDOW_FOCUSED;
     }
 
     // State change: FLAG_WINDOW_TOPMOST
@@ -1271,7 +1271,7 @@ int InitPlatform(void)
     // Disable FLAG_WINDOW_MAXIMIZED, not supported on initialization
     if ((CORE.Window.flags & FLAG_WINDOW_MAXIMIZED) > 0) CORE.Window.flags &= ~FLAG_WINDOW_MAXIMIZED;
 
-    if ((CORE.Window.flags & FLAG_WINDOW_UNFOCUSED) > 0) glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
+    if ((CORE.Window.flags & FLAG_WINDOW_FOCUSED) == 0) glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
     else glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
 
     if ((CORE.Window.flags & FLAG_WINDOW_TOPMOST) > 0) glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
@@ -1662,8 +1662,8 @@ static void WindowMaximizeCallback(GLFWwindow *window, int maximized)
 // GLFW3 WindowFocus Callback, runs when window get/lose focus
 static void WindowFocusCallback(GLFWwindow *window, int focused)
 {
-    if (focused) CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
-    else CORE.Window.flags |= FLAG_WINDOW_UNFOCUSED;            // The window lost focus
+    if (focused) CORE.Window.flags |= FLAG_WINDOW_FOCUSED;     // The window was focused
+    else CORE.Window.flags &= ~FLAG_WINDOW_FOCUSED;            // The window lost focus
 }
 
 // GLFW3 Window Drop Callback, runs when drop files into window
