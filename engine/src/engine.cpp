@@ -132,7 +132,7 @@ namespace engine
 
 		auto v = raylib::GetMousePosition();
 
-		sm::draw_placeholder({v.x, v.y});
+		sm::draw_placeholder(0, {v.x, v.y});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

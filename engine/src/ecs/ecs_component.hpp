@@ -97,7 +97,7 @@ namespace ecs
 		float m_rotation			= 0.0f;
 		core::srect m_viewrect		= { 0.0f, 0.0f, 0.0f, 0.0f };
 		bool m_active				= false;
-		renderlayer_t m_layer		= 0;
+		unsigned m_renderlayer		= 0;
 
 		RTTR_ENABLE(icomponent);
 	};
@@ -135,8 +135,6 @@ namespace ecs
 		DECLARE_COMPONENT(ssprite);
 
 		static void show_ui(flecs::entity e);
-
-		vector_t<core::spair<texture_t, material_t>> m_materials;
 
 		core::srect m_source_rectangle	= { 0.0f, 0.0f, 0.0f, 0.0f }; //- represents a rectangle in actual texture pixel size
 		core::scolor m_tint				= core::scolor(core::common_color_neutral1000);
@@ -268,7 +266,6 @@ namespace ecs
 	REFLECT_INLINE(ssprite)
 	{
 		rttr::ccomponent<ssprite>("ssprite")
-			.prop("m_materials", &ssprite::m_materials)
 			.prop("m_flags", &ssprite::m_flags)
 			.prop("m_layer", &ssprite::m_layer)
 			.prop("m_source_rectangle", &ssprite::m_source_rectangle)

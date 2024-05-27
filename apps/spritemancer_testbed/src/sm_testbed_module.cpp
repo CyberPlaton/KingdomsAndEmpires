@@ -56,7 +56,7 @@ int __real_main(int argc, char* argv[])
 	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");
 
-	sm::sm_logger(core_io_error_function);
+	sm::set_logger(core_io_error_function);
 
 	sm::configure(&engine::cengine::instance(),	//- engine class as the application
 		(void*)&cfg,							//- engine configuration

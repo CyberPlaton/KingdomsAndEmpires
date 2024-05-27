@@ -338,14 +338,16 @@ namespace sm
 				{
 					raylib::BeginShaderMode(renderable.m_shader.shader());
 				}
-
-				raylib::rlSetBlendMode(renderable.m_blending.m_mode);
-				raylib::rlSetBlendFactors(renderable.m_blending.m_src_factor, renderable.m_blending.m_dst_factor, renderable.m_blending.m_equation);
-				raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
+				if (algorithm::bit_on(renderable.m_flags, renderable_flag_blending_custom))
+				{
+					raylib::rlSetBlendMode(renderable.m_blending.m_mode);
+					raylib::rlSetBlendFactors(renderable.m_blending.m_src_factor, renderable.m_blending.m_dst_factor, renderable.m_blending.m_equation);
+					raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
+				}
 
 				raylib::DrawTexturePro(renderable.m_texture.texture(), src, dst, origin, renderable.m_rotation, to_cliteral(tint));
 
-
+				//- reset state
 				raylib::EndShaderMode();
 			});
 	}

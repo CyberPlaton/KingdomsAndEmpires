@@ -201,6 +201,7 @@ namespace sm
 		renderable_flag_origin_center	= BIT(4),
 		renderable_flag_origin_custom	= BIT(5),
 		renderable_flag_has_material	= BIT(6),
+		renderable_flag_blending_custom = BIT(7),
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

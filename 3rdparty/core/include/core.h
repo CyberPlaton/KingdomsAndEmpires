@@ -874,10 +874,6 @@ namespace core
 
 	} //- detail
 
-	//- define some common types of pairs
-	//------------------------------------------------------------------------------------------------------------------------
-	using smaterial_pair = spair<texture_t, material_t>;
-
 	//- base class for a service
 	//------------------------------------------------------------------------------------------------------------------------
 	class cservice
@@ -1990,23 +1986,6 @@ namespace core
 			.property("y", &vec4_t::y)
 			.property("z", &vec4_t::z)
 			.property("w", &vec4_t::w)
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(smaterial_pair)
-	{
-		rttr::registration::class_<smaterial_pair>("smaterial_pair")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_object
-			)
-			.constructor<texture_t, material_t>()
-			(
-				rttr::policy::ctor::as_object
-			)
-			.property("first", &smaterial_pair::first)
-			.property("second", &smaterial_pair::second)
 			;
 	}
 
