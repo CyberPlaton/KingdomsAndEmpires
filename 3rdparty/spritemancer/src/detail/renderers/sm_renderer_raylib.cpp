@@ -98,11 +98,15 @@ namespace sm
 	{
 		raylib::BeginDrawing();
 		raylib::ClearBackground(to_cliteral(S_WHITE));
+
+		imgui::begin();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_raylib::display_frame()
 	{
+		imgui::end();
+
 		raylib::EndDrawing();
 	}
 
@@ -198,6 +202,7 @@ namespace sm
 
 
 			//- reset previously (optionally) set state
+			raylib::EndBlendMode();
 			raylib::EndMode2D();
 			raylib::EndShaderMode();
 			raylib::EndTextureMode();

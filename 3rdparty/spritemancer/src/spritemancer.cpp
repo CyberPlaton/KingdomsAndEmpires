@@ -125,6 +125,8 @@ namespace sm
 				}
 			}
 
+			ImGui::ShowDemoWindow();
+
 			//- present everything
 			entry::renderer()->display_frame();
 		}
@@ -150,6 +152,9 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_finalize_init()
 		{
+			//- initialize imgui
+			imgui::init();
+
 			//- create internal event listeners
 			core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
 				{
@@ -188,6 +193,9 @@ namespace sm
 
 			//- shutting down
 			entry::app()->on_shutdown();
+
+			//- shutdown imgui
+			imgui::shutdown();
 		}
 
 	} //- unnamed

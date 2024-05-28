@@ -1,9 +1,10 @@
 #pragma once
 #include "platform.hpp"
-#include "raylib_integration/raylib.hpp"
 #include <core.h>
 #include <argparse.h>
 #include <plugin_logging.h>
+#include "raylib_integration/raylib.hpp"
+#include "imgui_integration/imgui.hpp"
 
 namespace sm
 {
