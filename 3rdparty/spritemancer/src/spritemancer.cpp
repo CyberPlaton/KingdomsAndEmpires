@@ -125,7 +125,8 @@ namespace sm
 				}
 			}
 
-			ImGui::ShowDemoWindow();
+			//- finalize rendering with imgui on top
+			entry::app()->on_imgui();
 
 			//- present everything
 			entry::renderer()->display_frame();

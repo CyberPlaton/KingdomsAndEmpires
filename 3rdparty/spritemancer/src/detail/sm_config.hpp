@@ -546,6 +546,7 @@ namespace sm
 		virtual ~iapp() = default;
 		virtual bool on_init(void* config, argparse::ArgumentParser& args) = 0;
 		virtual void on_update(float) = 0;
+		virtual void on_imgui() = 0;
 		virtual void on_shutdown() = 0;
 	};
 

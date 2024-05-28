@@ -128,11 +128,17 @@ namespace engine
 
 		m_layers.on_world_render();
 
-		//- TODO: ImGui UI render
-
 		auto v = raylib::GetMousePosition();
 
 		sm::draw_placeholder(0, {v.x, v.y});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::on_imgui()
+	{
+		m_layers.on_ui_render();
+
+		ImGui::ShowDemoWindow();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -47,6 +47,7 @@ namespace engine
 
 		bool on_init(void* config, argparse::ArgumentParser& args) override final;
 		void on_update(float dt) override final;
+		void on_imgui() override final;
 		void on_shutdown() override final;
 
 	private:
