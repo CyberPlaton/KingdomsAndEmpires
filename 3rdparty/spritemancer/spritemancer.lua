@@ -7,22 +7,25 @@ function spritemancer()
 	additional_includes = {"src/detail/raylib_integration"}
 	plugin_deps = {"plugin_logging"}
 	plugin_headeronly_deps = {}
-	thirdparty_deps = {"EASTL", "spdlog", "core"}
+	thirdparty_deps = {"EASTL", "spdlog", "core", "tree_sitter"}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}
 	raylib_path = "src/detail/raylib_integration/raylib"
 	glfw_path = path.join(raylib_path, "external", "glfw", "src")
 
 	project(name)
-		language (target_language)
+		language ("c++")
 		location (path.join(".project", name))
 		targetname (name)
 
 		kind ("StaticLib")
 
-		-- raylib required files
 		files{"src/**.h",
 			  "src/**.cpp",
 			  "src/**.hpp",
+			  "src/detail/tree_sitter_integration/cpp/parser.c",
+			  "src/detail/tree_sitter_integration/cpp/scanner.c",
+			  "src/detail/tree_sitter_integration/lua/parser.c",
+			  "src/detail/tree_sitter_integration/lua/scanner.c",
 			  
 			  path.join(raylib_path, "rcore.c"),
 			  path.join(raylib_path, "rmodels.c"),

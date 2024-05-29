@@ -5,6 +5,7 @@
 #include "imgui/implot.h"
 #include "imgui/imgui_node_editor.h"
 #include "imgui/IconsFontAwesome6.h"
+#include "imgui/TextEditor.h"
 
 namespace ImNodes = ax::NodeEditor;
 namespace imgui

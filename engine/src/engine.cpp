@@ -3,6 +3,38 @@
 
 namespace engine
 {
+	namespace
+	{
+		static TextEditor S_TEXT_EDITOR;
+		static sm::textedit::ctext_editor S_TEXT_EDITOR2;
+
+		static stringview_t S_TEXT =
+			"#include <iostream>\n"
+			"#include <vector>\n"
+			"#include <string>\n"
+			"#include <memory>\n"
+			"#include <algorithm>\n"
+			"#include <map>\n"
+			"#include <optional>\n"
+			"// Enumeration\n"
+			"enum class Color { Red, Green, Blue };\n"
+					"// Struct\n"
+					"struct Point {\n"
+					"	float x, y;\n"
+					"};\n"
+					"// Class with constructor, destructor, and methods\n"
+					"class Shape {\n"
+					"public:\n"
+						"Shape(Color color) : color_(color) {}\n"
+						"virtual ~Shape() = default;\n"
+						"virtual float area() const = 0;\n"
+						"Color color() const { return color_; }\n"
+					"private:\n"
+					"	Color color_;\n"
+					"};\n";
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
 	void cengine::clayers::init()
 	{
@@ -112,6 +144,12 @@ namespace engine
 
 		m_layers.init();
 
+		S_TEXT_EDITOR.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
+		S_TEXT_EDITOR.SetText(S_TEXT.data());
+
+		S_TEXT_EDITOR2.set_language(sm::textedit::language_type_cpp);
+		S_TEXT_EDITOR2.parse(S_TEXT.data());
+
 		return m_result == engine_run_result_ok;
 	}
 
@@ -139,6 +177,14 @@ namespace engine
 		m_layers.on_ui_render();
 
 		ImGui::ShowDemoWindow();
+
+		ImGui::Begin("ImGui Color Texteditor");
+		S_TEXT_EDITOR.Render("Text Editor");
+		ImGui::End();
+
+		ImGui::Begin("Treesitter Texteditor");
+		S_TEXT_EDITOR2.draw();
+		ImGui::End();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

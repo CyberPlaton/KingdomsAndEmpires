@@ -41,7 +41,7 @@ namespace editor
 
 			//- TODO: contains array of indices into snapshot. Each entity in here is
 			//- guaranteed to have the 3 essential components: transform, identifier and hierarchy.
-			map_t<renderlayer_t, vector_t<unsigned>> m_layered_view;
+			map_t<unsigned, vector_t<unsigned>> m_layered_view;
 			world_view_type m_view_type = world_view_type_hierarchy;
 			bool m_dirty = true;
 		};
