@@ -1,6 +1,6 @@
 #pragma once
-#include "detail/imgui_integration/imgui.hpp"
-#include "detail/tree_sitter_integration/tree_sitter_integration.h"
+#include "../imgui_integration/imgui.hpp"
+#include "../tree_sitter_integration/tree_sitter_integration.h"
 
 namespace sm
 {
@@ -12,14 +12,6 @@ namespace sm
 		using token_type_palette_t = unsigned;
 		//- character coordinate in the editor grid
 		using coordinate_t = TSPoint;
-
-		//-------------------------------------------------------------------------------------------------------
-		enum language_type : uint8_t
-		{
-			language_type_none = 0,
-			language_type_lua,
-			language_type_cpp,
-		};
 
 		//-------------------------------------------------------------------------------------------------------
 		class ctext_editor
