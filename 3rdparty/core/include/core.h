@@ -819,6 +819,66 @@ namespace core
 		bool does_substr_exist(const string_t& string, const string_t& substring);
 		bool compare(const string_t& first, const string_t& second);
 
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_in_range(char c, char from, char to)
+		{
+			return unsigned(c - from) <= unsigned(to - from);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_space(char c)
+		{
+			return ' ' == c		//- Space.
+				|| '\t' == c	//- Horizontal tab.
+				|| '\n' == c	//- Line feed / new line.
+				|| '\r' == c	//- Carriage return.
+				|| '\v' == c	//- Vertical tab.
+				|| '\f' == c	//- Form feed / new page.
+				;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_upper(char c)
+		{
+			return is_in_range(c, 'A', 'Z');
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_lower(char c)
+		{
+			return is_in_range(c, 'a', 'z');
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_alpha(char c)
+		{
+			return is_lower(c) || is_upper(c);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_numeric(char c)
+		{
+			return is_in_range(c, '0', '9');
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static bool is_alpha_numeric(char c)
+		{
+			return is_alpha(c) || is_numeric(c);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static char to_lower(char c)
+		{
+			return c + (is_upper(c) ? 0x20 : 0);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static char toUpper(char c)
+		{
+			return c - (is_lower(c) ? 0x20 : 0);
+		}
+
 	} //- string_utils
 
 	namespace detail

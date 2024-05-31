@@ -45,6 +45,12 @@ namespace sm
 		}
 
 		//-------------------------------------------------------------------------------------------------------
+		srow& cbackend::row_at(unsigned index)
+		{
+			return m_source[index];
+		}
+
+		//-------------------------------------------------------------------------------------------------------
 		void cbackend::highlight(unsigned start_row, unsigned end_row)
 		{
 			auto root = ts_tree_root_node(m_syntax.m_tree);
@@ -122,12 +128,12 @@ namespace sm
 			{
 				highlight = highlight_token_primary_special_character;
 			}
-			else if (!core::string_utils::compare(type, "null"))
+			else if (core::string_utils::compare(type, "null"))
 			{
 				highlight = highlight_token_secondary_special_character;
 			}
 			//- node child
-			else if (!core::string_utils::compare(type, "return_statement"))
+			else if (core::string_utils::compare(type, "return_statement"))
 			{
 				auto return_child = ts_node_child(root, 0);
 
@@ -140,29 +146,97 @@ namespace sm
 			}
 			//- complex
 			//- identifiers
-			else if (!core::string_utils::compare(type, "identifier"))
+			else if (core::string_utils::compare(type, "identifier"))
 			{
+				const auto length = end.column - start.column;
 
+				//- constants
+				if (length > 1)
+				{
+					auto& row = row_at(start.row);
+
+					auto is_constant = true;
+					for (auto i = start.column; i < end.column; ++i)
+					{
+						auto c = row.m_text[i];
+
+						//- a constant consists of alpha numerics chars and separation symbol '_'
+						if (!core::string_utils::is_alpha_numeric(c) && c != '_')
+						{
+							is_constant = false;
+							break;
+						}
+					}
+
+					if (is_constant)
+					{
+						highlight = highlight_token_constant;
+					}
+				}
+
+				//- identifiers part of a special keyword
+				//- TODO:
 			}
-			//- identifiers part of a special keyword (?)
 			//- function name
 			else if (is_one_of(type, C_FUNCTIONS.begin(), C_FUNCTIONS.end()))
 			{
 				TSNode function_name;
 				bool set = false;
 
-				if (!core::string_utils::compare(type, "function_declarator"))
+				if (core::string_utils::compare(type, "function_declarator"))
 				{
+					const auto* field = "declarator";
+					function_name = ts_node_child_by_field_name(root, field, strlen(field));
+					set = true;
+				}
+				else if (core::string_utils::compare(type, "call_expression"))
+				{
+					const auto* field = "function";
+					TSNode function_child = ts_node_child_by_field_name(root, field, strlen(field));
 
+					//- identifier with field 'function' is the name of the function
+					if (!ts_node_is_null(function_child) && ts_node_child_count(function_child) == 0)
+					{
+						function_name = function_child;
+					}
+					//- function is part of a 'path', we need the 'name' field
+					else
+					{
+						field = "name";
+						function_name = ts_node_child_by_field_name(function_child, field, strlen(field));
+					}
+
+					set = true;
 				}
-				else if (!core::string_utils::compare(type, "call_expression"))
+				else if (core::string_utils::compare(type, "call"))
 				{
+					const auto* field = "function";
+					TSNode function_child = ts_node_child_by_field_name(root, field, strlen(field));
+
+					if (!ts_node_is_null(function_child))
+					{
+						const auto child_count = ts_node_child_count(function_child);
+
+						//- identifier with field 'function' is the name of the function
+						if (child_count == 0)
+						{
+							function_name = function_child;
+						}
+						//- function is part of an 'object', we need the 'attribute' field
+						else
+						{
+							field = "attribute";
+							function_name = ts_node_child_by_field_name(function_child, field, strlen(field));
+						}
+
+						set = true;
+					}
 				}
-				else if (!core::string_utils::compare(type, "call"))
+				else if (core::string_utils::compare(type, "function_item"))
 				{
-				}
-				else if (!core::string_utils::compare(type, "function_item"))
-				{
+					const auto* field = "name";
+					function_name = ts_node_child_by_field_name(root, field, strlen(field));
+					set = true;
 				}
 
 				if (set && !ts_node_is_null(function_name))
@@ -174,10 +248,37 @@ namespace sm
 			}
 
 			//- language specific highlighting (cpp)
+			switch (m_syntax.m_language_type)
+			{
+			case language_type_lua:
+			{
+				break;
+			}
+			case language_type_cpp:
+			{
+				//- fields
+				if (core::string_utils::compare(type, "field_identifier"))
+				{
+					highlight = highlight_token_field;
+				}
+				//- ...
+				break;
+			}
+			default:
+				break;
+			}
 
-			//- fields
-
-			//- ...
+			//- set highlight
+			if (highlight != highlight_token_normal)
+			{
+				//- validate that rows to be highlighted are within bounds specified
+				//- by function parameter
+				if (start.row >= start_row && start.row <= end_row &&
+					end.row >= start_row && end.row <= end_row)
+				{
+					highlight_rows(start, end, highlight);
+				}
+			}
 
 			//- proceed highlighting node childre
 			for (auto i = 0u; i < children; ++i)
@@ -185,6 +286,37 @@ namespace sm
 				auto child = ts_node_child(root, i);
 
 				highlight_subtree(child, start_row, end_row);
+			}
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		void cbackend::highlight_rows(coordinate_t start, coordinate_t end, highlight_token highlight)
+		{
+			auto& row = row_at(start.row);
+
+			//- node spans multiple lines
+			if (end.row > start.row)
+			{
+				//- set highlight for contiguous characters ranging from column start to
+				//- column end
+				std::memset(&row.m_highlight[start.column], highlight, row.m_text.length() - start.column);
+
+				//- set highlight for complete row
+				for (auto i = start.row + 1; i < end.row; ++i)
+				{
+					row = row_at(i);
+
+					std::memset(&row.m_highlight[0], highlight, row.m_text.length());
+				}
+
+				row = row_at(end.row);
+
+				std::memset(&row.m_highlight[0], highlight, end.column);
+			}
+			//- node spans single line
+			else
+			{
+				std::memset(&row.m_highlight[start.column], highlight, end.column - start.column);
 			}
 		}
 

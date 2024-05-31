@@ -36,10 +36,12 @@ namespace sm
 		};
 
 		//- Containing one row of source code.
+		//- Note that text length is same size as length of highlight vector.
 		//-------------------------------------------------------------------------------------------------------
 		struct srow
 		{
-			string_t m_source;
+			string_t m_text;
+			vector_t<highlight_token> m_highlight;
 		};
 
 		//- Stores information on how to highlight a particular filetype.
@@ -78,9 +80,10 @@ namespace sm
 			ssyntax m_syntax;
 			vector_t<srow> m_source;
 
+			srow& row_at(unsigned index);
 			void highlight(unsigned start_row, unsigned end_row);
 			void highlight_subtree(TSNode root, unsigned start_row, unsigned end_row);
-			void highlight_row();
+			void highlight_rows(coordinate_t start, coordinate_t end, highlight_token highlight);
 		};
 
 	} //- textedit
