@@ -25,9 +25,21 @@ namespace sm
 		} //- unnamed
 
 		//-------------------------------------------------------------------------------------------------------
-		bool cbackend::init(language_type lang)
+		cbackend::cbackend()
+		{
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		cbackend::~cbackend()
+		{
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		bool cbackend::init(language_type lang, const string_t& source)
 		{
 			m_syntax = ssyntax::syntax(lang);
+
+			text_to_rows(source);
 
 			return true;
 		}
@@ -41,13 +53,66 @@ namespace sm
 		//-------------------------------------------------------------------------------------------------------
 		void cbackend::update()
 		{
-
+			//- If source has changed, re-highlight it
 		}
 
 		//-------------------------------------------------------------------------------------------------------
-		srow& cbackend::row_at(unsigned index)
+		void cbackend::text_to_rows(const string_t& text)
 		{
-			return m_source[index];
+			std::vector<string_t> rows;
+
+			core::string_utils::split(text, '\n', rows);
+
+			for (auto& row : rows)
+			{
+				auto& source_row = m_source.emplace_back();
+
+				const auto length = row.length();
+
+				//- init and set default highlight
+				source_row.m_highlight.resize(length);
+				std::memset(&source_row.m_highlight[0], highlight_token_normal, length);
+
+				source_row.m_text.swap(row);
+			}
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		string_t cbackend::rows_to_text() const
+		{
+			string_t out;
+
+			//- basically reverse split and contatenating
+			for (const auto& row : m_source)
+			{
+				fmt::format("{}{}\n", out.data(), row.m_text.data());
+			}
+
+			return out;
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		srow& cbackend::row_at(unsigned i)
+		{
+			return m_source[i];
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		const srow& cbackend::row_at(unsigned i) const
+		{
+			return m_source.at(i);
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		string_t cbackend::current_source() const
+		{
+			return rows_to_text();
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		unsigned cbackend::row_count() const
+		{
+			return static_cast<unsigned>(m_source.size());
 		}
 
 		//-------------------------------------------------------------------------------------------------------

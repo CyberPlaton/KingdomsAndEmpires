@@ -1,6 +1,6 @@
 #pragma once
 #include <core.h>
-#include "../tree_sitter_integration/tree_sitter_integration.h"
+#include "../detail/tree_sitter_integration/tree_sitter_integration.h"
 
 namespace sm
 {
@@ -36,7 +36,8 @@ namespace sm
 		};
 
 		//- Containing one row of source code.
-		//- Note that text length is same size as length of highlight vector.
+		//- Note that text length is same size as length of highlight vector,
+		//- because the highlight vector defines the highlight value for each character in text.
 		//-------------------------------------------------------------------------------------------------------
 		struct srow
 		{
@@ -72,15 +73,22 @@ namespace sm
 			cbackend();
 			~cbackend();
 
-			bool init(language_type lang);
+			bool init(language_type lang, const string_t& source);
 			void shutdown();
 			void update();
+
+			const srow& row_at(unsigned i) const;
+			srow& row_at(unsigned i);
+
+			string_t current_source() const;
+			unsigned row_count() const;
 
 		private:
 			ssyntax m_syntax;
 			vector_t<srow> m_source;
 
-			srow& row_at(unsigned index);
+			void text_to_rows(const string_t& text);
+			string_t rows_to_text() const;
 			void highlight(unsigned start_row, unsigned end_row);
 			void highlight_subtree(TSNode root, unsigned start_row, unsigned end_row);
 			void highlight_rows(coordinate_t start, coordinate_t end, highlight_token highlight);

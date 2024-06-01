@@ -147,8 +147,7 @@ namespace engine
 		S_TEXT_EDITOR.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
 		S_TEXT_EDITOR.SetText(S_TEXT.data());
 
-		S_TEXT_EDITOR2.set_language(sm::textedit::language_type_cpp);
-		S_TEXT_EDITOR2.parse(S_TEXT.data());
+		S_TEXT_EDITOR2.init(sm::textedit::language_type_cpp, S_TEXT.data());
 
 		return m_result == engine_run_result_ok;
 	}
@@ -165,6 +164,8 @@ namespace engine
 		m_layers.on_update(dt);
 
 		m_layers.on_world_render();
+
+		S_TEXT_EDITOR2.update();
 
 		auto v = raylib::GetMousePosition();
 
