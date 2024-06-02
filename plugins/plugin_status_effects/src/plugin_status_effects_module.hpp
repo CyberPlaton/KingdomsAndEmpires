@@ -76,7 +76,7 @@ namespace effects
 			multithreaded();
 			build([&](flecs::entity e, saffectable& affectable)
 				{
-					ZoneScopedN("Status Effect System");
+					CORE_NAMED_ZONE("Status Effect System");
 
 					//- TODO: disable this for now, will be reworked later on
 					return;

@@ -1,3 +1,5 @@
+IS_TRACY_ENABLED = false
+
 ------------------------------------------------------------------------------------------------------------------------
 function set_basic_defines()
 	externalanglebrackets "On"
@@ -13,12 +15,16 @@ function set_basic_defines()
 	else
 	end
 
+	if IS_TRACY_ENABLED == true then
+		defines{"TRACY_ENABLE"}
+	end
+
 	filter{"configurations:debug"}
-		defines{"DEBUG=1", "TRACY_ENABLE"}
+		defines{"DEBUG=1"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1", "TRACY_ENABLE"}
+		defines{"NDEBUG", "RELEASE=1"}
 	filter{"configurations:hybrid"}
-		defines{"NDEBUG", "HYBRID=1", "TRACY_ENABLE"}
+		defines{"NDEBUG", "HYBRID=1"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",

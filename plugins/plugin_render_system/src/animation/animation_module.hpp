@@ -15,7 +15,7 @@ namespace render_system
 			multithreaded();
 			build([&](flecs::entity e, ecs::sanimation& animation)
 				{
-					ZoneScopedN("Animation System");
+					CORE_NAMED_ZONE("Animation System");
 
 					//- TODO: we do it like this for now. But intended was to use world().visible_entities()
 					//- and update their animations only, as it does not make sense to compute so much stuff

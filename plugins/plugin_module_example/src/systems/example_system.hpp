@@ -22,7 +22,7 @@ namespace module_example
 			multithreaded();
 			build([&](flecs::entity e, stargeting_component& target)
 				{
-					ZoneScopedN("Targeting System");
+					CORE_NAMED_ZONE("Targeting System");
 
 					//- check for first start of the system or
 					//- end of cooldown and restart
@@ -54,7 +54,7 @@ namespace module_example
 			multithreaded();
 			build([&](flecs::entity e, stargeting_component& target)
 				{
-					ZoneScopedN("Targeting System #2");
+					CORE_NAMED_ZONE("Targeting System #2");
 
 					//- check for first start of the system or
 					//- end of cooldown and restart
@@ -88,7 +88,7 @@ namespace module_example
 			multithreaded();
 			build([&](flecs::entity e, stargeting_component& target)
 				{
-					ZoneScopedN("Targeting System #3");
+					CORE_NAMED_ZONE("Targeting System #3");
 
 					//- check for first start of the system or
 					//- end of cooldown and restart
