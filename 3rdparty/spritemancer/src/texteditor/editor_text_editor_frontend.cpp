@@ -237,8 +237,8 @@ namespace sm
 			unsigned color = m_style.to_color(highlight_token_normal);
 			vec2_t line_buffer_offset = {0.0f, 0.0f};
 			const auto screenpos = row_column_to_screen_space(r, 1);
+			const auto spacesize = character_size(' ').x;
 			const auto tabsize = m_style.m_tab_size;
-			const auto spacesize = m_style.m_whitespace_size;
 
 			//- iterate over all characters
 			for (auto i = 0u; i < source.m_text.length();)
@@ -281,9 +281,9 @@ namespace sm
 						const ImVec2 p2(x2, y);
 						const ImVec2 p3(x2 - fontsize * 0.2f, y - fontsize * 0.2f);
 						const ImVec2 p4(x2 - fontsize * 0.2f, y + fontsize * 0.2f);
-						draw_list->AddLine(p1, p2, 0x66eeffff);
-						draw_list->AddLine(p2, p3, 0x66eeffff);
-						draw_list->AddLine(p2, p4, 0x66eeffff);
+						draw_list->AddLine(p1, p2, 0xffeeffff);
+						draw_list->AddLine(p2, p3, 0xffeeffff);
+						draw_list->AddLine(p2, p4, 0xffeeffff);
 					}
 
 					++i;
@@ -291,15 +291,14 @@ namespace sm
 				}
 				case ' ':
 				{
-					line_buffer_offset.x += m_style.m_whitespace_size;
-
 					if (algorithm::bit_check(m_style.m_flags, sstyle::flags_show_whitespaces))
 					{
 						const auto x = screenpos.x + line_buffer_offset.x + spacesize * 0.5f;
 						const auto y = screenpos.y + line_buffer_offset.y + fontsize * 0.5f;
-						draw_list->AddCircleFilled(ImVec2(x, y), 1.5f, 0x22ee55ff, 4);
+						draw_list->AddCircleFilled(ImVec2(x, y), 1.5f, 0x77ffbbff, 4);
 					}
 
+					line_buffer_offset.x += spacesize;
 					++i;
 					break;
 				}
