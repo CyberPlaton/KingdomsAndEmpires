@@ -9,8 +9,8 @@ namespace engine
 		static sm::textedit::ctext_editor S_TEXT_EDITOR2;
 
 		static stringview_t S_TEXT =
-			"#include <iostream>\n"
-			"#include <vector>\n"
+			"#include\t<iostream>\n"
+			"#include\t<vector>\n"
 			"#include <string>\n"
 			"#include <memory>\n"
 			"#include <algorithm>\n"

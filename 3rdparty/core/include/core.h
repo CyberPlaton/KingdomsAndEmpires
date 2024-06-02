@@ -874,7 +874,7 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static char toUpper(char c)
+		inline static char to_upper(char c)
 		{
 			return c - (is_lower(c) ? 0x20 : 0);
 		}
