@@ -10,17 +10,51 @@ namespace sm
 		//-------------------------------------------------------------------------------------------------------
 		struct sstyle
 		{
+			static sstyle default_style();
+
+			enum color_palette : uint8_t
+			{
+				//- color palette for source code highlighting
+				//- Note: must be in sync with highlight_token enum.
+				color_palette_none = 0,
+				color_palette_normal,
+				color_palette_comment,
+				color_palette_multiline_comment,
+				color_palette_string,
+				color_palette_number,
+				color_palette_match,
+				color_palette_function,
+				color_palette_constant,
+				color_palette_field,
+				color_palette_primary_keyword,
+				color_palette_secondary_keyword,
+				color_palette_primary_special_character,
+				color_palette_secondary_special_character,
+
+				//- color palette for UI and editor elements
+				color_palette_line_number,
+				color_palette_background,
+				color_palette_cursor,
+				color_palette_selection,
+				color_palette_current_line_fill,
+				color_palette_current_line_edge,
+
+				color_palette_count = color_palette_current_line_edge + 1,
+			};
+
 			enum flags : uint32_t
 			{
 				flags_none = 0,
 				flags_show_whitespaces = BIT(1),
 			};
 
-			unsigned to_color(highlight_token highlight);
+			unsigned token_color(highlight_token highlight);
+			unsigned palette_color(color_palette i);
 
+			vector_t<unsigned> m_palette;
 			float m_whitespace_size = 1.0f;
 			float m_tab_size = 4.0f;
-			flags m_flags = flags_show_whitespaces;
+			int m_flags = flags_show_whitespaces;
 		};
 
 		//- Frontend of a text editor. Responsible for displaying the source in a ImGui window,

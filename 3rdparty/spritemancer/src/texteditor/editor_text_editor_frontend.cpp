@@ -105,63 +105,48 @@ namespace sm
 		} //- unnamed
 
 		//-------------------------------------------------------------------------------------------------------
-		unsigned sstyle::to_color(highlight_token highlight)
+		sstyle sstyle::default_style()
 		{
-			switch (highlight)
-			{
-			default:
-			case highlight_token_none:
-			case highlight_token_normal:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_multiline_comment:
-			case highlight_token_comment:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_string:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_number:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_match:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_function:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_constant:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_field:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_primary_keyword:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_secondary_keyword:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_primary_special_character:
-			{
-				return 0xeeeeeeff;
-			}
-			case highlight_token_secondary_special_character:
-			{
-				return 0xeeeeeeff;
-			}
-			}
-			return 0;
+			static sstyle style;
+
+			style.m_palette.resize((unsigned)color_palette_count);
+
+			style.m_palette[color_palette_normal]						= imgui_color({ 150, 150, 150, 255 });
+			style.m_palette[color_palette_none]							= style.m_palette[color_palette_normal];
+			style.m_palette[color_palette_comment]						= imgui_color({ 8, 64, 62, 255 });
+			style.m_palette[color_palette_multiline_comment]			= imgui_color({ 8, 64, 62, 255 });
+			style.m_palette[color_palette_string]						= imgui_color({ 150, 43, 9, 255 });
+			style.m_palette[color_palette_number]						= imgui_color({ 159, 193, 39, 255 });
+			style.m_palette[color_palette_match]						= imgui_color({ 214, 213, 142, 255 });
+			style.m_palette[color_palette_function]						= imgui_color({ 181, 113, 20, 255 });
+			style.m_palette[color_palette_constant]						= imgui_color({ 255, 255, 255, 255 });
+			style.m_palette[color_palette_field]						= imgui_color({ 219, 242, 39, 255 });
+			style.m_palette[color_palette_primary_keyword]				= imgui_color({ 215, 5, 242, 255 });
+			style.m_palette[color_palette_secondary_keyword]			= imgui_color({ 254, 96, 126, 255 });
+			style.m_palette[color_palette_primary_special_character]	= imgui_color({ 235, 235, 235, 255 });
+			style.m_palette[color_palette_secondary_special_character]	= imgui_color({ 9, 92, 83, 255 });
+			style.m_palette[color_palette_line_number]					= imgui_color({ 159, 193, 39, 255 });
+			style.m_palette[color_palette_background]					= imgui_color({ 255, 255, 255, 255 });
+			style.m_palette[color_palette_cursor]						= imgui_color({ 255, 255, 255, 255 });
+			style.m_palette[color_palette_selection]					= imgui_color({ 255, 255, 255, 255 });
+			style.m_palette[color_palette_current_line_fill]			= imgui_color({ 255, 255, 255, 255 });
+			style.m_palette[color_palette_current_line_edge]			= imgui_color({ 255, 255, 255, 255 });
+
+			return style;
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		unsigned sstyle::token_color(highlight_token highlight)
+		{
+			return palette_color((color_palette)highlight);
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		unsigned sstyle::palette_color(color_palette i)
+		{
+			CORE_ASSERT((unsigned)i < (unsigned)color_palette_count, "Invalid operation. Index is out of bound");
+
+			return m_palette[(unsigned)i];
 		}
 
 		//-------------------------------------------------------------------------------------------------------
@@ -179,6 +164,8 @@ namespace sm
 		//-------------------------------------------------------------------------------------------------------
 		bool cfrontend::init()
 		{
+			m_style = sstyle::default_style();
+
 			return true;
 		}
 
@@ -218,6 +205,8 @@ namespace sm
 		//-------------------------------------------------------------------------------------------------------
 		void cfrontend::show_main_window()
 		{
+			m_backend->update();
+
 			const auto row_range = visible_row_range(m_backend->row_count());
 
 			//- rows to draw start such that our cursor is always in the middle
@@ -234,7 +223,7 @@ namespace sm
 			const auto fontsize = ImGui::GetFontSize();
 			const auto& source = m_backend->row_at(r);
 			string_t line; line.reserve(128);
-			unsigned color = m_style.to_color(highlight_token_normal);
+			unsigned color = m_style.token_color(highlight_token_normal);
 			vec2_t line_buffer_offset = {0.0f, 0.0f};
 			const auto screenpos = row_column_to_screen_space(r, 1);
 			const auto spacesize = character_size(' ').x;
@@ -244,7 +233,7 @@ namespace sm
 			for (auto i = 0u; i < source.m_text.length();)
 			{
 				auto c = source.m_text[i];
-				const auto char_color = m_style.to_color(source.m_highlight[i]);
+				const auto char_color = m_style.token_color(source.m_highlight[i]);
 
 				//- draw accumulated word if anything changed
 				if ((char_color != color || is_space(c) || is_tab(c)) && !line.empty())

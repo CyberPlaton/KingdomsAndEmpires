@@ -41,6 +41,9 @@ namespace sm
 
 			text_to_rows(source);
 
+			//- initial parsing of source code
+			m_syntax.m_tree = ts_parser_parse_string(m_syntax.m_parser, nullptr, source.data(), source.length());
+
 			return true;
 		}
 
@@ -54,6 +57,7 @@ namespace sm
 		void cbackend::update()
 		{
 			//- If source has changed, re-highlight it
+			highlight(0, m_source.size());
 		}
 
 		//-------------------------------------------------------------------------------------------------------
