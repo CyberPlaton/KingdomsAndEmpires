@@ -86,6 +86,14 @@ namespace stl = std;
 #endif
 #endif
 
+//- Required for allocator
+//------------------------------------------------------------------------------------------------------------------------
+#if CORE_COMPILER_MSVC
+#define CORE_NO_VTABLE __declspec(novtable)
+#elif CORE_COMPILER_GCC || CORE_COMPILER_CLANG
+#define CORE_NO_VTABLE
+#endif
+
 //------------------------------------------------------------------------------------------------------------------------
 #define SCAST(type, value) static_cast<type>(value)
 #define RCAST(type, value) reinterpret_cast<type>(value)
@@ -102,34 +110,34 @@ namespace stl = std;
 	inline static void* tracy_malloc_trace(std::size_t size)
 	{
 		void* p = std::malloc(size);
-	
+
 		TracyAlloc(p, size);
-	
+
 		return p;
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------------------
 	inline static void* tracy_calloc_trace(std::size_t n, std::size_t size)
 	{
 		void* p = std::calloc(n, size);
-	
+
 		TracyAlloc(p, n * size);
-	
+
 		return p;
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------------------
 	inline static void* tracy_realloc_trace(void* ptr, std::size_t size)
 	{
 		TracyFree(ptr);
-	
+
 		void* p = std::realloc(ptr, size);
-	
+
 		TracyAlloc(p, size);
-	
+
 		return p;
 	}
-	
+
 	//------------------------------------------------------------------------------------------------------------------------
 	inline static void tracy_free_trace(void* ptr)
 	{
@@ -171,7 +179,8 @@ namespace stl = std;
 
 namespace core
 {
-	struct sallocator;
+	class iallocator;
+	class clinear_allocator;
 	class cstring;
 	class cstringview;
 
@@ -211,7 +220,7 @@ using bitset_t = stl::bitset<TSize>;
 //- defining handles here as they migh have to be registered in RTTR
 //------------------------------------------------------------------------------------------------------------------------
 using handle_type_t		= uint64_t;
-#define invalid_handle_t MAX(uint64_t)
+#define invalid_handle_t MAX(handle_type_t)
 using service_type_t	= handle_type_t;
 using entity_proxy_t	= int;
 using query_t			= handle_type_t;
@@ -410,13 +419,6 @@ namespace core
 		static string_t architecture();
 		static string_t compiler();
 		static string_t configuration();
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	struct sallocator
-	{
-		inline static void* allocate(std::size_t s) { return CORE_MALLOC(s); }
-		inline static void deallocate(void* p, std::size_t /*bytes*/) { CORE_FREE(p); }
 	};
 
 	//- RTTR aware replacement for std::pair<>
@@ -1260,8 +1262,7 @@ namespace core
 	};
 
 	//- Helper class for performing I/O operations both sync and async.
-	//- Data is automatically freed when object goes out of scope.
-	//- Object wíll not go out of scope until async task is finished.
+	//- Note: when you are loading something, you are responsible for unloading it afterwards.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cfile final
 	{
@@ -1306,6 +1307,7 @@ namespace core
 		std::chrono::time_point<std::chrono::high_resolution_clock> m_timepoint;
 	};
 
+	//- Note: data type the class is holding must be copy-constructible
 	//------------------------------------------------------------------------------------------------------------------------
 	class cany final
 	{
@@ -1325,7 +1327,6 @@ namespace core
 			return rttr::type::get<TType>().get_id() == type();
 		}
 
-		//- data type we are holding must be copy-constructible
 		template<typename TType>
 		TType copy()
 		{
@@ -1465,6 +1466,13 @@ namespace core
 	{
 		namespace
 		{
+			//- Note: returns true for 0 not to trigger anything
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static bool is_power_of_2(uint64_t n)
+			{
+				return n > 0 ? (n & (n - 1)) == 0 : true;
+			}
+
 			//------------------------------------------------------------------------------------------------------------------------
 			inline static uint64_t next_power_of_2(uint64_t n)
 			{
@@ -1478,6 +1486,52 @@ namespace core
 				return n;
 			}
 
+			//- Calculate amount of bytes required for the given address to be aligned.
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static uint64_t align_address_forward(uint64_t address, uint64_t alignment)
+			{
+				CORE_ASSERT(alignment > 0, "Invalid operation. Alignment must be greater than 0!");
+
+				auto result = address;
+				const auto modulo = address & (address - 1);
+
+				if (modulo != 0)
+				{
+					result += alignment - modulo;
+				}
+
+				return result;
+			}
+
+			//- Calculate amount of bytes required for the given address to be aligned including the size of the header.
+			//- Note: alignment must be greater than 0.
+			//------------------------------------------------------------------------------------------------------------------------
+			template<typename THeader>
+			inline static uint64_t align_address_forward_with_header(uint64_t address, uint64_t alignment)
+			{
+				CORE_ASSERT(alignment > 0, "Invalid operation. Alignment must be greater than 0!");
+
+				auto padding = align_address_forward(address, alignment);
+				auto required_space = sizeof(THeader);
+
+				if (padding < required_space)
+				{
+					//- the header does not fit, so we calculate next aligned address in which it fits
+					required_space -= padding;
+
+					if (required_space % alignment > 0)
+					{
+						padding += alignment * (1u + (required_space / alignment));
+					}
+					else
+					{
+						padding += alignment * (required_space / alignment);
+					}
+				}
+
+				return padding;
+			}
+
 			//------------------------------------------------------------------------------------------------------------------------
 			inline static uint64_t memloc(void* m)
 			{
@@ -1489,6 +1543,8 @@ namespace core
 			{
 				return (reinterpret_cast<uint64_t>(m) - reinterpret_cast<uint64_t>(start)) / object_size;
 			}
+
+
 
 		}//- unnamed
 
@@ -1804,6 +1860,7 @@ namespace core
 
 	} //- detail
 
+	//- Service manager to be used in-engine. Can hold an arbitrary amount of service types.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cservice_manager
 	{
@@ -1986,6 +2043,84 @@ namespace core
 
 		m_listeners[rttr::type::get<TEvent>()].emplace_back(std::move(callback));
 	}
+
+	//- Interface class for an allocator implementation.
+	//------------------------------------------------------------------------------------------------------------------------
+	class CORE_NO_VTABLE iallocator
+	{
+	public:
+		static constexpr uint64_t C_ALIGNMENT = 8;
+
+		//- in-place construct an object. Should be used for allocated objects that need additional construction.
+		template<typename TObjectType, typename... ARGS>
+		static TObjectType* construct(TObjectType* pointer, ARGS&&... args)
+		{
+			return new(SCAST(void*, pointer)) TObjectType(std::forward<ARGS>(args)...);
+		}
+
+		//- destruct object that requires destruction.
+		template<typename TObjectType>
+		static void destroy(TObjectType* pointer)
+		{
+			CORE_ASSERT(pointer, "Invalid operation. Pointer must be a valid object!");
+			pointer->~TObjectType();
+		}
+
+		virtual ~iallocator() = 0;
+		virtual void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) = 0;
+		virtual void deallocate(void* ptr) = 0;
+
+		uint64_t capacity() const;
+		uint64_t used() const;
+		uint64_t peak_used() const;
+
+	protected:
+		uint64_t m_total_size = 0;		//- amount of available memory
+		uint64_t m_used_size = 0;		//- current bytes in use
+		uint64_t m_peak_used_size = 0;	//- biggeest amount of memory used
+
+	protected:
+		void init(uint64_t size);
+		void track_allocation(int64_t allocation_size, uint64_t padding = 0);
+	};
+
+	//- Allocator also known as an 'Arena'. Performs allocations in a linear manner in a contiguous region of memory.
+	//- Note that it does not deallocate anything, it will free all used memory once out of scope.
+	//------------------------------------------------------------------------------------------------------------------------
+	class clinear_allocator final : public iallocator
+	{
+	public:
+		clinear_allocator(uint64_t size);
+		~clinear_allocator();
+
+		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
+		void deallocate(void* ptr) override final;
+
+	private:
+		uint64_t m_offset;
+		void* m_memory;
+	};
+
+	//- Allocator allowing for push and pop operations. Performs allocations in a linear manner in a contiguous region of memory.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cstack_allocator final : public iallocator
+	{
+	public:
+		cstack_allocator(uint64_t size);
+		~cstack_allocator();
+
+		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
+		void deallocate(void* ptr) override final;
+
+	private:
+		struct sheader
+		{
+			uint8_t m_padding = 0;
+		};
+
+		uint64_t m_offset;
+		void* m_memory;
+	};
 
 } //- core
 

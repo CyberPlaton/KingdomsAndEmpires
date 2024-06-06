@@ -7,6 +7,8 @@ namespace sm
 		namespace
 		{
 			constexpr array_t<stringview_t, 4> C_NUMBERS = { "number_literal", "integer", "float", "integer_literal" };
+			constexpr array_t<stringview_t, 23> C_SPECIAL_SYMBOLS = { "<", ">", "(", ")", "{", "}", "..",
+				"==", "~=", "<=", ">=", "|", "~", "&", "<<", ">>", "+", "-", "*", "/", "[", "]", ":"};
 			constexpr array_t<stringview_t, 2> C_TYPES = { "storage_class_specifier", "type_qualifier" };
 			constexpr array_t<stringview_t, 3> C_PRIMITIVES = { "primitive_type", "type_identifier", "sized_type_specifier" };
 			constexpr array_t<stringview_t, 5> C_STRING = { "string_literal", "system_lib_string", "char_literal", "string", "raw_string_literal" };
@@ -71,13 +73,8 @@ namespace sm
 			{
 				auto& source_row = m_source.emplace_back();
 
-				const auto length = row.length();
-
-				//- init and set default highlight
-				source_row.m_highlight.resize(length);
-				std::memset(&source_row.m_highlight[0], highlight_token_normal, length);
-
-				source_row.m_text.swap(row);
+				source_row.m_text.assign(row.begin(), row.end());
+				source_row.m_highlight.resize(source_row.m_text.size(), highlight_token_normal);
 			}
 		}
 
@@ -98,12 +95,16 @@ namespace sm
 		//-------------------------------------------------------------------------------------------------------
 		srow& cbackend::row_at(unsigned i)
 		{
+			CORE_ASSERT(i < m_source.size(), "Invalid operation. Index out of bound");
+
 			return m_source[i];
 		}
 
 		//-------------------------------------------------------------------------------------------------------
 		const srow& cbackend::row_at(unsigned i) const
 		{
+			CORE_ASSERT(i < m_source.size(), "Invalid operation. Index out of bound");
+
 			return m_source.at(i);
 		}
 
@@ -213,6 +214,11 @@ namespace sm
 					end = ts_node_end_point(return_child);
 				}
 			}
+			//- special symbols
+			else if (is_one_of(type, C_SPECIAL_SYMBOLS.begin(), C_SPECIAL_SYMBOLS.end()))
+			{
+				highlight = highlight_token_primary_special_character;
+			}
 			//- complex
 			//- identifiers
 			else if (core::string_utils::compare(type, "identifier"))
@@ -316,21 +322,29 @@ namespace sm
 				}
 			}
 
-			//- language specific highlighting (cpp)
+			//- language specific
 			switch (m_syntax.m_language_type)
 			{
 			case language_type_lua:
 			{
-				break;
-			}
-			case language_type_cpp:
-			{
-				//- fields
-				if (core::string_utils::compare(type, "field_identifier"))
+				const auto& s = m_syntax;
+
+				if (is_one_of(type, s.m_primary_keywords.begin(), s.m_primary_keywords.end()))
 				{
-					highlight = highlight_token_field;
+					highlight = highlight_token_primary_keyword;
 				}
-				//- ...
+				else if (is_one_of(type, s.m_secondary_keywords.begin(), s.m_secondary_keywords.end()))
+				{
+					highlight = highlight_token_secondary_keyword;
+				}
+				else if (is_one_of(type, s.m_primary_special_characters.begin(), s.m_primary_special_characters.end()))
+				{
+					highlight = highlight_token_primary_special_character;
+				}
+				else if (is_one_of(type, s.m_secondary_special_characters.begin(), s.m_secondary_special_characters.end()))
+				{
+					highlight = highlight_token_secondary_special_character;
+				}
 				break;
 			}
 			default:
@@ -366,6 +380,8 @@ namespace sm
 			//- node spans multiple lines
 			if (end.row > start.row)
 			{
+				CORE_ASSERT(row.m_text.length() >= start.column, "Invalid operation. Starting column is longer than string");
+
 				//- set highlight for contiguous characters ranging from column start to
 				//- column end
 				std::memset(&row.m_highlight[start.column], highlight, row.m_text.length() - start.column);
@@ -392,30 +408,27 @@ namespace sm
 		//-------------------------------------------------------------------------------------------------------
 		ssyntax ssyntax::syntax(language_type lang)
 		{
+			//- Note: TSTree for syntax will be set on first parsing of source string
 			switch (lang)
 			{
 			case language_type_lua:
 			{
+				constexpr array_t<stringview_t, 3>  C_FILE_EXTENSIONS = { ".lua", ".LUA", ".Lua" };
+				constexpr array_t<stringview_t, 22> C_PRIMARY_KEYWORDS = { "nil", "false", "true", "not", "and", "or", "goto",
+					"break_statement", "while", "until", "repeat", "else", "elseif", "then", "if", "end", "do", "in", "for",
+					"function", "local", "return" };
+
+				ssyntax syntax;
+
+				syntax.m_file_extensions.assign(C_FILE_EXTENSIONS.begin(), C_FILE_EXTENSIONS.end());
+				syntax.m_primary_keywords.assign(C_PRIMARY_KEYWORDS.begin(), C_PRIMARY_KEYWORDS.end());
+
+				syntax.m_parser = ts_parser_new();
+				syntax.m_language = tree_sitter_lua();
+				ts_parser_set_language(syntax.m_parser, syntax.m_language);
+
+				return syntax;
 				break;
-			}
-			case language_type_cpp:
-			{
-				ssyntax s;
-
-				s.m_file_extensions = { ".c", ".h", ".cc", ".cpp" };
-				s.m_primary_keywords = { "break", "case", "class", "continue", "do", "else", "enum", "false",
-					"for", "goto", "if", "return", "sizeof", "struct", "switch", "true", "typedef",
-					"union", "while" };
-				s.m_secondary_keywords = { "#include", "#ifdef", "#endif", "#ifndef", "#define" };
-				s.m_primary_special_characters = { "(", ")", "{", "}", "[", "]", ";", "." };
-				s.m_secondary_special_characters = { "?", ":" };
-
-				s.m_parser = ts_parser_new();
-				s.m_language = tree_sitter_cpp();
-				ts_parser_set_language(s.m_parser, s.m_language);
-
-				//- Note: TSTree will be set on first parsing of source string
-				return s;
 			}
 			default:
 				break;

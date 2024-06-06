@@ -123,7 +123,7 @@ namespace sm
 			style.m_palette[color_palette_field]						= imgui_color({ 219, 242, 39, 255 });
 			style.m_palette[color_palette_primary_keyword]				= imgui_color({ 215, 5, 242, 255 });
 			style.m_palette[color_palette_secondary_keyword]			= imgui_color({ 254, 96, 126, 255 });
-			style.m_palette[color_palette_primary_special_character]	= imgui_color({ 235, 235, 235, 255 });
+			style.m_palette[color_palette_primary_special_character]	= imgui_color({ 250, 127, 8, 255 });
 			style.m_palette[color_palette_secondary_special_character]	= imgui_color({ 255, 92, 83, 255 });
 			style.m_palette[color_palette_line_number]					= imgui_color({ 159, 193, 39, 255 });
 			style.m_palette[color_palette_background]					= imgui_color({ 255, 255, 255, 255 });

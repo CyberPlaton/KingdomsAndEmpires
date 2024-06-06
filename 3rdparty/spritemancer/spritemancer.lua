@@ -22,8 +22,6 @@ function spritemancer()
 		files{"src/**.h",
 			  "src/**.cpp",
 			  "src/**.hpp",
-			  "src/detail/tree_sitter_integration/cpp/parser.c",
-			  "src/detail/tree_sitter_integration/cpp/scanner.c",
 			  "src/detail/tree_sitter_integration/lua/parser.c",
 			  "src/detail/tree_sitter_integration/lua/scanner.c",
 			  

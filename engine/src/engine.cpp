@@ -8,32 +8,6 @@ namespace engine
 		static TextEditor S_TEXT_EDITOR;
 		static sm::textedit::ctext_editor S_TEXT_EDITOR2;
 
-		static stringview_t S_TEXT =
-			"#pragma once\n"
-			"#include\t<iostream>\n"
-			"#include\t<vector>\n"
-			"#include <string>\n"
-			"#include <memory>\n"
-			"#include <algorithm>\n"
-			"#include <map>\n"
-			"#include <optional>\n"
-			"// Enumeration\n"
-			"enum class Color { Red, Green, Blue };\n"
-					"// Struct\n"
-					"struct Point {\n"
-					"	float x, y;\n"
-					"};\n"
-					"// Class with constructor, destructor, and methods\n"
-					"class Shape {\n"
-					"public:\n"
-						"Shape(Color color) : color_(color) {}\n"
-						"virtual ~Shape() = default;\n"
-						"virtual float area() const = 0;\n"
-						"Color color() const { return color_; }\n"
-					"private:\n"
-					"	Color color_;\n"
-					"};\n";
-
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -145,10 +119,13 @@ namespace engine
 
 		m_layers.init();
 
-		S_TEXT_EDITOR.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
-		S_TEXT_EDITOR.SetText(S_TEXT.data());
+		//- load an example Lua script
+		const auto text = core::cfile::load_text("resources/LuaCheatsheet.lua");
 
-		S_TEXT_EDITOR2.init(sm::textedit::language_type_cpp, S_TEXT.data());
+		S_TEXT_EDITOR.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+		S_TEXT_EDITOR.SetText(text.data());
+
+		S_TEXT_EDITOR2.init(sm::textedit::language_type_lua, text.data());
 
 		return m_result == engine_run_result_ok;
 	}
