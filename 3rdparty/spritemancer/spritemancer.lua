@@ -5,7 +5,7 @@ function spritemancer()
 					{},
 					{},
 					{"plugin_logging"},
-					{"EASTL", "spdlog", "core", "sdl", "bx", "bimg", "bgfx"},
+					{"EASTL", "spdlog", "core", "glfw", "bx", "bimg", "bgfx"},
 					"c++",
 					{}, -- plugin_headeronly_deps
 					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}, -- thirdparty_headeronly_deps
