@@ -2279,9 +2279,9 @@ namespace core
 			const auto result = current + padding;
 			const auto header_address = result - sizeof(sheader);
 
-			sheader header{ SCAST(uint8_t, padding) };
 			sheader* header_pointer = RCAST(sheader*, header_address);
-			header_pointer = &header;
+			header_pointer->m_padding = padding;
+			header_pointer->m_size = size;
 
 			track_allocation(size, padding);
 
@@ -2303,7 +2303,7 @@ namespace core
 		m_offset = current - padding - RCAST(uint64_t, m_memory);
 
 		//- alignment padding is already included inside header pointer padding
-		track_allocation(-padding, 0);
+		track_allocation(-(padding + header_pointer->m_size), 0);
 	}
 
 } //- core

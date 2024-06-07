@@ -2116,6 +2116,7 @@ namespace core
 		struct sheader
 		{
 			uint8_t m_padding = 0;
+			uint64_t m_size = 0;
 		};
 
 		uint64_t m_offset;
