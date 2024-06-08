@@ -18,15 +18,16 @@ namespace sm
 		void prepare_frame() override final;
 		void display_frame() override final;
 		void update_viewport(const vec2_t& position, const vec2_t& size) override final;
-		void clear(unsigned view_id, const core::scolor& color, bool depth) override final;
-		void blendmode(blending_mode mode) override final;
+		void blendmode(sblending mode) override final;
 
-		void bind_texture(uint64_t id) override final;
-		void render_layer_quad(const vec2_t& position, const vec2_t& size, const core::scolor& color) override final;
-		void render_decal(const sdecal& decal) override final;
+		void clear(const slayer& layer, bool depth) override final;
+		bool begin(const slayer& layer) override final;
+		void draw(const slayer& layer) override final;
+		void end(const slayer& layer) override final;
+		bool combine(const slayer& layer) override final;
 
-		void update_texture_gpu(uint64_t id, unsigned w, unsigned h, void* data) override final;
-		void update_texture_cpu(uint64_t id) override final;
+		void update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) override final;
+		void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) override final;
 
 		RTTR_ENABLE(irenderer);
 	};

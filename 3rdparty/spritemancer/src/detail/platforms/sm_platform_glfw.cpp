@@ -1,23 +1,18 @@
-#include "sm_platform_sdl2.hpp"
+#include "sm_platform_glfw.hpp"
 
 namespace sm
 {
 	namespace
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		void* native_window_handle(SDL_Window* window)
+		void* native_window_handle(GLFWwindow* window)
 		{
-			SDL_SysWMinfo info;
-			SDL_VERSION(&info.version);
-
-			SDL_GetWindowWMInfo(window, &info);
-
 #if CORE_PLATFORM_WINDOWS
-			return (void*)info.info.win.window;
+			return glfwGetWin32Window(window);
 #elif CORE_PLATFORM_LINUX
-			return (void*)info.info.x11.window;
+			return (void*)(uintptr_t)glfwGetX11Window(window);
 #elif CORE_PLATFORM_OSX
-			return (void*)info.info.cocoa.window;
+			return glfwGetCocoaWindow(window);
 #else
 			return nullptr;
 #endif
@@ -26,35 +21,26 @@ namespace sm
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_sdl::init()
+	sm::opresult cplatform_glfw::init()
 	{
-		SDL_Init(SDL_INIT_VIDEO);
-
+		//- TODO: set error callback and key callback and other callbacks
+		if (!glfwInit())
+		{
+			return opresult_fail;
+		}
 		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_sdl::shutdown()
+	sm::opresult cplatform_glfw::shutdown()
 	{
-		SDL_DestroyWindow(S_WINDOW);
-		SDL_Quit();
+		glfwDestroyWindow(S_WINDOW);
+		glfwTerminate();
 		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_sdl::init_on_thread()
-	{
-		return opresult_ok;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_sdl::shutdown_on_thread()
-	{
-		return entry::renderer()->shutdown_device();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_sdl::init_gfx(unsigned w, unsigned h, bool fullscreen, bool vsync)
+	sm::opresult cplatform_glfw::init_gfx(unsigned w, unsigned h, bool fullscreen, bool vsync)
 	{
 		if (entry::renderer()->init_device(native_window_handle(S_WINDOW), w, h, fullscreen, vsync) != opresult_ok)
 		{
@@ -64,67 +50,56 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_sdl::init_mainwindow(stringview_t title, unsigned w, unsigned h,
+	sm::opresult cplatform_glfw::init_mainwindow(stringview_t title, unsigned w, unsigned h,
 		bool fullscreen)
 	{
-		unsigned flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
+		unsigned flags = 0;
 
 		if (fullscreen)
 		{
-			flags |= SDL_WINDOW_FULLSCREEN;
 		}
 
-		S_WINDOW = SDL_CreateWindow(title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
+		//- set window hints that are required before creation
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+		S_WINDOW = glfwCreateWindow(w, h, title.data(), nullptr, nullptr);
 
 		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_sdl::optional_init_event_mainloop()
+	sm::opresult cplatform_glfw::optional_init_event_mainloop()
 	{
 		//- empty
 		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_sdl::process_event()
+	sm::opresult cplatform_glfw::optional_process_event()
 	{
-		SDL_Event e;
-
-		while (SDL_PollEvent(&e) != 0)
-		{
-			switch (e.type)
-			{
-			case SDL_APP_TERMINATING:
-			case SDL_QUIT:
-			{
-				return opresult_fail;
-			}
-			default:
-				break;
-			}
-		}
+		//- process queued events and call associated callbacks that we can handle
+		glfwPollEvents();
 
 		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cplatform_sdl::main_window_position(unsigned* x, unsigned* y)
+	void cplatform_glfw::main_window_position(unsigned* x, unsigned* y)
 	{
 		int _x, _y;
 
-		SDL_GetWindowPosition(S_WINDOW, &_x, &_y);
+		glfwGetWindowPos(S_WINDOW, &_x, &_y);
 
 		*x = _x;
 		*y = _y;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cplatform_sdl::main_window_size(unsigned* x, unsigned* y)
+	void cplatform_glfw::main_window_size(unsigned* x, unsigned* y)
 	{
 		int _x, _y;
 
-		SDL_GetWindowSize(S_WINDOW, &_x, &_y);
+		glfwGetWindowSize(S_WINDOW, &_x, &_y);
 
 		*x = _x;
 		*y = _y;

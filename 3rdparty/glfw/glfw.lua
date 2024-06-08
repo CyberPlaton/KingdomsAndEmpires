@@ -40,7 +40,7 @@ function glfw()
 
 		-- glfw required files
 		if PLATFORM == "windows" then
-			defines{"_GLFW_WIN32"}
+			defines{"_GLFW_WIN32", "GLFW_EXPOSE_NATIVE_WIN32"}
 			files{path.join(glfw_path, "win32_time.c"),
 				  path.join(glfw_path, "win32_thread.c"),
 				  path.join(glfw_path, "win32_module.c"),
@@ -57,7 +57,7 @@ function glfw()
 			}
 			links{"gdi32", "ws2_32", "kernel32", "opengl32", "psapi", "winmm"}
 		elseif PLATFORM == "linux" then
-			defines{"_GLFW_X11"}
+			defines{"_GLFW_X11", "GLFW_EXPOSE_NATIVE_X11"}
 			files{path.join(glfw_path, "posix_time.c"),
 				  path.join(glfw_path, "posix_thread.c"),
 				  path.join(glfw_path, "posix_module.c"),
@@ -78,7 +78,7 @@ function glfw()
 			}
 			links{"GL", "rt", "lm", "x11"}
 		elseif PLATFORM == "macosx" then
-			defines{"_GLFW_COCOA"}
+			defines{"_GLFW_COCOA", "GLFW_EXPOSE_NATIVE_COCOA"}
 			files{path.join(glfw_path, "cocoa_time.c"),
 				  path.join(glfw_path, "posix_thread.c"),
 				  path.join(glfw_path, "posix_module.c"),

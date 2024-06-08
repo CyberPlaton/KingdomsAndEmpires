@@ -3,10 +3,18 @@
 #include <core.h>
 #include <argparse.h>
 #include <plugin_logging.h>
-#include <glfw.h>
 #include <bgfx.h>
 #include <bimg.h>
 #include <bx.h>
+
+#if CORE_PLATFORM_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#elif CORE_PLATFORM_LINUX
+#define GLFW_EXPOSE_NATIVE_X11
+#elif CORE_PLATFORM_OSX
+#define GLFW_EXPOSE_NATIVE_COCOA
+#endif
+#include <glfw.h>
 
 namespace sm
 {

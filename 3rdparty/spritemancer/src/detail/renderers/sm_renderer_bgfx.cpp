@@ -380,7 +380,37 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::blendmode(blending_mode mode)
+	void crenderer_bgfx::clear(const slayer& layer, bool depth)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool crenderer_bgfx::begin(const slayer& layer)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_bgfx::draw(const slayer& layer)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_bgfx::end(const slayer& layer)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool crenderer_bgfx::combine(const slayer& layer)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_bgfx::blendmode(sblending mode)
 	{
 		//- TODO
 	}
@@ -492,15 +522,15 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::update_texture_gpu(uint64_t id, unsigned w, unsigned h, void* data)
+	void crenderer_bgfx::update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data)
 	{
-
+		//- TODO
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::update_texture_cpu(uint64_t id)
+	void crenderer_bgfx::update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data)
 	{
-
+		//- TODO
 	}
 
 } //- sm

@@ -560,12 +560,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	raylib::Camera2D ccamera::camera() const
-	{
-		return { {m_offset.x, m_offset.y}, {m_position.x, m_position.y}, m_rotation, m_zoom };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	void cspriteatlas::destroy(cspriteatlas& /*atlas*/)
 	{
 		//- noop
