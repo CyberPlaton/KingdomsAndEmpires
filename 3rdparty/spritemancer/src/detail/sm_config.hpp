@@ -10,6 +10,7 @@ namespace sm
 {
 	class irenderer;
 	class iplatform;
+	class ios;
 	class iapp;
 	class cshader;
 	class crendertarget;
@@ -232,9 +233,12 @@ namespace sm
 
 	namespace entry
 	{
-		irenderer*			renderer();
-		iplatform*			platform();
-		iapp*				app();
+		bool				has_platform();
+		iplatform*			get_platform();
+		irenderer*			get_renderer();
+		ios*				get_os();
+		iapp*				get_app();
+		void				set_os(ptr_t<ios>&& os);
 		void				set_platform(ptr_t<iplatform>&& platform);
 		void				set_app(iapp* app);
 		void				set_renderer(ptr_t<irenderer>&& renderer);
@@ -512,13 +516,13 @@ namespace sm
 		RTTR_ENABLE();
 	};
 
-	//- Platform interface class. Implementing hardware functionality, such as window creation, HDI interface and
+	//- Operating system interface class. Implementing hardware functionality, such as window creation, HDI interface and
 	//- processing and emitting hardware events
 	//------------------------------------------------------------------------------------------------------------------------
-	class iplatform
+	class ios
 	{
 	public:
-		virtual ~iplatform() = default;
+		virtual ~ios() = default;
 
 		virtual opresult init() = 0;						//- create and init of client application
 		virtual opresult shutdown() = 0;					//- destroy and clean of client application
@@ -536,6 +540,19 @@ namespace sm
 		virtual void main_window_size(unsigned* x, unsigned* y) = 0;
 
 		RTTR_ENABLE();
+	};
+
+	//- Optional platform such as steam
+	//------------------------------------------------------------------------------------------------------------------------
+	class iplatform
+	{
+	public:
+		virtual ~iplatform() = default;
+
+		virtual opresult pre_init() = 0;	//- perform setup before os and graphics context are created
+		virtual opresult init() = 0;		//- initialize in turn after os and graphics context
+		virtual void shutdown() = 0;		//- shutdown before os and graphics context
+		virtual void post_shutdown() = 0;	//- shutdown after os and graphics context
 	};
 
 	//- Interface class for application to derive from and implement only three basic functions

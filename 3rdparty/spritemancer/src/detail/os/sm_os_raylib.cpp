@@ -1,4 +1,4 @@
-#include "sm_platform_raylib.hpp"
+#include "sm_os_raylib.hpp"
 
 namespace sm
 {
@@ -15,15 +15,15 @@ namespace sm
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::init()
+	sm::opresult cos_raylib::init()
 	{
 		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::shutdown()
+	sm::opresult cos_raylib::shutdown()
 	{
-		const auto result = entry::renderer()->shutdown_device();
+		const auto result = entry::get_renderer()->shutdown_device();
 
 		raylib::ShutdownWindow();
 
@@ -31,9 +31,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::init_gfx(unsigned w, unsigned h, bool fullscreen, bool vsync)
+	sm::opresult cos_raylib::init_gfx(unsigned w, unsigned h, bool fullscreen, bool vsync)
 	{
-		if (entry::renderer()->init_device(nullptr, w, h, fullscreen, vsync) != opresult_ok)
+		if (entry::get_renderer()->init_device(nullptr, w, h, fullscreen, vsync) != opresult_ok)
 		{
 			return opresult_fail;
 		}
@@ -41,7 +41,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::init_mainwindow(stringview_t title, unsigned w, unsigned h,
+	sm::opresult cos_raylib::init_mainwindow(stringview_t title, unsigned w, unsigned h,
 		bool fullscreen)
 	{
 		//- configuration
@@ -70,14 +70,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::optional_init_event_mainloop()
+	sm::opresult cos_raylib::optional_init_event_mainloop()
 	{
 		//- empty
 		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cplatform_raylib::optional_process_event()
+	sm::opresult cos_raylib::optional_process_event()
 	{
 		if (raylib::WindowShouldClose())
 		{
@@ -178,7 +178,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cplatform_raylib::main_window_position(unsigned* x, unsigned* y)
+	void cos_raylib::main_window_position(unsigned* x, unsigned* y)
 	{
 		auto p = raylib::GetWindowPosition();
 
@@ -187,7 +187,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cplatform_raylib::main_window_size(unsigned* x, unsigned* y)
+	void cos_raylib::main_window_size(unsigned* x, unsigned* y)
 	{
 		*x = raylib::GetRenderWidth();
 		*y = raylib::GetRenderHeight();

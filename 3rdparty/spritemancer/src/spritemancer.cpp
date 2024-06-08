@@ -1,6 +1,6 @@
 #include "spritemancer.hpp"
 #include "detail/renderers/sm_renderer_raylib.hpp"
-#include "detail/platforms/sm_platform_raylib.hpp"
+#include "detail/os/sm_os_raylib.hpp"
 
 namespace sm
 {
@@ -38,14 +38,14 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void update_window_viewport()
 		{
-			entry::renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
+			entry::get_renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_configure_platform_and_renderer(iapp* app)
 		{
 			entry::set_app(app);
-			entry::set_platform(std::make_unique<cplatform_raylib>());
+			entry::set_os(std::make_unique<cos_raylib>());
 			entry::set_renderer(std::make_unique<crenderer_raylib>());
 		}
 
@@ -70,7 +70,7 @@ namespace sm
 			CORE_ZONE;
 
 			//- platforms may need to handle events
-			if (entry::platform()->optional_process_event() == opresult_fail)
+			if (entry::get_os()->optional_process_event() == opresult_fail)
 			{
 				S_RUNNING = false;
 			}
@@ -85,15 +85,15 @@ namespace sm
 
 			//- update HID state, such as keyboard and mouse
 
-			entry::app()->on_update(S_DT);
+			entry::get_app()->on_update(S_DT);
 
 			//- render frame
-			entry::renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
+			entry::get_renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
 
 			//- most basic layer, does always exist
 			S_LAYERS[0].m_show = true;
-			entry::renderer()->prepare_frame();
-			entry::renderer()->blendmode(S_BLEND_MODE);
+			entry::get_renderer()->prepare_frame();
+			entry::get_renderer()->blendmode(S_BLEND_MODE);
 
 			//- layered rendering, from bottom to top
 			for (auto i = 0u; i < S_LAYER_COUNT; ++i)
@@ -101,13 +101,13 @@ namespace sm
 				auto& layer = S_LAYERS[i];
 
 				if (layer.m_show &&
-					entry::renderer()->begin(layer))
+					entry::get_renderer()->begin(layer))
 				{
-					entry::renderer()->clear(layer, true);
+					entry::get_renderer()->clear(layer, true);
 
-					entry::renderer()->draw(layer);
+					entry::get_renderer()->draw(layer);
 
-					entry::renderer()->end(layer);
+					entry::get_renderer()->end(layer);
 				}
 
 				layer.m_commands.clear();
@@ -119,17 +119,17 @@ namespace sm
 				auto& layer = S_LAYERS[i];
 
 				if (layer.m_show &&
-					entry::renderer()->combine(layer))
+					entry::get_renderer()->combine(layer))
 				{
 					//- do postprocess or whatever
 				}
 			}
 
 			//- finalize rendering with imgui on top
-			entry::app()->on_imgui();
+			entry::get_app()->on_imgui();
 
 			//- present everything
-			entry::renderer()->display_frame();
+			entry::get_renderer()->display_frame();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -172,14 +172,14 @@ namespace sm
 		void engine_thread()
 		{
 			//- starting up
-			if (entry::platform()->init_gfx(S_W, S_H, S_FULLSCREEN, S_VSYNC) != opresult_ok)
+			if (entry::get_os()->init_gfx(S_W, S_H, S_FULLSCREEN, S_VSYNC) != opresult_ok)
 			{
 				return;
 			}
 
 			engine_prepare();
 
-			if (entry::app()->on_init(S_CONFIG, S_ARGS))
+			if (entry::get_app()->on_init(S_CONFIG, S_ARGS))
 			{
 				S_RUNNING = false;
 			}
@@ -193,10 +193,9 @@ namespace sm
 			}
 
 			//- shutting down
-			entry::app()->on_shutdown();
-
-			//- shutdown imgui
+			entry::get_app()->on_shutdown();
 			imgui::shutdown();
+			if (entry::has_platform()) { entry::get_platform()->shutdown(); }
 		}
 
 	} //- unnamed
@@ -227,18 +226,29 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult init(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync)
 	{
-		if (entry::platform()->init() != opresult_ok)
+		if (entry::has_platform() && entry::get_platform()->pre_init() != opresult_ok)
 		{
 			return opresult_fail;
 		}
-		if (entry::platform()->init_mainwindow(title.data(), w, h, fullscreen) != opresult_ok)
+
+		if (entry::get_os()->init() != opresult_ok)
+		{
+			return opresult_fail;
+		}
+
+		if (entry::get_os()->init_mainwindow(title.data(), w, h, fullscreen) != opresult_ok)
+		{
+			return opresult_fail;
+		}
+
+		if (entry::has_platform() && entry::get_platform()->init() != opresult_ok)
 		{
 			return opresult_fail;
 		}
 
 		//- cache common data
-		entry::platform()->main_window_position(&S_X, &S_Y);
-		entry::platform()->main_window_size(&S_W, &S_H);
+		entry::get_os()->main_window_position(&S_X, &S_Y);
+		entry::get_os()->main_window_size(&S_W, &S_H);
 		S_FULLSCREEN = fullscreen;
 		S_VSYNC = vsync;
 
@@ -250,14 +260,17 @@ namespace sm
 	{
 		S_RUNNING = true;
 
-		entry::platform()->optional_init_event_mainloop();
+		entry::get_os()->optional_init_event_mainloop();
 
 		engine_thread();
 
-		if (entry::platform()->shutdown() != opresult_ok)
+		if (entry::get_os()->shutdown() != opresult_ok)
 		{
 			return opresult_fail;
 		}
+
+		if (entry::has_platform()) { entry::get_platform()->post_shutdown(); }
+
 		return opresult_ok;
 	}
 

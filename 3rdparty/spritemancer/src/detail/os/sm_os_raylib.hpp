@@ -5,11 +5,11 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cplatform_raylib final : public iplatform
+	class cos_raylib final : public ios
 	{
 	public:
-		cplatform_raylib() = default;
-		~cplatform_raylib() = default;
+		cos_raylib() = default;
+		~cos_raylib() = default;
 		opresult init() override final;						//- create and init of client application
 		opresult shutdown() override final;					//- destroy and clean of client application
 		opresult init_gfx(unsigned w, unsigned h,
@@ -24,7 +24,7 @@ namespace sm
 		void main_window_position(unsigned* x, unsigned* y) override final;
 		void main_window_size(unsigned* x, unsigned* y) override final;
 
-		RTTR_ENABLE(iplatform);
+		RTTR_ENABLE(ios);
 	};
 
 } //- sm
@@ -32,9 +32,9 @@ namespace sm
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cplatform_raylib)
+	REFLECT_INLINE(cos_raylib)
 	{
-		rttr::cregistrator<cplatform_raylib>("cplatform_raylib")
+		rttr::cregistrator<cos_raylib>("cos_raylib")
 			;
 	};
 
