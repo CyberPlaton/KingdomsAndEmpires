@@ -4,218 +4,18 @@ namespace sm
 {
 	namespace
 	{
-		constexpr stringview_t C_PNG = ".png";
-		constexpr stringview_t C_BMP = ".bmp";
-		constexpr stringview_t C_TGA = ".tga";
-		constexpr stringview_t C_JPG = ".jpg";
-		constexpr stringview_t C_GIF = ".gif";
-		constexpr stringview_t C_PIC = ".pic";
-		constexpr stringview_t C_PSD = ".psd";
-		constexpr stringview_t C_HDR = ".hdr";
-		constexpr stringview_t C_QOI = ".qoi";
-		constexpr stringview_t C_SVG = ".svg";
-		constexpr stringview_t C_DDS = ".dds";
-		constexpr stringview_t C_PKM = ".pkm";
-		constexpr stringview_t C_KTX = ".ktx";
-		constexpr stringview_t C_PVR = ".pvr";
-		constexpr stringview_t C_ASTC = ".astc";
-
 		//------------------------------------------------------------------------------------------------------------------------
-		image_type image_type_from_filepath(stringview_t filepath)
+		bimg::ImageContainer* allocate_image(texture_format format, unsigned w, unsigned h, unsigned depth,
+			unsigned layers, bool mips, const void* data = nullptr)
 		{
-			core::cpath path(filepath.data());
-
-			const auto ext = path.extension();
-
-			if (core::string_utils::compare(ext, C_PNG.data()))
-			{
-				return image_type_png;
-			}
-			else if (core::string_utils::compare(ext, C_BMP.data()))
-			{
-				return image_type_bmp;
-			}
-			else if (core::string_utils::compare(ext, C_TGA.data()))
-			{
-				return image_type_tga;
-			}
-			else if (core::string_utils::compare(ext, C_JPG.data()))
-			{
-				return image_type_jpg;
-			}
-			else if (core::string_utils::compare(ext, C_GIF.data()))
-			{
-				return image_type_gif;
-			}
-			else if (core::string_utils::compare(ext, C_PIC.data()))
-			{
-				return image_type_pic;
-			}
-			else if (core::string_utils::compare(ext, C_PSD.data()))
-			{
-				return image_type_psd;
-			}
-			else if (core::string_utils::compare(ext, C_HDR.data()))
-			{
-				return image_type_hdr;
-			}
-			else if (core::string_utils::compare(ext, C_QOI.data()))
-			{
-				return image_type_qoi;
-			}
-			else if (core::string_utils::compare(ext, C_SVG.data()))
-			{
-				return image_type_svg;
-			}
-			else if (core::string_utils::compare(ext, C_DDS.data()))
-			{
-				return image_type_dds;
-			}
-			else if (core::string_utils::compare(ext, C_PKM.data()))
-			{
-				return image_type_pkm;
-			}
-			else if (core::string_utils::compare(ext, C_KTX.data()))
-			{
-				return image_type_ktx;
-			}
-			else if (core::string_utils::compare(ext, C_PVR.data()))
-			{
-				return image_type_pvr;
-			}
-			else if (core::string_utils::compare(ext, C_ASTC.data()))
-			{
-				return image_type_astc;
-			}
-
-			if (serror_reporter::instance().m_callback)
-			{
-				serror_reporter::instance().m_callback(core::logging_verbosity_warn, fmt::format("Unknown image extension '{}'!", ext));
-			}
-
-			return image_type_none;
+			return bimg::imageAlloc(entry::allocator(), bimg::TextureFormat::Enum(format),
+				(uint16_t)w, (uint16_t)h, (uint16_t)depth, 1, false, mips, data);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		const char* image_file_type(image_type type)
+		void free_image(bimg::ImageContainer*& container)
 		{
-			switch (type)
-			{
-			case image_type_png:
-			{
-#ifdef SUPPORT_FILEFORMAT_PNG
-				return C_PNG.data();
-#endif
-				break;
-			}
-			case image_type_bmp:
-			{
-#ifdef SUPPORT_FILEFORMAT_BMP
-				return C_BMP.data();
-#endif
-				break;
-			}
-			case image_type_tga:
-			{
-#ifdef SUPPORT_FILEFORMAT_TGA
-				return C_TGA.data();
-#endif
-				break;
-			}
-			case image_type_jpg:
-			{
-#ifdef SUPPORT_FILEFORMAT_JPG
-				return C_JPG.data();
-#endif
-				break;
-			}
-			case image_type_gif:
-			{
-#ifdef SUPPORT_FILEFORMAT_GIF
-				return C_GIF.data();
-#endif
-				break;
-			}
-			case image_type_pic:
-			{
-#ifdef SUPPORT_FILEFORMAT_PIC
-				return C_PIC.data();
-#endif
-				break;
-			}
-			case image_type_psd:
-			{
-#ifdef SUPPORT_FILEFORMAT_PSD
-				return C_PSD.data();
-#endif
-				break;
-			}
-			case image_type_hdr:
-			{
-#ifdef SUPPORT_FILEFORMAT_HDR
-				return C_HDR.data();
-#endif
-				break;
-			}
-			case image_type_qoi:
-			{
-#ifdef SUPPORT_FILEFORMAT_QOI
-				return C_QOI.data();
-#endif
-				break;
-			}
-			case image_type_svg:
-			{
-#ifdef SUPPORT_FILEFORMAT_SVG
-				return C_SVG.data();
-#endif
-				break;
-			}
-			case image_type_dds:
-			{
-#ifdef SUPPORT_FILEFORMAT_DDS
-				return C_DDS.data();
-#endif
-				break;
-			}
-			case image_type_pkm:
-			{
-#ifdef SUPPORT_FILEFORMAT_PKM
-				return C_PKM.data();
-#endif
-				break;
-			}
-			case image_type_ktx:
-			{
-#ifdef SUPPORT_FILEFORMAT_KTX
-				return C_KTX.data();
-#endif
-				break;
-			}
-			case image_type_pvr:
-			{
-#ifdef SUPPORT_FILEFORMAT_PVR
-				return C_PVR.data();
-#endif
-				break;
-			}
-			case image_type_astc:
-			{
-#ifdef SUPPORT_FILEFORMAT_ASTC
-				return C_ASTC.data();
-#endif
-				break;
-			}
-			default:
-				break;
-			}
-
-			if (serror_reporter::instance().m_callback)
-			{
-				serror_reporter::instance().m_callback(core::logging_verbosity_warn, fmt::format("Unknown image type '{}'!", algorithm::enum_to_string(type)));
-			}
-
-			return nullptr;
+			bimg::imageFree(container); container = nullptr;
 		}
 
 	} //- unnamed
@@ -276,26 +76,26 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cshader::cshader() :
-		m_shader({ 0 }), m_type(shader_type_none)
+		m_shader({ MAX(uint16_t) }), m_type(shader_type_none)
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath)
+	cshader::cshader(shader_type type, stringview_t filepath)
 	{
-		load_from_file(type, vertex_filepath, fragment_filepath);
+		load_from_file(type, filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(shader_type type, const char* vs, const char* fs)
+	cshader::cshader(shader_type type, const char* string)
 	{
-		load_from_string(type, vs, fs);
+		load_from_string(type, string);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size)
+	cshader::cshader(shader_type type, const uint8_t* data, unsigned size)
 	{
-		load_from_memory(type, vs, vs_size, fs, fs_size);
+		load_from_memory(type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -304,73 +104,31 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_file(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath)
+	sm::opresult cshader::load_from_file(shader_type type, stringview_t filepath)
 	{
-		uint8_t* vs = nullptr; uint8_t* fs = nullptr;
-		unsigned vs_size = 0; unsigned fs_size = 0;
+		const auto [data, size] = core::cfile::load_binary(filepath.data());
 
-		if (!vertex_filepath.empty())
-		{
-			vs = core::cfile::load_binary(vertex_filepath.data(), vs_size);
-		}
-
-		if (!fragment_filepath.empty())
-		{
-			fs = core::cfile::load_binary(fragment_filepath.data(), fs_size);
-		}
-
-		return load_from_memory(type, vs, vs_size, fs, fs_size);
+		return load_from_memory(type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_string(shader_type type, const char* vs, const char* fs)
+	sm::opresult cshader::load_from_string(shader_type type, const char* string)
 	{
-		return load_from_memory(type, (const uint8_t*)vs, strlen(vs), (const uint8_t*)fs, strlen(fs));
+		return load_from_memory(type, (const uint8_t*)string, strlen(string));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_memory(shader_type type, const uint8_t* vs, unsigned /*vs_size*/, const uint8_t* fs, unsigned /*fs_size*/)
+	sm::opresult cshader::load_from_memory(shader_type type, const uint8_t* data, unsigned size)
 	{
-		const char* _vs = nullptr;
-		const char* _fs = nullptr;
+		const bgfx::Memory* mem = bgfx::makeRef(data, size);
 
-		switch (type)
-		{
-		case shader_type_vertex:
-		{
-			_vs = (const char*)vs;
-			break;
-		}
-		case shader_type_fragment:
-		{
-			_fs = (const char*)fs;
-			break;
-		}
-		case shader_type_program:
-		{
-			_vs = (const char*)vs;
-			_fs = (const char*)fs;
-			break;
-		}
-		default:
-		{
-			if (serror_reporter::instance().m_callback)
-			{
-				serror_reporter::instance().m_callback(core::logging_verbosity_error,
-					"Failed loading shader, unsupported shader type!");
-			}
-			return opresult_fail;
-		}
-		}
-
-		if (m_shader = raylib::LoadShaderFromMemory(_vs, _fs); !raylib::IsShaderReady(m_shader))
+		if (m_shader = bgfx::createShader(mem); !bgfx::isValid(m_shader))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
 				serror_reporter::instance().m_callback(core::logging_verbosity_error,
 					"Failed loading shader");
 			}
-
 			return opresult_fail;
 		}
 
@@ -436,12 +194,76 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	bgfx::ProgramHandle cprogram::create(const cshader& shader)
+	{
+		bgfx::ProgramHandle handle; handle.idx = bgfx::kInvalidHandle;
+
+		if (handle = bgfx::createProgram(shader.shader(), false); !bgfx::isValid(handle))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading program");
+			}
+		}
+		return handle;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cprogram::destroy(cprogram& program)
+	{
+		cshader::destroy(program.m_vertex);
+		cshader::destroy(program.m_fragment);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram(const cshader& vertex, const cshader& fragment) :
+		m_vertex(vertex), m_fragment(fragment)
+	{
+		load_from_handles(m_vertex.shader(), m_fragment.shader());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram() :
+		m_handle({ MAX(uint16_t) })
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::~cprogram()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cprogram::load_from_shaders(const cshader& vertex, const cshader& fragment)
+	{
+		m_vertex = vertex;
+		m_fragment = fragment;
+		return load_from_handles(m_vertex.shader(), m_fragment.shader());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cprogram::load_from_handles(bgfx::ShaderHandle vertex, bgfx::ShaderHandle fragment)
+	{
+		if (m_handle = bgfx::createProgram(vertex, fragment); !bgfx::isValid(m_handle))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading program");
+			}
+
+			return opresult_fail;
+		}
+		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cimage::destroy(cimage& image)
 	{
-		if (is_valid(image))
-		{
-			raylib::UnloadImage(image.image());
-		}
+		free_image(image.m_container);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -451,14 +273,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cimage::cimage(image_type type, void* data, unsigned size)
+	cimage::cimage(void* data, unsigned size)
 	{
-		load_from_memory(type, data, size);
+		load_from_memory(data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cimage::cimage() :
-		m_container({ 0 })
+		m_container(nullptr)
 	{
 	}
 
@@ -472,65 +294,68 @@ namespace sm
 	{
 		const auto [data, size] = core::cfile::load_binary(filepath.data());
 
-		return load_from_memory(image_type_from_filepath(filepath), data, size);
+		return load_from_memory(data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cimage::load_from_memory(image_type type, void* data, unsigned size)
+	sm::opresult cimage::load_from_memory(void* data, unsigned size)
 	{
-		if (const char* ext = image_file_type(type); ext)
+		if (m_container = bimg::imageParse(entry::allocator(), data, size); !m_container)
 		{
-			if (m_container = raylib::LoadImageFromMemory(ext, (const uint8_t*)data, size); raylib::IsImageReady(m_container))
+			if (serror_reporter::instance().m_callback)
 			{
-				return opresult_ok;
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading image");
 			}
-		}
 
-		if (serror_reporter::instance().m_callback)
-		{
-			serror_reporter::instance().m_callback(core::logging_verbosity_error, "Failed loading image");
+			return opresult_fail;
 		}
-
-		return opresult_fail;
+		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cimage::create_solid(unsigned w, unsigned h, const core::scolor& color)
 	{
-		if (raylib::IsImageReady(m_container))
+		if (m_container)
 		{
-			raylib::UnloadImage(m_container);
+			free_image(m_container);
 		}
 
-		m_container = raylib::GenImageColor(w, h, to_cliteral(color));
+		m_container = allocate_image(texture_format::RGBA8, w, h, 1, 1, false);
+
+		bimg::imageSolid(m_container->m_data, w, h, color.rgba());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cimage::create_checkerboard(unsigned w, unsigned h, unsigned step,
 		const core::scolor& first, const core::scolor& second)
 	{
-		if (raylib::IsImageReady(m_container))
+		if (m_container)
 		{
-			raylib::UnloadImage(m_container);
+			free_image(m_container);
 		}
 
-		m_container = raylib::GenImageChecked(w, h, w / step, h / step, to_cliteral(first), to_cliteral(second));
+		m_container = allocate_image(texture_format::RGBA8, w, h, 1, 1, false);
+
+		bimg::imageCheckerboard(m_container->m_data, w, h, step, first.rgba(), second.rgba());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void ctexture::destroy(ctexture& texture)
 	{
-		if (is_valid(texture))
+		if (bgfx::isValid(texture.texture()))
 		{
-			raylib::UnloadTexture(texture.texture());
+			bgfx::destroy(texture.texture());
 
-			texture.m_texture = { 0 };
+			//- reset handle and info
+			texture.m_texture.idx = MAX(uint16_t);
+			texture.m_info = {};
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	ctexture::ctexture() :
-		m_texture({ 0 })
+		m_texture({ MAX(uint16_t) })
 	{
 	}
 
@@ -547,9 +372,16 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::ctexture(image_type type, void* data, unsigned size)
+	ctexture::ctexture(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
+		bool mips, unsigned layers, texture_format format, uint64_t flags)
 	{
-		load_from_memory(type, data, size);
+		load_from_memory(data, size, w, h, depth, mips, layers, format, flags);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctexture::ctexture(bgfx::TextureHandle handle, const bgfx::TextureInfo& info) :
+		m_texture(handle), m_info(info)
+	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -560,20 +392,18 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult ctexture::load_from_image(const cimage& image)
 	{
-		if (m_texture = raylib::LoadTextureFromImage(image.image()); !raylib::IsTextureReady(m_texture))
-		{
-			if (serror_reporter::instance().m_callback)
-			{
-				serror_reporter::instance().m_callback(core::logging_verbosity_error,
-					"Failed loading texture");
-			}
+		const auto w		= image.image()->m_width;
+		const auto h		= image.image()->m_height;
+		const auto mips		= image.image()->m_numMips < 1;
+		const auto& layers	= image.image()->m_numLayers;
+		const auto format	= image.image()->m_format;
+		const auto& depth	= image.image()->m_depth;
 
-			return opresult_fail;
-		}
-
-		return opresult_ok;
+		return load_from_memory(image.image()->m_data, image.image()->m_size, w, h, depth, mips, layers,
+			texture_format(format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult ctexture::load_from_file(stringview_t filepath)
 	{
 		cimage image(filepath);
@@ -585,9 +415,10 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult ctexture::load_from_memory(image_type type, void* data, unsigned size)
+	sm::opresult ctexture::load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
+		bool mips, unsigned layers, texture_format format, uint64_t flags)
 	{
-		cimage image(type, data, size);
+		cimage image(data, size);
 
 		if (is_valid(image) && load_from_image(image))
 		{
@@ -598,39 +429,33 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	raylib::Color to_cliteral(const core::scolor& color)
-	{
-		return { color.r(), color.g(), color.b(), color.a() };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cshader& shader)
 	{
-		return raylib::IsShaderReady(shader.shader());
+		return bgfx::isValid(shader.shader());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cimage& image)
 	{
-		return raylib::IsImageReady(image.image());
+		return image.image() != nullptr;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const ctexture& texture)
 	{
-		return raylib::IsTextureReady(texture.texture());
+		return bgfx::isValid(texture.texture());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const crendertarget& target)
 	{
-		return raylib::IsRenderTextureReady(target.target());
+		return bgfx::isValid(target.target());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const ccamera& camera)
 	{
-		return camera.ready();
+		return camera.m_ready;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -650,11 +475,17 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	bool is_valid(const cprogram& program)
+	{
+		return bgfx::isValid(program.handle());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void crendertarget::destroy(crendertarget& target)
 	{
 		if (is_valid(target))
 		{
-			raylib::UnloadRenderTexture(target.target());
+			bgfx::destroy(target.target());
 		}
 	}
 
@@ -666,7 +497,7 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	crendertarget::crendertarget() :
-		m_texture({ 0 })
+		m_texture({ MAX(uint16_t) })
 	{
 	}
 
@@ -678,16 +509,20 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult crendertarget::create(unsigned w, unsigned h)
 	{
-		if (m_texture = raylib::LoadRenderTexture(w, h); !raylib::IsRenderTextureReady(m_texture))
+		if (m_framebuffer = bgfx::createFrameBuffer(SCAST(uint16_t, w), SCAST(uint16_t, h),
+			texture_format::RGBA8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP); !bgfx::isValid(m_framebuffer))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
 				serror_reporter::instance().m_callback(core::logging_verbosity_error,
 					"Failed loading render target");
 			}
-
 			return opresult_fail;
 		}
+
+		m_texture = bgfx::getTexture(m_framebuffer);
+		m_width = SCAST(uint16_t, w);
+		m_height = SCAST(uint16_t, h);
 
 		return opresult_ok;
 	}
@@ -720,7 +555,7 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	ccamera::ccamera() :
-		m_position({ 0 }), m_offset({ 0 }), m_zoom(0.0f), m_rotation(0.0f), m_ready(false)
+		m_position({ 0.0f, 0.0f }), m_offset({ 0.0f, 0.0f }), m_zoom(0.0f), m_rotation(0.0f), m_ready(false)
 	{
 	}
 

@@ -3,13 +3,13 @@ include (path.join(SCRIPTS_DIR, "utility.lua"))
 function glfw()
 	name = "glfw"
 	build_options = {}
-	define_flags = {"PLATFORM_DESKTOP"}
+	define_flags = {}
 	additional_includes = {}
 	plugin_deps = {}
 	plugin_headeronly_deps = {}
 	thirdparty_deps = {}
 	thirdparty_headeronly_deps = {}
-	glfw_path = path.join(raylib_path, "external", "glfw", "src")
+	glfw_path = path.join("glfw", "src")
 
 	project(name)
 		language ("c++")
@@ -18,20 +18,7 @@ function glfw()
 
 		kind ("StaticLib")
 
-		files{"src/**.h",
-			  "src/**.cpp",
-			  "src/**.hpp",
-			  "src/detail/tree_sitter_integration/lua/parser.c",
-			  "src/detail/tree_sitter_integration/lua/scanner.c",
-			  
-			  path.join(raylib_path, "rcore.c"),
-			  path.join(raylib_path, "rmodels.c"),
-			  path.join(raylib_path, "rshapes.c"),
-			  path.join(raylib_path, "rtext.c"),
-			  path.join(raylib_path, "rtextures.c"),
-			  path.join(raylib_path, "utils.c"),
-			  
-			  path.join(glfw_path, "internal.h"),
+		files{path.join(glfw_path, "internal.h"),
 			  path.join(glfw_path, "platform.h"),
 			  path.join(glfw_path, "mappings.h"),
 			  path.join(glfw_path, "context.c"),
@@ -145,4 +132,4 @@ function glfw()
 
 		configure()
 end
-spritemancer()
+glfw()

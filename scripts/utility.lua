@@ -103,14 +103,78 @@ function set_include_path(is_third_party, name)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+function set_bx_includes()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
+	if PLATFORM == "windows" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
+	elseif PLATFORM == "linux" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
+	elseif PLATFORM == "macosx" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
+	else
+		print("Unknown platform!")
+	end
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_bgfx_3rd_party_includes()
+
+	bgfx_3rd_party_dir = path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "3rdparty")
+
+	externalincludedirs{bgfx_3rd_party_dir,
+						path.join(bgfx_3rd_party_dir, "directx-headers/include"),
+						path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
+						path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
+
+						path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
+						path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
+
+						path.join(bgfx_3rd_party_dir, "glslang"),
+						
+						path.join(bgfx_3rd_party_dir, "spirv-cross"),
+						path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
+						path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
+						path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
+	}
+
+	includedirs{bgfx_3rd_party_dir,
+				path.join(bgfx_3rd_party_dir, "directx-headers/include"),
+				path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
+				path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
+				
+				path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
+				path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
+
+				path.join(bgfx_3rd_party_dir, "glslang"),
+
+				path.join(bgfx_3rd_party_dir, "spirv-cross"),
+				path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
+				path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
+				path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
+	}
+
+	-- some things required includes to files contained in src directory
+	externalincludedirs{path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx"),
+						path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "include")}
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_glfw_deps()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "glfw", "include")}
+	links{"glfw"}
+end
+
+------------------------------------------------------------------------------------------------------------------------
 function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
 end
 
 -- Creates a static library project. By default c sources are compiled too.
+-- TODO: add option for making a dynamic library from it and remove function "add_target_library"
+-- TODO: same goes for "add_target_library_ex"
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language,
-	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes)
+	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes, requires_bgfx)
 	if VERBOSE == true then
 		print("\tstatic library: " .. name)
 	end
@@ -135,6 +199,13 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
+
+		if requires_bgfx == true then
+			print("\tadding dependencies for bgfx, bx and glfw")
+			set_glfw_deps()
+			set_bx_includes()
+			set_bgfx_3rd_party_includes()
+		end
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -284,6 +355,14 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
 
+		-- if the plugin depends on engine, then it implies requirement for bgfx, bx and glfw
+		if depends_on_engine == true then
+			print("\tadding dependencies for bgfx, bx and glfw")
+			set_glfw_deps()
+			set_bx_includes()
+			set_bgfx_3rd_party_includes()
+		end
+
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
@@ -340,6 +419,12 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
 		set_basic_links()
+
+		-- application does require graphics and windowing from bgfx, bx and glfw
+		print("\tadding dependencies for bgfx, bx and glfw")
+		set_glfw_deps()
+		set_bx_includes()
+		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do

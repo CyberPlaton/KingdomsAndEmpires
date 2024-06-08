@@ -1,10 +1,5 @@
 #pragma once
-#include "platform.hpp"
-#include <core.h>
-#include <argparse.h>
-#include <plugin_logging.h>
-#include "raylib_integration/raylib.hpp"
-#include "imgui_integration/imgui.hpp"
+#include "sm_entry.hpp"
 
 namespace sm
 {
@@ -12,6 +7,7 @@ namespace sm
 	class iplatform;
 	class iapp;
 	class cshader;
+	class cprogram;
 	class crendertarget;
 	class cimage;
 	class ctexture;
@@ -24,8 +20,8 @@ namespace sm
 	class cspriteatlas_manager;
 	class crendertarget_manager;
 
-	raylib::Color to_cliteral(const core::scolor& color);
 	bool is_valid(const cshader& shader);
+	bool is_valid(const cprogram& program);
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
 	bool is_valid(const crendertarget& target);
@@ -52,25 +48,7 @@ namespace sm
 
 	//- BC_* formats: https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-block-compression#bc3
 	//------------------------------------------------------------------------------------------------------------------------
-	enum texture_format : uint8_t
-	{
-		texture_format_none = 0,
-		//- uncompressed
-		texture_format_8bpp		= raylib::PIXELFORMAT_UNCOMPRESSED_GRAYSCALE,
-		texture_format_8x2bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA,
-		texture_format_16bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R5G6B5,
-		texture_format_16x4bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
-		texture_format_24bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R8G8B8,
-		texture_format_32bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-		texture_format_32x4bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R32G32B32A32,
-		//- compressed
-		texture_format_bc1		= raylib::PIXELFORMAT_COMPRESSED_DXT1_RGBA,
-		texture_format_bc2		= raylib::PIXELFORMAT_COMPRESSED_DXT3_RGBA,
-		texture_format_bc3		= raylib::PIXELFORMAT_COMPRESSED_DXT5_RGBA,
-		texture_format_astc_4x4 = raylib::PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA,
-		texture_format_astc_8x8 = raylib::PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA,
-		texture_format_qoi,
-	};
+	using texture_format = bgfx::TextureFormat::Enum;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum shader_optimization : uint8_t
@@ -96,6 +74,7 @@ namespace sm
 	enum shader_language : uint8_t
 	{
 		shader_language_none = 0,
+		shader_language_hlsl,
 		shader_language_glsl,
 		shader_language_essl,
 	};
@@ -117,48 +96,51 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_factor
 	{
-		blending_factor_zero						= 0,
-		blending_factor_one							= 1,
-		blending_factor_src_color					= RL_SRC_COLOR,
-		blending_factor_one_minus_src_color			= RL_ONE_MINUS_SRC_COLOR,
-		blending_factor_src_alpha					= RL_SRC_ALPHA,
-		blending_factor_one_minus_src_alpha			= RL_ONE_MINUS_SRC_ALPHA,
-		blending_factor_dst_alpha					= RL_DST_ALPHA,
-		blending_factor_dst_color					= RL_DST_COLOR,
-		blending_factor_one_minus_dst_alpha			= RL_ONE_MINUS_DST_ALPHA,
-		blending_factor_src_alpha_saturate			= RL_SRC_ALPHA_SATURATE,
-		blending_factor_constant_color				= RL_CONSTANT_COLOR,
-		blending_factor_one_minus_constant_color	= RL_ONE_MINUS_CONSTANT_COLOR,
-		blending_factor_constant_alpha				= RL_CONSTANT_ALPHA,
-		blending_factor_one_minus_constant_alpha	= RL_ONE_MINUS_CONSTANT_ALPHA,
+		blending_factor_none = 0,
+		blending_factor_zero,
+		blending_factor_one,
+		blending_factor_src_color,
+		blending_factor_one_minus_src_color,
+		blending_factor_src_alpha,
+		blending_factor_one_minus_src_alpha,
+		blending_factor_dst_alpha,
+		blending_factor_dst_color,
+		blending_factor_one_minus_dst_alpha,
+		blending_factor_src_alpha_saturate,
+		blending_factor_constant_color,
+		blending_factor_one_minus_constant_color,
+		blending_factor_constant_alpha,
+		blending_factor_one_minus_constant_alpha,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_equation
 	{
-		blending_equation_add					= RL_FUNC_ADD,
-		blending_equation_min					= RL_MIN,
-		blending_equation_max					= RL_MAX,
-		blending_equation_subtract				= RL_FUNC_SUBTRACT,
-		blending_equation_reverse_subtract		= RL_FUNC_REVERSE_SUBTRACT,
-		blending_equation_blend_equation_rgb	= RL_BLEND_EQUATION_RGB,
-		blending_equation_blend_equation_alpha	= RL_BLEND_EQUATION_ALPHA,
-		blending_equation_blend_dst_rgb			= RL_BLEND_DST_RGB,
-		blending_equation_blend_src_rgb			= RL_BLEND_SRC_RGB,
-		blending_equation_blend_dst_alpha		= RL_BLEND_DST_ALPHA,
-		blending_equation_blend_src_alpha		= RL_BLEND_SRC_ALPHA,
-		blending_equation_blend_color			= RL_BLEND_COLOR,
+		blending_equation_none = 0,
+		blending_equation_add,
+		blending_equation_min,
+		blending_equation_max,
+		blending_equation_subtract,
+		blending_equation_reverse_subtract,
+		blending_equation_blend_equation_rgb,
+		blending_equation_blend_equation_alpha,
+		blending_equation_blend_dst_rgb,
+		blending_equation_blend_src_rgb,
+		blending_equation_blend_dst_alpha,
+		blending_equation_blend_src_alpha,
+		blending_equation_blend_color,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_mode : uint8_t
 	{
-		blending_mode_alpha				= raylib::BLEND_ALPHA,
-		blending_mode_additive			= raylib::BLEND_ADDITIVE,
-		blending_mode_multiplied		= raylib::BLEND_MULTIPLIED,
-		blending_mode_add_colors		= raylib::BLEND_ADD_COLORS,
-		blending_mode_subtract_colors	= raylib::BLEND_SUBTRACT_COLORS,
-		blending_mode_alpha_premultiply = raylib::BLEND_ALPHA_PREMULTIPLY
+		blending_mode_none = 0,
+		blending_mode_alpha,
+		blending_mode_additive,
+		blending_mode_multiplied,
+		blending_mode_add_colors,
+		blending_mode_subtract_colors,
+		blending_mode_alpha_premultiply,
 	};
 
 	//- @see https://subscription.packtpub.com/book/programming/9781849698009/1/ch01lvl1sec10/types-of-shaders
@@ -166,30 +148,10 @@ namespace sm
 	enum shader_type : uint8_t
 	{
 		shader_type_none = 0,
-		shader_type_vertex,		//- individual
-		shader_type_fragment,	//- individual
-		shader_type_program,	//- combined vertex and fragment shaders
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum image_type : uint8_t
-	{
-		image_type_none = 0,
-		image_type_png,
-		image_type_bmp,
-		image_type_tga,
-		image_type_jpg,
-		image_type_gif,
-		image_type_pic,
-		image_type_psd,
-		image_type_hdr,
-		image_type_qoi,
-		image_type_svg,
-		image_type_dds,
-		image_type_pkm,
-		image_type_ktx,
-		image_type_pvr,
-		image_type_astc
+		shader_type_vertex,
+		shader_type_fragment,
+		shader_type_geometry,	//- creates new rendering primitives from output of vertex shader to be processed by fragment shader
+		shader_type_compute,	//- general purpose shader that can affect all others
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -221,15 +183,6 @@ namespace sm
 		opresult_fail = 255,
 	};
 
-	//- Similar to the error reporter for core library. Set own callback to get reports from inside the library.
-	//------------------------------------------------------------------------------------------------------------------------
-	struct serror_reporter
-	{
-		STATIC_INSTANCE_EX(serror_reporter);
-
-		core::error_report_function_t m_callback = nullptr;
-	};
-
 	namespace entry
 	{
 		irenderer*			renderer();
@@ -253,24 +206,26 @@ namespace sm
 		blending_factor m_src_factor;
 	};
 
-	//- A shader. Can be a single vertex or fragment shader or a combination of them, becoming a program
+	//- A shader, a single vertex or fragment, or compute etc. shader.
+	//- TODO: As of now, we can only load embedded shader types compiled externally. Each function to load a shader expects
+	//- that exactly format.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cshader final
 	{
 	public:
 		static void destroy(cshader& shader);
 
-		explicit cshader(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
-		explicit cshader(shader_type type, const char* vs, const char* fs);
-		explicit cshader(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
+		explicit cshader(shader_type type, stringview_t filepath);
+		explicit cshader(shader_type type, const char* string);
+		explicit cshader(shader_type type, const uint8_t* data, unsigned size);
 		cshader();
 		~cshader();
 
-		opresult load_from_file(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
-		opresult load_from_string(shader_type type, const char* vs, const char* fs);
-		opresult load_from_memory(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
+		opresult load_from_file(shader_type type, stringview_t filepath);
+		opresult load_from_string(shader_type type, const char* string);
+		opresult load_from_memory(shader_type type, const uint8_t* data, unsigned size);
 
-		inline raylib::Shader shader() const { return m_shader; }
+		inline bgfx::ShaderHandle shader() const { return m_shader; }
 		inline shader_type type() const { return m_type; }
 
 		void set_uniform_float(stringview_t name, float value);
@@ -285,8 +240,33 @@ namespace sm
 		cshader& operator=(const cshader& other);
 
 	private:
-		raylib::Shader m_shader;
+		bgfx::ShaderHandle m_shader;
 		shader_type m_type;
+	};
+
+	//- Container for vertex and fragment shader. Destroying destroys individual shaders.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cprogram final
+	{
+	public:
+		static bgfx::ProgramHandle create(const cshader& shader);
+		static void destroy(cprogram& program);
+
+		explicit cprogram(const cshader& vertex, const cshader& fragment);
+		cprogram();
+		~cprogram();
+
+		opresult load_from_shaders(const cshader& vertex, const cshader& fragment);
+		opresult load_from_handles(bgfx::ShaderHandle vertex, bgfx::ShaderHandle fragment);
+
+		inline bgfx::ProgramHandle handle() const { return m_handle; }
+		inline const cshader& vertex() const { return m_vertex; }
+		inline const cshader& fragment() const { return m_fragment; }
+
+	private:
+		cshader m_vertex;
+		cshader m_fragment;
+		bgfx::ProgramHandle m_handle;
 	};
 
 	//- CPU resident image representation
@@ -297,24 +277,25 @@ namespace sm
 		static void destroy(cimage& image);
 
 		explicit cimage(stringview_t filepath);
-		explicit cimage(image_type type, void* data, unsigned size);
+		explicit cimage(void* data, unsigned size);
 		cimage();
 		~cimage();
 
 		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(image_type type, void* data, unsigned size);
+		opresult load_from_memory(void* data, unsigned size);
 
-		inline raylib::Image image() const { return m_container; }
+		inline const bimg::ImageContainer* image() const { return m_container; }
 
 		//- utility functions for image generation and manipulation
 		void create_solid(unsigned w, unsigned h, const core::scolor& color);
 		void create_checkerboard(unsigned w, unsigned h, unsigned step, const core::scolor& first, const core::scolor& second);
 
 	private:
-		raylib::Image m_container;
+		bimg::ImageContainer* m_container;
 	};
 
-	//- GPU resident image representation
+	//- GPU resident image representation.
+	//- TODO: information does not need to be held by each texture. Store it somewhere else and in texture only the handle.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ctexture final
 	{
@@ -323,21 +304,25 @@ namespace sm
 
 		explicit ctexture(const cimage& image);
 		explicit ctexture(stringview_t filepath);
-		explicit ctexture(image_type type, void* data, unsigned size);
+		explicit ctexture(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
+			bool mips, unsigned layers, texture_format format, uint64_t flags);
+		explicit ctexture(bgfx::TextureHandle handle, const bgfx::TextureInfo& info);
 		ctexture();
 		~ctexture();
 
 
 		opresult load_from_image(const cimage& image);
 		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(image_type type, void* data, unsigned size);
+		opresult load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
+			bool mips, unsigned layers, texture_format format, uint64_t flags);
 
-		inline unsigned w() const { return m_texture.width; }
-		inline unsigned h() const { return m_texture.height; }
-		inline raylib::Texture2D texture() const { return m_texture; }
+		inline unsigned w() const { return SCAST(unsigned, m_info.width); }
+		inline unsigned h() const { return SCAST(unsigned, m_info.height); }
+		inline bgfx::TextureHandle texture() const { return m_texture; }
 
 	private:
-		raylib::Texture2D m_texture;
+		bgfx::TextureHandle m_texture;
+		bgfx::TextureInfo m_info;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -353,13 +338,16 @@ namespace sm
 		opresult create(unsigned w, unsigned h);
 		opresult resize(unsigned w, unsigned h);
 
-		inline unsigned w() const { return m_texture.texture.width; }
-		inline unsigned h() const { return m_texture.texture.height; }
-		inline raylib::RenderTexture2D target() const { return m_texture; }
-		inline raylib::Texture2D texture() const { return m_texture.texture; }
+		inline unsigned w() const { return SCAST(unsigned, m_width); }
+		inline unsigned h() const { return SCAST(unsigned, m_height); }
+		inline bgfx::FrameBufferHandle target() const { return m_framebuffer; }
+		inline bgfx::TextureHandle texture() const { return m_texture; }
 
 	private:
-		raylib::RenderTexture2D m_texture;
+		bgfx::FrameBufferHandle m_framebuffer;
+		bgfx::TextureHandle m_texture;
+		uint16_t m_width;
+		uint16_t m_height;
 	};
 
 	//- TODO: Reworking camera system
@@ -397,9 +385,6 @@ namespace sm
 	public:
 		ccamera();
 		~ccamera() = default;
-
-		raylib::Camera2D camera() const;
-		inline bool ready() const { return m_ready; }
 
 		vec2_t m_position;
 		vec2_t m_offset;
@@ -446,24 +431,6 @@ namespace sm
 		vec2_t m_origin = { 0.0f, 0.0f };
 		float m_rotation = 0.0f;//- degrees
 		int m_flags = 0;		//- bitwise concated renderable_flag
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class ccommand final
-	{
-	public:
-		using render_callback_t = std::function<void()>;
-
-		explicit ccommand(render_callback_t&& callback);
-		ccommand() = default;
-		~ccommand() = default;
-
-		void create(render_callback_t&& callback);
-
-		void execute() const;
-
-	private:
-		render_callback_t m_callback;
 	};
 
 	//- Description of a rendering layer. Some of the data becomes only relevant when appropriate flags are set
