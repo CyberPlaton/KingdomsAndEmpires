@@ -5,9 +5,6 @@ namespace engine
 {
 	namespace
 	{
-		static TextEditor S_TEXT_EDITOR;
-		static sm::textedit::ctext_editor S_TEXT_EDITOR2;
-
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -119,14 +116,6 @@ namespace engine
 
 		m_layers.init();
 
-		//- load an example Lua script
-		const auto text = core::cfile::load_text("resources/LuaCheatsheet.lua");
-
-		S_TEXT_EDITOR.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-		S_TEXT_EDITOR.SetText(text.data());
-
-		S_TEXT_EDITOR2.init(sm::textedit::language_type_lua, text.data());
-
 		return m_result == engine_run_result_ok;
 	}
 
@@ -143,8 +132,7 @@ namespace engine
 
 		m_layers.on_world_render();
 
-		S_TEXT_EDITOR2.update();
-
+		//- Example on how rendering is possible from update function and from different threads
 		auto v = raylib::GetMousePosition();
 
 		sm::draw_placeholder(0, {v.x, v.y});
@@ -156,14 +144,6 @@ namespace engine
 		m_layers.on_ui_render();
 
 		ImGui::ShowDemoWindow();
-
-		ImGui::Begin("ImGui Color Texteditor");
-		S_TEXT_EDITOR.Render("Text Editor");
-		ImGui::End();
-
-		ImGui::Begin("Treesitter Texteditor");
-		S_TEXT_EDITOR2.draw();
-		ImGui::End();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
