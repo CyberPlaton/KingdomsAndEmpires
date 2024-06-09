@@ -8,6 +8,12 @@
 
 namespace sm
 {
+	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT = 256;
+	constexpr auto C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT = 512;
+	constexpr auto C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT = 512;
+	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT = 128;
+	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT = 64;
+
 	class irenderer;
 	class iplatform;
 	class ios;

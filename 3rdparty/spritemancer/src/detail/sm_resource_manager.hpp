@@ -32,7 +32,7 @@ namespace sm
 	class cimage_manager final : public core::cservice, iresource_manager<cimage>
 	{
 	public:
-		cimage_manager(unsigned reserve = 0);
+		cimage_manager(unsigned reserve = C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT);
 		~cimage_manager();
 
 		image_handle_t load_sync(stringview_t name, stringview_t filepath);
@@ -49,7 +49,7 @@ namespace sm
 	class ctexture_manager final : public core::cservice, iresource_manager<ctexture>
 	{
 	public:
-		ctexture_manager(unsigned reserve = 0);
+		ctexture_manager(unsigned reserve = C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT);
 		~ctexture_manager();
 
 		texture_handle_t load_sync(stringview_t name, const cimage& image);
@@ -68,7 +68,7 @@ namespace sm
 	class cshader_manager final : public core::cservice, iresource_manager<cshader>
 	{
 	public:
-		cshader_manager(unsigned reserve = 0);
+		cshader_manager(unsigned reserve = C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT);
 		~cshader_manager();
 
 		shader_handle_t load_sync(stringview_t name, shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
@@ -87,9 +87,12 @@ namespace sm
 	class cspriteatlas_manager final : public core::cservice, iresource_manager<cspriteatlas>
 	{
 	public:
-		cspriteatlas_manager(unsigned reserve = 0);
+		cspriteatlas_manager(unsigned reserve = C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT);
 		~cspriteatlas_manager();
 
+		spriteatlas_handle_t load_sync(stringview_t name, unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
+
+		core::cfuture_type<spriteatlas_handle_t> load_async(stringview_t name, unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
 
 	private:
 		RTTR_ENABLE(core::cservice);
@@ -99,9 +102,12 @@ namespace sm
 	class crendertarget_manager final : public core::cservice, iresource_manager<crendertarget>
 	{
 	public:
-		crendertarget_manager(unsigned reserve = 0);
+		crendertarget_manager(unsigned reserve = C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT);
 		~crendertarget_manager();
 
+		rendertarget_handle_t load_sync(stringview_t name, unsigned w, unsigned h);
+
+		core::cfuture_type<rendertarget_handle_t> load_async(stringview_t name, unsigned w, unsigned h);
 
 	private:
 		RTTR_ENABLE(core::cservice);
