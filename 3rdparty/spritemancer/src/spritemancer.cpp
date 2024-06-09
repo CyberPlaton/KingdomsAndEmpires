@@ -3,6 +3,8 @@
 #include "detail/renderers/sm_renderer_headless.hpp"
 #include "detail/renderers/sm_renderer_raylib.hpp"
 #include "detail/os/sm_os_raylib.hpp"
+#include "detail/sm_resource_manager.hpp"
+#include "detail/sm_embedded_shaders.hpp"
 
 namespace sm
 {
@@ -13,6 +15,7 @@ namespace sm
 		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
 		static core::cmutex S_MUTEX;
 
+		static shader_handle_t S_SPRITE_SHADER = 0;
 		static core::scolor S_WHITE = { 255, 255, 255, 255 };
 		static core::scolor S_BLACK = { 0, 0, 0, 0 };
 		static core::scolor S_BLANK = { 0, 0, 0, 255 };
@@ -24,6 +27,7 @@ namespace sm
 		static float S_DT = 0.0f;
 		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
 		static sblending S_BLEND_MODE = S_BLEND_MODE_DEFAULT;
+		static srenderstate S_RENDERSTATE_DEFAULT = { S_BLEND_MODE_DEFAULT, 0 };
 
 		static void* S_CONFIG = nullptr;
 		static argparse::ArgumentParser S_ARGS;
@@ -140,8 +144,17 @@ namespace sm
 			update_window_size(S_W, S_H);
 			update_window_viewport();
 
+			//- create resource managers
+			core::cservice_manager::emplace<cimage_manager>();
+			core::cservice_manager::emplace<ctexture_manager>();
+			core::cservice_manager::emplace<cshader_manager>();
+			core::cservice_manager::emplace<cspriteatlas_manager>();
+			core::cservice_manager::emplace<crendertarget_manager>();
+
+			load_internal_resources();
+
 			//- create default placeholder texture
-			S_PLACEHOLDER_TEXTURE.m_image.create_checkerboard(256, 256, 16, S_WHITE, S_BLACK);
+			S_PLACEHOLDER_TEXTURE.m_image.create_solid(256, 256, S_WHITE);
 			S_PLACEHOLDER_TEXTURE.m_texture.load_from_image(S_PLACEHOLDER_TEXTURE.m_image);
 
 			//- create default font
@@ -198,6 +211,13 @@ namespace sm
 			entry::get_app()->on_shutdown();
 			imgui::shutdown();
 			if (entry::has_platform()) { entry::get_platform()->shutdown(); }
+		}
+
+		//- Load some default assets such as default shaders, images and textures etc.
+		//------------------------------------------------------------------------------------------------------------------------
+		void load_internal_resources()
+		{
+			S_SPRITE_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment, nullptr, shaders::sprite::C_PS.data());
 		}
 
 	} //- unnamed
@@ -344,7 +364,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, const srenderable& renderable, const vec2_t& scale, const core::scolor& tint)
 	{
-		if (algorithm::bit_check(renderable.m_flags, renderable_flag_invisible))
+		if (algorithm::bit_check(renderable.m_state.m_flags, renderable_flag_invisible))
 		{
 			return;
 		}
@@ -364,19 +384,19 @@ namespace sm
 				raylib::Vector2 origin = { 0.0f, 0.0f};
 
 				//- check some flags and do adjustments
-				if (algorithm::bit_check(renderable.m_flags, renderable_flag_origin_center))
+				if (algorithm::bit_check(renderable.m_state.m_flags, renderable_flag_origin_center))
 				{
 					origin = { w / 2.0f, h / 2.0f };
 				}
-				if (algorithm::bit_check(renderable.m_flags, renderable_flag_origin_custom))
+				if (algorithm::bit_check(renderable.m_state.m_flags, renderable_flag_origin_custom))
 				{
 					origin = { renderable.m_origin.x, renderable.m_origin.y };
 				}
-				if (algorithm::bit_check(renderable.m_flags, renderable_flag_flipx))
+				if (algorithm::bit_check(renderable.m_state.m_flags, renderable_flag_flipx))
 				{
 					src.width = -src.width;
 				}
-				if (algorithm::bit_check(renderable.m_flags, renderable_flag_flipy))
+				if (algorithm::bit_check(renderable.m_state.m_flags, renderable_flag_flipy))
 				{
 					src.height = -src.height;
 				}
@@ -384,10 +404,10 @@ namespace sm
 				{
 					raylib::BeginShaderMode(renderable.m_shader.shader());
 				}
-				if (algorithm::bit_check(renderable.m_flags, renderable_flag_blending_custom))
+				if (algorithm::bit_check(renderable.m_state.m_flags, renderable_flag_blending_custom))
 				{
-					raylib::rlSetBlendMode(renderable.m_blending.m_mode);
-					raylib::rlSetBlendFactors(renderable.m_blending.m_src_factor, renderable.m_blending.m_dst_factor, renderable.m_blending.m_equation);
+					raylib::rlSetBlendMode(renderable.m_state.m_blending.m_mode);
+					raylib::rlSetBlendFactors(renderable.m_state.m_blending.m_src_factor, renderable.m_state.m_blending.m_dst_factor, renderable.m_state.m_blending.m_equation);
 					raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
 				}
 
@@ -396,6 +416,52 @@ namespace sm
 				//- reset state
 				raylib::EndShaderMode();
 			});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture)
+	{
+		draw_texture(layer, position, texture, 0.0f);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation)
+	{
+		draw_texture(layer, position, texture, rotation, {1.0f, 1.0f});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale)
+	{
+		draw_texture(layer, position, texture, rotation, scale, S_SPRITE_SHADER);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
+		shader_handle_t shader)
+	{
+		draw_texture(layer, position, texture, rotation, scale, shader, S_RENDERSTATE_DEFAULT);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
+		shader_handle_t shader, const srenderstate& state)
+	{
+		draw_texture(layer, position, texture, rotation, scale, shader, state, {0.5f, 0.5f});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
+		shader_handle_t shader, const srenderstate& state, const vec2_t& origin)
+	{
+		draw_texture(layer, position, texture, rotation, scale, shader, state, origin);
+	}
+
+	//- The actual rendering routine
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
+		shader_handle_t shader, const srenderstate& state, const vec2_t& origin, const core::srect& source)
+	{
 	}
 
 } //- sm

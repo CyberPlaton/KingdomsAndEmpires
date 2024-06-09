@@ -3,12 +3,6 @@
 
 namespace sm
 {
-	using image_handle_t = unsigned;
-	using texture_handle_t = unsigned;
-	using shader_handle_t = unsigned;
-	using spriteatlas_handle_t = unsigned;
-	using rendertarget_handle_t = unsigned;
-
 	//- Spritemancer resource manager interface. Data is not serialized, the class serves to avoid redefining functionality
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource>
@@ -29,7 +23,9 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cimage_manager final : public core::cservice, iresource_manager<cimage>
+	class cimage_manager final :
+		public core::cservice,
+		public iresource_manager<cimage>
 	{
 	public:
 		cimage_manager(unsigned reserve = C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -46,7 +42,9 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture_manager final : public core::cservice, iresource_manager<ctexture>
+	class ctexture_manager final :
+		public core::cservice,
+		public iresource_manager<ctexture>
 	{
 	public:
 		ctexture_manager(unsigned reserve = C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -65,7 +63,9 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cshader_manager final : public core::cservice, iresource_manager<cshader>
+	class cshader_manager final :
+		public core::cservice,
+		public iresource_manager<cshader>
 	{
 	public:
 		cshader_manager(unsigned reserve = C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -84,7 +84,9 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas_manager final : public core::cservice, iresource_manager<cspriteatlas>
+	class cspriteatlas_manager final :
+		public core::cservice,
+		public iresource_manager<cspriteatlas>
 	{
 	public:
 		cspriteatlas_manager(unsigned reserve = C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -99,7 +101,9 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class crendertarget_manager final : public core::cservice, iresource_manager<crendertarget>
+	class crendertarget_manager final :
+		public core::cservice,
+		public iresource_manager<crendertarget>
 	{
 	public:
 		crendertarget_manager(unsigned reserve = C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT);

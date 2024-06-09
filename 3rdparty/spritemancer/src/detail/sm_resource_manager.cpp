@@ -8,14 +8,18 @@ namespace sm
 		template<typename TResource, typename THandle, typename... ARGS>
 		core::cfuture_type<THandle> load_of_async(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
 		{
-			unsigned hash = algorithm::hash(name);
-
-			core::cfuture_type<THandle> result = core::casync::launch_async([h=hash, d=data]() -> THandle
+			core::cfuture_type<THandle> result = core::casync::launch_async([&]() -> THandle
 				{
-					d.emplace(h, std::forward<ARGS>(args)...);
+					const auto hash = algorithm::hash(name);
 
-					return h;
-				});
+					//- correctly forward arguments and hash
+					data.emplace(std::piecewise_construct,
+								std::forward_as_tuple(hash),
+								std::forward_as_tuple(std::forward<ARGS>(args)...));
+
+					return hash;
+
+				}).share();
 
 			return result;
 		}
@@ -26,7 +30,10 @@ namespace sm
 		{
 			unsigned hash = algorithm::hash(name);
 
-			data.emplace(hash, std::forward<ARGS>(args)...);
+			//- correctly forward arguments and hash
+			data.emplace(std::piecewise_construct,
+						std::forward_as_tuple(hash),
+						std::forward_as_tuple(std::forward<ARGS>(args)...));
 
 			return THandle(hash);
 		}
@@ -106,7 +113,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, image_type type, void* data, unsigned size)
 	{
-		return load_of_sync<ctexture, texture_handle_t>(name, m_data, data, size);
+		return load_of_sync<ctexture, texture_handle_t>(name, m_data, type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -124,7 +131,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, image_type type, void* data, unsigned size)
 	{
-		return load_of_async<ctexture, texture_handle_t>(name, m_data, data, size);
+		return load_of_async<ctexture, texture_handle_t>(name, m_data, type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

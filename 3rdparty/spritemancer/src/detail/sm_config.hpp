@@ -14,6 +14,12 @@ namespace sm
 	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT = 128;
 	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT = 64;
 
+	using image_handle_t = unsigned;
+	using texture_handle_t = unsigned;
+	using shader_handle_t = unsigned;
+	using spriteatlas_handle_t = unsigned;
+	using rendertarget_handle_t = unsigned;
+
 	class irenderer;
 	class iplatform;
 	class ios;
@@ -31,7 +37,7 @@ namespace sm
 	class cspriteatlas_manager;
 	class crendertarget_manager;
 
-	raylib::Color to_cliteral(const core::scolor& color) { return color.cliteral<raylib::Color>(); }
+	raylib::Color to_cliteral(const core::scolor& color);
 	bool is_valid(const cshader& shader);
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
@@ -443,6 +449,13 @@ namespace sm
 		vec2_t m_size;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	struct srenderstate
+	{
+		sblending m_blending;
+		int m_flags = 0; //- bitwise concated renderable_flag
+	};
+
 	//- Basically a sprite to be rendered on screen, along with some flags and customization.
 	//- TODO: materials, spriteatlases
 	//------------------------------------------------------------------------------------------------------------------------
@@ -452,10 +465,9 @@ namespace sm
 		cshader m_shader;
 		cimage m_image;
 		ctexture m_texture;
-		sblending m_blending;
+		srenderstate m_state;
 		vec2_t m_origin = { 0.0f, 0.0f };
 		float m_rotation = 0.0f;//- degrees
-		int m_flags = 0;		//- bitwise concated renderable_flag
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

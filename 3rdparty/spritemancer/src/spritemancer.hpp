@@ -31,8 +31,30 @@ namespace sm
 		const core::scolor& tint = {255, 255, 255, 255});
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
+		shader_handle_t shader, const srenderstate& state);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
+		shader_handle_t shader, const srenderstate& state, const vec2_t& origin);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
+		shader_handle_t shader, const srenderstate& state, const vec2_t& origin, const core::srect& source);
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, const srenderable& renderable, const vec2_t& scale,
 		const core::scolor& tint);
+
 #pragma endregion
 
 #pragma region utility_and_helpers

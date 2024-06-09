@@ -955,14 +955,15 @@ namespace core
 		RTTR_ENABLE();
 	};
 
-	//- Class wrapping a future type.
+	//- Class wrapping a future type. If copied from another future then both are waiting for the same result.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
 	class cfuture_type
 	{
 	public:
-		cfuture_type(std::future<TType> task) : m_task(std::move(task)), m_status(future_status_pending) {}
-		cfuture_type(const cfuture_type& other) : m_task(std::move(other.m_task)), m_status(other.m_status) {}
+		cfuture_type(const std::future<TType>& task) : m_task(task.share()), m_status(future_status_pending) {}
+		cfuture_type(const std::shared_future<TType>& task) : m_task(task), m_status(future_status_pending) {}
+		cfuture_type(const cfuture_type<TType>& other) : m_task(other.m_task), m_status(other.m_status) {}
 		cfuture_type() = default;
 		~cfuture_type() = default;
 
@@ -970,7 +971,7 @@ namespace core
 		[[nodiscard]] TType get() const { ASSERT(ready(), "Invalid operation. You can use 'get' only if future is ready"); return m_task.get(); }
 
 	private:
-		std::future<TType> m_task;
+		std::shared_future<TType> m_task;
 		future_status m_status = future_status_none;
 	};
 
