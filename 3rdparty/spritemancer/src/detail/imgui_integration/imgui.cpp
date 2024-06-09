@@ -7,7 +7,7 @@ namespace imgui
 	{
 		static auto S_W = 0;
 		static auto S_H = 0;
-		static ImNodes::EditorContext* S_IMNODES_CTX = nullptr;
+		static ImNodesContext* S_IMNODES_CTX = nullptr;
 		static ImPlotContext* S_IMPLOT_CTX = nullptr;
 
 	} //- unnamed
@@ -19,7 +19,7 @@ namespace imgui
 		rlImGuiSetup(true);
 
 		S_IMPLOT_CTX = ImPlot::CreateContext();
-		S_IMNODES_CTX = ImNodes::CreateEditor();
+		S_IMNODES_CTX = ImNodes::CreateContext();
 
 		//- setup default style
 		ImGui::GetStyle().WindowRounding = 0;
@@ -47,7 +47,7 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void shutdown()
 	{
-		ImNodes::DestroyEditor(S_IMNODES_CTX);
+		ImNodes::DestroyContext(S_IMNODES_CTX);
 		ImPlot::DestroyContext(S_IMPLOT_CTX);
 		rlImGuiShutdown();
 	}
@@ -71,7 +71,7 @@ namespace imgui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ImNodes::EditorContext* imnodes_ctx()
+	ImNodesContext* imnodes_ctx()
 	{
 		return S_IMNODES_CTX;
 	}

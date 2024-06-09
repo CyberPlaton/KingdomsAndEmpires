@@ -34,6 +34,13 @@ namespace sm
 
 		static srenderable S_PLACEHOLDER_TEXTURE;
 
+		//- Load some default assets such as default shaders, images and textures etc.
+		//------------------------------------------------------------------------------------------------------------------------
+		void load_internal_resources()
+		{
+			S_SPRITE_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment, nullptr, shaders::sprite::C_PS);
+		}
+
 		//------------------------------------------------------------------------------------------------------------------------
 		void update_window_size(unsigned w, unsigned h)
 		{
@@ -211,13 +218,6 @@ namespace sm
 			entry::get_app()->on_shutdown();
 			imgui::shutdown();
 			if (entry::has_platform()) { entry::get_platform()->shutdown(); }
-		}
-
-		//- Load some default assets such as default shaders, images and textures etc.
-		//------------------------------------------------------------------------------------------------------------------------
-		void load_internal_resources()
-		{
-			S_SPRITE_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment, nullptr, shaders::sprite::C_PS.data());
 		}
 
 	} //- unnamed

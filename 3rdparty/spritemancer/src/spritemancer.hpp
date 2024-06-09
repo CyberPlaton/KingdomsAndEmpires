@@ -41,6 +41,10 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
+		shader_handle_t shader);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, float rotation, const vec2_t& scale,
 		shader_handle_t shader, const srenderstate& state);
 
 	//------------------------------------------------------------------------------------------------------------------------

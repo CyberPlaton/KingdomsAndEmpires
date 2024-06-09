@@ -3,11 +3,10 @@
 #include "imgui/rlImGui.h"
 #include "imgui/imgui.h"
 #include "imgui/implot.h"
-#include "imgui/imgui_node_editor.h"
+#include "imgui/imnodes.h"
 #include "imgui/IconsFontAwesome6.h"
 #include "imgui/TextEditor.h"
 
-namespace ImNodes = ax::NodeEditor;
 namespace imgui
 {
 	bool init();
@@ -16,7 +15,7 @@ namespace imgui
 	void end();
 
 	ImPlotContext*			implot_ctx();
-	ImNodes::EditorContext*	imnodes_ctx();
+	ImNodesContext*			imnodes_ctx();
 
 } //- imgui
 

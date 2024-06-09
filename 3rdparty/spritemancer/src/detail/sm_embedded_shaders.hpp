@@ -9,8 +9,8 @@ namespace sm
 	{
 		namespace sprite
 		{
-			constexpr stringview_t C_VS = "";
-			constexpr stringview_t C_PS = "";
+			constexpr const char* C_VS = "none";
+			constexpr const char* C_PS = "none";
 
 		} //- sprite
 
