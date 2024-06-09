@@ -21,7 +21,7 @@ namespace ecs
 	//-
 	//- what really matters for runtime is the 'build' function:
 	//- you can define const ecs::stransform& there as well as ecs::stransform&
-	//- and those as what will be passed to the function.
+	//- and those are what will be passed to the function.
 	//-
 	//- TCallable system function should be as in system_function_prototype_t, i.e.
 	//- entity first and then your used components as described above.
@@ -60,7 +60,8 @@ namespace ecs
 		//- Also, must be called BEFORE 'build'
 		void immediate();
 
-		//- Specifies a component to explicitly exclude, meaning an entity having it will be ignored
+		//- Specifies a component to explicitly exclude, meaning an entity having it will be ignored,
+		//- can be more than one component
 		//- Note: must be called BEFORE 'build'
 		template<typename... TComponent>
 		void exclude();

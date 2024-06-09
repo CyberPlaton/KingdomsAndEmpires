@@ -1,4 +1,6 @@
 #include "spritemancer.hpp"
+#include "detail/os/sm_os_headless.hpp"
+#include "detail/renderers/sm_renderer_headless.hpp"
 #include "detail/renderers/sm_renderer_raylib.hpp"
 #include "detail/os/sm_os_raylib.hpp"
 
