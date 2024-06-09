@@ -962,6 +962,7 @@ namespace core
 	{
 	public:
 		cfuture_type(std::future<TType> task) : m_task(std::move(task)), m_status(future_status_pending) {}
+		cfuture_type(const cfuture_type& other) : m_task(std::move(other.m_task)), m_status(other.m_status) {}
 		cfuture_type() = default;
 		~cfuture_type() = default;
 
@@ -1001,6 +1002,7 @@ namespace core
 		return m_status == future_status_ready;
 	}
 
+	//- Usable for async operations where using thread service is not possible
 	//------------------------------------------------------------------------------------------------------------------------
 	class casync final
 	{
@@ -1135,6 +1137,9 @@ namespace core
 		inline uint8_t g() const { return m_g; }
 		inline uint8_t b() const { return m_b; }
 		inline uint8_t a() const { return m_a; }
+
+		template<typename T>
+		inline T cliteral() const { return { m_r, m_g, m_b, m_a }; }
 
 		vec4_t normalize() const;
 

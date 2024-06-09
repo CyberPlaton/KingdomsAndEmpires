@@ -25,7 +25,7 @@ namespace sm
 	class cspriteatlas_manager;
 	class crendertarget_manager;
 
-	raylib::Color to_cliteral(const core::scolor& color);
+	raylib::Color to_cliteral(const core::scolor& color) { return color.cliteral<raylib::Color>(); }
 	bool is_valid(const cshader& shader);
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
