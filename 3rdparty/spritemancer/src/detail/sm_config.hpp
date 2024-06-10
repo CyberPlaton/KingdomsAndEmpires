@@ -260,8 +260,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sblending final
 	{
-		bool operator==(const sblending& other);
-		bool operator!=(const sblending& other);
+		bool operator==(const sblending& other) const;
+		bool operator!=(const sblending& other) const;
 
 		blending_mode m_mode;
 		blending_equation m_equation;
@@ -310,8 +310,11 @@ namespace sm
 	class cimage final
 	{
 	public:
+		using image_generate_function_t = std::function<raylib::Image()>;
+
 		static void destroy(cimage& image);
 
+		explicit cimage(image_generate_function_t&& callback);
 		explicit cimage(stringview_t filepath);
 		explicit cimage(image_type type, void* data, unsigned size);
 		cimage();
@@ -452,22 +455,11 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	struct srenderstate
 	{
+		bool operator ==(const srenderstate& other) const;
+		bool operator !=(const srenderstate& other) const;
+
 		sblending m_blending;
 		int m_flags = 0; //- bitwise concated renderable_flag
-	};
-
-	//- Basically a sprite to be rendered on screen, along with some flags and customization.
-	//- TODO: materials, spriteatlases
-	//------------------------------------------------------------------------------------------------------------------------
-	struct srenderable
-	{
-		core::srect m_src = { 0.0f, 0.0f, 1.0f, 1.0f };
-		cshader m_shader;
-		cimage m_image;
-		ctexture m_texture;
-		srenderstate m_state;
-		vec2_t m_origin = { 0.0f, 0.0f };
-		float m_rotation = 0.0f;//- degrees
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

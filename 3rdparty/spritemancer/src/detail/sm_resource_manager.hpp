@@ -5,7 +5,7 @@ namespace sm
 {
 	//- Spritemancer resource manager interface. Data is not serialized, the class serves to avoid redefining functionality
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
+	template<typename TResource, typename THandle>
 	class iresource_manager
 	{
 	public:
@@ -14,6 +14,9 @@ namespace sm
 		bool lookup(stringview_t name) const;
 		TResource& get(stringview_t name);
 		const TResource& at(stringview_t name) const;
+
+		TResource& get(THandle handle);
+		const TResource& at(THandle handle) const;
 
 		template<typename TCallable>
 		void each(TCallable&& callback);
@@ -25,7 +28,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class cimage_manager final :
 		public core::cservice,
-		public iresource_manager<cimage>
+		public iresource_manager<cimage, image_handle_t>
 	{
 	public:
 		cimage_manager(unsigned reserve = C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -44,7 +47,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class ctexture_manager final :
 		public core::cservice,
-		public iresource_manager<ctexture>
+		public iresource_manager<ctexture, texture_handle_t>
 	{
 	public:
 		ctexture_manager(unsigned reserve = C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -65,7 +68,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class cshader_manager final :
 		public core::cservice,
-		public iresource_manager<cshader>
+		public iresource_manager<cshader, shader_handle_t>
 	{
 	public:
 		cshader_manager(unsigned reserve = C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -86,7 +89,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class cspriteatlas_manager final :
 		public core::cservice,
-		public iresource_manager<cspriteatlas>
+		public iresource_manager<cspriteatlas, spriteatlas_handle_t>
 	{
 	public:
 		cspriteatlas_manager(unsigned reserve = C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -103,7 +106,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class crendertarget_manager final :
 		public core::cservice,
-		public iresource_manager<crendertarget>
+		public iresource_manager<crendertarget, rendertarget_handle_t>
 	{
 	public:
 		crendertarget_manager(unsigned reserve = C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -118,9 +121,9 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
+	template<typename TResource, typename THandle>
 	template<typename TCallable>
-	void sm::iresource_manager<TResource>::each(TCallable&& callback)
+	void sm::iresource_manager<TResource, THandle>::each(TCallable&& callback)
 	{
 		for (const auto& pair : m_data)
 		{
@@ -129,22 +132,36 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	const TResource& sm::iresource_manager<TResource>::at(stringview_t name) const
+	template<typename TResource, typename THandle>
+	const TResource& sm::iresource_manager<TResource, THandle>::at(stringview_t name) const
 	{
 		return m_data.at(algorithm::hash(name));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	TResource& sm::iresource_manager<TResource>::get(stringview_t name)
+	template<typename TResource, typename THandle>
+	TResource& sm::iresource_manager<TResource, THandle>::get(stringview_t name)
 	{
 		return m_data[algorithm::hash(name)];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	bool sm::iresource_manager<TResource>::lookup(stringview_t name) const
+	template<typename TResource, typename THandle>
+	const TResource& sm::iresource_manager<TResource, THandle>::at(THandle handle) const
+	{
+		return m_data.at(handle);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	TResource& sm::iresource_manager<TResource, THandle>::get(THandle handle)
+	{
+		return m_data[handle];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	bool sm::iresource_manager<TResource, THandle>::lookup(stringview_t name) const
 	{
 		return m_data.find(algorithm::hash(name)) != m_data.end();
 	}

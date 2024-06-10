@@ -482,6 +482,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	cimage::cimage(image_generate_function_t&& callback) :
+		m_container(callback())
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cimage::~cimage()
 	{
 	}
@@ -834,13 +840,25 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool sblending::operator!=(const sblending& other)
+	bool srenderstate::operator==(const srenderstate& other) const
+	{
+		return m_blending == other.m_blending && m_flags == other.m_flags;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool srenderstate::operator!=(const srenderstate& other) const
 	{
 		return !this->operator==(other);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool sblending::operator==(const sblending& other)
+	bool sblending::operator!=(const sblending& other) const
+	{
+		return !this->operator==(other);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool sblending::operator==(const sblending& other) const
 	{
 		return m_mode == other.m_mode && m_equation == other.m_equation &&
 			m_dst_factor == other.m_dst_factor && m_src_factor == other.m_src_factor;
