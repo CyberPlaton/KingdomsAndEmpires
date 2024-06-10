@@ -179,9 +179,7 @@ int __real_main(int argc, char* argv[])
 
 	logging::init(core::logging_verbosity::logging_verbosity_debug);
 
-	allocators_test_runs();
-
-	return 0;
+	// allocators_test_runs();
 
 	engine::cengine::sconfig cfg;
 	cfg.m_services_cfg.emplace_back("cthread_service");

@@ -1115,7 +1115,7 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class  cscope_mutex final
+	class cscope_mutex final
 	{
 	public:
 		cscope_mutex(cmutex& m);
@@ -1125,6 +1125,27 @@ namespace core
 
 	private:
 		cmutex& m_mutex;
+	};
+
+	//- Memory storage that can be copied around using a shared pointer, when going out of scope for all shared pointers
+	//- will be free using the provided release callback. At all times the actual memory is not duplicated.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cmemory final :
+		public std::enable_shared_from_this<cmemory>,
+		public cnon_copyable
+	{
+	public:
+		using release_callback_t = std::function<void(void*)>;
+
+		static ref_t<cmemory> make_ref(void* data, unsigned size, release_callback_t&& release_callback);
+
+		cmemory(void* data, unsigned size, release_callback_t&& release_callback);
+		~cmemory();
+
+	private:
+		release_callback_t m_release;
+		unsigned m_size;
+		void* m_data;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

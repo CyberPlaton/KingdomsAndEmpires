@@ -1334,6 +1334,27 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	ref_t<cmemory> cmemory::make_ref(void* data, unsigned size, release_callback_t&& release_callback)
+	{
+		return std::make_shared<cmemory>(data, size, std::move(release_callback));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmemory::cmemory(void* data, unsigned size, release_callback_t&& release_callback) :
+		m_release(std::move(release_callback)), m_size(size), m_data(data)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmemory::~cmemory()
+	{
+		CORE_ASSERT(!(m_data && !m_release), "Invalid operation. Holding memory but no release callback!");
+
+		m_release(m_data);
+		m_data = nullptr;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	scolor::scolor(common_color color) :
 		m_r(0), m_g(0), m_b(0), m_a(0)
 	{
