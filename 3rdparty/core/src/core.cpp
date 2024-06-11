@@ -1942,13 +1942,13 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cfile::unload(char* data)
+	void cfile::unload_text(uint8_t* data)
 	{
-		unload_file_text_data(data);
+		unload_file_text_data((char*)data);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cfile::unload(void* data)
+	void cfile::unload_binary(void* data)
 	{
 		unload_file_binary_data(data);
 	}

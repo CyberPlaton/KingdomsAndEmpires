@@ -682,7 +682,7 @@ namespace rttr
 	//-		- rttr::detail::as_object
 	//-		- rttr::detail::as_std_shared_ptr
 	//-		- rttr::detail::as_raw_pointer
-	//-		- rttr::detail::no_default (omits registering a default constructor, useful when you do not want one)
+	//-		- rttr::detail::no_default (omits registering a default constructor, useful when you explicitly don´t want one)
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TClass, typename TPolicy = rttr::detail::as_object>
 	class cregistrator
@@ -1142,6 +1142,9 @@ namespace core
 		cmemory(void* data, unsigned size, release_callback_t&& release_callback);
 		~cmemory();
 
+		void* data() const { return m_data; }
+		unsigned size() const { return m_size; }
+
 	private:
 		release_callback_t m_release;
 		unsigned m_size;
@@ -1312,9 +1315,9 @@ namespace core
 
 		static std::future<file_io_status> save_binary_async(const string_t& path, uint8_t* data, unsigned size);
 
-		static void unload(char* data);
+		static void unload_text(uint8_t* data);
 
-		static void unload(void* data);
+		static void unload_binary(void* data);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
