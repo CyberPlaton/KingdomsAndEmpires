@@ -2327,6 +2327,69 @@ namespace core
 		track_allocation(-(padding + header_pointer->m_size), 0);
 	}
 
+	namespace fs
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		cfileinfo::cfileinfo(stringview_t filepath) :
+			std::filesystem::path(filepath.data())
+		{
+			const auto entry = std::filesystem::directory_entry(*this);
+
+			m_directory = entry.is_directory();
+			m_size = SCAST(unsigned, entry.file_size());
+			m_exists = entry.exists();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t cfileinfo::name() const
+		{
+			return base_t::filename().generic_u8string();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t cfileinfo::stem() const
+		{
+			return base_t::stem().generic_u8string();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t cfileinfo::ext() const
+		{
+			return base_t::extension().generic_u8string();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t cfileinfo::absolute_path() const
+		{
+			return base_t::path().generic_u8string();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t cfileinfo::directory_path() const
+		{
+			return base_t::parent_path().generic_u8string();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		unsigned cfileinfo::size() const
+		{
+			return m_size;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cfileinfo::is_file() const
+		{
+			return !is_directory();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cfileinfo::is_directory() const
+		{
+			return m_directory;
+		}
+
+	} //- fs
+
 } //- core
 
 namespace math

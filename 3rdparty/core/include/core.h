@@ -25,6 +25,7 @@ namespace stl = std;
 #include <nlohmann.h>
 #include <../src/simdjson.h>
 #include <../src/tracy.hpp>
+#include <../src/miniz.hpp>
 #include <cstddef>
 #include <memory>
 #include <filesystem>
@@ -237,6 +238,9 @@ using mat3_t = glm::mat3x3;
 using mat4_t = glm::mat4x4;
 using quat_t = glm::quat;
 
+//------------------------------------------------------------------------------------------------------------------------
+using byte_t = uint8_t;
+
 #if defined(core_EXPORTS) && defined(CORE_USE_EASTL)
 //- implementation required for EASTL. The function will be available in any application or plugin
 //- linking to core, the implementation however is only exported to static library.
@@ -343,6 +347,26 @@ namespace core
 		filesystem_lookup_type_directory,
 		filesystem_lookup_type_file,
 		filesystem_lookup_type_any,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum file_mode : uint8_t
+	{
+		file_mode_none = 0,
+		file_mode_read = BIT(1),
+		file_mode_write = BIT(2),
+		file_mode_read_write = file_mode_read | file_mode_write,
+		file_mode_append = BIT(3),
+		file_mode_truncate = BIT(4)
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum file_seek_origin : uint8_t
+	{
+		file_seek_origin_none = 0,
+		file_seek_origin_begin,
+		file_seek_origin_end,
+		file_seek_origin_set
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -2152,6 +2176,106 @@ namespace core
 		uint64_t m_offset;
 		void* m_memory;
 	};
+
+	//- Implementation of a virtual filesystem inspired by
+	//- @refence https://github.com/yevgeniy-logachev/vfspp
+	//------------------------------------------------------------------------------------------------------------------------
+	namespace fs
+	{
+		class ifile;
+		class cfileinfo;
+		class ifilesystem;
+
+		using ifile_t = ref_t<ifile>;
+		using cfileinfo_t = ref_t<cfileinfo>;
+		using ifilesystem_t = ref_t<ifilesystem>;
+
+		//- Class holding general information about a file. Dividing cold and hot data, can also be stored separately where required.
+		//- Contains basically all information currently provided by core::cpath but with a smaller memory footprint.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cfileinfo final : public std::filesystem::path
+		{
+			using base_t = std::filesystem::path;
+		public:
+			explicit cfileinfo(stringview_t filepath);
+			~cfileinfo() = default;
+
+			string_t name() const;
+			string_t stem() const;
+			string_t ext() const;
+			string_t absolute_path() const;
+			string_t directory_path() const;
+			unsigned size() const;
+			bool is_directory() const;
+			bool is_file() const;
+			bool exists() const;
+
+		private:
+			unsigned m_size;
+			bool m_directory;
+			bool m_exists;
+		};
+
+		//- File interface.
+		//------------------------------------------------------------------------------------------------------------------------
+		class ifile
+		{
+		public:
+			virtual cfileinfo_t info()										= 0;
+			virtual unsigned size()											= 0;
+			virtual bool read_only()										= 0;
+			virtual bool opened()											= 0;
+			virtual void open(int file_mode)								= 0;
+			virtual void close()											= 0;
+			virtual unsigned seek(unsigned offset, file_seek_origin origin) = 0;
+			virtual unsigned tell()											= 0;
+			virtual unsigned read(byte_t* buffer, unsigned size)			= 0;
+			virtual unsigned write(const byte_t* buffer, unsigned size)		= 0;
+
+			template<typename TType>
+			bool read(TType& value) { return read(&value, sizeof(TType)) == sizeof(TType); }
+
+			template<typename TType>
+			bool write(const TType& value) { return write(&value, sizeof(TType)) == sizeof(TType); }
+		};
+
+		//- Interface for a file system implemenation.
+		//------------------------------------------------------------------------------------------------------------------------
+		class ifilesystem
+		{
+		public:
+			using filelist_t = uset_t<ifile_t>;
+
+			virtual bool init() = 0;
+			virtual void shutdown() = 0;
+			virtual bool ready() const = 0;
+
+			virtual string_t base_path() const = 0;
+			virtual filelist_t files() const = 0;
+
+			virtual ifile_t open(cfileinfo_t filepath, int file_mode) = 0;
+			virtual void close(ifile_t file) = 0;
+			virtual bool create_file(cfileinfo_t filepath) = 0;
+			virtual bool remove_file(cfileinfo_t filepath) = 0;
+			virtual bool copy_file(cfileinfo_t source, cfileinfo_t dest) = 0;
+			virtual bool rename_file(cfileinfo_t source, cfileinfo_t dest) = 0;
+		};
+
+		//- 
+		//------------------------------------------------------------------------------------------------------------------------
+		class cvirtual_filesystem final : public core::cservice
+		{
+		public:
+
+
+
+		private:
+
+
+			RTTR_ENABLE(core::cservice);
+		};
+
+	} //- fs
 
 } //- core
 
