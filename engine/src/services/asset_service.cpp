@@ -64,13 +64,13 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	stringview_t casset_service::compiled_output_path(stringview_t source_filepath) const
 	{
-
+		return {};
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	engine::casset casset_service::load_asset(stringview_t source_filepath)
 	{
-
+		return {};
 	}
 
 } //- engine

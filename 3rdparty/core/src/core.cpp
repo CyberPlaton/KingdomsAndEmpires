@@ -1004,6 +1004,51 @@ namespace core
 
 	namespace detail
 	{
+		//- Calculate amount of bytes required for the given address to be aligned.
+			//------------------------------------------------------------------------------------------------------------------------
+		inline static uint64_t align_address_forward(uint64_t address, uint64_t alignment)
+		{
+			CORE_ASSERT(alignment > 0, "Invalid operation. Alignment must be greater than 0!");
+
+			auto result = address;
+			const auto modulo = address & (address - 1);
+
+			if (modulo != 0)
+			{
+				result += alignment - modulo;
+			}
+
+			return result;
+		}
+
+		//- Calculate amount of bytes required for the given address to be aligned including the size of the header.
+		//- Note: alignment must be greater than 0.
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename THeader>
+		inline static uint64_t align_address_forward_with_header(uint64_t address, uint64_t alignment)
+		{
+			CORE_ASSERT(alignment > 0, "Invalid operation. Alignment must be greater than 0!");
+
+			auto padding = align_address_forward(address, alignment);
+			auto required_space = sizeof(THeader);
+
+			if (padding < required_space)
+			{
+				//- the header does not fit, so we calculate next aligned address in which it fits
+				required_space -= padding;
+
+				if (required_space % alignment > 0)
+				{
+					padding += alignment * (1u + (required_space / alignment));
+				}
+				else
+				{
+					padding += alignment * (required_space / alignment);
+				}
+			}
+
+			return padding;
+		}
 
 	} //- detail
 
@@ -1286,29 +1331,34 @@ namespace core
 #include <errno.h>
 	typedef CRITICAL_SECTION pthread_mutex_t;
 	typedef unsigned pthread_mutexattr_t;
+	//------------------------------------------------------------------------------------------------------------------------
 	inline int pthread_mutex_lock(pthread_mutex_t* _mutex)
 	{
 		EnterCriticalSection(_mutex);
 		return 0;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	inline int pthread_mutex_unlock(pthread_mutex_t* _mutex)
 	{
 		LeaveCriticalSection(_mutex);
 		return 0;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	inline int pthread_mutex_trylock(pthread_mutex_t* _mutex)
 	{
 		return TryEnterCriticalSection(_mutex) ? 0 : EBUSY;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	inline int pthread_mutex_init(pthread_mutex_t* _mutex, pthread_mutexattr_t* /*_attr*/)
 	{
 		InitializeCriticalSection(_mutex);
 		return 0;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	inline int pthread_mutex_destroy(pthread_mutex_t* _mutex)
 	{
 		DeleteCriticalSection(_mutex);

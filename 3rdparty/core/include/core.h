@@ -15,6 +15,7 @@ namespace stl = eastl;
 #include <deque>
 #include <bitset>
 #include <list>
+#include <stack>
 namespace stl = std;
 #endif
 #include <new>
@@ -26,7 +27,10 @@ namespace stl = std;
 #include <nlohmann.h>
 #include <../src/simdjson.h>
 #include <../src/tracy.hpp>
+namespace miniz
+{
 #include <../src/miniz.hpp>
+}
 #include <cstddef>
 #include <memory>
 #include <filesystem>
@@ -223,6 +227,9 @@ using bitset_t = stl::bitset<TSize>;
 
 template<typename T>
 using list_t = stl::list<T>;
+
+template<typename T>
+using stack_t = stl::stack<T>;
 
 //- defining handles here as they migh have to be registered in RTTR
 //------------------------------------------------------------------------------------------------------------------------
@@ -1559,52 +1566,6 @@ namespace core
 				return n;
 			}
 
-			//- Calculate amount of bytes required for the given address to be aligned.
-			//------------------------------------------------------------------------------------------------------------------------
-			inline static uint64_t align_address_forward(uint64_t address, uint64_t alignment)
-			{
-				CORE_ASSERT(alignment > 0, "Invalid operation. Alignment must be greater than 0!");
-
-				auto result = address;
-				const auto modulo = address & (address - 1);
-
-				if (modulo != 0)
-				{
-					result += alignment - modulo;
-				}
-
-				return result;
-			}
-
-			//- Calculate amount of bytes required for the given address to be aligned including the size of the header.
-			//- Note: alignment must be greater than 0.
-			//------------------------------------------------------------------------------------------------------------------------
-			template<typename THeader>
-			inline static uint64_t align_address_forward_with_header(uint64_t address, uint64_t alignment)
-			{
-				CORE_ASSERT(alignment > 0, "Invalid operation. Alignment must be greater than 0!");
-
-				auto padding = align_address_forward(address, alignment);
-				auto required_space = sizeof(THeader);
-
-				if (padding < required_space)
-				{
-					//- the header does not fit, so we calculate next aligned address in which it fits
-					required_space -= padding;
-
-					if (required_space % alignment > 0)
-					{
-						padding += alignment * (1u + (required_space / alignment));
-					}
-					else
-					{
-						padding += alignment * (required_space / alignment);
-					}
-				}
-
-				return padding;
-			}
-
 			//------------------------------------------------------------------------------------------------------------------------
 			inline static uint64_t memloc(void* m)
 			{
@@ -1616,8 +1577,6 @@ namespace core
 			{
 				return (reinterpret_cast<uint64_t>(m) - reinterpret_cast<uint64_t>(start)) / object_size;
 			}
-
-
 
 		}//- unnamed
 
@@ -2195,6 +2154,122 @@ namespace core
 		uint64_t m_offset;
 		void* m_memory;
 	};
+
+	//- Allocator managing a pool of fixed-size memory blocks.
+	//- Note: does not use alignment and size for allocation, they are left for compatability.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	class cpool_allocator final : public iallocator
+	{
+	public:
+		cpool_allocator(uint64_t object_count);
+		~cpool_allocator();
+
+		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
+		void deallocate(void* ptr) override final;
+
+		TType* allocate();
+
+		template<typename... ARGS>
+		TType* allocate(ARGS&&... args);
+
+		void deallocate(TType* object);
+
+	private:
+		stack_t<void*> m_free_list;
+		unsigned m_type_size;
+		void* m_memory;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	template<typename... ARGS>
+	TType* core::cpool_allocator<TType>::allocate(ARGS&&... args)
+	{
+		TType* object = (TType*)allocate(0, 0);
+
+		return iallocator::construct(object, std::forward<ARGS>(args)...);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	void core::cpool_allocator<TType>::deallocate(TType* object)
+	{
+		iallocator::destroy(object);
+
+		deallocate((void*)object);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	TType* core::cpool_allocator<TType>::allocate()
+	{
+		TType* object = (TType*)allocate(0, 0);
+
+		return iallocator::construct(object);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	core::cpool_allocator<TType>::cpool_allocator(uint64_t object_count) :
+		m_memory(nullptr), m_type_size(SCAST(unsigned, sizeof(TType)))
+	{
+		const auto size = m_type_size * object_count;
+
+		//- real allocation
+		m_memory = CORE_MALLOC(size);
+
+		init(size);
+
+		//- divide mapped memory up into usable blocks of memory chunks
+		for (uint64_t i = 0; i < object_count; ++i)
+		{
+			uint64_t p = RCAST(uint64_t, m_memory) + i * m_type_size;
+
+			void* pointer = RCAST(void*, p);
+
+			m_free_list.push(pointer);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	core::cpool_allocator<TType>::~cpool_allocator()
+	{
+		//- real deallocation
+		CORE_ASSERT(m_used_size == 0, "Invalid operation. Objects were not deallocated and are still in use!");
+
+		CORE_FREE(m_memory);
+
+		m_memory = nullptr;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	void* core::cpool_allocator<TType>::allocate(uint64_t /*size*/, uint64_t /*alignment*/ /*= iallocator::C_ALIGNMENT*/)
+	{
+		void* pointer = nullptr;
+
+		if (!m_free_list.empty())
+		{
+			pointer = m_free_list.top();
+
+			m_free_list.pop();
+
+			track_allocation(m_type_size, 0);
+		}
+
+		return pointer;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	void core::cpool_allocator<TType>::deallocate(void* ptr)
+	{
+		m_free_list.push(ptr);
+
+		track_allocation(-m_type_size, 0);
+	}
 
 	//- Implementation of a virtual filesystem inspired by
 	//- @refence https://github.com/yevgeniy-logachev/vfspp
