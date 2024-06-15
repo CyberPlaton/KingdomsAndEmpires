@@ -14,6 +14,7 @@ namespace stl = eastl;
 #include <queue>
 #include <deque>
 #include <bitset>
+#include <list>
 namespace stl = std;
 #endif
 #include <new>
@@ -184,39 +185,44 @@ namespace core
 	class clinear_allocator;
 	class cstring;
 	class cstringview;
+	class cmemory;
 
 } //- core
 
-template<class T>
+template<typename T>
 using ref_t = std::shared_ptr<T>;
-template<class T>
+
+template<typename T>
 using ptr_t = std::unique_ptr<T>;
 using stringview_t = stl::string_view;
 using string_t = stl::string;
 
-template<class T>
+template<typename T>
 using queue_t = stl::queue<T>;
 
-template<class T>
+template<typename T>
 using vector_t = stl::vector<T>;
 
-template<class K, class T>
+template<typename K, typename T>
 using umap_t = stl::unordered_map<K, T>;
 
-template<class T>
+template<typename T>
 using uset_t = stl::unordered_set<T>;
 
-template<class K, class T>
+template<typename K, typename T>
 using map_t = stl::map<K, T>;
 
-template<class T, size_t S>
+template<typename T, size_t S>
 using array_t = stl::array<T, S>;
 
-template<class T>
+template<typename T>
 using deque_t = stl::deque<T>;
 
 template<size_t TSize>
 using bitset_t = stl::bitset<TSize>;
+
+template<typename T>
+using list_t = stl::list<T>;
 
 //- defining handles here as they migh have to be registered in RTTR
 //------------------------------------------------------------------------------------------------------------------------
@@ -240,6 +246,7 @@ using quat_t = glm::quat;
 
 //------------------------------------------------------------------------------------------------------------------------
 using byte_t = uint8_t;
+using memory_ref_t = ref_t<core::cmemory>;
 
 #if defined(core_EXPORTS) && defined(CORE_USE_EASTL)
 //- implementation required for EASTL. The function will be available in any application or plugin
@@ -358,6 +365,14 @@ namespace core
 		file_mode_read_write = file_mode_read | file_mode_write,
 		file_mode_append = BIT(3),
 		file_mode_truncate = BIT(4)
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum file_state : uint8_t
+	{
+		file_state_none = 0,
+		file_state_opened = BIT(1),
+		file_state_read_only = BIT(2),
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -844,6 +859,8 @@ namespace core
 		size_t find_substr(const string_t& string, const string_t& substring);
 		bool does_substr_exist(const string_t& string, const string_t& substring);
 		bool compare(const string_t& first, const string_t& second);
+		bool starts_with(stringview_t string, stringview_t substr);
+		bool ends_with(stringview_t string, stringview_t substr);
 
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static bool is_in_range(char c, char from, char to)
@@ -1161,11 +1178,13 @@ namespace core
 	public:
 		using release_callback_t = std::function<void(void*)>;
 
-		static ref_t<cmemory> make_ref(void* data, unsigned size, release_callback_t&& release_callback);
+		static memory_ref_t make_ref(void* data, unsigned size, release_callback_t&& release_callback);
 
+		cmemory(unsigned size, release_callback_t&& release_callback);
 		cmemory(void* data, unsigned size, release_callback_t&& release_callback);
 		~cmemory();
 
+		void* data() { return m_data; }
 		void* data() const { return m_data; }
 		unsigned size() const { return m_size; }
 
@@ -2186,9 +2205,9 @@ namespace core
 		class cfileinfo;
 		class ifilesystem;
 
-		using ifile_t = ref_t<ifile>;
-		using cfileinfo_t = ref_t<cfileinfo>;
-		using ifilesystem_t = ref_t<ifilesystem>;
+		using file_ref_t = ref_t<ifile>;
+		using fileinfo_ref_t = ref_t<cfileinfo>;
+		using filesystem_ref_t = ref_t<ifilesystem>;
 
 		//- Class holding general information about a file. Dividing cold and hot data, can also be stored separately where required.
 		//- Contains basically all information currently provided by core::cpath but with a smaller memory footprint.
@@ -2216,12 +2235,12 @@ namespace core
 			bool m_exists;
 		};
 
-		//- File interface.
+		//- File interface. For some functionality you can use enums file_state and file_mode
 		//------------------------------------------------------------------------------------------------------------------------
 		class ifile
 		{
 		public:
-			virtual cfileinfo_t info()										= 0;
+			virtual fileinfo_ref_t info()									= 0;
 			virtual unsigned size()											= 0;
 			virtual bool read_only()										= 0;
 			virtual bool opened()											= 0;
@@ -2229,8 +2248,8 @@ namespace core
 			virtual void close()											= 0;
 			virtual unsigned seek(unsigned offset, file_seek_origin origin) = 0;
 			virtual unsigned tell()											= 0;
-			virtual unsigned read(byte_t* buffer, unsigned size)			= 0;
-			virtual unsigned write(const byte_t* buffer, unsigned size)		= 0;
+			virtual unsigned read(byte_t* buffer, unsigned datasize)		= 0;
+			virtual unsigned write(const byte_t* buffer, unsigned datasize)	= 0;
 
 			template<typename TType>
 			bool read(TType& value) { return read(&value, sizeof(TType)) == sizeof(TType); }
@@ -2244,38 +2263,53 @@ namespace core
 		class ifilesystem
 		{
 		public:
-			using filelist_t = uset_t<ifile_t>;
+			using filelist_t = uset_t<file_ref_t>;
 
-			virtual bool init() = 0;
-			virtual void shutdown() = 0;
-			virtual bool ready() const = 0;
+			virtual bool init()														= 0;
+			virtual void shutdown()													= 0;
+			virtual bool ready() const												= 0;
 
-			virtual string_t base_path() const = 0;
-			virtual filelist_t files() const = 0;
+			virtual string_t base_path() const										= 0;
+			virtual filelist_t files() const										= 0;
 
-			virtual ifile_t open(cfileinfo_t filepath, int file_mode) = 0;
-			virtual void close(ifile_t file) = 0;
-			virtual bool create_file(cfileinfo_t filepath) = 0;
-			virtual bool remove_file(cfileinfo_t filepath) = 0;
-			virtual bool copy_file(cfileinfo_t source, cfileinfo_t dest) = 0;
-			virtual bool rename_file(cfileinfo_t source, cfileinfo_t dest) = 0;
+			virtual file_ref_t open(fileinfo_ref_t filepath, int file_mode)			= 0;
+			virtual void close(file_ref_t file)										= 0;
+			virtual bool create_file(fileinfo_ref_t filepath)						= 0;
+			virtual bool remove_file(fileinfo_ref_t filepath)						= 0;
+			virtual bool copy_file(fileinfo_ref_t source, fileinfo_ref_t dest)		= 0;
+			virtual bool rename_file(fileinfo_ref_t source, fileinfo_ref_t dest)	= 0;
 		};
 
-		//- 
+		//- Virtual file system implementation.
 		//------------------------------------------------------------------------------------------------------------------------
 		class cvirtual_filesystem final : public core::cservice
 		{
 		public:
+			STATIC_INSTANCE_EX(cvirtual_filesystem);
 
+			cvirtual_filesystem();
+			~cvirtual_filesystem();
 
+			void add_filesystem(stringview_t alias, filesystem_ref_t filesystem);
+			void remove_filesystem(stringview_t alias);
+			bool does_filesystem_exists(stringview_t alias) const;
+			filesystem_ref_t find_filesystem(stringview_t alias) const;
+			file_ref_t open(fileinfo_ref_t filepath, int file_mode);
+			void close(file_ref_t file);
 
 		private:
-
+			umap_t<string_t, filesystem_ref_t> m_filesystems;
+			umap_t<uint64_t, filesystem_ref_t> m_opened_files;
+			map_t<string_t, filesystem_ref_t> m_sorted_aliases;
 
 			RTTR_ENABLE(core::cservice);
 		};
 
 	} //- fs
+
+	//- Shortcut to access the virtual file system.
+	//------------------------------------------------------------------------------------------------------------------------
+	using vfs = fs::cvirtual_filesystem;
 
 } //- core
 
@@ -2283,13 +2317,13 @@ namespace events
 {
 	namespace window
 	{
-		struct sresize { int w = 0; int h = 0;};
-		struct sminimize {};
-		struct sunminimize {};
-		struct shide {};
-		struct sunhide {};
-		struct sfocus {};
-		struct sunfocus {};
+		struct sresize		{ int w = 0; int h = 0; };
+		struct sminimize	{};
+		struct sunminimize	{};
+		struct shide		{};
+		struct sunhide		{};
+		struct sfocus		{};
+		struct sunfocus		{};
 
 	} //- window
 

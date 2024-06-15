@@ -980,6 +980,26 @@ namespace core
 			return first == second;
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		bool starts_with(stringview_t string, stringview_t substr)
+		{
+			if (string.length() >= substr.length())
+			{
+				return string.compare(string.length() - substr.length(), substr.length(), substr.data()) == 0;
+			}
+			return false;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ends_with(stringview_t string, stringview_t substr)
+		{
+			if (string.length() >= substr.length())
+			{
+				return string.compare(0, substr.length(), substr.data()) == 0;
+			}
+			return false;
+		}
+
 	} //- string_utils
 
 	namespace detail
@@ -1343,6 +1363,14 @@ namespace core
 	cmemory::cmemory(void* data, unsigned size, release_callback_t&& release_callback) :
 		m_release(std::move(release_callback)), m_size(size), m_data(data)
 	{
+	}
+
+	//- Allocate a piece of memory with requested size
+	//------------------------------------------------------------------------------------------------------------------------
+	cmemory::cmemory(unsigned size, release_callback_t&& release_callback) :
+		m_release(std::move(release_callback)), m_size(size), m_data(CORE_MALLOC(size))
+	{
+		CORE_ASSERT(m_size > 0 && m_data, "Invalid operation. Either empty memory or invalid memory requested!");
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -2386,6 +2414,164 @@ namespace core
 		bool cfileinfo::is_directory() const
 		{
 			return m_directory;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		cvirtual_filesystem::cvirtual_filesystem()
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(logging_verbosity_info, "Virtual File System created");
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		cvirtual_filesystem::~cvirtual_filesystem()
+		{
+			std::for_each(m_filesystems.begin(), m_filesystems.end(), [](const auto& pair)
+				{
+					pair.second->shutdown();
+				});
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cvirtual_filesystem::add_filesystem(stringview_t alias, filesystem_ref_t filesystem)
+		{
+			if (filesystem)
+			{
+				string_t _alias = alias.data();
+
+				if (!core::string_utils::ends_with(_alias, "/"))
+				{
+					_alias += "/";
+				}
+
+				if (const auto it = m_filesystems.find(_alias); it == m_filesystems.end())
+				{
+					m_filesystems[_alias] = filesystem;
+					m_sorted_aliases[_alias] = filesystem;
+
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(logging_verbosity_info,
+							fmt::format("Filesystem alias '{}' added to Virtual File System", _alias));
+					}
+				}
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cvirtual_filesystem::remove_filesystem(stringview_t alias)
+		{
+			string_t _alias = alias.data();
+
+			if (!core::string_utils::ends_with(_alias, "/"))
+			{
+				_alias += "/";
+			}
+
+			if (const auto it = m_filesystems.find(_alias); it != m_filesystems.end())
+			{
+				m_filesystems.erase(it);
+			}
+
+			if (const auto it = m_sorted_aliases.find(_alias); it != m_sorted_aliases.end())
+			{
+				m_sorted_aliases.erase(it);
+			}
+
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(logging_verbosity_info,
+					fmt::format("Filesystem alias '{}' removed from Virtual File System", _alias));
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cvirtual_filesystem::does_filesystem_exists(stringview_t alias) const
+		{
+			return m_filesystems.find(alias.data()) != m_filesystems.end();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::fs::filesystem_ref_t cvirtual_filesystem::find_filesystem(stringview_t alias) const
+		{
+			return m_filesystems.at(alias.data());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::fs::file_ref_t cvirtual_filesystem::open(fileinfo_ref_t filepath, int file_mode)
+		{
+			file_ref_t file = nullptr;
+
+			if (std::all_of(m_sorted_aliases.begin(), m_sorted_aliases.end(), [&](const auto& pair)
+				{
+					const auto& path = pair.first;
+					const auto& filesystem = pair.second;
+
+					if (core::string_utils::starts_with(filepath->name(), path) &&
+						filepath->absolute_path().length() != path.length())
+					{
+						file = filesystem->open(filepath, file_mode);
+					}
+
+					if (file)
+					{
+						uint64_t address = RCAST(uint64_t, (void*)file.get());
+						m_opened_files[address] = filesystem;
+
+						//- Opened file. Stop.
+						return false;
+					}
+					//- Did not find file. Proceed.
+					return true;
+				}))
+			{
+				//- report success or failure
+				if (serror_reporter::instance().m_callback)
+				{
+					if (file)
+					{
+						serror_reporter::instance().m_callback(logging_verbosity_info,
+							fmt::format("Successfully opening file '{}' with mode '{}'", filepath->name(), file_mode));
+					}
+					else
+					{
+						serror_reporter::instance().m_callback(logging_verbosity_warn,
+							fmt::format("Failed opening file '{}' with mode '{}'", filepath->name(), file_mode));
+					}
+				}
+			}
+
+			return file;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cvirtual_filesystem::close(file_ref_t file)
+		{
+			uint64_t address = RCAST(uint64_t, (void*)file.get());
+
+			if (const auto it = m_opened_files.find(address); it != m_opened_files.end())
+			{
+				//- Close file and erase from storage
+				it->second->close(file);
+
+				m_opened_files.erase(it);
+
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(logging_verbosity_info,
+						fmt::format("Successfully closed file '{}'", file->info()->name()));
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(logging_verbosity_warn,
+						fmt::format("Failed closing file '{}'", file->info()->name()));
+				}
+			}
 		}
 
 	} //- fs
