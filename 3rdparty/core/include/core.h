@@ -255,7 +255,7 @@ using quat_t = glm::quat;
 using byte_t = uint8_t;
 using memory_ref_t = ref_t<core::cmemory>;
 
-#if defined(core_EXPORTS) && defined(CORE_USE_EASTL)
+#if defined(core_EXPORTS) /*&& defined(CORE_USE_EASTL)*/
 //- implementation required for EASTL. The function will be available in any application or plugin
 //- linking to core, the implementation however is only exported to static library.
 //- Note: using mi_aligned_alloc and mi_alloc seems to break something while using with EASTL and
@@ -722,7 +722,8 @@ namespace rttr
 
 	//- Utility class for RTTR registration. Adds a default constructor.
 	//- Intended for classes. Use the class_() function to register metas etc.
-	//- We do not check for duplicate registrations as those might be a side-effect of REFLECT_INLINE() usage.
+	//- We do not check for duplicate registrations as those might be a side-effect of REFLECT_INLINE() usage,
+	//- just be aware that the latest registration can override a previous one with same type name.
 	//-
 	//- TPolicy can be one of
 	//-		- rttr::detail::as_object
@@ -2168,10 +2169,10 @@ namespace core
 		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
 		void deallocate(void* ptr) override final;
 
-		TType* allocate();
+		TType* allocate_object();
 
 		template<typename... ARGS>
-		TType* allocate(ARGS&&... args);
+		TType* allocate_object_with(ARGS&&... args);
 
 		void deallocate(TType* object);
 
@@ -2184,9 +2185,9 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
 	template<typename... ARGS>
-	TType* core::cpool_allocator<TType>::allocate(ARGS&&... args)
+	TType* core::cpool_allocator<TType>::allocate_object_with(ARGS&&... args)
 	{
-		TType* object = (TType*)allocate(0, 0);
+		TType* object = (TType*)allocate(0);
 
 		return iallocator::construct(object, std::forward<ARGS>(args)...);
 	}
@@ -2202,9 +2203,9 @@ namespace core
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
-	TType* core::cpool_allocator<TType>::allocate()
+	TType* core::cpool_allocator<TType>::allocate_object()
 	{
-		TType* object = (TType*)allocate(0, 0);
+		TType* object = (TType*)allocate(0);
 
 		return iallocator::construct(object);
 	}
