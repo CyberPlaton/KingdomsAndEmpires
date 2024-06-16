@@ -5,7 +5,7 @@ function plugin_module_example()
 					{},
 					{},
 					{"plugin_logging", "test", "test2"},
-					{"EASTL", "spdlog", "core", "flecs", "spritemancer", "spritemancer"},
+					{"spdlog", "core", "flecs", "spritemancer", "spritemancer"},
 					{},
 					{"nlohmann", "magic_enum", "taskflow", "argparse", "glm", "Tracy"},
 					{},

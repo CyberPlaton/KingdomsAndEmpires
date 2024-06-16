@@ -5,7 +5,7 @@ function plugin_render_system()
 					{},
 					{},
 					{"plugin_logging"},
-					{"EASTL", "spdlog", "core", "flecs", "spritemancer"},
+					{"spdlog", "core", "flecs", "spritemancer"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

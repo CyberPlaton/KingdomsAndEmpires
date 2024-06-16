@@ -4,7 +4,7 @@ VERBOSE = true
 SCRIPTS_DIR = "<undefined>"
 VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
-THIRDPARTY = {"spdlog", "core", "glm", "EASTL", "argparse", "nlohmann",
+THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann",
 			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua",
 			  "Tracy", "slang", "spritemancer", "tree_sitter"}
 PLUGINS = {"test", "test2", "plugin_logging", "plugin_module_example",

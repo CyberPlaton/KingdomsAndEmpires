@@ -1,11 +1,5 @@
 #pragma once
 #include <core/platform.hpp>
-#if defined(CORE_USE_EASTL)
-//- Note: if you decide to use EASTL, make sure that you are ready
-//- to integrate all of them used structures to RTTR
-#include <eastl.h>
-namespace stl = eastl;
-#else
 #include <vector>
 #include <array>
 #include <map>
@@ -17,7 +11,6 @@ namespace stl = eastl;
 #include <list>
 #include <stack>
 namespace stl = std;
-#endif
 #include <new>
 #include <glm.h>
 #include <magic_enum.h>
@@ -254,25 +247,6 @@ using quat_t = glm::quat;
 //------------------------------------------------------------------------------------------------------------------------
 using byte_t = uint8_t;
 using memory_ref_t = ref_t<core::cmemory>;
-
-#if defined(core_EXPORTS) /*&& defined(CORE_USE_EASTL)*/
-//- implementation required for EASTL. The function will be available in any application or plugin
-//- linking to core, the implementation however is only exported to static library.
-//- Note: using mi_aligned_alloc and mi_alloc seems to break something while using with EASTL and
-//- freeing arrays does not work, using malloc is fine however.
-//------------------------------------------------------------------------------------------------------------------------
-void* operator new[](size_t size, const char* pName, int flags, unsigned debugFlags, const char* file, int line)
-{
-	return CORE_MALLOC(size);
-}
-
-//------------------------------------------------------------------------------------------------------------------------
-void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned debugFlags,
-	const char* file, int line)
-{
-	return CORE_MALLOC(size);
-}
-#endif
 
 namespace rttr
 {
