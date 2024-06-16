@@ -340,20 +340,21 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	enum file_mode : uint8_t
 	{
-		file_mode_none = 0,
-		file_mode_read = BIT(1),
-		file_mode_write = BIT(2),
-		file_mode_read_write = file_mode_read | file_mode_write,
-		file_mode_append = BIT(3),
-		file_mode_truncate = BIT(4)
+		file_mode_none			= 0,
+		file_mode_read			= BIT(1),
+		file_mode_write			= BIT(2),
+		file_mode_read_write	= file_mode_read | file_mode_write,
+		file_mode_append		= BIT(3),
+		file_mode_truncate		= BIT(4)
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum file_state : uint8_t
 	{
-		file_state_none = 0,
-		file_state_opened = BIT(1),
-		file_state_read_only = BIT(2),
+		file_state_none			= 0,
+		file_state_opened		= BIT(1),
+		file_state_read_only	= BIT(2),
+		file_state_has_changes	= BIT(3),
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -2256,7 +2257,7 @@ namespace core
 		class ifilesystem;
 
 		using file_ref_t = ref_t<ifile>;
-		using fileinfo_ref_t = ref_t<cfileinfo>;
+		using filelist_t = uset_t<file_ref_t>;
 		using filesystem_ref_t = ref_t<ifilesystem>;
 
 		//- Class holding general information about a file. Dividing cold and hot data, can also be stored separately where required.
@@ -2266,6 +2267,7 @@ namespace core
 		{
 			using base_t = std::filesystem::path;
 		public:
+			explicit cfileinfo(const cfileinfo& other);
 			explicit cfileinfo(stringview_t filepath);
 			~cfileinfo() = default;
 
@@ -2290,7 +2292,7 @@ namespace core
 		class ifile
 		{
 		public:
-			virtual fileinfo_ref_t info()									= 0;
+			virtual const cfileinfo& info() const							= 0;
 			virtual unsigned size()											= 0;
 			virtual bool read_only()										= 0;
 			virtual bool opened()											= 0;
@@ -2313,21 +2315,20 @@ namespace core
 		class ifilesystem
 		{
 		public:
-			using filelist_t = uset_t<file_ref_t>;
-
 			virtual bool init()														= 0;
 			virtual void shutdown()													= 0;
 			virtual bool ready() const												= 0;
 
 			virtual string_t base_path() const										= 0;
 			virtual filelist_t files() const										= 0;
+			virtual bool does_exist(const cfileinfo& filepath) const				= 0;
 
-			virtual file_ref_t open(fileinfo_ref_t filepath, int file_mode)			= 0;
+			virtual file_ref_t open(const cfileinfo& filepath, int file_mode)		= 0;
 			virtual void close(file_ref_t file)										= 0;
-			virtual bool create_file(fileinfo_ref_t filepath)						= 0;
-			virtual bool remove_file(fileinfo_ref_t filepath)						= 0;
-			virtual bool copy_file(fileinfo_ref_t source, fileinfo_ref_t dest)		= 0;
-			virtual bool rename_file(fileinfo_ref_t source, fileinfo_ref_t dest)	= 0;
+			virtual bool create_file(const cfileinfo& filepath)						= 0;
+			virtual bool remove_file(const cfileinfo& filepath)						= 0;
+			virtual bool copy_file(const cfileinfo& source, const cfileinfo& dest)	= 0;
+			virtual bool rename_file(const cfileinfo& source, const cfileinfo& dest)= 0;
 		};
 
 		//- Virtual file system implementation.
@@ -2344,7 +2345,7 @@ namespace core
 			void remove_filesystem(stringview_t alias);
 			bool does_filesystem_exists(stringview_t alias) const;
 			filesystem_ref_t find_filesystem(stringview_t alias) const;
-			file_ref_t open(fileinfo_ref_t filepath, int file_mode);
+			file_ref_t open(const cfileinfo& filepath, int file_mode);
 			void close(file_ref_t file);
 
 		private:

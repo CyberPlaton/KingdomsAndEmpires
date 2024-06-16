@@ -3,7 +3,7 @@
 namespace io
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	cmemory_file::cmemory_file(core::fs::fileinfo_ref_t filepath) :
+	cmemory_file::cmemory_file(const core::fs::cfileinfo& filepath) :
 		m_info(filepath), m_state(core::file_state_read_only), m_mode(core::file_mode_none), m_seek_position(0)
 	{
 	}
@@ -15,7 +15,7 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::fs::fileinfo_ref_t cmemory_file::info()
+	const core::fs::cfileinfo& cmemory_file::info() const
 	{
 		return m_info;
 	}

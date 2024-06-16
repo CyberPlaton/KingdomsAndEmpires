@@ -2419,6 +2419,12 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		cfileinfo::cfileinfo(const cfileinfo& other) :
+			std::filesystem::path(other.generic_u8string()), m_directory(other.m_directory), m_exists(other.m_exists), m_size(other.m_size)
+		{
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		string_t cfileinfo::name() const
 		{
 			return base_t::filename().generic_u8string();
@@ -2583,12 +2589,12 @@ namespace core
 					if (file)
 					{
 						serror_reporter::instance().m_callback(logging_verbosity_info,
-							fmt::format("Successfully opening file '{}' with mode '{}'", filepath->name(), file_mode));
+							fmt::format("Successfully opening file '{}' with mode '{}'", filepath.name(), file_mode));
 					}
 					else
 					{
 						serror_reporter::instance().m_callback(logging_verbosity_warn,
-							fmt::format("Failed opening file '{}' with mode '{}'", filepath->name(), file_mode));
+							fmt::format("Failed opening file '{}' with mode '{}'", filepath.name(), file_mode));
 					}
 				}
 			}
@@ -2611,7 +2617,7 @@ namespace core
 				if (serror_reporter::instance().m_callback)
 				{
 					serror_reporter::instance().m_callback(logging_verbosity_info,
-						fmt::format("Successfully closed file '{}'", file->info()->name()));
+						fmt::format("Successfully closed file '{}'", file->info().name()));
 				}
 			}
 			else
@@ -2619,7 +2625,7 @@ namespace core
 				if (serror_reporter::instance().m_callback)
 				{
 					serror_reporter::instance().m_callback(logging_verbosity_warn,
-						fmt::format("Failed closing file '{}'", file->info()->name()));
+						fmt::format("Failed closing file '{}'", file->info().name()));
 				}
 			}
 		}
