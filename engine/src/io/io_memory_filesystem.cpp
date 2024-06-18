@@ -2,15 +2,9 @@
 
 namespace io
 {
-	namespace
-	{
-		constexpr stringview_t C_BASE_PATH = "/";
-
-	} //- unnamed
-
 	//------------------------------------------------------------------------------------------------------------------------
 	cmemory_filesystem::cmemory_filesystem() :
-		m_ready(false)
+		m_basepath({}), m_ready(false)
 	{
 	}
 
@@ -21,17 +15,20 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cmemory_filesystem::init()
+	bool cmemory_filesystem::init(stringview_t basepath)
 	{
+		m_basepath.assign(basepath.data());
 		m_ready = true;
-		return true;
+
+		return m_ready;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmemory_filesystem::shutdown()
 	{
-		m_file_list.clear();
 		m_ready = false;
+		m_file_list.clear();
+		m_basepath.clear();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -43,7 +40,7 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	string_t cmemory_filesystem::base_path() const
 	{
-		return C_BASE_PATH.data();
+		return m_basepath;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -55,20 +52,20 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmemory_filesystem::does_exist(const core::fs::cfileinfo& filepath) const
 	{
-
+		return find_file(filepath) != nullptr;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::fs::file_ref_t cmemory_filesystem::open(const core::fs::cfileinfo& filepath, int file_mode)
 	{
-		using namespace core::fs;
+		core::fs::cfileinfo info(base_path(), filepath.path());
 
-		file_ref_t file = find_file(filepath);
+		auto file = find_file(filepath);
 		const auto exists = (file != nullptr);
 
 		if (!exists)
 		{
-			file = std::move(std::make_shared<cmemory_file>(filepath));
+			file = std::move(std::make_shared<cmemory_file>(info));
 		}
 
 		file->open(file_mode);
@@ -118,25 +115,62 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmemory_filesystem::remove_file(const core::fs::cfileinfo& filepath)
 	{
+		auto result = true;
 
+		if (const auto file = find_file(filepath); file)
+		{
+			m_file_list.erase(file);
+		}
+
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmemory_filesystem::copy_file(const core::fs::cfileinfo& source, const core::fs::cfileinfo& dest)
 	{
+		auto result = false;
 
+		auto source_file = std::static_pointer_cast<cmemory_file>(find_file(source));
+		auto dest_file = std::static_pointer_cast<cmemory_file>(open(dest, core::file_mode_write));
+
+		if (source_file && dest_file)
+		{
+			dest_file->m_memory.assign(source_file->m_memory.begin(), source_file->m_memory.end());
+			dest_file->close();
+
+			result = true;
+		}
+
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmemory_filesystem::rename_file(const core::fs::cfileinfo& source, const core::fs::cfileinfo& dest)
 	{
+		auto result = copy_file(source, dest);
 
+		if (result)
+		{
+			result = remove_file(source);
+		}
+
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::fs::file_ref_t cmemory_filesystem::find_file(const core::fs::cfileinfo& fileinfo) const
 	{
+		const auto it = algorithm::find_if(m_file_list.begin(), m_file_list.end(), [&](const core::fs::file_ref_t& file)
+			{
+				return file->info() == fileinfo;
+			});
 
+		if (it != m_file_list.end())
+		{
+			return *it;
+		}
+
+		return nullptr;
 	}
 
 } //- io

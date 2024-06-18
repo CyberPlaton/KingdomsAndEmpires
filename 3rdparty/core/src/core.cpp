@@ -981,7 +981,7 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool starts_with(stringview_t string, stringview_t substr)
+		bool ends_with(stringview_t string, stringview_t substr)
 		{
 			if (string.length() >= substr.length())
 			{
@@ -991,7 +991,7 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bool ends_with(stringview_t string, stringview_t substr)
+		bool starts_with(stringview_t string, stringview_t substr)
 		{
 			if (string.length() >= substr.length())
 			{
@@ -2411,17 +2411,44 @@ namespace core
 		cfileinfo::cfileinfo(stringview_t filepath) :
 			std::filesystem::path(filepath.data())
 		{
-			const auto entry = std::filesystem::directory_entry(*this);
-
-			m_directory = entry.is_directory();
-			m_size = SCAST(unsigned, entry.file_size());
-			m_exists = entry.exists();
+			init();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		cfileinfo::cfileinfo(const cfileinfo& other) :
 			std::filesystem::path(other.generic_u8string()), m_directory(other.m_directory), m_exists(other.m_exists), m_size(other.m_size)
 		{
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		cfileinfo::cfileinfo(stringview_t basepath, stringview_t filepath) :
+			std::filesystem::path(fmt::format("{}{}", basepath.data(), filepath.data()))
+		{
+			init();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cfileinfo::init()
+		{
+			const auto entry = std::filesystem::directory_entry(*this);
+
+			m_directory = entry.is_directory();
+			m_exists = entry.exists();
+
+			//- std::filesystem throws on errors
+			try
+			{
+				m_size = SCAST(unsigned, entry.file_size());
+			}
+			catch (...)
+			{
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t cfileinfo::path() const
+		{
+			return base_t::generic_u8string();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -2464,6 +2491,13 @@ namespace core
 		bool cfileinfo::is_file() const
 		{
 			return !is_directory();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cfileinfo::operator==(const cfileinfo& other) const
+		{
+			return m_size == other.m_size && m_directory == other.m_directory && m_exists == other.m_exists &&
+				generic_u8string().compare(other.generic_u8string()) == 0;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -2556,7 +2590,7 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		core::fs::file_ref_t cvirtual_filesystem::open(fileinfo_ref_t filepath, int file_mode)
+		core::fs::file_ref_t cvirtual_filesystem::open(const cfileinfo& filepath, int file_mode)
 		{
 			file_ref_t file = nullptr;
 
@@ -2565,8 +2599,8 @@ namespace core
 					const auto& path = pair.first;
 					const auto& filesystem = pair.second;
 
-					if (core::string_utils::starts_with(filepath->name(), path) &&
-						filepath->absolute_path().length() != path.length())
+					if (core::string_utils::starts_with(filepath.path(), path) &&
+						filepath.absolute_path().length() != path.length())
 					{
 						file = filesystem->open(filepath, file_mode);
 					}

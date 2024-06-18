@@ -46,7 +46,7 @@ namespace io
 		unsigned write(const byte_t* buffer, unsigned datasize) override final;
 
 	private:
-		core::fs::fileinfo_ref_t m_info;
+		core::fs::cfileinfo m_info;
 		detail::zipfile_ref_t m_zip;
 		vector_t<uint8_t> m_memory;
 		int m_state;	//- bitwise concated core::file_state

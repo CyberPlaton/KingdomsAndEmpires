@@ -85,7 +85,7 @@ namespace io
 			algorithm::bit_set(open_mode, std::fstream::trunc);
 		}
 
-		m_stream.open(info()->absolute_path().c_str(), open_mode);
+		m_stream.open(info().absolute_path().c_str(), open_mode);
 
 		if (m_stream.is_open())
 		{

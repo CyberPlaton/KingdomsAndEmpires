@@ -11,7 +11,7 @@ namespace io
 		cmemory_filesystem();
 		~cmemory_filesystem();
 
-		bool init() override final;
+		bool init(stringview_t basepath) override final;
 		void shutdown() override final;
 		bool ready() const override final;
 
@@ -28,6 +28,7 @@ namespace io
 
 	private:
 		core::fs::filelist_t m_file_list;
+		string_t m_basepath;
 		bool m_ready;
 
 	private:

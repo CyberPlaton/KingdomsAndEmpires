@@ -2267,10 +2267,12 @@ namespace core
 		{
 			using base_t = std::filesystem::path;
 		public:
-			explicit cfileinfo(const cfileinfo& other);
-			explicit cfileinfo(stringview_t filepath);
+			cfileinfo(const cfileinfo& other);
+			cfileinfo(stringview_t basepath, stringview_t filepath);
+			cfileinfo(stringview_t filepath);
 			~cfileinfo() = default;
 
+			string_t path() const;
 			string_t name() const;
 			string_t stem() const;
 			string_t ext() const;
@@ -2281,10 +2283,15 @@ namespace core
 			bool is_file() const;
 			bool exists() const;
 
+			bool operator==(const cfileinfo& other) const;
+
 		private:
 			unsigned m_size;
 			bool m_directory;
 			bool m_exists;
+
+		private:
+			void init();
 		};
 
 		//- File interface. For some functionality you can use enums file_state and file_mode
@@ -2315,7 +2322,7 @@ namespace core
 		class ifilesystem
 		{
 		public:
-			virtual bool init()														= 0;
+			virtual bool init(stringview_t basepath)								= 0;
 			virtual void shutdown()													= 0;
 			virtual bool ready() const												= 0;
 
@@ -2408,6 +2415,21 @@ namespace math
 
 namespace core
 {
+	namespace fs
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		REFLECT_INLINE(cvirtual_filesystem)
+		{
+			rttr::registration::class_<cvirtual_filesystem>("cvirtual_filesystem")
+				.constructor<>()
+				(
+					rttr::policy::ctor::as_raw_ptr
+				)
+				;
+		}
+
+	} //- fs
+
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(cevent_service)
 	{

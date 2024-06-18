@@ -339,18 +339,37 @@ void allocators_test_runs()
 }
 
 //------------------------------------------------------------------------------------------------------------------------
+void virtual_filesystem_tests()
+{
+	//- dry run tests without using actual service, testing only implementation of individual filesystems
+	auto cwd = core::cfilesystem::cwd();
+
+	//- create native filesystem and start it up
+	core::fs::filesystem_ref_t fs = std::make_shared<io::cnative_filesystem>();
+	fs->init(cwd.view());
+
+	core::vfs::instance().add_filesystem("/", fs);
+
+	auto file = core::vfs::instance().open({ "/imgui.ini" }, core::file_mode_read);
+
+
+	//- shut all filesystems down
+	fs->shutdown();
+}
+
+//------------------------------------------------------------------------------------------------------------------------
 int __real_main(int argc, char* argv[])
 {
 	AllocConsole();
 
 	logging::init(core::logging_verbosity::logging_verbosity_debug);
 
-	allocators_test_runs();
-
-	return 0;
+	//allocators_test_runs();
+	virtual_filesystem_tests();
 
 	engine::cengine::sconfig cfg;
 	cfg.m_services_cfg.emplace_back("cthread_service");
+	cfg.m_services_cfg.emplace_back("cvirtual_filesystem");
 	cfg.m_services_cfg.emplace_back("cevent_service");
 
 	cfg.m_layers_cfg.emplace_back("cgame");

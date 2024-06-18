@@ -3,9 +3,12 @@
 
 namespace io
 {
+	class cmemory_filesystem;
+
 	//------------------------------------------------------------------------------------------------------------------------
 	class cmemory_file final : public core::fs::ifile
 	{
+		friend class cmemory_filesystem;
 	public:
 		cmemory_file(const core::fs::cfileinfo& filepath);
 		~cmemory_file();
