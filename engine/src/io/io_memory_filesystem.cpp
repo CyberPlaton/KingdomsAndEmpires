@@ -18,8 +18,13 @@ namespace io
 	bool cmemory_filesystem::init(stringview_t basepath)
 	{
 		m_basepath.assign(basepath.data());
-		m_ready = true;
 
+		if (!core::string_utils::ends_with(m_basepath, "/"))
+		{
+			m_basepath += "/";
+		}
+
+		m_ready = true;
 		return m_ready;
 	}
 
@@ -35,6 +40,14 @@ namespace io
 	bool cmemory_filesystem::ready() const
 	{
 		return m_ready;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	stringview_t cmemory_filesystem::filesystem_name() const
+	{
+		constexpr stringview_t C_NAME = "cmemory_filesystem";
+
+		return C_NAME;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -58,7 +71,7 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	core::fs::file_ref_t cmemory_filesystem::open(const core::fs::cfileinfo& filepath, int file_mode)
 	{
-		core::fs::cfileinfo info(base_path(), filepath.path());
+		core::fs::cfileinfo info(base_path(), filepath.relative());
 
 		auto file = find_file(filepath);
 		const auto exists = (file != nullptr);
@@ -90,14 +103,14 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmemory_filesystem::create_file(const core::fs::cfileinfo& filepath)
 	{
-		using namespace core::fs;
-
 		auto result = false;
 
 		//- fails if file does not exist and we could not create one
 		if (!does_exist(filepath))
 		{
-			if (file_ref_t file = open(filepath, core::file_mode_write | core::file_mode_truncate); file)
+			core::fs::cfileinfo info(base_path(), filepath.relative());
+
+			if (core::fs::file_ref_t file = open(info, core::file_mode_write | core::file_mode_truncate); file)
 			{
 				result = true;
 

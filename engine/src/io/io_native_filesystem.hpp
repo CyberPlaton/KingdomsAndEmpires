@@ -14,6 +14,7 @@ namespace io
 		bool init(stringview_t basepath) override final;
 		void shutdown() override final;
 		bool ready() const override final;
+		stringview_t filesystem_name() const override final;
 
 		string_t base_path() const override final;
 		core::fs::filelist_t files() const override final;

@@ -1,4 +1,5 @@
 #include "io_native_file.hpp"
+#include <plugin_logging.h>
 
 namespace io
 {
@@ -85,11 +86,16 @@ namespace io
 			algorithm::bit_set(open_mode, std::fstream::trunc);
 		}
 
-		m_stream.open(info().absolute_path().c_str(), open_mode);
+		m_stream.open(info().path(), open_mode);
 
 		if (m_stream.is_open())
 		{
 			algorithm::bit_set(m_state, core::file_state_opened);
+		}
+		else
+		{
+			//- report failure to open
+			logging::log_warn(fmt::format("Failed to open native file '{}'", info().path()));
 		}
 	}
 

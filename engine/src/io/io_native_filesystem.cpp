@@ -18,10 +18,15 @@ namespace io
 	bool cnative_filesystem::init(stringview_t basepath)
 	{
 		m_basepath.assign(basepath.data());
-		m_ready = true;
+
+		if (!core::string_utils::ends_with(m_basepath, "/"))
+		{
+			m_basepath += "/";
+		}
 
 		build_file_list(m_basepath, m_file_list);
 
+		m_ready = true;
 		return m_ready;
 	}
 
@@ -37,6 +42,14 @@ namespace io
 	bool cnative_filesystem::ready() const
 	{
 		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	stringview_t cnative_filesystem::filesystem_name() const
+	{
+		constexpr stringview_t C_NAME = "cnative_filesystem";
+
+		return C_NAME;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -60,7 +73,7 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	core::fs::file_ref_t cnative_filesystem::open(const core::fs::cfileinfo& filepath, int file_mode)
 	{
-		core::fs::cfileinfo info(base_path(), filepath.path());
+		core::fs::cfileinfo info(base_path(), filepath.relative());
 
 		auto file = find_file(info);
 		const auto exists = (file != nullptr);
@@ -96,7 +109,7 @@ namespace io
 
 		if (!does_exist(filepath))
 		{
-			core::fs::cfileinfo info(base_path(), filepath.path());
+			core::fs::cfileinfo info(base_path(), filepath.relative());
 
 			if (const auto file = open(info, core::file_mode_write | core::file_mode_truncate); file)
 			{
@@ -121,7 +134,7 @@ namespace io
 
 		if (const auto file = find_file(filepath); file)
 		{
-			core::fs::cfileinfo info(base_path(), filepath.path());
+			core::fs::cfileinfo info(base_path(), filepath.relative());
 
 			if (std::filesystem::remove(info.path().data()))
 			{
@@ -189,8 +202,6 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	void cnative_filesystem::build_file_list(string_t path, core::fs::filelist_t& out)
 	{
-		logging::log_debug(fmt::format("Building file list with basepath: '{}'", path));
-
 		if (!core::string_utils::ends_with(path, "/"))
 		{
 			path += "/";
@@ -199,8 +210,6 @@ namespace io
 		//- recursively iterate over base directory and gather all files contained within
 		for (const auto& entry : std::filesystem::directory_iterator{ path })
 		{
-			logging::log_debug(fmt::format("entry: '{}'", entry.path().generic_u8string()));
-
 			if (entry.is_directory())
 			{
 				build_file_list(entry.path().generic_u8string(), out);

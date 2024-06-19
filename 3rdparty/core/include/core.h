@@ -2273,10 +2273,10 @@ namespace core
 			~cfileinfo() = default;
 
 			string_t path() const;
+			string_t relative() const;
 			string_t name() const;
 			string_t stem() const;
 			string_t ext() const;
-			string_t absolute_path() const;
 			string_t directory_path() const;
 			unsigned size() const;
 			bool is_directory() const;
@@ -2286,6 +2286,7 @@ namespace core
 			bool operator==(const cfileinfo& other) const;
 
 		private:
+			string_t m_relative;
 			unsigned m_size;
 			bool m_directory;
 			bool m_exists;
@@ -2325,6 +2326,7 @@ namespace core
 			virtual bool init(stringview_t basepath)								= 0;
 			virtual void shutdown()													= 0;
 			virtual bool ready() const												= 0;
+			virtual stringview_t filesystem_name() const							= 0;
 
 			virtual string_t base_path() const										= 0;
 			virtual filelist_t files() const										= 0;

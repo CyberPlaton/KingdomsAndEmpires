@@ -2409,20 +2409,20 @@ namespace core
 	{
 		//------------------------------------------------------------------------------------------------------------------------
 		cfileinfo::cfileinfo(stringview_t filepath) :
-			std::filesystem::path(filepath.data())
+			std::filesystem::path(filepath.data()), m_relative(filepath.data())
 		{
 			init();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		cfileinfo::cfileinfo(const cfileinfo& other) :
-			std::filesystem::path(other.generic_u8string()), m_directory(other.m_directory), m_exists(other.m_exists), m_size(other.m_size)
+			std::filesystem::path(other.generic_u8string()), m_relative(other.m_relative), m_directory(other.m_directory), m_exists(other.m_exists), m_size(other.m_size)
 		{
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		cfileinfo::cfileinfo(stringview_t basepath, stringview_t filepath) :
-			std::filesystem::path(fmt::format("{}{}", basepath.data(), filepath.data()))
+			std::filesystem::path(fmt::format("{}{}", basepath.data(), filepath.data())), m_relative(filepath.data())
 		{
 			init();
 		}
@@ -2445,10 +2445,18 @@ namespace core
 			}
 		}
 
+		//- Path is the path concatenated from a filesystems basepath and the filename
 		//------------------------------------------------------------------------------------------------------------------------
 		string_t cfileinfo::path() const
 		{
 			return base_t::generic_u8string();
+		}
+
+		//- Relative path is the path without the filesystems basepath
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t cfileinfo::relative() const
+		{
+			return m_relative;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -2467,12 +2475,6 @@ namespace core
 		string_t cfileinfo::ext() const
 		{
 			return base_t::extension().generic_u8string();
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		string_t cfileinfo::absolute_path() const
-		{
-			return base_t::path().generic_u8string();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -2496,8 +2498,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		bool cfileinfo::operator==(const cfileinfo& other) const
 		{
-			return m_size == other.m_size && m_directory == other.m_directory && m_exists == other.m_exists &&
-				generic_u8string().compare(other.generic_u8string()) == 0;
+			return path() == other.path();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -2600,7 +2601,7 @@ namespace core
 					const auto& filesystem = pair.second;
 
 					if (core::string_utils::starts_with(filepath.path(), path) &&
-						filepath.absolute_path().length() != path.length())
+						filepath.path().length() != path.length())
 					{
 						file = filesystem->open(filepath, file_mode);
 					}

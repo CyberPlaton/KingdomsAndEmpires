@@ -339,13 +339,145 @@ void allocators_test_runs()
 }
 
 //------------------------------------------------------------------------------------------------------------------------
+bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
+{
+	logging::log_info(fmt::format("\n#### '{}' Filesystem Testing Run ##########################################",
+		fs->filesystem_name().data()));
+
+	std::string m_data =
+		"Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
+		"Fusce volutpat suscipit mattis. Morbi porta ipsum ut dapibus vehicula.\n"
+		"Etiam in bibendum urna. Quisque in diam vitae leo pellentesque lobortis non quis nisi.\n"
+		"Fusce auctor aliquam lacus eu laoreet. Etiam pretium, leo ut molestie iaculis, ante purus ultricies nisl, sit amet pharetra arcu neque nec urna.\n"
+		"Morbi pretium ligula in libero scelerisque, eu maximus nulla mollis. Integer commodo lorem id mollis interdum. Morbi eget ipsum eu ex efficitur finibus sed at mi.\n"
+		;
+	constexpr stringview_t C_FILENAME = "/testing_file.txt";
+	constexpr stringview_t C_COPY_FILENAME = "/testing_copy_file.txt";
+	constexpr stringview_t C_COPY_RENAME_FILENAME = "/testing_copy_rename_file.txt";
+
+	//- testing individual filesystems for functionality
+	auto cwd = core::cfilesystem::cwd();
+
+	if (fs->init(cwd.view()))
+	{
+		//- create file
+		{
+			if (!fs->create_file({ C_FILENAME.data()}))
+			{
+				logging::log_critical(fmt::format("\t...failed creating file!"));
+
+				//- fatal error, does not make sense to proceed
+				return false;
+			}
+		}
+
+		core::fs::file_ref_t file = nullptr;
+		core::fs::file_ref_t copied_file = nullptr;
+
+		//- open and write to file
+		{
+			if (file = fs->open({ C_FILENAME.data() }, core::file_mode_read_write); !file)
+			{
+				logging::log_critical(fmt::format("\t...failed opening file!"));
+
+				//- fatal error, does not make sense to proceed
+				return false;
+			}
+
+			if(const auto written = file->write((const uint8_t*)m_data.data(), m_data.length()); written != m_data.length())
+			{
+				logging::log_warn(fmt::format("\t...written only '{}', but should have '{}'", written, m_data.length()));
+			}
+		}
+
+		//- read from file and write to console
+		{
+			vector_t<uint8_t> buffer(m_data.length());
+
+			if (const auto read = file->read(buffer.data(), m_data.length()); read != m_data.length())
+			{
+				logging::log_warn(fmt::format("\t...read only '{}', but should have '{}'", read, m_data.length()));
+			}
+
+			buffer.push_back('\0');
+
+			logging::log_info(fmt::format("\t...file contents: '{}'", (const char*)buffer.data()));
+		}
+
+		//- copy file from one to another
+		{
+			if (!fs->copy_file({ C_FILENAME.data() }, { C_COPY_FILENAME.data() }))
+			{
+				logging::log_error(fmt::format("\t...failed copying file!"));
+			}
+		}
+
+		//- read from copy and write to console
+		{
+			if (copied_file = fs->open({ C_COPY_FILENAME.data() }, core::file_mode_read_write); !copied_file)
+			{
+				logging::log_critical(fmt::format("\t...failed opening copied file!"));
+
+				//- fatal error, does not make sense to proceed
+				return false;
+			}
+
+			vector_t<uint8_t> buffer(m_data.length());
+
+			if (const auto read = copied_file->read(buffer.data(), m_data.length()); read != m_data.length())
+			{
+				logging::log_warn(fmt::format("\t...read only '{}' from copied file, but should have '{}'", read, m_data.length()));
+			}
+
+			buffer.push_back('\0');
+
+			logging::log_info(fmt::format("\t...copied file contents: '{}'", (const char*)buffer.data()));
+		}
+
+		//- save copy file to destination
+		{
+			copied_file->close();
+		}
+
+		//- rename copy file to another name
+		{
+			fs->rename_file({ C_COPY_FILENAME.data() }, { C_COPY_RENAME_FILENAME.data() });
+
+			if (!fs->does_exist({ C_COPY_RENAME_FILENAME.data() }))
+			{
+				logging::log_error(fmt::format("\t...failed renaming file!"));
+			}
+		}
+
+		//- delete copy file leaving only source
+		{
+			if(!fs->remove_file({ C_COPY_RENAME_FILENAME.data() }))
+			{
+				logging::log_error(fmt::format("\t...failed removing copied file!"));
+			}
+		}
+
+		fs->shutdown();
+		return true;
+	}
+	return false;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------
 void virtual_filesystem_tests()
 {
+	filesystem_tests(std::make_shared<io::cnative_filesystem>());
+	filesystem_tests(std::make_shared<io::cmemory_filesystem>());
+
+	return;
+
 	//- dry run tests without using actual service, testing only implementation of individual filesystems
 	auto cwd = core::cfilesystem::cwd();
 
 	//- create native filesystem and start it up
 	core::fs::filesystem_ref_t fs = std::make_shared<io::cnative_filesystem>();
+
 	fs->init(cwd.view());
 
 	core::vfs::instance().add_filesystem("/", fs);
