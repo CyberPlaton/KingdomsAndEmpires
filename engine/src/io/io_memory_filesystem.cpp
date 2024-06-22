@@ -1,4 +1,5 @@
 #include "io_memory_filesystem.hpp"
+#include <plugin_logging.h>
 
 namespace io
 {
@@ -65,7 +66,9 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmemory_filesystem::does_exist(const core::fs::cfileinfo& filepath) const
 	{
-		return find_file(filepath) != nullptr;
+		core::fs::cfileinfo info(base_path(), filepath.relative());
+
+		return find_file(info) != nullptr;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -73,7 +76,7 @@ namespace io
 	{
 		core::fs::cfileinfo info(base_path(), filepath.relative());
 
-		auto file = find_file(filepath);
+		auto file = find_file(info);
 		const auto exists = (file != nullptr);
 
 		if (!exists)
@@ -110,7 +113,7 @@ namespace io
 		{
 			core::fs::cfileinfo info(base_path(), filepath.relative());
 
-			if (core::fs::file_ref_t file = open(info, core::file_mode_write | core::file_mode_truncate); file)
+			if (core::fs::file_ref_t file = open(info, core::file_mode_read_write | core::file_mode_truncate); file)
 			{
 				result = true;
 
@@ -130,7 +133,9 @@ namespace io
 	{
 		auto result = true;
 
-		if (const auto file = find_file(filepath); file)
+		core::fs::cfileinfo info(base_path(), filepath.relative());
+
+		if (const auto file = find_file(info); file)
 		{
 			m_file_list.erase(file);
 		}
@@ -143,7 +148,9 @@ namespace io
 	{
 		auto result = false;
 
-		auto source_file = std::static_pointer_cast<cmemory_file>(find_file(source));
+		core::fs::cfileinfo source_info(base_path(), source.relative());
+
+		auto source_file = std::static_pointer_cast<cmemory_file>(find_file(source_info));
 		auto dest_file = std::static_pointer_cast<cmemory_file>(open(dest, core::file_mode_write));
 
 		if (source_file && dest_file)

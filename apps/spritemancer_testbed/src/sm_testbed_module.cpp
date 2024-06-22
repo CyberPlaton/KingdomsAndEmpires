@@ -338,6 +338,93 @@ void allocators_test_runs()
 	}
 }
 
+//- Test a filesystems performance for key operations
+//------------------------------------------------------------------------------------------------------------------------
+void filesystem_performance_tests(const core::fs::filesystem_ref_t& fs)
+{
+	constexpr auto C_COUNT = 1000;
+	constexpr stringview_t C_FILENAME = "testing_file.txt";
+	constexpr stringview_t C_DATA = 
+		"Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
+		"Fusce volutpat suscipit mattis. Morbi porta ipsum ut dapibus vehicula.\n"
+		"Etiam in bibendum urna. Quisque in diam vitae leo pellentesque lobortis non quis nisi.\n"
+		"Fusce auctor aliquam lacus eu laoreet. Etiam pretium, leo ut molestie iaculis, ante purus ultricies nisl, sit amet pharetra arcu neque nec urna.\n"
+		"Morbi pretium ligula in libero scelerisque, eu maximus nulla mollis. Integer commodo lorem id mollis interdum. Morbi eget ipsum eu ex efficitur finibus sed at mi.\n"
+		"Etiam in bibendum urna. Quisque in diam vitae leo pellentesque lobortis non quis nisi.\n"
+		;
+
+	//- 'profiling' times for:
+	//- open, close, write, read
+	core::ctimer general_timer;
+	core::ctimer open_timer;
+	core::ctimer close_timer;
+	core::ctimer read_timer;
+	core::ctimer write_timer;
+	float open_time_cumulative = 0.0f;
+	float close_time_cumulative = 0.0f;
+	float read_time_cumulative = 0.0f;
+	float write_time_cumulative = 0.0f;
+	core::fs::file_ref_t file = nullptr;
+
+	//- testing individual filesystems for functionality
+	auto cwd = core::cfilesystem::cwd();
+
+	general_timer.start();
+
+	if (fs->init(cwd.view()))
+	{
+		if (!fs->create_file({ C_FILENAME.data() }))
+		{
+			logging::log_critical(fmt::format("\t...failed creating testing file!"));
+
+			//- fatal error, does not make sense to proceed
+			return;
+		}
+
+		for (auto i = 0u; i < C_COUNT; ++i)
+		{
+			//- open
+			open_timer.start();
+			if (file = fs->open({ C_FILENAME.data() }, core::file_mode_read_write | core::file_mode_truncate); file)
+			{
+				open_time_cumulative += open_timer.millisecs();
+
+				//- write
+				write_timer.start();
+				file->write((const uint8_t*)C_DATA.data(), C_DATA.length());
+				write_time_cumulative += write_timer.millisecs();
+
+				file->seek_to_start();
+
+				//- read
+				vector_t<uint8_t> buffer(C_DATA.length());
+				read_timer.start();
+				file->read(buffer.data(), C_DATA.length());
+				read_time_cumulative += read_timer.millisecs();
+
+				file->seek_to_start();
+
+				//- close
+				close_timer.start();
+				file->close();
+				close_time_cumulative += close_timer.millisecs();
+			}
+		}
+
+		fs->shutdown();
+
+		//- get time data for all tests
+		const auto ms = general_timer.millisecs();
+
+		logging::log_warn("-----------------------------------------------------------------------------------------");
+		logging::log_info(fmt::format("Total Time: '{}ms' with '{}' Operations", ms, C_COUNT));
+		logging::log_info(fmt::format("'open' Time: '{}ms' (Total), '{}ms' (Per Operation)", open_time_cumulative, open_time_cumulative / C_COUNT));
+		logging::log_info(fmt::format("'close' Time: '{}ms' (Total), '{}ms' (Per Operation)", close_time_cumulative, close_time_cumulative / C_COUNT));
+		logging::log_info(fmt::format("'read' Time for '{}' Bytes: '{}ms' (Total), '{}ms' (Per Operation)", C_DATA.length(), read_time_cumulative, read_time_cumulative / C_COUNT));
+		logging::log_info(fmt::format("'write' Time for '{}' Bytes: '{}ms' (Total), '{}ms' (Per Operation)", C_DATA.length(), write_time_cumulative, write_time_cumulative / C_COUNT));
+	}
+}
+
 //- Test all functionality of a filesystem to work as expected
 //------------------------------------------------------------------------------------------------------------------------
 bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
@@ -422,10 +509,6 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 				logging::log_info(fmt::format("\t...success reading '{}' bytes", read));
 			}
 
-			buffer.push_back('\0');
-
-			logging::log_info(fmt::format("\t...file contents: '{}'", (const char*)buffer.data()));
-
 			//- set cursor position to start of file for read/write
 			if (!file->seek_to_start())
 			{
@@ -455,20 +538,12 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 				return false;
 			}
 
-			//- check that cursor position for file and copy are as expected
-			logging::log_warn(fmt::format("\t...file cursor positions. File: '{}', Copy: '{}'",
-				file->tell(), copied_file->tell()));
-
 			vector_t<uint8_t> buffer(m_data.length());
 
 			if (const auto read = copied_file->read(buffer.data(), m_data.length()); read != m_data.length())
 			{
 				logging::log_warn(fmt::format("\t...read only '{}' from copied file, but should have '{}'", read, m_data.length()));
 			}
-
-			buffer.push_back('\0');
-
-			logging::log_info(fmt::format("\t...copied file contents: '{}'", (const char*)buffer.data()));
 		}
 
 		//- save copy file to destination
@@ -508,45 +583,11 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 	return false;
 }
 
-//- Test a filesystems performance for key operations
-//------------------------------------------------------------------------------------------------------------------------
-void filesystem_performance_tests(const core::fs::filesystem_ref_t& fs)
-{
-	//- 'profiling' times for:
-	//- open, write, read
-	core::ctimer general_timer;
-	core::ctimer open_timer;
-	core::ctimer read_timer;
-	core::ctimer write_timer;
-	float open_time_cumulative = 0.0f;
-	float read_time_cumulative = 0.0f;
-	float write_time_cumulative = 0.0f;
-
-	//- testing individual filesystems for functionality
-	auto cwd = core::cfilesystem::cwd();
-
-	if (fs->init(cwd.view()))
-	{
-
-
-		fs->shutdown();
-
-		//- get time data for all tests
-		const auto ms = general_timer.millisecs();
-
-		logging::log_warn("-----------------------------------------------------------------------------------------");
-		logging::log_info(fmt::format("Total Time: '{}ms'", ms));
-		logging::log_info(fmt::format("'open' Time: '{}us'", open_time_cumulative));
-		logging::log_info(fmt::format("'read' Time: '{}us'", read_time_cumulative));
-		logging::log_info(fmt::format("'write' Time: '{}us'", write_time_cumulative));
-	}
-}
-
 //- Test a filesystem implementation complete for functionality and performance
 //------------------------------------------------------------------------------------------------------------------------
 bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 {
-	logging::log_info(fmt::format("\n#### '{}' Filesystem Testing Run ##########################################",
+	logging::log_info(fmt::format("\n#### Filesystem '{}' Testing Run ##########################################",
 		fs->filesystem_name().data()));
 
 	if (filesystem_functionality_tests(fs))

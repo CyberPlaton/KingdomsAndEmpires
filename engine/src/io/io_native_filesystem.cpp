@@ -115,7 +115,7 @@ namespace io
 		{
 			core::fs::cfileinfo info(base_path(), filepath.relative());
 
-			if (const auto file = open(info, core::file_mode_write | core::file_mode_truncate); file)
+			if (const auto file = open(info, core::file_mode_read_write | core::file_mode_truncate); file)
 			{
 				result = true;
 
@@ -140,9 +140,20 @@ namespace io
 
 		if (const auto file = find_file(info); file)
 		{
-			if (std::filesystem::remove(info.path().data()))
+			std::error_code ec;
+
+			//- close file in case it is open
+			file->close();
+
+			if (std::filesystem::remove(info.path().data(), ec))
 			{
 				m_file_list.erase(file);
+			}
+			else
+			{
+				logging::log_error(fmt::format("Failed to remove file '{}' with message '{}'", info.relative(), ec.message()));
+
+				result = false;
 			}
 		}
 
@@ -269,6 +280,8 @@ namespace io
 			path += "/";
 		}
 
+		const auto base = base_path();
+
 		//- recursively iterate over base directory and gather all files contained within
 		for (const auto& entry : std::filesystem::directory_iterator{ path })
 		{
@@ -278,7 +291,9 @@ namespace io
 			}
 			else if (entry.is_regular_file())
 			{
-				core::fs::cfileinfo info(entry.path().generic_u8string());
+				auto relative = std::filesystem::relative(entry.path(), base);
+
+				core::fs::cfileinfo info(base, relative.generic_u8string());
 
 				out.insert(std::move(std::make_shared<cnative_file>(info)));
 			}
