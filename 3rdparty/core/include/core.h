@@ -2174,7 +2174,7 @@ namespace core
 
 	private:
 		stack_t<void*> m_free_list;
-		unsigned m_type_size;
+		int64_t m_type_size;
 		void* m_memory;
 	};
 

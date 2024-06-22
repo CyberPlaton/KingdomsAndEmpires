@@ -9,7 +9,6 @@
 #include "services/thread_service.hpp"
 #include "io/io_memory_filesystem.hpp"
 #include "io/io_native_filesystem.hpp"
-#include "io/io_zip_filesystem.hpp"
 #include <argparse.h>
 
 namespace engine

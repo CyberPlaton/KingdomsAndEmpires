@@ -587,7 +587,7 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 //------------------------------------------------------------------------------------------------------------------------
 bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 {
-	logging::log_info(fmt::format("\n#### Filesystem '{}' Testing Run ##########################################",
+	logging::log_warn(fmt::format("\n#### Filesystem '{}' Testing Run ##########################################",
 		fs->filesystem_name().data()));
 
 	if (filesystem_functionality_tests(fs))
@@ -605,24 +605,6 @@ void virtual_filesystem_tests()
 {
 	filesystem_tests(std::make_shared<io::cnative_filesystem>());
 	filesystem_tests(std::make_shared<io::cmemory_filesystem>());
-
-	return;
-
-	//- dry run tests without using actual service, testing only implementation of individual filesystems
-	auto cwd = core::cfilesystem::cwd();
-
-	//- create native filesystem and start it up
-	core::fs::filesystem_ref_t fs = std::make_shared<io::cnative_filesystem>();
-
-	fs->init(cwd.view());
-
-	core::vfs::instance().add_filesystem("/", fs);
-
-	auto file = core::vfs::instance().open({ "/imgui.ini" }, core::file_mode_read);
-
-
-	//- shut all filesystems down
-	fs->shutdown();
 }
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -632,7 +614,7 @@ int __real_main(int argc, char* argv[])
 
 	logging::init(core::logging_verbosity::logging_verbosity_debug);
 
-	//allocators_test_runs();
+	allocators_test_runs();
 	virtual_filesystem_tests();
 
 	engine::cengine::sconfig cfg;

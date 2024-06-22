@@ -132,9 +132,7 @@ namespace io
 	{
 		if (opened())
 		{
-			const auto file_size = size();
-
-			m_seek_position = file_size;
+			m_seek_position = size();
 
 			return true;
 		}
