@@ -28,6 +28,10 @@ namespace sm
 		static texture_handle_t S_PLACEHOLDER_TEXTURE = 0;
 		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
 		static srenderstate S_RENDERSTATE_DEFAULT = { S_BLEND_MODE_DEFAULT, 0 };
+		constexpr float C_ROTATION_DEFAULT = 0.0f;
+		constexpr vec2_t C_SCALE_DEFAULT = {1.0f, 1.0f};
+		constexpr vec2_t C_ORIGIN_DEFAULT = {0.5f, 0.5f};
+		static inline const core::srect C_SOURCE_DEFAULT = {0.0f, 0.0f, 1.0f, 1.0f};
 
 		//- current used rendering state data
 		static sblending S_CURRENT_BLEND_MODE = S_BLEND_MODE_DEFAULT;
@@ -41,7 +45,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void load_internal_resources()
 		{
-			S_DEFAULT_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment, nullptr, shaders::sprite::C_PS);
+			S_DEFAULT_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment, shaders::sprite::C_VS, shaders::sprite::C_PS);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -369,7 +373,7 @@ namespace sm
 	void draw_placeholder(unsigned layer, const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
 		const core::scolor& tint /*= {255, 255, 255, 255}*/)
 	{
-		draw_texture(layer, position, S_PLACEHOLDER_TEXTURE, tint, 0.0f, scale);
+		draw_texture(layer, position, S_PLACEHOLDER_TEXTURE, tint, C_ROTATION_DEFAULT, scale);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -381,13 +385,13 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint)
 	{
-		draw_texture(layer, position, texture, tint, 0.0f);
+		draw_texture(layer, position, texture, tint, C_ROTATION_DEFAULT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation)
 	{
-		draw_texture(layer, position, texture, tint, rotation, { 1.0f, 1.0f });
+		draw_texture(layer, position, texture, tint, rotation, C_SCALE_DEFAULT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -408,17 +412,17 @@ namespace sm
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, shader_handle_t shader, const srenderstate& state)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, {0.5f, 0.5f});
+		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, C_ORIGIN_DEFAULT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, origin);
+		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, origin, C_SOURCE_DEFAULT);
 	}
 
-	//- The actual rendering routine
+	//- The actual rendering routine for a texture/sprite
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin, const core::srect& source)

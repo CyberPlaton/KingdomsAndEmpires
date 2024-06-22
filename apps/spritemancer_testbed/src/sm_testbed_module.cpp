@@ -599,7 +599,6 @@ bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 	return false;
 }
 
-
 //------------------------------------------------------------------------------------------------------------------------
 void virtual_filesystem_tests()
 {

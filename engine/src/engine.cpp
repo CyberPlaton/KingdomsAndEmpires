@@ -160,12 +160,12 @@ namespace engine
 		if (auto type = rttr::type::get_by_name(name.data()); type.is_valid())
 		{
 			//- check that at least one function is present
-			auto update_method = type.get_method(slayer::C_LAYER_UPDATE_FUNC_NAME.data());
-			auto world_render_method = type.get_method(slayer::C_LAYER_WORLD_RENDER_FUNC_NAME.data());
-			auto ui_render_method = type.get_method(slayer::C_LAYER_UI_RENDER_FUNC_NAME.data());
-			auto post_update_method = type.get_method(slayer::C_LAYER_POST_UPDATE_FUNC_NAME.data());
-			auto init_method = type.get_method(slayer::C_LAYER_INIT_FUNC_NAME.data());
-			auto shutdown_method = type.get_method(slayer::C_LAYER_SHUTDOWN_FUNC_NAME.data());
+			auto update_method			= type.get_method(slayer::C_LAYER_UPDATE_FUNC_NAME.data());
+			auto world_render_method	= type.get_method(slayer::C_LAYER_WORLD_RENDER_FUNC_NAME.data());
+			auto ui_render_method		= type.get_method(slayer::C_LAYER_UI_RENDER_FUNC_NAME.data());
+			auto post_update_method		= type.get_method(slayer::C_LAYER_POST_UPDATE_FUNC_NAME.data());
+			auto init_method			= type.get_method(slayer::C_LAYER_INIT_FUNC_NAME.data());
+			auto shutdown_method		= type.get_method(slayer::C_LAYER_SHUTDOWN_FUNC_NAME.data());
 
 			if (update_method.is_valid())
 			{
