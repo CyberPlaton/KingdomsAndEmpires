@@ -452,16 +452,16 @@ namespace sm
 					//- construct rectangles for where to sample from and where to draw
 					raylib::Rectangle src = { source.x(), source.y(), source.w() * w, source.h() * h };
 					raylib::Rectangle dst = { position.x, position.y, scale.x * w, scale.y * h };
-					raylib::Vector2 origin = { 0.0f, 0.0f };
+					raylib::Vector2 orig = { origin.x, origin.y };
 
 					//- check some flags and do adjustments
 					if (algorithm::bit_check(state.m_flags, renderable_flag_origin_center))
 					{
-						origin = { w / 2.0f, h / 2.0f };
+						orig = { w * 0.5f, h * 0.5f };
 					}
 					if (algorithm::bit_check(state.m_flags, renderable_flag_origin_custom))
 					{
-						origin = { origin.x, origin.y };
+						orig = { origin.x, origin.y };
 					}
 					if (algorithm::bit_check(state.m_flags, renderable_flag_flipx))
 					{
@@ -496,7 +496,7 @@ namespace sm
 						raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
 					}
 
-					raylib::DrawTexturePro(_texture.texture(), src, dst, origin, rotation, tint.cliteral<raylib::Color>());
+					raylib::DrawTexturePro(_texture.texture(), src, dst, orig, rotation, tint.cliteral<raylib::Color>());
 				});
 		}
 	}

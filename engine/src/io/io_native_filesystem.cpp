@@ -177,10 +177,7 @@ namespace io
 			vector_t<byte_t> buffer(SCAST(uint64_t, datasize));
 
 			//- open and go to beginning of file for complete reading/writing
-			source_file->open(core::file_mode_read);
-
-			const auto source_seek_position = source_file->tell();
-			const auto dest_seek_position = dest_file->tell();
+			source_file->open(source_file->filemode());
 
 			source_file->seek_to_start();
 			dest_file->seek_to_start();
@@ -206,12 +203,11 @@ namespace io
 				bytes_read = source_file->read(buffer.data(), size);
 			}
 
-			//- restore seeking position for both files as they were before copy start
-			source_file->seek_to(source_seek_position);
-			dest_file->seek_to(dest_seek_position);
-
 			//- success only if we have read and copied complete file data
 			result = (bytes_written == datasize);
+
+			source_file->close();
+			dest_file->close();
 		}
 		else if (!source_file)
 		{

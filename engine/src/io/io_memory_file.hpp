@@ -31,7 +31,6 @@ namespace io
 		core::fs::cfileinfo m_info;
 		vector_t<uint8_t> m_memory;
 		int m_state;	//- bitwise concated core::file_state
-		int m_mode;		//- bitwise concated core::file_mode
 		unsigned m_seek_position;
 	};
 

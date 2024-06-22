@@ -2346,11 +2346,16 @@ namespace core
 			//- Seek to position between start and end of file
 			virtual bool seek_to(unsigned offset) = 0;
 
+			int filemode() const { return m_filemode; }
+
 			template<typename TType>
 			bool read(TType& value) { return read(&value, sizeof(TType)) == sizeof(TType); }
 
 			template<typename TType>
 			bool write(const TType& value) { return write(&value, sizeof(TType)) == sizeof(TType); }
+
+		protected:
+			int m_filemode = core::file_mode_none;
 		};
 
 		//- Interface for a file system implemenation.

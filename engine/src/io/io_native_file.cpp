@@ -43,7 +43,7 @@ namespace io
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cnative_file::cnative_file(const core::fs::cfileinfo& filepath) :
-		m_info(filepath), m_file(nullptr), m_state(core::file_state_read_only), m_mode(core::file_mode_none)
+		m_info(filepath), m_file(nullptr), m_state(core::file_state_read_only)
 	{
 	}
 
@@ -84,24 +84,24 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	void cnative_file::open(int file_mode)
 	{
-		if (opened() && m_mode == file_mode)
+		if (opened() && filemode() == file_mode)
 		{
 			seek(0, core::file_seek_origin_begin);
 
 			return;
 		}
 
-		m_mode = file_mode;
+		m_filemode = file_mode;
 		m_state = core::file_state_read_only;
 
-		if (algorithm::bit_check(m_mode, core::file_mode_write) ||
-			algorithm::bit_check(m_mode, core::file_mode_append))
+		if (algorithm::bit_check(m_filemode, core::file_mode_write) ||
+			algorithm::bit_check(m_filemode, core::file_mode_append))
 		{
 			algorithm::bit_clear(m_state, core::file_state_read_only);
 		}
 
 		m_context = std::make_unique<asio::io_context>();
-		m_file = std::make_unique<asio::stream_file>(*m_context.get(), info().path().c_str(), to_openmode(m_mode));
+		m_file = std::make_unique<asio::stream_file>(*m_context.get(), info().path().c_str(), to_openmode(m_filemode));
 
 		if (m_context && m_file)
 		{
@@ -119,7 +119,7 @@ namespace io
 	{
 		m_file.reset();
 		m_context.reset();
-
+		m_seek_position = 0;
 		algorithm::bit_clear(m_state, core::file_state_opened);
 	}
 
@@ -167,7 +167,7 @@ namespace io
 	{
 		if (opened())
 		{
-			return m_seeking_position;
+			return m_seek_position;
 		}
 		return 0;
 	}
@@ -186,7 +186,7 @@ namespace io
 
 		if (!err)
 		{
-			m_seeking_position += count;
+			m_seek_position += count;
 
 			return count;
 		}
@@ -210,7 +210,7 @@ namespace io
 
 		if (!err)
 		{
-			m_seeking_position += count;
+			m_seek_position += count;
 
 			return count;
 		}
@@ -229,7 +229,7 @@ namespace io
 
 			const auto p = (unsigned)m_file->seek(-file_size, asio::file_base::seek_basis::seek_end);
 
-			m_seeking_position = p;
+			m_seek_position = p;
 
 			return (p == 0);
 		}
@@ -245,7 +245,7 @@ namespace io
 
 			const auto p = (unsigned)m_file->seek(file_size, asio::file_base::seek_basis::seek_set);
 
-			m_seeking_position = p;
+			m_seek_position = p;
 
 			return (p == file_size);
 		}
@@ -263,7 +263,7 @@ namespace io
 
 			const auto p = (unsigned)m_file->seek((int64_t)offset, asio::file_base::seek_basis::seek_set);
 
-			m_seeking_position = p;
+			m_seek_position = p;
 
 			return (p == offset);
 		}

@@ -31,8 +31,7 @@ namespace io
 		ptr_t<asio::stream_file> m_file;
 		ptr_t<asio::io_context> m_context;
 		int m_state;					//- bitwise concated core::file_state
-		int m_mode;						//- bitwise concated core::file_mode
-		unsigned m_seeking_position = 0;
+		unsigned m_seek_position = 0;
 	};
 
 } //- io

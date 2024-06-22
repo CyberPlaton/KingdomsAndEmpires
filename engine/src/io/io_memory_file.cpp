@@ -4,7 +4,7 @@ namespace io
 {
 	//------------------------------------------------------------------------------------------------------------------------
 	cmemory_file::cmemory_file(const core::fs::cfileinfo& filepath) :
-		m_info(filepath), m_state(core::file_state_read_only), m_mode(core::file_mode_none), m_seek_position(0)
+		m_info(filepath), m_state(core::file_state_read_only), m_seek_position(0)
 	{
 	}
 
@@ -41,29 +41,28 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmemory_file::open(int file_mode)
 	{
-		if (opened() && m_mode == file_mode)
+		if (opened() && filemode() == file_mode)
 		{
 			//- reset to default begin state
-			seek(0, core::file_seek_origin_begin);
-
+			seek_to_start();
 			return;
 		}
 
-		m_mode = file_mode;
+		m_filemode = file_mode;
 		m_seek_position = 0;
 		m_state = core::file_state_read_only;
 
-		if (algorithm::bit_check(file_mode, core::file_mode_write))
+		if (algorithm::bit_check(m_filemode, core::file_mode_write))
 		{
 			algorithm::bit_clear(m_state, core::file_state_read_only);
 		}
-		if (algorithm::bit_check(m_mode, core::file_mode_append))
+		if (algorithm::bit_check(m_filemode, core::file_mode_append))
 		{
 			algorithm::bit_clear(m_state, core::file_state_read_only);
 
 			m_seek_position = size() > 0 ? size() - 1 : 0;
 		}
-		if (algorithm::bit_check(m_mode, core::file_mode_truncate))
+		if (algorithm::bit_check(m_filemode, core::file_mode_truncate))
 		{
 			m_memory.clear();
 		}
@@ -74,9 +73,9 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmemory_file::close()
 	{
+		m_seek_position = 0;
 		algorithm::bit_set(m_state, core::file_state_read_only);
 		algorithm::bit_clear(m_state, core::file_state_opened);
-		m_seek_position = 0;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
