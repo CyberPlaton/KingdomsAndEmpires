@@ -3,11 +3,48 @@
 
 namespace io
 {
+	namespace
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		asio::stream_file::flags to_openmode(int file_mode)
+		{
+			asio::stream_file::flags mode = (asio::stream_file::flags)0;
+
+			if (algorithm::bit_check(file_mode, core::file_mode_read) && algorithm::bit_check(file_mode, core::file_mode_write))
+			{
+				mode = asio::stream_file::read_write;
+			}
+			else if (algorithm::bit_check(file_mode, core::file_mode_read))
+			{
+				mode = asio::stream_file::read_only;
+			}
+			else if (algorithm::bit_check(file_mode, core::file_mode_write))
+			{
+				mode = asio::stream_file::write_only;
+			}
+
+			if (algorithm::bit_check(file_mode, core::file_mode_append))
+			{
+				mode |= asio::stream_file::append;
+			}
+			if (algorithm::bit_check(file_mode, core::file_mode_truncate))
+			{
+				mode |= asio::stream_file::truncate;
+			}
+
+			//- by default, if file does not exist on open we want to create it,
+			//- and also we want flush directly after write and not wait for close
+			mode |= (asio::stream_file::create | asio::stream_file::sync_all_on_write);
+
+			return mode;
+		}
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
 	cnative_file::cnative_file(const core::fs::cfileinfo& filepath) :
-		m_info(filepath), m_state(core::file_state_read_only), m_mode(core::file_mode_none)
+		m_info(filepath), m_file(nullptr), m_state(core::file_state_read_only), m_mode(core::file_mode_none)
 	{
-
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -27,15 +64,7 @@ namespace io
 	{
 		if (opened())
 		{
-			const auto cursor = tell();
-
-			seek(0, core::file_seek_origin_end);
-
-			const auto filesize = tell();
-
-			seek(cursor, core::file_seek_origin_begin);
-
-			return filesize;
+			return (unsigned)m_file->size();
 		}
 		return 0;
 	}
@@ -65,73 +94,60 @@ namespace io
 		m_mode = file_mode;
 		m_state = core::file_state_read_only;
 
-		std::ios_base::openmode open_mode = (std::ios_base::openmode)0;
-
-		if (algorithm::bit_check(file_mode, core::file_mode_read))
+		if (algorithm::bit_check(m_mode, core::file_mode_write) ||
+			algorithm::bit_check(m_mode, core::file_mode_append))
 		{
-			algorithm::bit_set(open_mode, std::fstream::in);
-		}
-		if (algorithm::bit_check(file_mode, core::file_mode_write))
-		{
-			algorithm::bit_set(open_mode, std::fstream::out);
 			algorithm::bit_clear(m_state, core::file_state_read_only);
 		}
-		if (algorithm::bit_check(file_mode, core::file_mode_append))
-		{
-			algorithm::bit_set(open_mode, std::fstream::app);
-			algorithm::bit_clear(m_state, core::file_state_read_only);
-		}
-		if (algorithm::bit_check(m_mode, core::file_mode_truncate))
-		{
-			algorithm::bit_set(open_mode, std::fstream::trunc);
-		}
 
-		m_stream.open(info().path(), open_mode);
+		m_context = std::make_unique<asio::io_context>();
+		m_file = std::make_unique<asio::stream_file>(*m_context.get(), info().path().c_str(), to_openmode(m_mode));
 
-		if (m_stream.is_open())
+		if (m_context && m_file)
 		{
 			algorithm::bit_set(m_state, core::file_state_opened);
 		}
 		else
 		{
 			//- report failure to open
-			logging::log_warn(fmt::format("Failed to open native file '{}'", info().path()));
+			logging::log_warn(fmt::format("Failed to open native file '{}' with error '{}'", info().path(), strerror(errno)));
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cnative_file::close()
 	{
-		m_stream.close();
+		m_file.reset();
+		m_context.reset();
 
 		algorithm::bit_clear(m_state, core::file_state_opened);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	unsigned cnative_file::seek(unsigned offset, core::file_seek_origin origin)
+	unsigned cnative_file::seek(int offset, core::file_seek_origin origin)
 	{
 		if (!opened())
 		{
 			return 0;
 		}
 
-		std::ios_base::seekdir way;
+		asio::file_base::seek_basis way;
 
 		switch (origin)
 		{
 		case core::file_seek_origin_begin:
 		{
-			way = std::ios_base::beg;
+			way = asio::file_base::seek_basis::seek_cur;
 			break;
 		}
 		case core::file_seek_origin_end:
 		{
-			way = std::ios_base::end;
+			way = asio::file_base::seek_basis::seek_end;
 			break;
 		}
 		case core::file_seek_origin_set:
 		{
-			way = std::ios_base::cur;
+			way = asio::file_base::seek_basis::seek_set;
 			break;
 		}
 		default:
@@ -141,8 +157,7 @@ namespace io
 		}
 		}
 
-		m_stream.seekg(SCAST(uint64_t, offset), way);
-		m_stream.seekp(SCAST(uint64_t, offset), way);
+		m_file->seek(SCAST(int64_t, offset), way);
 
 		return tell();
 	}
@@ -150,25 +165,35 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned cnative_file::tell()
 	{
-		return SCAST(unsigned, m_stream.tellg());
+		if (opened())
+		{
+			return m_seeking_position;
+		}
+		return 0;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned cnative_file::read(byte_t* buffer, unsigned datasize)
 	{
-		if (!opened())
+		if (!opened() || !buffer || datasize == 0)
 		{
 			return 0;
 		}
 
-		m_stream.read(RCAST(char*, buffer), SCAST(std::streamsize, datasize));
+		std::error_code err;
 
-		if (m_stream)
+		auto count = (unsigned)m_file->read_some(asio::buffer(buffer, datasize), err);
+
+		if (!err)
 		{
-			return datasize;
+			m_seeking_position += count;
+
+			return count;
 		}
 
-		return SCAST(unsigned, m_stream.gcount());
+		logging::log_warn(fmt::format("Failed to read from native file '{}' with error '{}'", info().path(), err.message()));
+
+		return 0;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -179,14 +204,70 @@ namespace io
 			return 0;
 		}
 
-		m_stream.write(RCAST(const char*, buffer), SCAST(std::streamsize, datasize));
+		std::error_code err;
 
-		if (m_stream)
+		auto count = (unsigned)m_file->write_some(asio::buffer(buffer, datasize), err);
+
+		if (!err)
 		{
-			return datasize;
+			m_seeking_position += count;
+
+			return count;
 		}
 
-		return SCAST(unsigned, m_stream.gcount());
+		logging::log_warn(fmt::format("Failed to write to native file '{}' with error '{}'", info().path(), err.message()));
+
+		return 0;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cnative_file::seek_to_start()
+	{
+		if (opened())
+		{
+			const auto file_size = (int64_t)size();
+
+			const auto p = (unsigned)m_file->seek(-file_size, asio::file_base::seek_basis::seek_end);
+
+			m_seeking_position = p;
+
+			return (p == 0);
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cnative_file::seek_to_end()
+	{
+		if (opened())
+		{
+			const auto file_size = (int64_t)size();
+
+			const auto p = (unsigned)m_file->seek(file_size, asio::file_base::seek_basis::seek_set);
+
+			m_seeking_position = p;
+
+			return (p == file_size);
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cnative_file::seek_to(unsigned offset)
+	{
+		if (opened())
+		{
+			const auto file_size = (int64_t)size();
+
+			CORE_ASSERT(offset >= 0 && offset <= file_size, "Invalid operation. Offset lies outside of file start and file end!");
+
+			const auto p = (unsigned)m_file->seek((int64_t)offset, asio::file_base::seek_basis::seek_set);
+
+			m_seeking_position = p;
+
+			return (p == offset);
+		}
+		return false;
 	}
 
 } //- io

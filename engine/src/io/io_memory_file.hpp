@@ -19,10 +19,13 @@ namespace io
 		bool opened() override final;
 		void open(int file_mode) override final;
 		void close() override final;
-		unsigned seek(unsigned offset, core::file_seek_origin origin) override final;
 		unsigned tell() override final;
 		unsigned read(byte_t* buffer, unsigned datasize) override final;
 		unsigned write(const byte_t* buffer, unsigned datasize) override final;
+		unsigned seek(int offset, core::file_seek_origin origin) override final;
+		bool seek_to_start() override final;
+		bool seek_to_end() override final;
+		bool seek_to(unsigned offset) override final;
 
 	private:
 		core::fs::cfileinfo m_info;

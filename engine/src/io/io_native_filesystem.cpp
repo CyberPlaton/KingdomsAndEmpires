@@ -67,7 +67,9 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cnative_filesystem::does_exist(const core::fs::cfileinfo& filepath) const
 	{
-		return false;
+		core::fs::cfileinfo info(base_path(), filepath.relative());
+
+		return find_file(info) != nullptr;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -80,6 +82,8 @@ namespace io
 
 		if (!exists)
 		{
+			algorithm::bit_set(file_mode, core::file_mode_truncate);
+
 			file = std::move(std::make_shared<cnative_file>(info));
 		}
 
@@ -132,10 +136,10 @@ namespace io
 	{
 		auto result = true;
 
-		if (const auto file = find_file(filepath); file)
-		{
-			core::fs::cfileinfo info(base_path(), filepath.relative());
+		core::fs::cfileinfo info(base_path(), filepath.relative());
 
+		if (const auto file = find_file(info); file)
+		{
 			if (std::filesystem::remove(info.path().data()))
 			{
 				m_file_list.erase(file);
@@ -150,19 +154,63 @@ namespace io
 	{
 		auto result = false;
 
-		auto source_file = find_file(source);
-		auto dest_file = open(dest, core::file_mode_write);
+		core::fs::cfileinfo info(base_path(), source.relative());
+		auto source_file = find_file(info);
+
+		info = core::fs::cfileinfo(base_path(), dest.relative());
+		auto dest_file = open(info, core::file_mode_write);
 
 		if (source_file && dest_file)
 		{
 			auto datasize = source_file->size();
 			vector_t<byte_t> buffer(SCAST(uint64_t, datasize));
 
-			const auto bytes_read = source_file->read(buffer.data(), datasize);
-			const auto bytes_written = dest_file->write(buffer.data(), datasize);
+			//- open and go to beginning of file for complete reading/writing
+			source_file->open(core::file_mode_read);
+
+			const auto source_seek_position = source_file->tell();
+			const auto dest_seek_position = dest_file->tell();
+
+			source_file->seek_to_start();
+			dest_file->seek_to_start();
+
+			int size = (int)datasize;
+			auto bytes_read = 0;
+			auto bytes_written = 0;
+
+			//- read and write chunk-wise until all has been copied or we could not read or write
+			bytes_read = source_file->read(buffer.data(), size);
+			while (bytes_read > 0)
+			{
+				bytes_written = dest_file->write(buffer.data(), bytes_read);
+
+				size -= bytes_read;
+
+				//- stop if we are done reading
+				if (bytes_read != bytes_written || size <= 0)
+				{
+					break;
+				}
+
+				bytes_read = source_file->read(buffer.data(), size);
+			}
+
+			//- restore seeking position for both files as they were before copy start
+			source_file->seek_to(source_seek_position);
+			dest_file->seek_to(dest_seek_position);
 
 			//- success only if we have read and copied complete file data
-			result = (bytes_read == bytes_written && bytes_read == datasize);
+			result = (bytes_written == datasize);
+		}
+		else if (!source_file)
+		{
+			logging::log_error(fmt::format("Failed to find source file '{}' for copyingto file '{}'",
+				source.relative(), dest.relative()));
+		}
+		else if (!dest_file)
+		{
+			logging::log_error(fmt::format("Failed to open destination file '{}' for copying from source '{}'",
+				dest.relative(), source.relative()));
 		}
 
 		return result;
@@ -173,11 +221,25 @@ namespace io
 	{
 		auto result = false;
 
-		auto source_file = find_file(source);
-		auto dest_file = find_file(dest);
+		core::fs::cfileinfo source_info(base_path(), source.relative());
+		core::fs::cfileinfo dest_info(base_path(), dest.relative());
 
-		if (source_file && dest_file)
+		auto source_file = find_file(source_info);
+		auto dest_file = find_file(dest_info);
+
+		if (source_file && !dest_file)
 		{
+			//- we have to assume that it is successful
+			std::filesystem::rename(source_info.path(), dest_info.path());
+
+			m_file_list.erase(source_file);
+
+			if (dest_file = open(dest, core::file_mode_read); dest_file)
+			{
+				result = true;
+
+				dest_file->close();
+			}
 		}
 
 		return result;

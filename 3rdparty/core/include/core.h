@@ -20,10 +20,12 @@ namespace stl = std;
 #include <nlohmann.h>
 #include <../src/simdjson.h>
 #include <../src/tracy.hpp>
+#define ASIO_NO_EXCEPTIONS
+#include <../src/asio.hpp>
 namespace miniz
 {
 #include <../src/miniz.hpp>
-}
+} //- miniz
 #include <cstddef>
 #include <memory>
 #include <filesystem>
@@ -361,9 +363,9 @@ namespace core
 	enum file_seek_origin : uint8_t
 	{
 		file_seek_origin_none = 0,
-		file_seek_origin_begin,
-		file_seek_origin_end,
-		file_seek_origin_set
+		file_seek_origin_begin,		//- position relative from start of file (i.e. forwards)
+		file_seek_origin_end,		//- position relative from end of file (i.e. backwards)
+		file_seek_origin_set		//- position relative from current position in file (i.e. relative to cursor in file)
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -686,6 +688,25 @@ namespace core
 	};
 
 } //- core
+
+namespace asio::detail
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	template <typename Exception>
+	void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_DEFAULTED_PARAM);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template <typename Exception>
+	void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_PARAM)
+	{
+		if (core::serror_reporter::instance().m_callback)
+		{
+			core::serror_reporter::instance().m_callback(core::logging_verbosity_critical,
+				fmt::format("[ASIO] Exception occurred with message '{}'", e.what()));
+		}
+	}
+
+} //- asio::detail
 
 namespace rttr
 {
@@ -2272,8 +2293,13 @@ namespace core
 			cfileinfo(stringview_t filepath);
 			~cfileinfo() = default;
 
+			//- complete path of file containing the basepath from filesystem and relative path from file
 			string_t path() const;
+
+			//- path from file only, not containing the basepath of any fileystem
 			string_t relative() const;
+
+			//- equivalent to std::filesystem::filename
 			string_t name() const;
 			string_t stem() const;
 			string_t ext() const;
@@ -2306,10 +2332,19 @@ namespace core
 			virtual bool opened()											= 0;
 			virtual void open(int file_mode)								= 0;
 			virtual void close()											= 0;
-			virtual unsigned seek(unsigned offset, file_seek_origin origin) = 0;
+			virtual unsigned seek(int offset, file_seek_origin origin)		= 0;
 			virtual unsigned tell()											= 0;
 			virtual unsigned read(byte_t* buffer, unsigned datasize)		= 0;
 			virtual unsigned write(const byte_t* buffer, unsigned datasize)	= 0;
+
+			//- Seek to start of file
+			virtual bool seek_to_start() = 0;
+
+			//- Seek to end of file
+			virtual bool seek_to_end() = 0;
+
+			//- Seek to position between start and end of file
+			virtual bool seek_to(unsigned offset) = 0;
 
 			template<typename TType>
 			bool read(TType& value) { return read(&value, sizeof(TType)) == sizeof(TType); }

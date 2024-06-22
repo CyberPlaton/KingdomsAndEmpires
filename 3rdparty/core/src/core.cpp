@@ -2422,8 +2422,18 @@ namespace core
 
 		//------------------------------------------------------------------------------------------------------------------------
 		cfileinfo::cfileinfo(stringview_t basepath, stringview_t filepath) :
-			std::filesystem::path(fmt::format("{}{}", basepath.data(), filepath.data())), m_relative(filepath.data())
+			std::filesystem::path(fmt::format("{}{}", basepath.data(), filepath.data()))
 		{
+			if (core::string_utils::starts_with(filepath, "/"))
+			{
+				//- ignore the '/'
+				m_relative = filepath.substr(1).data();
+			}
+			else
+			{
+				m_relative = filepath.data();
+			}
+
 			init();
 		}
 

@@ -80,7 +80,7 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	unsigned cmemory_file::seek(unsigned offset, core::file_seek_origin origin)
+	unsigned cmemory_file::seek(int offset, core::file_seek_origin origin)
 	{
 		if (!opened())
 		{
@@ -113,6 +113,48 @@ namespace io
 		}
 
 		return tell();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cmemory_file::seek_to_start()
+	{
+		if (opened())
+		{
+			m_seek_position = 0;
+
+			return true;
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cmemory_file::seek_to_end()
+	{
+		if (opened())
+		{
+			const auto file_size = size();
+
+			m_seek_position = file_size;
+
+			return true;
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cmemory_file::seek_to(unsigned offset)
+	{
+		if (opened())
+		{
+			const auto file_size = size();
+
+			CORE_ASSERT(offset >= 0 && offset <= file_size, "Invalid operation. Offset lies outside of file start and file end!");
+
+			m_seek_position = offset;
+
+			return true;
+		}
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

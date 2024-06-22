@@ -338,22 +338,21 @@ void allocators_test_runs()
 	}
 }
 
+//- Test all functionality of a filesystem to work as expected
 //------------------------------------------------------------------------------------------------------------------------
-bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
+bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 {
-	logging::log_info(fmt::format("\n#### '{}' Filesystem Testing Run ##########################################",
-		fs->filesystem_name().data()));
-
 	std::string m_data =
 		"Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
 		"Fusce volutpat suscipit mattis. Morbi porta ipsum ut dapibus vehicula.\n"
 		"Etiam in bibendum urna. Quisque in diam vitae leo pellentesque lobortis non quis nisi.\n"
 		"Fusce auctor aliquam lacus eu laoreet. Etiam pretium, leo ut molestie iaculis, ante purus ultricies nisl, sit amet pharetra arcu neque nec urna.\n"
 		"Morbi pretium ligula in libero scelerisque, eu maximus nulla mollis. Integer commodo lorem id mollis interdum. Morbi eget ipsum eu ex efficitur finibus sed at mi.\n"
+		"Etiam in bibendum urna. Quisque in diam vitae leo pellentesque lobortis non quis nisi.\n"
 		;
-	constexpr stringview_t C_FILENAME = "/testing_file.txt";
-	constexpr stringview_t C_COPY_FILENAME = "/testing_copy_file.txt";
-	constexpr stringview_t C_COPY_RENAME_FILENAME = "/testing_copy_rename_file.txt";
+	constexpr stringview_t C_FILENAME = "testing_file.txt";
+	constexpr stringview_t C_COPY_FILENAME = "testing_copy_file.txt";
+	constexpr stringview_t C_COPY_RENAME_FILENAME = "testing_copy_rename_file.txt";
 
 	//- testing individual filesystems for functionality
 	auto cwd = core::cfilesystem::cwd();
@@ -362,7 +361,7 @@ bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 	{
 		//- create file
 		{
-			if (!fs->create_file({ C_FILENAME.data()}))
+			if (!fs->create_file({ C_FILENAME.data() }))
 			{
 				logging::log_critical(fmt::format("\t...failed creating file!"));
 
@@ -376,17 +375,36 @@ bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 
 		//- open and write to file
 		{
-			if (file = fs->open({ C_FILENAME.data() }, core::file_mode_read_write); !file)
+			if (file = fs->open({ C_FILENAME.data() }, core::file_mode_read_write | core::file_mode_truncate); !file)
 			{
 				logging::log_critical(fmt::format("\t...failed opening file!"));
 
 				//- fatal error, does not make sense to proceed
 				return false;
 			}
+			else
+			{
+				logging::log_info(fmt::format("\t...success opening file '{}'", file->info().relative()));
+			}
 
-			if(const auto written = file->write((const uint8_t*)m_data.data(), m_data.length()); written != m_data.length())
+			auto written = 0;
+			if (written = file->write((const uint8_t*)m_data.data(), m_data.length()); written != m_data.length())
 			{
 				logging::log_warn(fmt::format("\t...written only '{}', but should have '{}'", written, m_data.length()));
+			}
+			else
+			{
+				logging::log_info(fmt::format("\t...success writing '{}' bytes", written));
+			}
+
+			//- set cursor position to start of file for read/write
+			if (!file->seek_to_start())
+			{
+				logging::log_error(fmt::format("\t...failed seeking to start. Expect subsequent operations to be failures"));
+			}
+			else
+			{
+				logging::log_info(fmt::format("\t...file cursor position '{}'", file->tell()));
 			}
 		}
 
@@ -394,14 +412,29 @@ bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 		{
 			vector_t<uint8_t> buffer(m_data.length());
 
-			if (const auto read = file->read(buffer.data(), m_data.length()); read != m_data.length())
+			auto read = 0;
+			if (read = file->read(buffer.data(), m_data.length()); read != m_data.length())
 			{
 				logging::log_warn(fmt::format("\t...read only '{}', but should have '{}'", read, m_data.length()));
+			}
+			else
+			{
+				logging::log_info(fmt::format("\t...success reading '{}' bytes", read));
 			}
 
 			buffer.push_back('\0');
 
 			logging::log_info(fmt::format("\t...file contents: '{}'", (const char*)buffer.data()));
+
+			//- set cursor position to start of file for read/write
+			if (!file->seek_to_start())
+			{
+				logging::log_error(fmt::format("\t...failed seeking to start. Expect subsequent operations to be failures"));
+			}
+			else
+			{
+				logging::log_info(fmt::format("\t...file cursor position '{}'", file->tell()));
+			}
 		}
 
 		//- copy file from one to another
@@ -421,6 +454,10 @@ bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 				//- fatal error, does not make sense to proceed
 				return false;
 			}
+
+			//- check that cursor position for file and copy are as expected
+			logging::log_warn(fmt::format("\t...file cursor positions. File: '{}', Copy: '{}'",
+				file->tell(), copied_file->tell()));
 
 			vector_t<uint8_t> buffer(m_data.length());
 
@@ -449,15 +486,73 @@ bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 			}
 		}
 
-		//- delete copy file leaving only source
+		//- remove all files created for testing
 		{
-			if(!fs->remove_file({ C_COPY_RENAME_FILENAME.data() }))
+			if (!fs->remove_file({ C_COPY_RENAME_FILENAME.data() }))
 			{
-				logging::log_error(fmt::format("\t...failed removing copied file!"));
+				logging::log_error(fmt::format("\t...failed removing file '{}'!", C_COPY_RENAME_FILENAME.data()));
+			}
+			if (!fs->remove_file({ C_FILENAME.data() }))
+			{
+				logging::log_error(fmt::format("\t...failed removing file '{}'!", C_FILENAME.data()));
+			}
+			if (!fs->remove_file({ C_COPY_FILENAME.data() }))
+			{
+				logging::log_error(fmt::format("\t...failed removing file '{}'!", C_COPY_FILENAME.data()));
 			}
 		}
 
 		fs->shutdown();
+		return true;
+	}
+	return false;
+}
+
+//- Test a filesystems performance for key operations
+//------------------------------------------------------------------------------------------------------------------------
+void filesystem_performance_tests(const core::fs::filesystem_ref_t& fs)
+{
+	//- 'profiling' times for:
+	//- open, write, read
+	core::ctimer general_timer;
+	core::ctimer open_timer;
+	core::ctimer read_timer;
+	core::ctimer write_timer;
+	float open_time_cumulative = 0.0f;
+	float read_time_cumulative = 0.0f;
+	float write_time_cumulative = 0.0f;
+
+	//- testing individual filesystems for functionality
+	auto cwd = core::cfilesystem::cwd();
+
+	if (fs->init(cwd.view()))
+	{
+
+
+		fs->shutdown();
+
+		//- get time data for all tests
+		const auto ms = general_timer.millisecs();
+
+		logging::log_warn("-----------------------------------------------------------------------------------------");
+		logging::log_info(fmt::format("Total Time: '{}ms'", ms));
+		logging::log_info(fmt::format("'open' Time: '{}us'", open_time_cumulative));
+		logging::log_info(fmt::format("'read' Time: '{}us'", read_time_cumulative));
+		logging::log_info(fmt::format("'write' Time: '{}us'", write_time_cumulative));
+	}
+}
+
+//- Test a filesystem implementation complete for functionality and performance
+//------------------------------------------------------------------------------------------------------------------------
+bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
+{
+	logging::log_info(fmt::format("\n#### '{}' Filesystem Testing Run ##########################################",
+		fs->filesystem_name().data()));
+
+	if (filesystem_functionality_tests(fs))
+	{
+		filesystem_performance_tests(fs);
+
 		return true;
 	}
 	return false;
