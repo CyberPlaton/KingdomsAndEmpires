@@ -41,10 +41,11 @@ int __real_main(int argc, char* argv[])
 {
 	AllocConsole();
 
-	logging::init();
+	logging::init(core::logging_verbosity::logging_verbosity_debug);
 
 	engine::cengine::sconfig cfg;
 	cfg.m_services_cfg.emplace_back("cthread_service");
+	cfg.m_services_cfg.emplace_back("cvirtual_filesystem");
 	cfg.m_services_cfg.emplace_back("cevent_service");
 
 	cfg.m_layers_cfg.emplace_back("cgame");

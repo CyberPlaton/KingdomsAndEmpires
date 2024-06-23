@@ -2,54 +2,6 @@
 
 namespace sm
 {
-	namespace
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TResource, typename THandle, typename... ARGS>
-		core::cfuture_type<THandle> load_of_async(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
-		{
-			core::cfuture_type<THandle> result = core::casync::launch_async([&]() -> THandle
-				{
-					const auto hash = algorithm::hash(name);
-
-					//- correctly forward arguments and hash
-					data.emplace(std::piecewise_construct,
-								std::forward_as_tuple(hash),
-								std::forward_as_tuple(std::forward<ARGS>(args)...));
-
-					return hash;
-
-				}).share();
-
-			return result;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TResource, typename THandle, typename... ARGS>
-		THandle load_of_sync(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
-		{
-			unsigned hash = algorithm::hash(name);
-
-			//- correctly forward arguments and hash
-			data.emplace(std::piecewise_construct,
-						std::forward_as_tuple(hash),
-						std::forward_as_tuple(std::forward<ARGS>(args)...));
-
-			return THandle(hash);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TResource>
-		void destroy_all(umap_t<unsigned, TResource>& data)
-		{
-			for (auto& pair : data)
-			{
-				TResource::destroy(pair.second);
-			}
-		}
-
-	} //- unnamed
-
 	//------------------------------------------------------------------------------------------------------------------------
 	cimage_manager::cimage_manager(unsigned reserve /*= C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT*/)
 	{

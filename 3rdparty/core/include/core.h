@@ -1184,18 +1184,20 @@ namespace core
 
 		static memory_ref_t make_ref(void* data, unsigned size, release_callback_t&& release_callback);
 
-		cmemory(unsigned size, release_callback_t&& release_callback);
-		cmemory(void* data, unsigned size, release_callback_t&& release_callback);
 		~cmemory();
 
 		void* data() { return m_data; }
-		void* data() const { return m_data; }
+		const void* data() const { return m_data; }
 		unsigned size() const { return m_size; }
 
 	private:
 		release_callback_t m_release;
 		unsigned m_size;
 		void* m_data;
+
+	private:
+		cmemory(unsigned size, release_callback_t&& release_callback);
+		cmemory(void* data, unsigned size, release_callback_t&& release_callback);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1534,6 +1536,124 @@ namespace core
 		detail::cdynamic_pool<snode> m_pool;
 		snode m_root;
 	};
+
+	//- Resource manager interface. Data is not serialized, the class serves to avoid redefining functionality
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	class iresource_manager
+	{
+	public:
+		virtual ~iresource_manager() = default;
+
+		bool lookup(stringview_t name) const;
+		TResource& get(stringview_t name);
+		const TResource& at(stringview_t name) const;
+
+		TResource& get(THandle handle);
+		const TResource& at(THandle handle) const;
+
+		template<typename TCallable>
+		void each(TCallable&& callback);
+
+	protected:
+		umap_t<unsigned, TResource> m_data;
+
+	protected:
+		//- Utility function that calls 'destroy' on data of resource manager. A resource must define a static 'destroy' function,
+		//- for examples see sm_config.hpp
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TResource>
+		void destroy_all(umap_t<unsigned, TResource>& data)
+		{
+			for (auto& pair : data)
+			{
+				TResource::destroy(pair.second);
+			}
+		}
+
+		//- Utility function to load a resource synchronously and construct it in-place with given arguments.
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TResource, typename THandle, typename... ARGS>
+		THandle load_of_sync(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
+		{
+			unsigned hash = algorithm::hash(name);
+
+			//- correctly forward arguments and hash
+			data.emplace(std::piecewise_construct,
+				std::forward_as_tuple(hash),
+				std::forward_as_tuple(std::forward<ARGS>(args)...));
+
+			return THandle(hash);
+		}
+
+		//- Utility function to load a resource asynchronously and construct it in-place with given arguments. Returns a future that
+		//- will notify when resource handle is ready.
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TResource, typename THandle, typename... ARGS>
+		core::cfuture_type<THandle> load_of_async(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
+		{
+			core::cfuture_type<THandle> result = core::casync::launch_async([&]() -> THandle
+				{
+					const auto hash = algorithm::hash(name);
+
+					//- correctly forward arguments and hash
+					data.emplace(std::piecewise_construct,
+						std::forward_as_tuple(hash),
+						std::forward_as_tuple(std::forward<ARGS>(args)...));
+
+					return hash;
+
+				}).share();
+
+				return result;
+		}
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	template<typename TCallable>
+	void core::iresource_manager<TResource, THandle>::each(TCallable&& callback)
+	{
+		for (const auto& pair : m_data)
+		{
+			callback(pair.second);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	const TResource& core::iresource_manager<TResource, THandle>::at(stringview_t name) const
+	{
+		return m_data.at(algorithm::hash(name));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	TResource& core::iresource_manager<TResource, THandle>::get(stringview_t name)
+	{
+		return m_data[algorithm::hash(name)];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	const TResource& core::iresource_manager<TResource, THandle>::at(THandle handle) const
+	{
+		return m_data.at(handle);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	TResource& core::iresource_manager<TResource, THandle>::get(THandle handle)
+	{
+		return m_data[handle];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename THandle>
+	bool core::iresource_manager<TResource, THandle>::lookup(stringview_t name) const
+	{
+		return m_data.find(algorithm::hash(name)) != m_data.end();
+	}
 
 } //- core
 
