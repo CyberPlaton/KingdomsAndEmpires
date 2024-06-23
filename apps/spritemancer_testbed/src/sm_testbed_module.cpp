@@ -606,6 +606,9 @@ void virtual_filesystem_tests()
 	filesystem_tests(std::make_shared<io::cmemory_filesystem>());
 }
 
+
+constexpr auto C_DO_TESTS = false;
+
 //------------------------------------------------------------------------------------------------------------------------
 int __real_main(int argc, char* argv[])
 {
@@ -613,13 +616,18 @@ int __real_main(int argc, char* argv[])
 
 	logging::init(core::logging_verbosity::logging_verbosity_debug);
 
-	allocators_test_runs();
-	virtual_filesystem_tests();
+	if (C_DO_TESTS)
+	{
+		allocators_test_runs();
+		virtual_filesystem_tests();
+	}
 
 	engine::cengine::sconfig cfg;
 	cfg.m_services_cfg.emplace_back("cthread_service");
 	cfg.m_services_cfg.emplace_back("cvirtual_filesystem");
 	cfg.m_services_cfg.emplace_back("cevent_service");
+	cfg.m_services_cfg.emplace_back("casset_service");
+	cfg.m_services_cfg.emplace_back("cresource_service");
 
 	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");

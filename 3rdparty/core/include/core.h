@@ -981,7 +981,7 @@ namespace core
 
 	} //- detail
 
-	//- base class for a service
+	//- Base class for a service.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cservice
 	{
@@ -1184,6 +1184,9 @@ namespace core
 
 		static memory_ref_t make_ref(void* data, unsigned size, release_callback_t&& release_callback);
 
+		//- Constructors must be declared as public, otherwise std::make_shared cannot access them.
+		cmemory(unsigned size, release_callback_t&& release_callback);
+		cmemory(void* data, unsigned size, release_callback_t&& release_callback);
 		~cmemory();
 
 		void* data() { return m_data; }
@@ -1194,10 +1197,6 @@ namespace core
 		release_callback_t m_release;
 		unsigned m_size;
 		void* m_data;
-
-	private:
-		cmemory(unsigned size, release_callback_t&& release_callback);
-		cmemory(void* data, unsigned size, release_callback_t&& release_callback);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1537,13 +1536,13 @@ namespace core
 		snode m_root;
 	};
 
-	//- Resource manager interface. Data is not serialized, the class serves to avoid redefining functionality
+	//- Base class for a resource manager. Data is not serialized, the class serves to avoid redefining functionality
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource, typename THandle>
-	class iresource_manager
+	template<typename TResource, typename THandle = handle_type_t>
+	class cresource_manager
 	{
 	public:
-		virtual ~iresource_manager() = default;
+		virtual ~cresource_manager() = default;
 
 		bool lookup(stringview_t name) const;
 		TResource& get(stringview_t name);
@@ -1607,12 +1606,14 @@ namespace core
 
 				return result;
 		}
+
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource, typename THandle>
 	template<typename TCallable>
-	void core::iresource_manager<TResource, THandle>::each(TCallable&& callback)
+	void core::cresource_manager<TResource, THandle>::each(TCallable&& callback)
 	{
 		for (const auto& pair : m_data)
 		{
@@ -1622,35 +1623,35 @@ namespace core
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource, typename THandle>
-	const TResource& core::iresource_manager<TResource, THandle>::at(stringview_t name) const
+	const TResource& core::cresource_manager<TResource, THandle>::at(stringview_t name) const
 	{
 		return m_data.at(algorithm::hash(name));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource, typename THandle>
-	TResource& core::iresource_manager<TResource, THandle>::get(stringview_t name)
+	TResource& core::cresource_manager<TResource, THandle>::get(stringview_t name)
 	{
 		return m_data[algorithm::hash(name)];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource, typename THandle>
-	const TResource& core::iresource_manager<TResource, THandle>::at(THandle handle) const
+	const TResource& core::cresource_manager<TResource, THandle>::at(THandle handle) const
 	{
 		return m_data.at(handle);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource, typename THandle>
-	TResource& core::iresource_manager<TResource, THandle>::get(THandle handle)
+	TResource& core::cresource_manager<TResource, THandle>::get(THandle handle)
 	{
 		return m_data[handle];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource, typename THandle>
-	bool core::iresource_manager<TResource, THandle>::lookup(stringview_t name) const
+	bool core::cresource_manager<TResource, THandle>::lookup(stringview_t name) const
 	{
 		return m_data.find(algorithm::hash(name)) != m_data.end();
 	}
@@ -2030,6 +2031,8 @@ namespace core
 
 		template<class TService>
 		static TService* find();
+
+		static core::cservice* find(const rttr::type& type);
 
 		template<class TService>
 		static TService* emplace();

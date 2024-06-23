@@ -2164,6 +2164,25 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	core::cservice* cservice_manager::find(const rttr::type& type)
+	{
+		auto id = type.get_id();
+
+		if (s_service_types.find(id) != s_service_types.end())
+		{
+			auto& var = s_services[s_service_types[id]];
+
+			ASSERT(var.is_valid(), "Invalid operation. Trying to retrieve a released service");
+
+			return get_base_service(var);
+		}
+
+		ASSERT(false, "Invalid operation. Service does not exist");
+
+		return nullptr;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	bool cservice_manager::emplace(rttr::type service_type)
 	{
 		if (s_next_type < core::cservice::C_SERVICE_COUNT_MAX && service_type.is_valid())

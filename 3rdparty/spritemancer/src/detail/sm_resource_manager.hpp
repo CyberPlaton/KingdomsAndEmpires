@@ -6,7 +6,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class cimage_manager final :
 		public core::cservice,
-		public core::iresource_manager<cimage, image_handle_t>
+		public core::cresource_manager<cimage, image_handle_t>
 	{
 	public:
 		cimage_manager(unsigned reserve = C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -25,7 +25,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class ctexture_manager final :
 		public core::cservice,
-		public core::iresource_manager<ctexture, texture_handle_t>
+		public core::cresource_manager<ctexture, texture_handle_t>
 	{
 	public:
 		ctexture_manager(unsigned reserve = C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -46,7 +46,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class cshader_manager final :
 		public core::cservice,
-		public core::iresource_manager<cshader, shader_handle_t>
+		public core::cresource_manager<cshader, shader_handle_t>
 	{
 	public:
 		cshader_manager(unsigned reserve = C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -67,7 +67,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class cspriteatlas_manager final :
 		public core::cservice,
-		public core::iresource_manager<cspriteatlas, spriteatlas_handle_t>
+		public core::cresource_manager<cspriteatlas, spriteatlas_handle_t>
 	{
 	public:
 		cspriteatlas_manager(unsigned reserve = C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT);
@@ -84,7 +84,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	class crendertarget_manager final :
 		public core::cservice,
-		public core::iresource_manager<crendertarget, rendertarget_handle_t>
+		public core::cresource_manager<crendertarget, rendertarget_handle_t>
 	{
 	public:
 		crendertarget_manager(unsigned reserve = C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT);

@@ -7,6 +7,8 @@
 #include "editor/editor_visualizer.hpp"
 #include "layer.hpp"
 #include "services/thread_service.hpp"
+#include "services/asset_service.hpp"
+#include "services/resource_service.hpp"
 #include "io/io_memory_filesystem.hpp"
 #include "io/io_native_filesystem.hpp"
 #include <argparse.h>
