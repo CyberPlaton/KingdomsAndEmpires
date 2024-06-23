@@ -8,7 +8,7 @@ function core()
 					{"spdlog"},
 					"c++",
 					{}, -- plugin_headeronly_deps
-					{"rapidjson", "nlohmann", "glm", "magic_enum", "taskflow", "Tracy"}, -- thirdparty_headeronly_deps
+					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy"}, -- thirdparty_headeronly_deps
 					{"src"} -- additional_includes
 					)
 end
