@@ -6,6 +6,7 @@
 #include "editor/editor_tool.hpp"
 #include "editor/editor_visualizer.hpp"
 #include "layer.hpp"
+#include "test.hpp"
 #include "services/thread_service.hpp"
 #include "services/asset_service.hpp"
 #include "services/resource_service.hpp"
@@ -28,6 +29,32 @@ namespace engine
 		engine_run_result_failed_registering_resource_managers,
 		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
+	};
+
+	//- Class containing array of tests to be executed.
+	//------------------------------------------------------------------------------------------------------------------------
+	class ctests final
+	{
+	public:
+		STATIC_INSTANCE_EX(ctests);
+		ctests() = default;
+		~ctests() = default;
+
+		void run(stest::phase phase);
+		void set_log(const core::error_report_function_t& log);
+		void add_test(stringview_t test);
+
+	private:
+		struct stest_data
+		{
+			string_t m_name;
+			rttr::method m_run;
+			rttr::method m_can_run;
+			rttr::method m_phase;
+		};
+
+		umap_t<stest::phase, vector_t<stest_data>> m_tests;
+		core::error_report_function_t m_log = nullptr;
 	};
 
 	//- Class containing array of layers that are currently present. Responsible for any layer management and execution.
@@ -79,13 +106,18 @@ namespace engine
 		{
 			vector_t<string_t> m_services_cfg;
 			vector_t<string_t> m_layers_cfg;
+			vector_t<string_t> m_tests;
 
 			RTTR_ENABLE();
 		};
 
 	public:
-		template<class TService>
+		template<typename TService>
 		static auto service();
+
+		template<typename TResource>
+		static auto manager();
+
 
 		STATIC_INSTANCE(cengine, s_cengine);
 		~cengine();
@@ -106,11 +138,20 @@ namespace engine
 	};
 
 	//- Shortcuts for common operations
+	//- Find given service
 	//------------------------------------------------------------------------------------------------------------------------
-	template<class TService>
+	template<typename TService>
 	auto engine::cengine::service()
 	{
 		return core::cservice_manager::find<TService>();
+	}
+
+	//- Find resource manager for given resource
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	auto engine::cengine::manager()
+	{
+		return core::cservice_manager::find<cresource_service>()->manager<TResource>();
 	}
 
 } //- engine
@@ -123,6 +164,7 @@ namespace engine
 		rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
 			.property("m_services_cfg", &cengine::sconfig::m_services_cfg)
 			.property("m_layers_cfg", &cengine::sconfig::m_layers_cfg)
+			.property("m_tests", &cengine::sconfig::m_tests)
 			;
 
 		rttr::default_constructor<cengine::sconfig>();

@@ -208,21 +208,6 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_thread()
 		{
-			//- starting up
-			if (entry::get_os()->init_gfx(S_W, S_H, S_FULLSCREEN, S_VSYNC) != opresult_ok)
-			{
-				return;
-			}
-
-			engine_prepare();
-
-			if (entry::get_app()->on_init(S_CONFIG, S_ARGS))
-			{
-				S_RUNNING = false;
-			}
-
-			engine_finalize_init();
-
 			//- main loop
 			while (S_RUNNING)
 			{
@@ -289,6 +274,23 @@ namespace sm
 		S_FULLSCREEN = fullscreen;
 		S_VSYNC = vsync;
 
+		//- starting up graphics and app
+		if (entry::get_os()->init_gfx(S_W, S_H, S_FULLSCREEN, S_VSYNC) != opresult_ok)
+		{
+			return opresult_fail;
+		}
+
+		engine_prepare();
+
+		//- TODO: ignore return value for testing and development
+		entry::get_app()->on_init(S_CONFIG, S_ARGS);
+// 		if (entry::get_app()->on_init(S_CONFIG, S_ARGS))
+// 		{
+// 			return opresult_fail;
+// 		}
+
+		engine_finalize_init();
+
 		return opresult_ok;
 	}
 
@@ -296,8 +298,6 @@ namespace sm
 	sm::opresult run()
 	{
 		S_RUNNING = true;
-
-		entry::get_os()->optional_init_event_mainloop();
 
 		engine_thread();
 

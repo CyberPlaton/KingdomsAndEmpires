@@ -8,6 +8,27 @@ namespace engine
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void ctests::run(stest::phase phase)
+	{
+		for (const auto& tests : m_tests[phase])
+		{
+
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ctests::set_log(const core::error_report_function_t& log)
+	{
+		m_log = log;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ctests::add_test(stringview_t test)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	clayers::slayer_data::slayer_data(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
 		rttr::method post_update, rttr::method on_init, rttr::method on_shutdown) :
 		m_name(name.data()), m_update(update), m_world_render(world_render), m_ui_render(ui_render), m_post_update(post_update),

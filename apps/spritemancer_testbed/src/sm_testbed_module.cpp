@@ -54,14 +54,6 @@ void cexample_app_layer::shutdown()
 //------------------------------------------------------------------------------------------------------------------------
 void cexample_app_layer::on_update(float dt)
 {
-	using namespace engine;
-
-	auto* shader_manager = cengine::service<cresource_service>()->manager<sm::cshader_manager>();
-
-	if (shader_manager)
-	{
-		shader_manager->lookup("what");
-	}
 }
 
 //------------------------------------------------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 namespace engine
 {
 	//- This is a dummy layer to show how one should be defined. While creating one you must not inherit from it.
-	//- Remeember to define all functions as shown below and reflect them using the macro REGISTER_LAYER().
+	//- Remember to define all functions as shown below and reflect them using the macro REGISTER_LAYER().
 	//------------------------------------------------------------------------------------------------------------------------
 	struct slayer final
 	{
@@ -23,10 +23,6 @@ namespace engine
 		static void on_world_render()		{}
 		static void on_ui_render()			{}
 		static void on_post_update(float)	{}
-
-		virtual ~slayer() = default;
-
-		RTTR_ENABLE();
 	};
 
 } //- engine
