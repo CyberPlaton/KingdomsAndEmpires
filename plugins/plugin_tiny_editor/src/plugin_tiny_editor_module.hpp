@@ -13,6 +13,7 @@
 
 namespace editor
 {
+	//- Editor layer. Adding this to engine layers basically enables editor functionality.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ceditor
 	{

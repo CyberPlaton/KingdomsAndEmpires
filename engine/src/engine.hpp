@@ -68,6 +68,7 @@ namespace engine
 			void on_ui_render();
 			void on_post_update(float dt);
 
+			vector_t<string_t> m_layer_names;
 			vector_t<rttr::method> m_layer_update;
 			vector_t<rttr::method> m_layer_world_render;
 			vector_t<rttr::method> m_layer_ui_render;

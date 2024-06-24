@@ -33,11 +33,11 @@ namespace engine
 	template<typename TResource>
 	core::cresource_manager<TResource>* engine::cresource_service::manager()
 	{
-		if (const auto type = rttr::type::get<TResource>()..get_id(); type.is_valid())
+		if (const auto type = rttr::type::get<TResource>(); type.is_valid())
 		{
 			auto* service = core::cservice_manager::find(type);
 
-			return RCAST(core::cresource_manager*, service);
+			return RCAST(core::cresource_manager<TResource>*, service);
 		}
 
 		logging::log_warn(fmt::format("Failed to find a manager for resource '{}'",

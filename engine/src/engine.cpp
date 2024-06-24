@@ -10,9 +10,19 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	void cengine::clayers::init()
 	{
-		for (const auto& m : m_layer_init)
+		for (auto i = 0u; i < m_layer_init.size(); ++i)
 		{
-			m.invoke({});
+			const auto& meth = m_layer_init[i];
+
+			auto var = meth.invoke({});
+
+			if (const auto result = var.convert<bool>(); !result)
+			{
+				//- Layer init failed, for now we report without removing the layer
+				logging::log_error(fmt::format("\tinit failed for '{}'...", m_layer_names[i]));
+
+				//- TODO(optionally): remove layer when init failed.
+			}
 		}
 	}
 
@@ -103,14 +113,14 @@ namespace engine
 		{
 			if (!try_push_layer(layer))
 			{
-				logging::log_error(fmt::format("\t'{}' failed...", layer));
+				logging::log_error(fmt::format("\tfailed pushing '{}'...", layer));
 
 				//- fail configuration but let all try to register so we know all those that are bogus
 				m_result = engine_run_result_failed_pushing_layers;
 			}
 			else
 			{
-				logging::log_info(fmt::format("\t'{}' success...", layer));
+				logging::log_info(fmt::format("\tsuccess pushing '{}'...", layer));
 			}
 		}
 
@@ -191,6 +201,8 @@ namespace engine
 			{
 				m_layers.m_layer_shutdown.emplace_back(shutdown_method);
 			}
+
+			m_layers.m_layer_names.emplace_back(name.data());
 
 			return update_method.is_valid() || world_render_method.is_valid() ||
 				ui_render_method.is_valid() || post_update_method.is_valid() ||

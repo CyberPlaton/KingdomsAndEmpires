@@ -565,7 +565,7 @@ namespace sm
 		virtual void post_shutdown() = 0;	//- shutdown after os and graphics context
 	};
 
-	//- Interface class for application to derive from and implement only three basic functions
+	//- Interface class for application to derive from and implement functionality
 	//------------------------------------------------------------------------------------------------------------------------
 	class iapp
 	{

@@ -1,5 +1,6 @@
 #pragma once
 #include "detail/sm_config.hpp"
+#include "detail/sm_resource_manager.hpp"
 
 namespace sm
 {
