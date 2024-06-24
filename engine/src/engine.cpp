@@ -26,11 +26,17 @@ namespace engine
 
 			CORE_ASSERT(meth.is_valid(), "Invalid operation. Layer init function must be present!");
 
+			logging::log_info(fmt::format("\t'{}'", m_layers[i].m_name));
+
 			if (const auto var = meth.invoke({}); !var.to_bool())
 			{
-				logging::log_error(fmt::format("\tinit failed for '{}'... This layer will be removed!", m_layers[i].m_name));
+				logging::log_error("\t\t...fail. This layer will be removed!");
 
 				failed_layers.push_back(i);
+			}
+			else
+			{
+				logging::log_info("\t\t...ok");
 			}
 		}
 
@@ -111,15 +117,17 @@ namespace engine
 
 		for (const auto& name : m_config.m_services_cfg)
 		{
+			logging::log_info(fmt::format("\t'{}'", name));
+
 			const auto type = rttr::type::get_by_name(name.c_str());
 
 			if (type.is_valid() && core::cservice_manager::emplace(type))
 			{
-				logging::log_info(fmt::format("\t'{}' success...", type.get_name().data()));
+				logging::log_info("\t\t...ok");
 			}
 			else
 			{
-				logging::log_critical(fmt::format("\t'{}' failed...", name));
+				logging::log_critical("\t\t...fail");
 
 				//- fail configuration but let all try to register so we know all those that are bogus
 				m_result = engine_run_result_failed_registering_services;
@@ -129,17 +137,26 @@ namespace engine
 		core::cservice_manager::init();
 
 		//- create and init layers
-		logging::log_info("Initializing layers...");
+		logging::log_info("Pushing layers...");
 
 		for (const auto& layer : m_config.m_layers_cfg)
 		{
-			logging::log_debug(fmt::format("Pushing layer '{}'", layer));
+			logging::log_info(fmt::format("\t'{}'", layer));
+
 			if (!try_push_layer(layer))
 			{
+				logging::log_error("\t\t...fail");
+
 				//- fail configuration but let all try to register so we know all those that are bogus
 				m_result = engine_run_result_failed_pushing_layers;
 			}
+			else
+			{
+				logging::log_info("\t\t...ok");
+			}
 		}
+
+		logging::log_info("Initializing layers...");
 
 		m_layers.init();
 
@@ -202,18 +219,18 @@ namespace engine
 			if (!(update_method.is_valid() && world_render_method.is_valid() && ui_render_method.is_valid() &&
 				post_update_method.is_valid() && init_method.is_valid() && shutdown_method.is_valid()))
 			{
-				logging::log_error(fmt::format("A layer function was not defined for '{}', note that this can be detremental to performance!", name.data()));
+				logging::log_error("\t\tA function not defined, this can be detremental to performance!");
 
 				//- Check which functions are defined and which not
 				for (const auto& func_name : slayer::C_LAYER_FUNC_NAMES)
 				{
 					if (const auto& meth = type.get_method(func_name.data()); meth.is_valid())
 					{
-						logging::log_info(fmt::format("\t'{}'... OK", meth.get_signature().data()));
+						logging::log_info(fmt::format("\t\t\t'{}'... OK", meth.get_signature().data()));
 					}
 					else
 					{
-						logging::log_warn(fmt::format("\t'{}'... UNDEFINED", func_name.data()));
+						logging::log_warn(fmt::format("\t\t\t'{}'... UNDEFINED", func_name.data()));
 					}
 				}
 			}
@@ -221,18 +238,18 @@ namespace engine
 			else if (!(update_method.is_static() && world_render_method.is_static() && ui_render_method.is_static() &&
 				post_update_method.is_static() && init_method.is_static() && shutdown_method.is_static()))
 			{
-				logging::log_error(fmt::format("A layer function was not declared as 'static' for '{}', this will result in undefined behavior!", name.data()));
+				logging::log_error("\t\tA function not decalred 'static', this will result in undefined behavior!");
 
 				//- Check which functions are static and which not
 				for (const auto& func_name : slayer::C_LAYER_FUNC_NAMES)
 				{
 					if (const auto& meth = type.get_method(func_name.data()); meth.is_valid())
 					{
-						logging::log_info(fmt::format("\t'{}'... OK", meth.get_signature().data()));
+						logging::log_info(fmt::format("\t\t\t'{}'... OK", meth.get_signature().data()));
 					}
 					else
 					{
-						logging::log_warn(fmt::format("\t'{}'... NOT 'static'", func_name.data()));
+						logging::log_warn(fmt::format("\t\t\t'{}'... NOT 'static'", func_name.data()));
 					}
 				}
 			}
