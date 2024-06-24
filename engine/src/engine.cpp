@@ -8,67 +8,89 @@ namespace engine
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cengine::clayers::init()
+	clayers::slayer_data::slayer_data(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
+		rttr::method post_update, rttr::method on_init, rttr::method on_shutdown) :
+		m_name(name.data()), m_update(update), m_world_render(world_render), m_ui_render(ui_render), m_post_update(post_update),
+		m_init(on_init), m_shutdown(on_shutdown)
 	{
-		for (auto i = 0u; i < m_layer_init.size(); ++i)
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void clayers::init()
+	{
+		vector_t<unsigned> failed_layers; failed_layers.reserve(m_layers.size());
+
+		for (auto i = 0u; i < m_layers.size(); ++i)
 		{
-			const auto& meth = m_layer_init[i];
+			const auto& meth = m_layers[i].m_init;
 
-			auto var = meth.invoke({});
+			CORE_ASSERT(meth.is_valid(), "Invalid operation. Layer init function must be present!");
 
-			if (const auto result = var.convert<bool>(); !result)
+			if (const auto var = meth.invoke({}); !var.to_bool())
 			{
-				//- Layer init failed, for now we report without removing the layer
-				logging::log_error(fmt::format("\tinit failed for '{}'...", m_layer_names[i]));
+				logging::log_error(fmt::format("\tinit failed for '{}'... This layer will be removed!", m_layers[i].m_name));
 
-				//- TODO(optionally): remove layer when init failed.
+				failed_layers.push_back(i);
 			}
 		}
-	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void cengine::clayers::shutdown()
-	{
-		for (const auto& m : m_layer_shutdown)
+		//- Remove layers that have failed and should not be ran
+		for (auto& idx : failed_layers)
 		{
-			m.invoke({});
+			algorithm::erase_at_index(m_layers, idx);
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cengine::clayers::on_update(float dt)
+	void clayers::shutdown()
 	{
-		for (const auto& m : m_layer_update)
+		for (const auto& layer : m_layers)
 		{
-			m.invoke({}, dt);
+			execute_method(layer.m_shutdown);
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cengine::clayers::on_world_render()
+	void clayers::on_update(float dt)
 	{
-		for (const auto& m : m_layer_world_render)
+		for (const auto& layer : m_layers)
 		{
-			m.invoke({});
+			execute_method(layer.m_update);
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cengine::clayers::on_ui_render()
+	void clayers::on_world_render()
 	{
-		for (const auto& m : m_layer_ui_render)
+		for (const auto& layer : m_layers)
 		{
-			m.invoke({});
+			execute_method(layer.m_world_render);
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cengine::clayers::on_post_update(float dt)
+	void clayers::on_ui_render()
 	{
-		for (const auto& m : m_layer_post_update)
+		for (const auto& layer : m_layers)
 		{
-			m.invoke({}, dt);
+			execute_method(layer.m_ui_render);
 		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void clayers::on_post_update(float dt)
+	{
+		for (const auto& layer : m_layers)
+		{
+			execute_method(layer.m_post_update);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void clayers::emplace_new_layer(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
+		rttr::method post_update, rttr::method on_init, rttr::method on_shutdown)
+	{
+		m_layers.emplace_back(name, update, world_render, ui_render, post_update, on_init, on_shutdown);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -111,16 +133,11 @@ namespace engine
 
 		for (const auto& layer : m_config.m_layers_cfg)
 		{
+			logging::log_debug(fmt::format("Pushing layer '{}'", layer));
 			if (!try_push_layer(layer))
 			{
-				logging::log_error(fmt::format("\tfailed pushing '{}'...", layer));
-
 				//- fail configuration but let all try to register so we know all those that are bogus
 				m_result = engine_run_result_failed_pushing_layers;
-			}
-			else
-			{
-				logging::log_info(fmt::format("\tsuccess pushing '{}'...", layer));
 			}
 		}
 
@@ -167,6 +184,8 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cengine::try_push_layer(stringview_t name)
 	{
+		auto result = false;
+
 		if (auto type = rttr::type::get_by_name(name.data()); type.is_valid())
 		{
 			//- check that at least one function is present
@@ -177,38 +196,52 @@ namespace engine
 			auto init_method			= type.get_method(slayer::C_LAYER_INIT_FUNC_NAME.data());
 			auto shutdown_method		= type.get_method(slayer::C_LAYER_SHUTDOWN_FUNC_NAME.data());
 
-			if (update_method.is_valid())
-			{
-				m_layers.m_layer_update.emplace_back(update_method);
-			}
-			if (world_render_method.is_valid())
-			{
-				m_layers.m_layer_world_render.emplace_back(world_render_method);
-			}
-			if (ui_render_method.is_valid())
-			{
-				m_layers.m_layer_ui_render.emplace_back(ui_render_method);
-			}
-			if (post_update_method.is_valid())
-			{
-				m_layers.m_layer_post_update.emplace_back(post_update_method);
-			}
-			if (init_method.is_valid())
-			{
-				m_layers.m_layer_init.emplace_back(init_method);
-			}
-			if (shutdown_method.is_valid())
-			{
-				m_layers.m_layer_shutdown.emplace_back(shutdown_method);
-			}
+			m_layers.emplace_new_layer(name, update_method, world_render_method, ui_render_method, post_update_method, init_method, shutdown_method);
 
-			m_layers.m_layer_names.emplace_back(name.data());
+			//- Check that all methods are valid and issue a warning if not, as this can be detremental to performance
+			if (!(update_method.is_valid() && world_render_method.is_valid() && ui_render_method.is_valid() &&
+				post_update_method.is_valid() && init_method.is_valid() && shutdown_method.is_valid()))
+			{
+				logging::log_error(fmt::format("A layer function was not defined for '{}', note that this can be detremental to performance!", name.data()));
 
-			return update_method.is_valid() || world_render_method.is_valid() ||
-				ui_render_method.is_valid() || post_update_method.is_valid() ||
-				init_method.is_valid() || shutdown_method.is_valid();
+				//- Check which functions are defined and which not
+				for (const auto& func_name : slayer::C_LAYER_FUNC_NAMES)
+				{
+					if (const auto& meth = type.get_method(func_name.data()); meth.is_valid())
+					{
+						logging::log_info(fmt::format("\t'{}'... OK", meth.get_signature().data()));
+					}
+					else
+					{
+						logging::log_warn(fmt::format("\t'{}'... UNDEFINED", func_name.data()));
+					}
+				}
+			}
+			//- Check that all methods are declared as static, if not undefined behavior will occurr, so this is an error actually.
+			else if (!(update_method.is_static() && world_render_method.is_static() && ui_render_method.is_static() &&
+				post_update_method.is_static() && init_method.is_static() && shutdown_method.is_static()))
+			{
+				logging::log_error(fmt::format("A layer function was not declared as 'static' for '{}', this will result in undefined behavior!", name.data()));
+
+				//- Check which functions are static and which not
+				for (const auto& func_name : slayer::C_LAYER_FUNC_NAMES)
+				{
+					if (const auto& meth = type.get_method(func_name.data()); meth.is_valid())
+					{
+						logging::log_info(fmt::format("\t'{}'... OK", meth.get_signature().data()));
+					}
+					else
+					{
+						logging::log_warn(fmt::format("\t'{}'... NOT 'static'", func_name.data()));
+					}
+				}
+			}
+			else
+			{
+				result = true;
+			}
 		}
-		return false;
+		return result;
 	}
 
 } //- engine

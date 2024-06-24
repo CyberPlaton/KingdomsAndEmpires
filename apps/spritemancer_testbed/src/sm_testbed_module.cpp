@@ -42,7 +42,7 @@ void core_io_error_function(uint8_t level, const std::string& message)
 //------------------------------------------------------------------------------------------------------------------------
 bool cexample_app_layer::init()
 {
-	return false;
+	return true;
 }
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -57,6 +57,11 @@ void cexample_app_layer::on_update(float dt)
 	using namespace engine;
 
 	auto* shader_manager = cengine::service<cresource_service>()->manager<sm::cshader_manager>();
+
+	if (shader_manager)
+	{
+		shader_manager->lookup("what");
+	}
 }
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -667,6 +672,7 @@ int __real_main(int argc, char* argv[])
 	cfg.m_services_cfg.emplace_back("casset_service");
 	cfg.m_services_cfg.emplace_back("cresource_service");
 
+	cfg.m_layers_cfg.emplace_back("cexample_bad_app_layer");
 	cfg.m_layers_cfg.emplace_back("cexample_app_layer");
 	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");

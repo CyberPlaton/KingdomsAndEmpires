@@ -3,13 +3,10 @@
 
 namespace engine
 {
-	//- This is a dummy layer to show how one should be defined. While creating one you dont have to inherit from it.
-	//- Note: if you dont reflect a function then it will not be registered and executed,
-	//- thus you can limit your layer to update only if you only define that function.
-	//-
-	//- When creating a new layer, inherit from this one use the declaration macro.
+	//- This is a dummy layer to show how one should be defined. While creating one you must not inherit from it.
+	//- Remeember to define all functions as shown below and reflect them using the macro REGISTER_LAYER().
 	//------------------------------------------------------------------------------------------------------------------------
-	struct slayer
+	struct slayer final
 	{
 		static constexpr std::string_view C_LAYER_UPDATE_FUNC_NAME		= "on_update";
 		static constexpr std::string_view C_LAYER_WORLD_RENDER_FUNC_NAME= "on_world_render";
@@ -17,6 +14,8 @@ namespace engine
 		static constexpr std::string_view C_LAYER_POST_UPDATE_FUNC_NAME = "on_post_update";
 		static constexpr std::string_view C_LAYER_INIT_FUNC_NAME		= "init";
 		static constexpr std::string_view C_LAYER_SHUTDOWN_FUNC_NAME	= "shutdown";
+		static constexpr array_t<std::string_view, 6> C_LAYER_FUNC_NAMES= { C_LAYER_UPDATE_FUNC_NAME, C_LAYER_WORLD_RENDER_FUNC_NAME, C_LAYER_UI_RENDER_FUNC_NAME,
+																			C_LAYER_POST_UPDATE_FUNC_NAME, C_LAYER_INIT_FUNC_NAME, C_LAYER_SHUTDOWN_FUNC_NAME };
 
 		static bool init()					{return false;}
 		static void shutdown()				{}

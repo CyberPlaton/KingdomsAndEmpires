@@ -15,6 +15,8 @@
 
 namespace engine
 {
+	class cengine;
+
 	//------------------------------------------------------------------------------------------------------------------------
 	enum engine_run_result : uint8_t
 	{
@@ -25,6 +27,55 @@ namespace engine
 		engine_run_result_failed_registering_services,
 		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
+	};
+
+	//- Class containing array of layers that are currently present. Responsible for any layer management and execution.
+	//------------------------------------------------------------------------------------------------------------------------
+	class clayers final
+	{
+		friend class cengine;
+	public:
+		clayers() = default;
+		~clayers() = default;
+
+		void init();
+		void shutdown();
+		void on_update(float dt);
+		void on_world_render();
+		void on_ui_render();
+		void on_post_update(float dt);
+
+		void emplace_new_layer(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
+			rttr::method post_update, rttr::method on_init, rttr::method on_shutdown);
+
+	private:
+		struct slayer_data
+		{
+			slayer_data(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
+				rttr::method post_update, rttr::method on_init, rttr::method on_shutdown);
+			~slayer_data() = default;
+
+			string_t m_name;
+			rttr::method m_update;
+			rttr::method m_world_render;
+			rttr::method m_ui_render;
+			rttr::method m_post_update;
+			rttr::method m_init;
+			rttr::method m_shutdown;
+		};
+
+		vector_t<slayer_data> m_layers;
+
+	private:
+		template<typename... ARGS>
+		void execute_method(const rttr::method& m, ARGS&&... args)
+		{
+			CORE_ASSERT(m.is_valid(), "Invalid operation. Layer method undefined!");
+
+			if (CORE_UNLIKELY(!m.is_valid())) { return; }
+
+			m.invoke({}, std::forward<ARGS>(args)...);
+		}
 	};
 
 	//- Central entry point of the application (not counting main). Configures the application to be executed,
@@ -55,33 +106,12 @@ namespace engine
 		void on_shutdown() override final;
 
 	private:
-		cengine() = default;
-
-	private:
-		class clayers
-		{
-		public:
-			void init();
-			void shutdown();
-			void on_update(float dt);
-			void on_world_render();
-			void on_ui_render();
-			void on_post_update(float dt);
-
-			vector_t<string_t> m_layer_names;
-			vector_t<rttr::method> m_layer_update;
-			vector_t<rttr::method> m_layer_world_render;
-			vector_t<rttr::method> m_layer_ui_render;
-			vector_t<rttr::method> m_layer_post_update;
-			vector_t<rttr::method> m_layer_shutdown;
-			vector_t<rttr::method> m_layer_init;
-		};
-
-		clayers m_layers;
 		sconfig m_config;
+		clayers m_layers;
 		engine_run_result m_result;
 
 	private:
+		cengine() = default;
 		bool try_push_layer(stringview_t name);
 	};
 
