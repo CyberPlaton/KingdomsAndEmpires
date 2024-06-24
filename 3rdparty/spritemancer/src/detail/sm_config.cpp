@@ -323,6 +323,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	rttr::type cshader::resource_type() const
+	{
+		return rttr::type::get<cshader>();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cshader::load_from_file(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath)
 	{
 		uint8_t* vs = nullptr; uint8_t* fs = nullptr;
@@ -493,6 +499,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	rttr::type cimage::resource_type() const
+	{
+		return rttr::type::get<cimage>();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cimage::load_from_file(stringview_t filepath)
 	{
 		const auto [data, size] = core::cfile::load_binary(filepath.data());
@@ -580,6 +592,12 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	ctexture::~ctexture()
 	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::type ctexture::resource_type() const
+	{
+		return rttr::type::get<ctexture>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -701,6 +719,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	rttr::type crendertarget::resource_type() const
+	{
+		return rttr::type::get<crendertarget>();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult crendertarget::create(unsigned w, unsigned h)
 	{
 		if (m_texture = raylib::LoadRenderTexture(w, h); !raylib::IsRenderTextureReady(m_texture))
@@ -771,6 +795,12 @@ namespace sm
 	cspriteatlas::cspriteatlas() :
 		m_size({0.0f, 0.0f})
 	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::type cspriteatlas::resource_type() const
+	{
+		return rttr::type::get<cspriteatlas>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

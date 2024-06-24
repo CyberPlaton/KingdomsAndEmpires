@@ -1536,9 +1536,26 @@ namespace core
 		snode m_root;
 	};
 
+	//- Base class for a resource. When creating a new resource inherit from this class and implement any required functionality,
+	//- and reflect with RTTR.
+	//- This will also help to verify a class when registering a new resource.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cresource
+	{
+	public:
+		//- Implement this function when creating a new resource, can also be a noop, depends on the manager.
+		/*static void destroy(cresource& resource);*/
+
+		virtual ~cresource() = default;
+
+		virtual rttr::type resource_type() const = 0;
+
+		RTTR_ENABLE();
+	};
+
 	//- Base class for a resource manager. Data is not serialized, the class serves to avoid redefining functionality
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource, typename THandle = handle_type_t>
+	template<typename TResource>
 	class cresource_manager
 	{
 	public:
@@ -1548,8 +1565,8 @@ namespace core
 		TResource& get(stringview_t name);
 		const TResource& at(stringview_t name) const;
 
-		TResource& get(THandle handle);
-		const TResource& at(THandle handle) const;
+		TResource& get(handle_type_t handle);
+		const TResource& at(handle_type_t handle) const;
 
 		template<typename TCallable>
 		void each(TCallable&& callback);
@@ -1611,9 +1628,9 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource, typename THandle>
+	template<typename TResource>
 	template<typename TCallable>
-	void core::cresource_manager<TResource, THandle>::each(TCallable&& callback)
+	void core::cresource_manager<TResource>::each(TCallable&& callback)
 	{
 		for (const auto& pair : m_data)
 		{
@@ -1622,36 +1639,36 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource, typename THandle>
-	const TResource& core::cresource_manager<TResource, THandle>::at(stringview_t name) const
+	template<typename TResource>
+	const TResource& core::cresource_manager<TResource>::at(stringview_t name) const
 	{
 		return m_data.at(algorithm::hash(name));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource, typename THandle>
-	TResource& core::cresource_manager<TResource, THandle>::get(stringview_t name)
+	template<typename TResource>
+	TResource& core::cresource_manager<TResource>::get(stringview_t name)
 	{
 		return m_data[algorithm::hash(name)];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource, typename THandle>
-	const TResource& core::cresource_manager<TResource, THandle>::at(THandle handle) const
+	template<typename TResource>
+	const TResource& core::cresource_manager<TResource>::at(handle_type_t handle) const
 	{
 		return m_data.at(handle);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource, typename THandle>
-	TResource& core::cresource_manager<TResource, THandle>::get(THandle handle)
+	template<typename TResource>
+	TResource& core::cresource_manager<TResource>::get(handle_type_t handle)
 	{
 		return m_data[handle];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource, typename THandle>
-	bool core::cresource_manager<TResource, THandle>::lookup(stringview_t name) const
+	template<typename TResource>
+	bool core::cresource_manager<TResource>::lookup(stringview_t name) const
 	{
 		return m_data.find(algorithm::hash(name)) != m_data.end();
 	}

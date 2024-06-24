@@ -4,8 +4,16 @@
 
 namespace engine
 {
+	namespace
+	{
+		constexpr stringview_t C_DESTROY_FUNC_NAME = "destroy";
+
+	} //- unnamed
+
 	//- Service responsible for storing resource managers and returning an approppriate one for a given resource.
 	//- Also allows for registering resource managers at any time.
+	//- Note that the 'register_manager' function does not emplace the manager as a service! This should have been done already.
+	//- On registering we merely store the type provided.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cresource_service final : public core::cservice
 	{
@@ -18,16 +26,67 @@ namespace engine
 		void on_update(float) override final;
 
 		template<typename TResource, typename TResourceManager>
-		void register_resource_manager();
+		bool register_manager();
+
+		bool register_manager(const rttr::type& resource_type, const rttr::type& manager_type);
 
 		template<typename TResource>
 		core::cresource_manager<TResource>* manager();
 
 	private:
-		umap_t<rttr::type, rttr::type> m_resource_managers;
+		umap_t<rttr::type, rttr::type> m_managers;
 
 		RTTR_ENABLE(core::cservice);
+
+	private:
+		template<typename TResource, typename TResourceManager>
+		bool validate();
 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource, typename TResourceManager>
+	bool engine::cresource_service::validate()
+	{
+		const auto& resource_type = rttr::type::get<TResource>();
+		const auto& manager_type = rttr::type::get<TResourceManager>();
+
+		//- Check that they are derived from required classes
+		if (!resource_type.is_derived_from<core::cresource>())
+		{
+			logging::log_warn(fmt::format("Resource '{}' was not derived from 'core::cresource'",
+				resource_type.get_name().data()));
+
+			return false;
+		}
+		if (!manager_type.is_derived_from<core::cresource_manager<TResource>>())
+		{
+			logging::log_warn(fmt::format("Resource Manager '{}' was not derived from 'core::cresource_manager'",
+				manager_type.get_name().data()));
+
+			return false;
+		}
+
+		//- Check that required functions are implemented
+		if (const auto& m = resource_type.get_method(C_DESTROY_FUNC_NAME.data());
+			!m.is_valid() || !m.is_static())
+		{
+			logging::log_warn(fmt::format("Resource '{}' did not define a static 'destroy' function",
+				resource_type.get_name().data()));
+
+			return false;
+		}
+
+		//- Check that the resource manager is already registered with the service manager
+		if (const auto* service = core::cservice_manager::find(manager_type); !service)
+		{
+			logging::log_warn(fmt::format("Resource Manager '{}' is not yet emplaced with 'core::cservice_manager', this might result in an issue!",
+				manager_type.get_name().data()));
+
+			//- Currently, we only issue a warning without failing...
+		}
+
+		return true;
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource>
@@ -35,9 +94,13 @@ namespace engine
 	{
 		if (const auto type = rttr::type::get<TResource>(); type.is_valid())
 		{
-			auto* service = core::cservice_manager::find(type);
+			//- Get type of manager and find it
+			const auto& manager_type = m_managers.at(type);
 
-			return RCAST(core::cresource_manager<TResource>*, service);
+			if (auto* service = core::cservice_manager::find(manager_type); service)
+			{
+				return RCAST(core::cresource_manager<TResource>*, service);
+			}
 		}
 
 		logging::log_warn(fmt::format("Failed to find a manager for resource '{}'",
@@ -48,19 +111,13 @@ namespace engine
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource, typename TResourceManager>
-	void engine::cresource_service::register_resource_manager()
+	bool engine::cresource_service::register_manager()
 	{
-		if (const auto resource_type = rttr::type::get<TResource>();
-			m_resource_managers.find(resource_type) == m_resource_managers.end())
+		if (validate<TResource, TResourceManager>())
 		{
-			m_resource_managers[resource_type] = rttr::type::get<TResourceManager>();
+			return register_manager(rttr::type::get<TResource>(), rttr::type::get<TResourceManager>());
 		}
-		else
-		{
-			//- Not an error, yet still report that we tried to register duplicates.
-			logging::log_warn(fmt::format("Trying to register duplicate resource manager for type '{}' as '{}'",
-				rttr::type::get<TResource>().get_name().data(), rttr::type::get<TResourceManager>().get_name().data()));
-		}
+		return false;
 	}
 
 

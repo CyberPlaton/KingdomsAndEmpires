@@ -52,7 +52,7 @@ namespace engine
 	{
 		for (const auto& layer : m_layers)
 		{
-			execute_method(layer.m_shutdown);
+			layer.m_shutdown.invoke({});
 		}
 	}
 
@@ -61,7 +61,7 @@ namespace engine
 	{
 		for (const auto& layer : m_layers)
 		{
-			execute_method(layer.m_update);
+			layer.m_update.invoke({}, dt);
 		}
 	}
 
@@ -70,7 +70,7 @@ namespace engine
 	{
 		for (const auto& layer : m_layers)
 		{
-			execute_method(layer.m_world_render);
+			layer.m_world_render.invoke({});
 		}
 	}
 
@@ -79,7 +79,7 @@ namespace engine
 	{
 		for (const auto& layer : m_layers)
 		{
-			execute_method(layer.m_ui_render);
+			layer.m_ui_render.invoke({});
 		}
 	}
 
@@ -88,7 +88,7 @@ namespace engine
 	{
 		for (const auto& layer : m_layers)
 		{
-			execute_method(layer.m_post_update);
+			layer.m_post_update.invoke({}, dt);
 		}
 	}
 
@@ -135,6 +135,26 @@ namespace engine
 		}
 
 		core::cservice_manager::init();
+
+		//- register and init resource managers
+		logging::log_info("Initialize resource managers...");
+
+		if (auto* rs = core::cservice_manager::find<cresource_service>(); rs)
+		{
+			rs->register_manager<sm::cshader,		sm::cshader_manager>();
+			rs->register_manager<sm::cimage,		sm::cimage_manager>();
+			rs->register_manager<sm::ctexture,		sm::ctexture_manager>();
+			rs->register_manager<sm::crendertarget, sm::crendertarget_manager>();
+			rs->register_manager<sm::cspriteatlas,	sm::cspriteatlas_manager>();
+		}
+		else
+		{
+			logging::log_critical("\t... Resource Service does not exist!");
+
+			m_result = engine_run_result_failed_registering_resource_managers;
+
+			return false;
+		}
 
 		//- create and init layers
 		logging::log_info("Pushing layers...");

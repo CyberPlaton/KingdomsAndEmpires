@@ -271,7 +271,7 @@ namespace sm
 
 	//- A shader. Can be a single vertex or fragment shader or a combination of them, becoming a program
 	//------------------------------------------------------------------------------------------------------------------------
-	class cshader final
+	class cshader final : public core::cresource
 	{
 	public:
 		static void destroy(cshader& shader);
@@ -281,6 +281,8 @@ namespace sm
 		explicit cshader(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
 		cshader();
 		~cshader();
+
+		rttr::type resource_type() const override final;
 
 		opresult load_from_file(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
 		opresult load_from_string(shader_type type, const char* vs, const char* fs);
@@ -303,11 +305,13 @@ namespace sm
 	private:
 		raylib::Shader m_shader;
 		shader_type m_type;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//- CPU resident image representation
 	//------------------------------------------------------------------------------------------------------------------------
-	class cimage final
+	class cimage final : public core::cresource
 	{
 	public:
 		using image_generate_function_t = std::function<raylib::Image()>;
@@ -320,6 +324,8 @@ namespace sm
 		cimage();
 		~cimage();
 
+		rttr::type resource_type() const override final;
+
 		opresult load_from_file(stringview_t filepath);
 		opresult load_from_memory(image_type type, void* data, unsigned size);
 
@@ -331,11 +337,13 @@ namespace sm
 
 	private:
 		raylib::Image m_container;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//- GPU resident image representation
 	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture final
+	class ctexture final : public core::cresource
 	{
 	public:
 		static void destroy(ctexture& texture);
@@ -346,6 +354,7 @@ namespace sm
 		ctexture();
 		~ctexture();
 
+		rttr::type resource_type() const override final;
 
 		opresult load_from_image(const cimage& image);
 		opresult load_from_file(stringview_t filepath);
@@ -357,10 +366,12 @@ namespace sm
 
 	private:
 		raylib::Texture2D m_texture;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class crendertarget final
+	class crendertarget final : public core::cresource
 	{
 	public:
 		static void destroy(crendertarget& target);
@@ -368,6 +379,8 @@ namespace sm
 		explicit crendertarget(unsigned w, unsigned h);
 		crendertarget();
 		~crendertarget();
+
+		rttr::type resource_type() const override final;
 
 		opresult create(unsigned w, unsigned h);
 		opresult resize(unsigned w, unsigned h);
@@ -379,6 +392,8 @@ namespace sm
 
 	private:
 		raylib::RenderTexture2D m_texture;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//- TODO: Reworking camera system
@@ -428,7 +443,7 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas final
+	class cspriteatlas final : public core::cresource
 	{
 	public:
 		static void destroy(cspriteatlas& atlas);
@@ -436,6 +451,8 @@ namespace sm
 		explicit cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
 		cspriteatlas();
 		~cspriteatlas() = default;
+
+		rttr::type resource_type() const override final;
 
 		opresult create(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
 		const core::srect& at(stringview_t name) const;
@@ -450,6 +467,8 @@ namespace sm
 	private:
 		umap_t<unsigned, core::srect> m_subtextures;
 		vec2_t m_size;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -576,5 +595,49 @@ namespace sm
 		virtual void on_imgui() = 0;
 		virtual void on_shutdown() = 0;
 	};
+
+} //- sm
+
+namespace sm
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cshader)
+	{
+		rttr::cregistrator<cshader>("cshader")
+			.meth("destroy", &cshader::destroy)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cimage)
+	{
+		rttr::cregistrator<cimage>("cimage")
+			.meth("destroy", &cimage::destroy)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(ctexture)
+	{
+		rttr::cregistrator<ctexture>("ctexture")
+			.meth("destroy", &ctexture::destroy)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(crendertarget)
+	{
+		rttr::cregistrator<crendertarget>("crendertarget")
+			.meth("destroy", &crendertarget::destroy)
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cspriteatlas)
+	{
+		rttr::cregistrator<cspriteatlas>("cspriteatlas")
+			.meth("destroy", &cspriteatlas::destroy)
+			;
+	}
 
 } //- sm

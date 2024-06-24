@@ -25,6 +25,7 @@ namespace engine
 		engine_run_result_failed_loading_config,
 		engine_run_result_failed_parsing_invalid_config,
 		engine_run_result_failed_registering_services,
+		engine_run_result_failed_registering_resource_managers,
 		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
 	};
@@ -65,17 +66,6 @@ namespace engine
 		};
 
 		vector_t<slayer_data> m_layers;
-
-	private:
-		template<typename... ARGS>
-		void execute_method(const rttr::method& m, ARGS&&... args)
-		{
-			CORE_ASSERT(m.is_valid(), "Invalid operation. Layer method undefined!");
-
-			if (CORE_UNLIKELY(!m.is_valid())) { return; }
-
-			m.invoke({}, std::forward<ARGS>(args)...);
-		}
 	};
 
 	//- Central entry point of the application (not counting main). Configures the application to be executed,
