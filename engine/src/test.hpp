@@ -25,7 +25,7 @@ namespace engine
 		static constexpr stringview_t C_TEST_PHASE_FUNC_NAME	= "test_phase";
 		static constexpr stringview_t C_TEST_RUN_FUNC_NAME		= "run";
 
-		static bool run(const core::error_report_function_t& log)	{return false;}
+		static void run(const core::error_report_function_t& log)	{}
 		static bool can_run()										{return false;}
 		static phase test_phase()									{return phase_none;}
 	};
@@ -43,13 +43,17 @@ namespace engine
 		void set_log(const core::error_report_function_t& log);
 		void add_test(stringview_t test);
 
+		unsigned count() const;
+
 	private:
 		struct stest_data
 		{
+			stest_data(stringview_t name, const rttr::method& phase_func, const rttr::method& run_func, const rttr::method& can_run_func);
+
 			string_t m_name;
 			rttr::method m_run;
-			rttr::method m_can_run;
 			rttr::method m_phase;
+			rttr::method m_can_run;
 		};
 
 		umap_t<stest::phase, vector_t<stest_data>> m_tests;

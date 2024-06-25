@@ -129,10 +129,10 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cengine::try_push_layer(stringview_t name)
 	{
-		auto result = false;
-
 		if (auto type = rttr::type::get_by_name(name.data()); type.is_valid())
 		{
+			auto result = true;
+
 			//- check that at least one function is present
 			auto update_method			= type.get_method(slayer::C_LAYER_UPDATE_FUNC_NAME.data());
 			auto world_render_method	= type.get_method(slayer::C_LAYER_WORLD_RENDER_FUNC_NAME.data());
@@ -140,8 +140,6 @@ namespace engine
 			auto post_update_method		= type.get_method(slayer::C_LAYER_POST_UPDATE_FUNC_NAME.data());
 			auto init_method			= type.get_method(slayer::C_LAYER_INIT_FUNC_NAME.data());
 			auto shutdown_method		= type.get_method(slayer::C_LAYER_SHUTDOWN_FUNC_NAME.data());
-
-			m_layers.emplace_new_layer(name, update_method, world_render_method, ui_render_method, post_update_method, init_method, shutdown_method);
 
 			//- Check that all methods are valid and issue a warning if not, as this can be detremental to performance
 			if (!(update_method.is_valid() && world_render_method.is_valid() && ui_render_method.is_valid() &&
@@ -161,9 +159,11 @@ namespace engine
 						logging::log_warn(fmt::format("\t\t\t'{}'... UNDEFINED", func_name.data()));
 					}
 				}
+
+				result = false;
 			}
 			//- Check that all methods are declared as static, if not undefined behavior will occurr, so this is an error actually.
-			else if (!(update_method.is_static() && world_render_method.is_static() && ui_render_method.is_static() &&
+			if (!(update_method.is_static() && world_render_method.is_static() && ui_render_method.is_static() &&
 				post_update_method.is_static() && init_method.is_static() && shutdown_method.is_static()))
 			{
 				logging::log_error("\t\tA function not decalred 'static', this will result in undefined behavior!");
@@ -180,13 +180,17 @@ namespace engine
 						logging::log_warn(fmt::format("\t\t\t'{}'... NOT 'static'", func_name.data()));
 					}
 				}
+
+				result = false;
 			}
-			else
+
+			if (result)
 			{
-				result = true;
+				m_layers.emplace_new_layer(name, update_method, world_render_method, ui_render_method, post_update_method, init_method, shutdown_method);
 			}
 		}
-		return result;
+
+		return false;
 	}
 
 } //- engine
