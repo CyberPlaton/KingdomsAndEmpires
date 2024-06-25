@@ -3,6 +3,9 @@
 
 namespace engine
 {
+	class cengine;
+
+
 	//- This is a dummy layer to show how one should be defined. While creating one you must not inherit from it.
 	//- Remember to define all functions as shown below and reflect them using the macro REGISTER_LAYER().
 	//------------------------------------------------------------------------------------------------------------------------
@@ -23,6 +26,44 @@ namespace engine
 		static void on_world_render()		{}
 		static void on_ui_render()			{}
 		static void on_post_update(float)	{}
+	};
+
+	//- Class containing array of layers that are currently present. Responsible for any layer management and execution.
+	//------------------------------------------------------------------------------------------------------------------------
+	class clayers final
+	{
+		friend class cengine;
+	public:
+		clayers() = default;
+		~clayers() = default;
+
+		void init();
+		void shutdown();
+		void on_update(float dt);
+		void on_world_render();
+		void on_ui_render();
+		void on_post_update(float dt);
+
+		void emplace_new_layer(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
+			rttr::method post_update, rttr::method on_init, rttr::method on_shutdown);
+
+	private:
+		struct slayer_data
+		{
+			slayer_data(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
+				rttr::method post_update, rttr::method on_init, rttr::method on_shutdown);
+			~slayer_data() = default;
+
+			string_t m_name;
+			rttr::method m_update;
+			rttr::method m_world_render;
+			rttr::method m_ui_render;
+			rttr::method m_post_update;
+			rttr::method m_init;
+			rttr::method m_shutdown;
+		};
+
+		vector_t<slayer_data> m_layers;
 	};
 
 } //- engine

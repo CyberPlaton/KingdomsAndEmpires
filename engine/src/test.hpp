@@ -3,6 +3,8 @@
 
 namespace engine
 {
+	class cengine;
+
 	//- This is a dummy test to show how one should be defined. While creating one you must not inherit from it.
 	//- Define all functions as shown below and reflect using macro REGISTER_TEST()
 	//-
@@ -26,6 +28,32 @@ namespace engine
 		static bool run(const core::error_report_function_t& log)	{return false;}
 		static bool can_run()										{return false;}
 		static phase test_phase()									{return phase_none;}
+	};
+
+	//- Class containing array of tests to be executed.
+	//------------------------------------------------------------------------------------------------------------------------
+	class ctests final
+	{
+	public:
+		STATIC_INSTANCE_EX(ctests);
+		ctests() = default;
+		~ctests() = default;
+
+		void run(stest::phase phase);
+		void set_log(const core::error_report_function_t& log);
+		void add_test(stringview_t test);
+
+	private:
+		struct stest_data
+		{
+			string_t m_name;
+			rttr::method m_run;
+			rttr::method m_can_run;
+			rttr::method m_phase;
+		};
+
+		umap_t<stest::phase, vector_t<stest_data>> m_tests;
+		core::error_report_function_t m_log = nullptr;
 	};
 
 } //- engine

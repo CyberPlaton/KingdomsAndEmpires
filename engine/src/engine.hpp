@@ -16,8 +16,6 @@
 
 namespace engine
 {
-	class cengine;
-
 	//------------------------------------------------------------------------------------------------------------------------
 	enum engine_run_result : uint8_t
 	{
@@ -29,70 +27,6 @@ namespace engine
 		engine_run_result_failed_registering_resource_managers,
 		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
-	};
-
-	//- Class containing array of tests to be executed.
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctests final
-	{
-	public:
-		STATIC_INSTANCE_EX(ctests);
-		ctests() = default;
-		~ctests() = default;
-
-		void run(stest::phase phase);
-		void set_log(const core::error_report_function_t& log);
-		void add_test(stringview_t test);
-
-	private:
-		struct stest_data
-		{
-			string_t m_name;
-			rttr::method m_run;
-			rttr::method m_can_run;
-			rttr::method m_phase;
-		};
-
-		umap_t<stest::phase, vector_t<stest_data>> m_tests;
-		core::error_report_function_t m_log = nullptr;
-	};
-
-	//- Class containing array of layers that are currently present. Responsible for any layer management and execution.
-	//------------------------------------------------------------------------------------------------------------------------
-	class clayers final
-	{
-		friend class cengine;
-	public:
-		clayers() = default;
-		~clayers() = default;
-
-		void init();
-		void shutdown();
-		void on_update(float dt);
-		void on_world_render();
-		void on_ui_render();
-		void on_post_update(float dt);
-
-		void emplace_new_layer(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
-			rttr::method post_update, rttr::method on_init, rttr::method on_shutdown);
-
-	private:
-		struct slayer_data
-		{
-			slayer_data(stringview_t name, rttr::method update, rttr::method world_render, rttr::method ui_render,
-				rttr::method post_update, rttr::method on_init, rttr::method on_shutdown);
-			~slayer_data() = default;
-
-			string_t m_name;
-			rttr::method m_update;
-			rttr::method m_world_render;
-			rttr::method m_ui_render;
-			rttr::method m_post_update;
-			rttr::method m_init;
-			rttr::method m_shutdown;
-		};
-
-		vector_t<slayer_data> m_layers;
 	};
 
 	//- Central entry point of the application (not counting main). Configures the application to be executed,
