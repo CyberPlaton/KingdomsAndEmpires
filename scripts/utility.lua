@@ -1,6 +1,11 @@
 IS_TRACY_ENABLED = false
 
 ------------------------------------------------------------------------------------------------------------------------
+function isempty(s)
+	return s == nil or s == ''
+end
+
+------------------------------------------------------------------------------------------------------------------------
 function set_basic_defines()
 	externalanglebrackets "On"
 
@@ -316,13 +321,18 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_app(name, build_options, define_flags, thirdparty_deps, plugin_deps, plugin_headeronly_deps,
-	thirdparty_headeronly_deps, additional_includes)
+	thirdparty_headeronly_deps, additional_includes, app_kind)
 	if VERBOSE == true then
 		print("\tapplication: " .. name)
 	end
 	project(name)
 		location (path.join(".project", name))
-		kind ("WindowedApp")
+
+		if isempty(app_kind) then
+			kind ("WindowedApp")
+		else
+			kind (app_kind)
+		end
 
 		files{"src/**.h",
 			  "src/**.cpp",

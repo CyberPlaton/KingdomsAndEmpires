@@ -651,6 +651,9 @@ int __real_main(int argc, char* argv[])
 
 	logging::init(core::logging_verbosity::logging_verbosity_debug);
 
+	logging::log_info(fmt::format("Unittests result: '{}'", UnitTest::RunAllTests()));
+
+
 	if (C_DO_TESTS)
 	{
 		allocators_test_runs();

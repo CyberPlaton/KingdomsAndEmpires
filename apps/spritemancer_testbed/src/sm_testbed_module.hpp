@@ -1,9 +1,11 @@
 #pragma once
 #include <engine.h>
 #include <plugin_logging.h>
+#include <plugin_ai.h>
 #include <lua.h>
 #include <luabridge.h>
 #include <spritemancer.h>
+#include <unittest.h>
 
 //------------------------------------------------------------------------------------------------------------------------
 class cexample_app_layer final

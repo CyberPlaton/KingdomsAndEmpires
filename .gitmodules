@@ -1,1 +1,4 @@
 
+[submodule "3rdparty/unittest/unittest"]
+	path = 3rdparty/unittest/unittest
+	url = https://github.com/unittest-cpp/unittest-cpp.git

@@ -4,12 +4,11 @@ function spritemancer_testbed()
 	add_target_app("spritemancer_testbed",
 					{},
 					{},
-					{"Lua", "spdlog", "core", "flecs", "spritemancer"},
-					{"plugin_logging"},
+					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest"},
+					{"plugin_logging", "plugin_ai"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
-					{},
-					true -- bx includes
+					{}
 					)
 end
 spritemancer_testbed()

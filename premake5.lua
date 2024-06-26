@@ -6,11 +6,11 @@ VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
 THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann",
 			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua",
-			  "Tracy", "slang", "spritemancer", "tree_sitter"}
+			  "Tracy", "slang", "spritemancer", "tree_sitter", "unittest"}
 PLUGINS = {"plugin_logging", "plugin_module_example",
 			"plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human", "plugin_render_system",
 			"plugin_status_effects", "plugin_kingdoms_and_empires", "plugin_tiny_editor", "plugin_ai"}
-EXES = {"engine_launcher", "kingdoms_and_empires", "tiny_editor", "spritemancer_testbed"}
+EXES = {"engine_launcher", "kingdoms_and_empires", "tiny_editor", "spritemancer_testbed", "unittest_launcher"}
 PLATFORM = "<undefined>"
 OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"
 
