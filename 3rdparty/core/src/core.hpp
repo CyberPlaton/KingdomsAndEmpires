@@ -1174,29 +1174,32 @@ namespace core
 
 	//- Memory storage that can be copied around using a shared pointer, when going out of scope for all shared pointers
 	//- will be free using the provided release callback. At all times the actual memory is not duplicated.
+	//- Note: when initialized with an existing piece of memory, that piece is copied and the original memory is freed.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cmemory final :
 		public std::enable_shared_from_this<cmemory>,
 		public cnon_copyable
 	{
 	public:
-		using release_callback_t = std::function<void(void*)>;
+		using release_callback_t = std::function<void(byte_t*)>;
 
-		static memory_ref_t make_ref(void* data, unsigned size, release_callback_t&& release_callback);
+		static memory_ref_t make_ref(byte_t* data, unsigned size, release_callback_t&& callback);
+		static memory_ref_t make_ref(unsigned size);
 
 		//- Constructors must be declared as public, otherwise std::make_shared cannot access them.
-		cmemory(unsigned size, release_callback_t&& release_callback);
-		cmemory(void* data, unsigned size, release_callback_t&& release_callback);
+		cmemory(unsigned size);
+		cmemory(byte_t* data, unsigned size, release_callback_t&& callback);
 		~cmemory();
 
-		void* data() { return m_data; }
-		const void* data() const { return m_data; }
-		unsigned size() const { return m_size; }
+		byte_t* data() { return m_data.data(); }
+		const byte_t* data() const { return m_data.data(); }
+		unsigned size() const { return SCAST(unsigned, m_data.size()); }
+
+		auto begin() { return m_data.begin(); }
+		auto end() { return m_data.end(); }
 
 	private:
-		release_callback_t m_release;
-		unsigned m_size;
-		void* m_data;
+		vector_t<uint8_t> m_data;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

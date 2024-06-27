@@ -1404,32 +1404,43 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ref_t<cmemory> cmemory::make_ref(void* data, unsigned size, release_callback_t&& release_callback)
+	memory_ref_t cmemory::make_ref(byte_t* data, unsigned size, release_callback_t&& callback)
 	{
-		return std::make_shared<cmemory>(data, size, std::move(release_callback));
+		return std::make_shared<cmemory>(data, size, std::move(callback));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cmemory::cmemory(void* data, unsigned size, release_callback_t&& release_callback) :
-		m_release(std::move(release_callback)), m_size(size), m_data(data)
+	memory_ref_t cmemory::make_ref(unsigned size)
 	{
+		return std::make_shared<cmemory>(size);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmemory::cmemory(byte_t* data, unsigned size, release_callback_t&& callback)
+	{
+		CORE_ASSERT(callback, "Invalid operation. A callback for freeing original memory must be provided!");
+
+		//- Take ownership of data
+		m_data.reserve(SCAST(size_t, size));
+		std::memcpy(m_data.data(), data, SCAST(size_t, size));
+
+		//- Free original memory
+		callback(data);
 	}
 
 	//- Allocate a piece of memory with requested size
 	//------------------------------------------------------------------------------------------------------------------------
-	cmemory::cmemory(unsigned size, release_callback_t&& release_callback) :
-		m_release(std::move(release_callback)), m_size(size), m_data(CORE_MALLOC(size))
+	cmemory::cmemory(unsigned size)
 	{
-		CORE_ASSERT(m_size > 0 && m_data, "Invalid operation. Either empty memory or invalid memory requested!");
+		CORE_ASSERT(size > 0, "Invalid operation. Either empty memory or invalid memory requested!");
+
+		m_data.reserve(SCAST(size_t, size));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cmemory::~cmemory()
 	{
-		CORE_ASSERT(!(m_data && !m_release), "Invalid operation. Holding memory but no release callback!");
-
-		m_release(m_data);
-		m_data = nullptr;
+		m_data.clear();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
