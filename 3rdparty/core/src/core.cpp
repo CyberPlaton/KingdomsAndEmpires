@@ -1447,7 +1447,8 @@ namespace core
 	scolor::scolor(common_color color) :
 		m_r(0), m_g(0), m_b(0), m_a(0)
 	{
-		array_t<uint8_t, 4> C_COMMON_COLORS[] = {
+		constexpr array_t<uint8_t, 4> C_COMMON_COLORS[] =
+		{
 			{134, 38, 51, 255},
 			{239, 83, 80, 255},
 			{255, 205, 210, 255},
