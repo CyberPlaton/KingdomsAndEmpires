@@ -282,8 +282,6 @@ namespace sm
 		cshader();
 		~cshader();
 
-		rttr::type resource_type() const override final;
-
 		opresult load_from_file(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
 		opresult load_from_string(shader_type type, const char* vs, const char* fs);
 		opresult load_from_memory(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
@@ -324,8 +322,6 @@ namespace sm
 		cimage();
 		~cimage();
 
-		rttr::type resource_type() const override final;
-
 		opresult load_from_file(stringview_t filepath);
 		opresult load_from_memory(image_type type, void* data, unsigned size);
 
@@ -354,8 +350,6 @@ namespace sm
 		ctexture();
 		~ctexture();
 
-		rttr::type resource_type() const override final;
-
 		opresult load_from_image(const cimage& image);
 		opresult load_from_file(stringview_t filepath);
 		opresult load_from_memory(image_type type, void* data, unsigned size);
@@ -379,8 +373,6 @@ namespace sm
 		explicit crendertarget(unsigned w, unsigned h);
 		crendertarget();
 		~crendertarget();
-
-		rttr::type resource_type() const override final;
 
 		opresult create(unsigned w, unsigned h);
 		opresult resize(unsigned w, unsigned h);
@@ -451,8 +443,6 @@ namespace sm
 		explicit cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
 		cspriteatlas();
 		~cspriteatlas() = default;
-
-		rttr::type resource_type() const override final;
 
 		opresult create(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
 		const core::srect& at(stringview_t name) const;
@@ -596,15 +586,85 @@ namespace sm
 		virtual void on_shutdown() = 0;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class ctexture_compiler final : public core::cresource_compiler
+	{
+	public:
+		struct soptions
+		{
+
+			RTTR_ENABLE();
+		};
+
+		ctexture_compiler() = default;
+		~ctexture_compiler() = default;
+
+		compile_result_t compile(const memory_ref_t& source_data, const rttr::variant& compile_options) override final;
+
+	private:
+
+		RTTR_ENABLE(core::cresource_compiler);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cspriteatlas_compiler final : public core::cresource_compiler
+	{
+	public:
+		struct soptions
+		{
+
+			RTTR_ENABLE();
+		};
+
+		cspriteatlas_compiler() = default;
+		~cspriteatlas_compiler() = default;
+
+		compile_result_t compile(const memory_ref_t& source_data, const rttr::variant& compile_options) override final;
+
+	private:
+
+		RTTR_ENABLE(core::cresource_compiler);
+	};
+
 } //- sm
 
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cspriteatlas_compiler)
+	{
+		rttr::cregistrator<cspriteatlas_compiler>("cspriteatlas_compiler")
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cspriteatlas_compiler::soptions)
+	{
+		rttr::cregistrator<cspriteatlas_compiler::soptions>("cspriteatlas_compiler::soptions")
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(ctexture_compiler)
+	{
+		rttr::cregistrator<ctexture_compiler>("ctexture_compiler")
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(ctexture_compiler::soptions)
+	{
+		rttr::cregistrator<ctexture_compiler::soptions>("ctexture_compiler::soptions")
+			;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(cshader)
 	{
 		rttr::cregistrator<cshader>("cshader")
-			.meth("destroy", &cshader::destroy)
+			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&cshader::destroy)
+			.meta(core::cresource::C_META_COMPILER_TYPE,			rttr::detail::type_of<core::cdefault_compiler>())
+			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,		vector_t<string_t>{".vs", ".fs"})
 			;
 	}
 
@@ -612,7 +672,11 @@ namespace sm
 	REFLECT_INLINE(cimage)
 	{
 		rttr::cregistrator<cimage>("cimage")
-			.meth("destroy", &cimage::destroy)
+			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&cimage::destroy)
+			.meta(core::cresource::C_META_COMPILER_TYPE,			rttr::detail::type_of<core::cdefault_compiler>())
+			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+				vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+				".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
 			;
 	}
 
@@ -620,7 +684,11 @@ namespace sm
 	REFLECT_INLINE(ctexture)
 	{
 		rttr::cregistrator<ctexture>("ctexture")
-			.meth("destroy", &ctexture::destroy)
+			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&ctexture::destroy)
+			.meta(core::cresource::C_META_COMPILER_TYPE,			rttr::detail::type_of<ctexture_compiler>())
+			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+				vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+				".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
 			;
 	}
 
@@ -628,7 +696,8 @@ namespace sm
 	REFLECT_INLINE(crendertarget)
 	{
 		rttr::cregistrator<crendertarget>("crendertarget")
-			.meth("destroy", &crendertarget::destroy)
+			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&crendertarget::destroy)
+			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,		vector_t<string_t>{})
 			;
 	}
 
@@ -636,7 +705,11 @@ namespace sm
 	REFLECT_INLINE(cspriteatlas)
 	{
 		rttr::cregistrator<cspriteatlas>("cspriteatlas")
-			.meth("destroy", &cspriteatlas::destroy)
+			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&cspriteatlas::destroy)
+			.meta(core::cresource::C_META_COMPILER_TYPE,			rttr::detail::type_of<cspriteatlas_compiler>())
+			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+				vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+				".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
 			;
 	}
 

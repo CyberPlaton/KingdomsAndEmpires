@@ -1,4 +1,5 @@
 #include "asset_service.hpp"
+#include "../io/io_native_filesystem.hpp"
 
 namespace engine
 {
@@ -64,13 +65,87 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	stringview_t casset_service::compiled_output_path(stringview_t source_filepath) const
 	{
-		return {};
+		//- find asset file for source, this is required only to get the final extension of the compiled resource
+		if (core::fs::cfileinfo asset_info(fmt::format("{}.asset", source_filepath.data())); asset_info.exists())
+		{
+			auto* vfs = core::cservice_manager::find<core::fs::cvirtual_filesystem>();
+
+			if (const auto asset_file = vfs->open(asset_info, core::file_mode_read); asset_file)
+			{
+				const auto file_size = asset_file->size();
+				const auto blob = core::cmemory::make_ref(file_size);
+
+				if (asset_file->read(blob->data(), file_size) == file_size)
+				{
+					const auto asset = core::io::from_json_blob<casset>(blob->data(), blob->size());
+				}
+			}
+		}
+
+
+		core::fs::cfileinfo info(source_filepath);
+
+		const auto guid = info.name();
+
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	engine::casset casset_service::load_asset(stringview_t source_filepath)
+	asset_ref_t casset_service::open_asset(stringview_t source_filepath)
 	{
-		return {};
+		const auto asset_path = fmt::format("{}{}", source_filepath.data(), detail::C_ASSET_EXTENSION.data());
+
+		if (m_assets.find(source_filepath) == m_assets.end())
+		{
+			//- check if asset file does not exist and we have to create it first
+			core::fs::cfileinfo info(asset_path);
+
+			//- create asset file if it does not exist
+			const auto ext = info.extension().c_str();
+
+			//- asset file with default compiler settings registered for given extension
+
+			if (!info.exists() && !create_asset(info))
+			{
+				return nullptr;
+			}
+		}
+
+		return m_assets.at(source_filepath);
+
+
+		if (core::fs::cfileinfo info(asset_path); info.exists())
+		{
+			auto* vfs = core::cservice_manager::find<core::fs::cvirtual_filesystem>();
+
+			if (const auto asset_file = vfs->open(info, core::file_mode_read); asset_file)
+			{
+				const auto file_size = asset_file->size();
+				const auto blob = core::cmemory::make_ref(file_size);
+
+				if (asset_file->read(blob->data(), file_size) == file_size)
+				{
+					const auto asset = core::io::from_json_blob<casset>(blob->data(), blob->size());
+				}
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	asset_ref_t casset_service::create_asset(const core::fs::cfileinfo& filepath)
+	{
+		auto* vfs = core::cservice_manager::find<core::fs::cvirtual_filesystem>();
+
+		if (vfs->find_filesystem("/")->create_file(filepath))
+		{
+			if (auto file = vfs->open(filepath, core::file_mode_write | core::file_mode_truncate); file)
+			{
+				casset asset;
+
+				file->write<casset>(asset);
+			}
+		}
+
+		return nullptr;
 	}
 
 } //- engine

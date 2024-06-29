@@ -4,12 +4,6 @@
 
 namespace engine
 {
-	namespace
-	{
-		constexpr stringview_t C_DESTROY_FUNC_NAME = "destroy";
-
-	} //- unnamed
-
 	//- Service responsible for storing resource managers and returning an approppriate one for a given resource.
 	//- Also allows for registering resource managers at any time.
 	//- Note that the 'register_manager' function does not emplace the manager as a service! This should have been done already.
@@ -33,6 +27,12 @@ namespace engine
 		template<typename TResource>
 		core::cresource_manager<TResource>* manager();
 
+		template<typename TClass>
+		rttr::type manager_type() const;
+
+		template<typename TClass>
+		rttr::type compiler_type() const;
+
 	private:
 		umap_t<rttr::type, rttr::type> m_managers;
 
@@ -42,6 +42,26 @@ namespace engine
 		template<typename TResource, typename TResourceManager>
 		bool validate();
 	};
+
+	//- Retrieve type of the compiler responsible for converting TClass source resource to runtime-ready format
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TClass>
+	rttr::type engine::cresource_service::compiler_type() const
+	{
+		static_assert(std::is_base_of_v<core::cresource, TClass>, "Invalid operation. TClass must be derived from core::cresource");
+
+		return rttr::detail::get_meta<TClass, rttr::type>(core::cresource::C_META_COMPILER_TYPE);
+	}
+
+	//- Retrieve type of the manager responsible for resource TClass
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TClass>
+	rttr::type engine::cresource_service::manager_type() const
+	{
+		static_assert(std::is_base_of_v<core::cresource, TClass>, "Invalid operation. TClass must be derived from core::cresource");
+
+		return m_managers.at(rttr::type::get<TClass>());
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource, typename TResourceManager>
@@ -67,7 +87,7 @@ namespace engine
 		}
 
 		//- Check that required functions are implemented
-		if (const auto& m = resource_type.get_method(C_DESTROY_FUNC_NAME.data());
+		if (const auto& m = resource_type.get_method(core::cresource::C_DESTROY_FUNCTION_NAME.data());
 			!m.is_valid() || !m.is_static())
 		{
 			logging::log_warn(fmt::format("Resource '{}' did not define a static 'destroy' function",

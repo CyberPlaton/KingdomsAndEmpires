@@ -207,7 +207,7 @@ namespace rttr
 	//- but not show_ui(), that is defined individually where required.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TComponent>
-	class ccomponent : public cregistrator<TComponent>
+	class ccomponent final : public cregistrator<TComponent>
 	{
 	public:
 		ccomponent(rttr::string_view name) :

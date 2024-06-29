@@ -653,6 +653,24 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		rttr::variant from_json_blob(rttr::type expected, const uint8_t* data, unsigned size)
+		{
+			simdjson::dom::parser parser;
+			simdjson::dom::element element;
+
+			if (parser.parse(data, SCAST(size_t, size)).get(element) != simdjson::SUCCESS)
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(logging_verbosity_warn,
+						fmt::format("Failed deserializing from json string with expected type '{}'", expected.get_name().data()));
+				}
+			}
+
+			return from_json_object(expected, element);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		rttr::variant from_json_object(rttr::type expected, const simdjson::dom::element& json)
 		{
 			rttr::variant object;
@@ -663,19 +681,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		rttr::variant from_json_string(rttr::type expected, const string_t& json)
 		{
-			simdjson::dom::parser parser;
-			simdjson::dom::element element;
-
-			if (parser.parse(json.data(), json.length()).get(element) != simdjson::SUCCESS)
-			{
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(logging_verbosity_warn,
-						fmt::format("Failed deserializing from json string with expected type '{}'", expected.get_name().data()));
-				}
-			}
-
-			return from_json_object(expected, element);
+			return from_json_blob(expected, (const uint8_t*)json.data(), json.length());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -1048,6 +1054,21 @@ namespace core
 			}
 
 			return padding;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		rttr::variant default_compiler_options(rttr::type compiler_type)
+		{
+			if (compiler_type.is_valid())
+			{
+				const auto options_name = fmt::format("{}::{}", compiler_type.get_name().data(), C_COMPILER_OPTIONS_PROP.data());
+
+				if (auto options_type = rttr::type::get_by_name(options_name.data()); options_type.is_valid())
+				{
+					return options_type.create({});
+				}
+			}
+			return {};
 		}
 
 	} //- detail

@@ -1,9 +1,10 @@
 #pragma once
 #include "../assets/asset.hpp"
-#include "../assets/resource_compiler.hpp"
 
 namespace engine
 {
+	using asset_ref_t = ref_t<casset>;
+
 	//- Service responsible for kicking off compilation of a source resource into game/engine-ready format, creating,
 	//- deleting and moving asset files, computing final destination location for any given source file,
 	//- managing an asset/resource database along with cross-references and dependencies.
@@ -11,6 +12,11 @@ namespace engine
 	class casset_service final : public core::cservice
 	{
 	public:
+		struct sconfig
+		{
+			core::fs::cfileinfo m_compiled_output_path;
+		};
+
 		casset_service() = default;
 		~casset_service();
 
@@ -22,9 +28,12 @@ namespace engine
 
 		stringview_t compiled_output_path(stringview_t source_filepath) const;
 
-		casset load_asset(stringview_t source_filepath);
+		asset_ref_t open_asset(stringview_t source_filepath);
+
+		asset_ref_t create_asset(const core::fs::cfileinfo& filepath);
 
 	private:
+		umap_t<stringview_t, asset_ref_t> m_assets;
 
 		RTTR_ENABLE(core::cservice);
 	};

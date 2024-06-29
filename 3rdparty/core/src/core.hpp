@@ -714,6 +714,33 @@ namespace rttr
 	{
 		struct no_default {};
 
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TClass>
+		rttr::type type_of()
+		{
+			return rttr::type::get<TClass>();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TClass, typename TKey, typename TValue>
+		TValue get_meta(rttr::string_view prop, TKey key)
+		{
+			auto type = rttr::type::get<TClass>();
+
+			auto property = type.get_global_property(prop);
+
+			auto value = property.get_metadata(key);
+
+			return value.get_value<TValue>();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TClass, typename TValue>
+		TValue get_meta(rttr::string_view prop, rttr::string_view key)
+		{
+			return get_meta<TClass, rttr::string_view, TValue>(prop, key);
+		}
+
 	} //- detail
 
 	//- Utility class for RTTR registration. Adds a default constructor.
@@ -738,6 +765,12 @@ namespace rttr
 
 		template<typename TProp>
 		cregistrator& prop(rttr::string_view name, TProp property);
+
+		template<typename TKey, typename TValue>
+		cregistrator& meta(TKey key, TValue value);
+
+		template<typename TValue>
+		cregistrator& meta(rttr::string_view name, TValue value);
 
 		template<typename TCustomPolicy, typename... ARGS>
 		cregistrator& ctor()
@@ -766,6 +799,26 @@ namespace rttr
 	private:
 		rttr::registration::class_<TClass> m_object;
 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TClass, typename TPolicy /*= rttr::detail::as_object*/>
+	template<typename TValue>
+	cregistrator<TClass, TPolicy>& rttr::cregistrator<TClass, TPolicy>::meta(rttr::string_view name, TValue value)
+	{
+		return meta<rttr::string_view, TValue>(name, value);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<class TClass, typename TPolicy /*= rttr::detail::as_object*/>
+	template<typename TKey, typename TValue>
+	cregistrator<TClass, TPolicy>& rttr::cregistrator<TClass, TPolicy>::meta(TKey key, TValue value)
+	{
+		this->m_object
+		(
+			rttr::metadata(key, value)
+		);
+		return *this;
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TClass, typename TPolicy /*= rttr::detail::as_object*/>
@@ -830,22 +883,45 @@ namespace core
 
 	namespace io
 	{
-		constexpr stringview_t C_NO_SERIALIZE_META = "NO_SERIALIZE";
-		constexpr stringview_t C_OBJECT_TYPE_NAME = "__type__";
-		constexpr stringview_t C_MAP_KEY_NAME = "__key__";
-		constexpr stringview_t C_MAP_VALUE_NAME = "__value__";
+		constexpr stringview_t C_NO_SERIALIZE_META	= "NO_SERIALIZE";
+		constexpr stringview_t C_OBJECT_TYPE_NAME	= "__type__";
+		constexpr stringview_t C_MAP_KEY_NAME		= "__key__";
+		constexpr stringview_t C_MAP_VALUE_NAME		= "__value__";
 
+		//------------------------------------------------------------------------------------------------------------------------
+		[[nodiscard]] rttr::variant from_json_blob(rttr::type expected, const uint8_t* data, unsigned size);
+
+		//------------------------------------------------------------------------------------------------------------------------
 		[[nodiscard]] rttr::variant from_json_object(rttr::type expected, const simdjson::dom::element& json);
+
+		//------------------------------------------------------------------------------------------------------------------------
 		[[nodiscard]] rttr::variant from_json_string(rttr::type expected, const string_t& json);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<class TType>
+		[[nodiscard]] TType from_json_blob(const uint8_t* data, unsigned size)
+		{
+			auto var = from_json_blob(rttr::type::get<TType>(), data, size);
+			return std::move(var.template get_value<TType>());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		template<class TType>
 		[[nodiscard]] TType from_json_string(const string_t& json)
 		{
-			auto var = from_json_string(rttr::type::get<TType>(), json);
-			return std::move(var.template get_value<TType>());
+			return from_json_blob<TType>((const uint8_t*)json.data(), SCAST(unsigned, json.length()));
 		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		string_t to_json_string(rttr::instance object, bool beautify = false);
+
+		//------------------------------------------------------------------------------------------------------------------------
 		[[nodiscard]] nlohmann::json to_json_object(rttr::instance object);
+
+		//------------------------------------------------------------------------------------------------------------------------
 		void to_json_object(rttr::instance object, nlohmann::json& json);
+
+		//------------------------------------------------------------------------------------------------------------------------
 		[[nodiscard]] simdjson::dom::element load_json(stringview_t path);
 
 	} //- io
@@ -930,6 +1006,11 @@ namespace core
 
 	namespace detail
 	{
+		//- Options for a compiler must be registered using this name. E.g. see 'cdefault_compiler'
+		constexpr stringview_t C_COMPILER_OPTIONS_PROP = "soptions";
+
+		rttr::variant default_compiler_options(rttr::type compiler_type);
+
 		//- utility to allow storing pointers to dynamic pools holding arbitrary template types
 		//------------------------------------------------------------------------------------------------------------------------
 		struct ipool {};
@@ -1540,18 +1621,32 @@ namespace core
 	};
 
 	//- Base class for a resource. When creating a new resource inherit from this class and implement any required functionality,
-	//- and reflect with RTTR.
-	//- This will also help to verify a class when registering a new resource.
+	//- and reflect with RTTR. This will also help to verify a class when registering a new resource.
+	//- Dont forget to define and implement the function 'static void destroy(cresource& resource);'
 	//------------------------------------------------------------------------------------------------------------------------
 	class cresource
 	{
 	public:
-		//- Implement this function when creating a new resource, can also be a noop, depends on the manager.
-		/*static void destroy(cresource& resource);*/
+		static constexpr stringview_t C_META_SUPPORTED_EXTENSIONS	= "RESOURCE_EXTENSIONS";
+		static constexpr stringview_t C_META_COMPILER_TYPE			= "RESOURCE_COMPILER_TYPE";
+		static constexpr stringview_t C_DESTROY_FUNCTION_NAME		= "destroy";
 
 		virtual ~cresource() = default;
 
-		virtual rttr::type resource_type() const = 0;
+		RTTR_ENABLE();
+	};
+
+	//- Interface class for any type of resource compilers that take in a source resource such as a 'png' file and
+	//- transform it into a game/engine-ready format, i.e. a 'dds' or just copy data to destination folders.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cresource_compiler
+	{
+	public:
+		using compile_result_t = std::pair<bool, memory_ref_t>;
+
+		virtual ~cresource_compiler() = default;
+
+		virtual compile_result_t compile(const memory_ref_t& source_data, const rttr::variant& compile_options) = 0;
 
 		RTTR_ENABLE();
 	};
@@ -1675,6 +1770,22 @@ namespace core
 	{
 		return m_data.find(algorithm::hash(name)) != m_data.end();
 	}
+
+	//- A compiler that copies source data as is to output folders. Can also be seen as an example on how to define resource
+	//- compilers.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cdefault_compiler final : cresource_compiler
+	{
+	public:
+		struct soptions
+		{
+			RTTR_ENABLE();
+		};
+
+		compile_result_t compile(const memory_ref_t& source_data, const rttr::variant& compile_options) override final;
+
+		RTTR_ENABLE(cresource_compiler);
+	};
 
 } //- core
 
@@ -2528,6 +2639,8 @@ namespace core
 		class cvirtual_filesystem final : public core::cservice
 		{
 		public:
+			//- TODO: why is this static? This is already a service.
+			//- Was this static for functionality testing?
 			STATIC_INSTANCE_EX(cvirtual_filesystem);
 
 			cvirtual_filesystem();
@@ -2614,6 +2727,20 @@ namespace core
 		}
 
 	} //- fs
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cdefault_compiler)
+	{
+		rttr::cregistrator<cdefault_compiler>("cdefault_compiler")
+			;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cdefault_compiler::soptions)
+	{
+		rttr::cregistrator<cdefault_compiler::soptions>("cdefault_compiler::soptions")
+			;
+	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(cevent_service)
