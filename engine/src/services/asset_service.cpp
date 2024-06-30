@@ -1,8 +1,19 @@
 #include "asset_service.hpp"
 #include "../io/io_native_filesystem.hpp"
+#include <plugin_logging.h>
 
 namespace engine
 {
+	namespace
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t asset_filepath(stringview_t source_filepath)
+		{
+			return fmt::format("{}{}", source_filepath.data(), detail::C_ASSET_EXTENSION.data());
+		}
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
 	casset_service::~casset_service()
 	{
@@ -28,122 +39,49 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool casset_service::compile(stringview_t source_filepath)
+	asset_ref_t casset_service::open_asset(const core::fs::cfileinfo& source_filepath)
 	{
-		//- load the asset of source file, fail if it does not exist, meaning source file was not imported
-		auto asset = load_asset(source_filepath);
+		const auto path = source_filepath.path();
 
-		//- create the compiler class instance for compiling, if there is a valid one registered
-// 		if (const auto compiler_type = rttr::type::get_by_name(asset.compiler_type().data()); compiler_type.is_valid())
-// 		{
-// 			const auto compiler = compiler_type.create();
-// 
-// 			if (const auto [data, size] = core::cfile::load_binary(source_filepath.data()); data)
-// 			{
-// 				auto ref = core::cmemory::make_ref((void*)data, size, core::cfile::unload_binary);
-// 
-// 				//- try to compile source data, if there is a registered function
-// 				if (const auto method = compiler_type.get_method("compile"); method.is_valid())
-// 				{
-// 					if (const auto [result, compiled_data] = method.invoke(compiler, ref, asset.compiling_options()).convert<iresource_compiler::compile_result_t>(); result)
-// 					{
-// 						//- finally export resulting data to destination path along with the asset file
-// 						auto destination_path = compiled_output_path(source_filepath);
-// 
-// 						auto status_compiled = core::cfile::save_binary(destination_path.data(), (uint8_t*)compiled_data->data(), compiled_data->size());
-// 						auto status_asset = core::cfile::save_text("TODO", core::io::to_json_string(asset));
-// 
-// 						return status_compiled == core::file_io_status_success && status_asset == core::file_io_status_success;
-// 					}
-// 				}
-// 			}
-// 		}
+		if (m_assets.find(path) == m_assets.end())
+		{
+			return nullptr;
+		}
 
-		return false;
+		return m_assets.at(path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	stringview_t casset_service::compiled_output_path(stringview_t source_filepath) const
+	asset_ref_t casset_service::create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type)
 	{
-		//- find asset file for source, this is required only to get the final extension of the compiled resource
-		if (core::fs::cfileinfo asset_info(fmt::format("{}.asset", source_filepath.data())); asset_info.exists())
-		{
-			auto* vfs = core::cservice_manager::find<core::fs::cvirtual_filesystem>();
-
-			if (const auto asset_file = vfs->open(asset_info, core::file_mode_read); asset_file)
-			{
-				const auto file_size = asset_file->size();
-				const auto blob = core::cmemory::make_ref(file_size);
-
-				if (asset_file->read(blob->data(), file_size) == file_size)
-				{
-					const auto asset = core::io::from_json_blob<casset>(blob->data(), blob->size());
-				}
-			}
-		}
-
-
-		core::fs::cfileinfo info(source_filepath);
-
-		const auto guid = info.name();
-
+		return create_asset(filepath, resource_type, {}, {});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	asset_ref_t casset_service::open_asset(stringview_t source_filepath)
+	asset_ref_t casset_service::create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type,
+		casset::asset_meta_t meta, rttr::variant options)
 	{
-		const auto asset_path = fmt::format("{}{}", source_filepath.data(), detail::C_ASSET_EXTENSION.data());
+		logging::log_debug(fmt::format("Creating asset file at '{}'", filepath.path()));
 
-		if (m_assets.find(source_filepath) == m_assets.end())
-		{
-			//- check if asset file does not exist and we have to create it first
-			core::fs::cfileinfo info(asset_path);
-
-			//- create asset file if it does not exist
-			const auto ext = info.extension().c_str();
-
-			//- asset file with default compiler settings registered for given extension
-
-			if (!info.exists() && !create_asset(info))
-			{
-				return nullptr;
-			}
-		}
-
-		return m_assets.at(source_filepath);
-
-
-		if (core::fs::cfileinfo info(asset_path); info.exists())
-		{
-			auto* vfs = core::cservice_manager::find<core::fs::cvirtual_filesystem>();
-
-			if (const auto asset_file = vfs->open(info, core::file_mode_read); asset_file)
-			{
-				const auto file_size = asset_file->size();
-				const auto blob = core::cmemory::make_ref(file_size);
-
-				if (asset_file->read(blob->data(), file_size) == file_size)
-				{
-					const auto asset = core::io::from_json_blob<casset>(blob->data(), blob->size());
-				}
-			}
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	asset_ref_t casset_service::create_asset(const core::fs::cfileinfo& filepath)
-	{
 		auto* vfs = core::cservice_manager::find<core::fs::cvirtual_filesystem>();
 
 		if (vfs->find_filesystem("/")->create_file(filepath))
 		{
 			if (auto file = vfs->open(filepath, core::file_mode_write | core::file_mode_truncate); file)
 			{
-				casset asset;
+				auto asset = std::make_shared<casset>(filepath.path(), resource_type, meta, options);
 
-				file->write<casset>(asset);
+				const auto text = core::io::to_json_string(*asset, true);
+
+				file->write((const byte_t*)text.data(), SCAST(unsigned, text.length()));
+
+				logging::log_info(fmt::format("Successfully created asset file at '{}'", filepath.path()));
+
+				return asset;
 			}
 		}
+
+		logging::log_warn(fmt::format("Failed creating asset file at '{}'", filepath.path()));
 
 		return nullptr;
 	}

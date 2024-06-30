@@ -1056,21 +1056,6 @@ namespace core
 			return padding;
 		}
 
-		//------------------------------------------------------------------------------------------------------------------------
-		rttr::variant default_compiler_options(rttr::type compiler_type)
-		{
-			if (compiler_type.is_valid())
-			{
-				const auto options_name = fmt::format("{}::{}", compiler_type.get_name().data(), C_COMPILER_OPTIONS_PROP.data());
-
-				if (auto options_type = rttr::type::get_by_name(options_name.data()); options_type.is_valid())
-				{
-					return options_type.create({});
-				}
-			}
-			return {};
-		}
-
 	} //- detail
 
 	const array_t<unsigned char, 16u> cuuid::C_INVALID_DATA = { 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f' };

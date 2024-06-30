@@ -586,84 +586,15 @@ namespace sm
 		virtual void on_shutdown() = 0;
 	};
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture_compiler final : public core::cresource_compiler
-	{
-	public:
-		struct soptions
-		{
-
-			RTTR_ENABLE();
-		};
-
-		ctexture_compiler() = default;
-		~ctexture_compiler() = default;
-
-		compile_result_t compile(const memory_ref_t& source_data, const rttr::variant& compile_options) override final;
-
-	private:
-
-		RTTR_ENABLE(core::cresource_compiler);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas_compiler final : public core::cresource_compiler
-	{
-	public:
-		struct soptions
-		{
-
-			RTTR_ENABLE();
-		};
-
-		cspriteatlas_compiler() = default;
-		~cspriteatlas_compiler() = default;
-
-		compile_result_t compile(const memory_ref_t& source_data, const rttr::variant& compile_options) override final;
-
-	private:
-
-		RTTR_ENABLE(core::cresource_compiler);
-	};
-
 } //- sm
 
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cspriteatlas_compiler)
-	{
-		rttr::cregistrator<cspriteatlas_compiler>("cspriteatlas_compiler")
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cspriteatlas_compiler::soptions)
-	{
-		rttr::cregistrator<cspriteatlas_compiler::soptions>("cspriteatlas_compiler::soptions")
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(ctexture_compiler)
-	{
-		rttr::cregistrator<ctexture_compiler>("ctexture_compiler")
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(ctexture_compiler::soptions)
-	{
-		rttr::cregistrator<ctexture_compiler::soptions>("ctexture_compiler::soptions")
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(cshader)
 	{
 		rttr::cregistrator<cshader>("cshader")
 			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&cshader::destroy)
-			.meta(core::cresource::C_META_COMPILER_TYPE,			rttr::detail::type_of<core::cdefault_compiler>())
 			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,		vector_t<string_t>{".vs", ".fs"})
 			;
 	}
@@ -673,7 +604,6 @@ namespace sm
 	{
 		rttr::cregistrator<cimage>("cimage")
 			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&cimage::destroy)
-			.meta(core::cresource::C_META_COMPILER_TYPE,			rttr::detail::type_of<core::cdefault_compiler>())
 			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
 				vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
 				".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
@@ -685,7 +615,6 @@ namespace sm
 	{
 		rttr::cregistrator<ctexture>("ctexture")
 			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&ctexture::destroy)
-			.meta(core::cresource::C_META_COMPILER_TYPE,			rttr::detail::type_of<ctexture_compiler>())
 			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
 				vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
 				".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
@@ -706,7 +635,6 @@ namespace sm
 	{
 		rttr::cregistrator<cspriteatlas>("cspriteatlas")
 			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(),	&cspriteatlas::destroy)
-			.meta(core::cresource::C_META_COMPILER_TYPE,			rttr::detail::type_of<cspriteatlas_compiler>())
 			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
 				vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
 				".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})

@@ -30,9 +30,6 @@ namespace engine
 		template<typename TClass>
 		rttr::type manager_type() const;
 
-		template<typename TClass>
-		rttr::type compiler_type() const;
-
 	private:
 		umap_t<rttr::type, rttr::type> m_managers;
 
@@ -42,16 +39,6 @@ namespace engine
 		template<typename TResource, typename TResourceManager>
 		bool validate();
 	};
-
-	//- Retrieve type of the compiler responsible for converting TClass source resource to runtime-ready format
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TClass>
-	rttr::type engine::cresource_service::compiler_type() const
-	{
-		static_assert(std::is_base_of_v<core::cresource, TClass>, "Invalid operation. TClass must be derived from core::cresource");
-
-		return rttr::detail::get_meta<TClass, rttr::type>(core::cresource::C_META_COMPILER_TYPE);
-	}
 
 	//- Retrieve type of the manager responsible for resource TClass
 	//------------------------------------------------------------------------------------------------------------------------

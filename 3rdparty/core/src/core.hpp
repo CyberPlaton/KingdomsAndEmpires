@@ -434,6 +434,15 @@ namespace core
 		logging_verbosity_off = SPDLOG_LEVEL_OFF,
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	enum module_status : uint8_t
+	{
+		module_status_none = 0,
+		module_status_unloaded,
+		module_status_loading,
+		module_status_ready,
+	};
+
 	//- Structure to retrieve underlying information about platform, configuration etc.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sinfo
@@ -741,6 +750,19 @@ namespace rttr
 			return get_meta<TClass, rttr::string_view, TValue>(prop, key);
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		rttr::method get_method(const rttr::type& type, stringview_t name)
+		{
+			return type.get_method(name.data());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TClass>
+		rttr::method get_method(stringview_t name)
+		{
+			return get_method(rttr::type::get<TClass>(), name);
+		}
+
 	} //- detail
 
 	//- Utility class for RTTR registration. Adds a default constructor.
@@ -1006,11 +1028,6 @@ namespace core
 
 	namespace detail
 	{
-		//- Options for a compiler must be registered using this name. E.g. see 'cdefault_compiler'
-		constexpr stringview_t C_COMPILER_OPTIONS_PROP = "soptions";
-
-		rttr::variant default_compiler_options(rttr::type compiler_type);
-
 		//- utility to allow storing pointers to dynamic pools holding arbitrary template types
 		//------------------------------------------------------------------------------------------------------------------------
 		struct ipool {};
@@ -1628,25 +1645,9 @@ namespace core
 	{
 	public:
 		static constexpr stringview_t C_META_SUPPORTED_EXTENSIONS	= "RESOURCE_EXTENSIONS";
-		static constexpr stringview_t C_META_COMPILER_TYPE			= "RESOURCE_COMPILER_TYPE";
 		static constexpr stringview_t C_DESTROY_FUNCTION_NAME		= "destroy";
 
 		virtual ~cresource() = default;
-
-		RTTR_ENABLE();
-	};
-
-	//- Interface class for any type of resource compilers that take in a source resource such as a 'png' file and
-	//- transform it into a game/engine-ready format, i.e. a 'dds' or just copy data to destination folders.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cresource_compiler
-	{
-	public:
-		using compile_result_t = std::pair<bool, memory_ref_t>;
-
-		virtual ~cresource_compiler() = default;
-
-		virtual compile_result_t compile(const memory_ref_t& source_data, const rttr::variant& compile_options) = 0;
 
 		RTTR_ENABLE();
 	};
@@ -1770,22 +1771,6 @@ namespace core
 	{
 		return m_data.find(algorithm::hash(name)) != m_data.end();
 	}
-
-	//- A compiler that copies source data as is to output folders. Can also be seen as an example on how to define resource
-	//- compilers.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cdefault_compiler final : cresource_compiler
-	{
-	public:
-		struct soptions
-		{
-			RTTR_ENABLE();
-		};
-
-		compile_result_t compile(const memory_ref_t& source_data, const rttr::variant& compile_options) override final;
-
-		RTTR_ENABLE(cresource_compiler);
-	};
 
 } //- core
 
@@ -2727,20 +2712,6 @@ namespace core
 		}
 
 	} //- fs
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cdefault_compiler)
-	{
-		rttr::cregistrator<cdefault_compiler>("cdefault_compiler")
-			;
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cdefault_compiler::soptions)
-	{
-		rttr::cregistrator<cdefault_compiler::soptions>("cdefault_compiler::soptions")
-			;
-	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	REFLECT_INLINE(cevent_service)

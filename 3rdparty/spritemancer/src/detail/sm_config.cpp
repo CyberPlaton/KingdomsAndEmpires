@@ -864,20 +864,4 @@ namespace sm
 			m_dst_factor == other.m_dst_factor && m_src_factor == other.m_src_factor;
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cresource_compiler::compile_result_t ctexture_compiler::compile(const memory_ref_t& source_data, const rttr::variant& compile_options)
-	{
-		CORE_ASSERT(false, "Invalid operation. Texture compilation is not implemented yet!");
-
-		return std::make_pair(false, nullptr);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cresource_compiler::compile_result_t cspriteatlas_compiler::compile(const memory_ref_t& source_data, const rttr::variant& compile_options)
-	{
-		CORE_ASSERT(false, "Invalid operation. Texture compilation is not implemented yet!");
-
-		return std::make_pair(false, nullptr);
-	}
-
 } //- sm

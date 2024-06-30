@@ -24,15 +24,13 @@ namespace engine
 		void on_shutdown() override final;
 		void on_update(float) override final;
 
-		bool compile(stringview_t source_filepath);
+		asset_ref_t open_asset(const core::fs::cfileinfo& source_filepath);
 
-		stringview_t compiled_output_path(stringview_t source_filepath) const;
-
-		asset_ref_t open_asset(stringview_t source_filepath);
-
-		asset_ref_t create_asset(const core::fs::cfileinfo& filepath);
+		asset_ref_t create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type);
+		asset_ref_t create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type, casset::asset_meta_t meta, rttr::variant options);
 
 	private:
+		//- mapping source resource paths to asset files
 		umap_t<stringview_t, asset_ref_t> m_assets;
 
 		RTTR_ENABLE(core::cservice);

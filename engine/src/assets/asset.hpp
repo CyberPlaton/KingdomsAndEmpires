@@ -9,39 +9,23 @@ namespace engine
 
 	} //- detail
 
-	//- Any meta information for an asset, extendable for any type of asset
-	//------------------------------------------------------------------------------------------------------------------------
-	struct sasset_meta
-	{
-		umap_t<string_t, rttr::variant> m_data;
-
-		RTTR_ENABLE();
-	};
-
-	//- General asset data, mostly default data, while meta and options depends on the resource type the asset is describing
-	//------------------------------------------------------------------------------------------------------------------------
-	struct sasset_data
-	{
-		sasset_meta m_meta;
-		string_t m_compiler_type;
-		string_t m_source_path;
-		string_t m_compiled_path;
-		rttr::variant m_options;
-
-		RTTR_ENABLE();
-	};
-
 	//- Class describing an asset, that is a file accompanying a resource that includes meta information. The asset can
 	//- specify any meta data, such as texture compilation options, path to the actual resource, tags given by designers etc.
 	//------------------------------------------------------------------------------------------------------------------------
 	class casset final
 	{
 	public:
-		casset(stringview_t compiler_type, stringview_t source_path, stringview_t compiled_path);
-		casset(stringview_t compiler_type, stringview_t source_path, stringview_t compiled_path, sasset_meta&& meta, rttr::variant&& options);
+		using asset_meta_t = umap_t<string_t, rttr::variant>;
+
+		casset(stringview_t source_path, rttr::type resource_type);
+		casset(stringview_t source_path, rttr::type resource_type, asset_meta_t meta, rttr::variant options);
 		~casset() = default;
 
-		const sasset_data& data() const { return m_data; }
+		stringview_t source_path() const;
+		rttr::type resource_type() const;
+
+		template<typename TOptions>
+		const TOptions& options() const;
 
 		template<typename TType>
 		TType get_meta(stringview_t name, TType default_value);
@@ -50,8 +34,21 @@ namespace engine
 		void set_meta(stringview_t name, const TType& value);
 
 	private:
-		sasset_data m_data;
+		asset_meta_t m_meta;
+		string_t m_source_path;
+		rttr::type m_resource_type;
+		rttr::variant m_options;
+
+		RTTR_REFLECTABLE();
+		RTTR_ENABLE();
 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TOptions>
+	const TOptions& engine::casset::options() const
+	{
+		return m_options.convert<TOptions>();
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
@@ -76,23 +73,16 @@ namespace engine
 namespace engine
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(sasset_meta)
+	REFLECT_INLINE(casset)
 	{
-		rttr::cregistrator<sasset_meta>("sasset_meta")
-			.prop("m_data", &sasset_meta::m_data)
+		rttr::cregistrator<casset>("casset")
+			.prop("m_source_path",		&casset::m_source_path)
+			.prop("m_resource_type",	&casset::m_resource_type)
+			.prop("m_options",			&casset::m_options)
+			.prop("m_meta",				&casset::m_meta)
 			;
-	};
 
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(sasset_data)
-	{
-		rttr::cregistrator<sasset_data>("sasset_data")
-			.prop("m_meta",			&sasset_data::m_meta)
-			.prop("m_compiler_type",&sasset_data::m_compiler_type)
-			.prop("m_source_path",	&sasset_data::m_source_path)
-			.prop("m_compiled_path",&sasset_data::m_compiled_path)
-			.prop("m_options",		&sasset_data::m_options)
-			;
+		rttr::default_constructor<umap_t<string_t, rttr::variant>>();
 	};
 
 } //- engine
