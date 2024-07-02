@@ -17,6 +17,7 @@ namespace engine
 	public:
 		using asset_meta_t = umap_t<string_t, rttr::variant>;
 
+		casset();
 		casset(stringview_t source_path, rttr::type resource_type);
 		casset(stringview_t source_path, rttr::type resource_type, asset_meta_t meta, rttr::variant options);
 		~casset() = default;

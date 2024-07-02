@@ -10,13 +10,13 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	struct slayer final
 	{
-		static constexpr std::string_view C_LAYER_UPDATE_FUNC_NAME		= "on_update";
-		static constexpr std::string_view C_LAYER_WORLD_RENDER_FUNC_NAME= "on_world_render";
-		static constexpr std::string_view C_LAYER_UI_RENDER_FUNC_NAME	= "on_ui_render";
-		static constexpr std::string_view C_LAYER_POST_UPDATE_FUNC_NAME = "on_post_update";
-		static constexpr std::string_view C_LAYER_INIT_FUNC_NAME		= "init";
-		static constexpr std::string_view C_LAYER_SHUTDOWN_FUNC_NAME	= "shutdown";
-		static constexpr array_t<std::string_view, 6> C_LAYER_FUNC_NAMES= { C_LAYER_UPDATE_FUNC_NAME, C_LAYER_WORLD_RENDER_FUNC_NAME, C_LAYER_UI_RENDER_FUNC_NAME,
+		static constexpr rttr::string_view C_LAYER_UPDATE_FUNC_NAME			= "on_update";
+		static constexpr rttr::string_view C_LAYER_WORLD_RENDER_FUNC_NAME	= "on_world_render";
+		static constexpr rttr::string_view C_LAYER_UI_RENDER_FUNC_NAME		= "on_ui_render";
+		static constexpr rttr::string_view C_LAYER_POST_UPDATE_FUNC_NAME	= "on_post_update";
+		static constexpr rttr::string_view C_LAYER_INIT_FUNC_NAME			= "init";
+		static constexpr rttr::string_view C_LAYER_SHUTDOWN_FUNC_NAME		= "shutdown";
+		static constexpr array_t<rttr::string_view, 6> C_LAYER_FUNC_NAMES	= { C_LAYER_UPDATE_FUNC_NAME, C_LAYER_WORLD_RENDER_FUNC_NAME, C_LAYER_UI_RENDER_FUNC_NAME,
 																			C_LAYER_POST_UPDATE_FUNC_NAME, C_LAYER_INIT_FUNC_NAME, C_LAYER_SHUTDOWN_FUNC_NAME };
 
 		static bool init()					{return false;}

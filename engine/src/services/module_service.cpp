@@ -19,7 +19,7 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmodule_service::on_start()
 	{
-
+		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -54,37 +54,59 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cmodule_service::load_module(stringview_t type_name, const core::fs::cfileinfo& filepath)
+	bool cmodule_service::load_sync(const core::fs::cfileinfo& filepath)
 	{
-		if (const auto type = rttr::type::get_by_name(type_name.data()); type.is_valid())
-		{
-			return load_module(type, filepath);
-
-			auto m = type.create({});
-
-			auto on_load = rttr::detail::get_method<core::cmodule>(C_MODULE_ON_LOAD_FUNC);
-
-			if (const auto result = on_load.invoke(m).convert<bool>(); result)
-			{
-				m_modules[name.data()] = std::move(m);
-
-				logging::log_info(fmt::format("Successfully loaded module '{}'", name.data()));
-
-				return true;
-			}
-
-			logging::log_warn(fmt::format("Failed to initialize module '{}'", name.data()));
-		}
-
-		logging::log_error(fmt::format("Failed to load module '{}'", name.data()));
-
-		return false;
+		return load_module(filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cmodule_service::load_module(rttr::type type, const core::fs::cfileinfo& filepath)
+	core::cfuture_type<bool> cmodule_service::load_async(const core::fs::cfileinfo& filepath)
 	{
+		core::cfuture_type<bool> result = core::casync::launch_async([&]() -> bool
+			{
 
+				return load_module(filepath);
+
+			}).share();
+
+		return result;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cmodule_service::load_module(const core::fs::cfileinfo& filepath)
+	{
+		auto& vfs = core::cservice_manager::get<core::fs::cvirtual_filesystem>();
+
+		//- Load module definition file
+		if (auto file = vfs.open(filepath, core::file_mode_read); file)
+		{
+			//- Load data and parse from json to object
+			const auto size = file->size();
+			auto data = core::cmemory::make_ref(size);
+
+			if (file->read(data->data(), size) == size)
+			{
+				auto module = core::io::from_json_blob<cmodule>(data->data(), size);
+
+				//- After module is loaded, we post loading requests for assets and resources
+
+				//- Lastly, we recursively load dependent modules
+				for (const auto& def : module.definitions())
+				{
+					for (const auto& dep : def.m_dependencies)
+					{
+						if (!load_sync(stringview_t(dep)))
+						{
+							logging::log_error(fmt::format("Failed loading dependent module '{}' while loading '{}'", dep, module.name()));
+
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 
 } //- io

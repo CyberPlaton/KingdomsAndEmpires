@@ -725,14 +725,14 @@ namespace rttr
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TClass>
-		rttr::type type_of()
+		static rttr::type type_of()
 		{
 			return rttr::type::get<TClass>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TClass, typename TKey, typename TValue>
-		TValue get_meta(rttr::string_view prop, TKey key)
+		static TValue get_meta(rttr::string_view prop, TKey key)
 		{
 			auto type = rttr::type::get<TClass>();
 
@@ -745,20 +745,20 @@ namespace rttr
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TClass, typename TValue>
-		TValue get_meta(rttr::string_view prop, rttr::string_view key)
+		static TValue get_meta(rttr::string_view prop, rttr::string_view key)
 		{
 			return get_meta<TClass, rttr::string_view, TValue>(prop, key);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		rttr::method get_method(const rttr::type& type, stringview_t name)
+		static rttr::method get_method(const rttr::type& type, stringview_t name)
 		{
 			return type.get_method(name.data());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TClass>
-		rttr::method get_method(stringview_t name)
+		static rttr::method get_method(stringview_t name)
 		{
 			return get_method(rttr::type::get<TClass>(), name);
 		}
@@ -2141,6 +2141,9 @@ namespace core
 		static void init();
 		static void shutdown();
 		static void on_update(float dt);
+
+		template<class TService>
+		static TService& get() { return *find<TService>(); }
 
 		template<class TService>
 		static TService* find(stringview_t service_type);

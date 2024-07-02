@@ -3,44 +3,71 @@
 
 namespace io
 {
-	//- This is a dummy module to show how one should be defined. While creating one youu must not inherit from it.
-	//- Remember to define all functions as shown below and reflect the using the macro REGISTER_MODULE()
+	//- A module defines directories of assets to be loaded when this module is loaded. Further assets can be grouped
+	//- inside the module.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmodule final
+	class cmodule final : public core::cresource
 	{
 	public:
+		static void destroy(cmodule& module) {}
+
 		struct sdefinition
 		{
-			string_t m_name;
-			string_t m_path_alias;
+			vector_t<string_t> m_dependencies;
+			string_t m_directory;
+			string_t m_resource_extension;
+			string_t m_asset_group;
+			bool m_recursive = false;
 
 			RTTR_ENABLE();
 		};
 
-		static constexpr std::string_view C_MODULE_ON_LOADING_FUNC_NAME		= "on_loading";
-		static constexpr std::string_view C_MODULE_ON_UNLOADING_FUNC_NAME	= "on_unloading";
-		static constexpr std::string_view C_MODULE_STATUS_FUNC_NAME			= "status";
-		static constexpr std::string_view C_MODULE_DEFINITION_FUNC_NAME		= "definition";
-		static constexpr array_t<std::string_view, 4> C_MODULE_FUNC_NAMES	= { C_MODULE_ON_LOADING_FUNC_NAME, C_MODULE_ON_UNLOADING_FUNC_NAME,
-																				C_MODULE_STATUS_FUNC_NAME, C_MODULE_DEFINITION_FUNC_NAME };
+		cmodule() = default;
+		~cmodule() = default;
 
-		static bool					on_loading(const sdefinition& definition) { return false; }
-		static void					on_unloading() {}
-		static core::module_status	status() { return core::module_status_none; }
-		static const sdefinition&	definition() { return {}; }
+		cmodule& name(stringview_t s);
+		cmodule& path_alias(stringview_t alias);
+		cmodule& definition(const sdefinition& def);
+
+		stringview_t name() const;
+		stringview_t path_alias() const;
+		const vector_t<sdefinition>& definitions() const;
+
+	private:
+		vector_t<sdefinition> m_definitions;
+		string_t m_name;
+		string_t m_path_alias;
+
+		RTTR_ENABLE(core::cresource);
+		RTTR_REFLECTABLE();
 	};
 
 } //- io
 
-//- Use this macro to reflect you module, the module functions must be declared and implemented
-//------------------------------------------------------------------------------------------------------------------------
-#define REGISTER_MODULE(_module) \
-REFLECT_INLINE(_module) \
-{ \
-	rttr::cregistrator<_module>(STRINGIFY(layer)) \
-		.meth(io::cmodule::C_MODULE_ON_LOADING_FUNC_NAME,		&_module::on_loading) \
-		.meth(io::cmodule::C_MODULE_ON_UNLOADING_FUNC_NAME,		&_module::on_unloading) \
-		.meth(io::cmodule::C_MODULE_STATUS_FUNC_NAME,			&_module::status) \
-		.meth(io::cmodule::C_MODULE_DEFINITION_FUNC_NAME,		&_module::definition) \
-		; \
-}
+namespace io
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cmodule::sdefinition)
+	{
+		rttr::cregistrator<cmodule::sdefinition>("cmodule::sdefinition")
+			.prop("m_directory", &cmodule::sdefinition::m_directory)
+			.prop("m_resource_extension", &cmodule::sdefinition::m_resource_extension)
+			.prop("m_asset_group", &cmodule::sdefinition::m_asset_group)
+			.prop("m_recursive", &cmodule::sdefinition::m_recursive)
+			.prop("m_dependencies", &cmodule::sdefinition::m_dependencies)
+			;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	REFLECT_INLINE(cmodule)
+	{
+		rttr::cregistrator<cmodule>("cmodule")
+			.prop("m_name", &cmodule::m_name)
+			.prop("m_path_alias", &cmodule::m_path_alias)
+			.prop("m_definitions", &cmodule::m_definitions)
+			.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cmodule::destroy)
+			.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".module"})
+			;
+	};
+
+} //- io
