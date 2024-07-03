@@ -197,6 +197,33 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	memory_ref_t cnative_file::read_sync()
+	{
+		if (!opened())
+		{
+			return nullptr;
+		}
+
+		auto memory = core::cmemory::make_ref(size());
+
+		read(memory->data(), memory->size());
+
+		return memory;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cfuture_type<memory_ref_t> cnative_file::read_async()
+	{
+		core::cfuture_type<memory_ref_t> result = core::casync::launch_async([&]() -> memory_ref_t
+			{
+				return read_sync();
+
+			}).share();
+
+			return result;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	unsigned cnative_file::write(const byte_t* buffer, unsigned datasize)
 	{
 		if (!opened() || read_only())

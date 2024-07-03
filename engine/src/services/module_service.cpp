@@ -81,12 +81,9 @@ namespace io
 		if (auto file = vfs.open(filepath, core::file_mode_read); file)
 		{
 			//- Load data and parse from json to object
-			const auto size = file->size();
-			auto data = core::cmemory::make_ref(size);
-
-			if (file->read(data->data(), size) == size)
+			if (const auto& memory = file->read_async().wait(); memory)
 			{
-				auto module = core::io::from_json_blob<cmodule>(data->data(), size);
+				auto module = core::io::from_json_blob<cmodule>(memory->data(), memory->size());
 
 				//- After module is loaded, we post loading requests for assets and resources
 
@@ -103,6 +100,7 @@ namespace io
 						}
 					}
 				}
+
 				return true;
 			}
 		}

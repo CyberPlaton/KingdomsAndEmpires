@@ -20,6 +20,8 @@ namespace io
 		void close() override final;
 		unsigned tell() override final;
 		unsigned read(byte_t* buffer, unsigned datasize) override final;
+		memory_ref_t read_sync() override final;
+		core::cfuture_type<memory_ref_t> read_async() override final;
 		unsigned write(const byte_t* buffer, unsigned datasize) override final;
 		unsigned seek(int offset, core::file_seek_origin origin) override final;
 		bool seek_to_start() override final;

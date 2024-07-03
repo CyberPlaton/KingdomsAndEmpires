@@ -1111,12 +1111,19 @@ namespace core
 		~cfuture_type() = default;
 
 		bool ready();
-		[[nodiscard]] TType get() const { ASSERT(ready(), "Invalid operation. You can use 'get' only if future is ready"); return m_task.get(); }
+		const TType& wait();
 
 	private:
 		std::shared_future<TType> m_task;
 		future_status m_status = future_status_none;
 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	const TType& core::cfuture_type<TType>::wait()
+	{
+		return m_task.get();
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
@@ -2578,6 +2585,11 @@ namespace core
 			virtual unsigned tell() = 0;
 			virtual unsigned read(byte_t* buffer, unsigned datasize) = 0;
 			virtual unsigned write(const byte_t* buffer, unsigned datasize) = 0;
+
+			//- helper functions that reads full data from file
+			virtual memory_ref_t read_sync() = 0;
+			virtual cfuture_type<memory_ref_t> read_async() = 0;
+
 
 			//- Seek to start of file
 			virtual bool seek_to_start() = 0;
