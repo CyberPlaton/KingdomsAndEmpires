@@ -5,6 +5,10 @@ namespace engine
 {
 	namespace
 	{
+		//- default services required for engine and other
+		constexpr array_t<stringview_t, 6> C_SERVICES = {"cthread_service", "cvirtual_filesystem" , "cevent_service" ,
+			"casset_service" , "cresource_service" , "cmodule_service"};
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -22,6 +26,8 @@ namespace engine
 
 		//- register and init services
 		logging::log_info("Initialize services...");
+
+		m_config.m_services_cfg.assign(C_SERVICES.begin(), C_SERVICES.end());
 
 		for (const auto& name : m_config.m_services_cfg)
 		{

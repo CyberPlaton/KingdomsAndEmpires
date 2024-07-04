@@ -124,47 +124,6 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld_inspector::show_entity(const sentity& e, unsigned depth /*= 0*/)
 	{
-		ui::scope::cindent indent_scope(depth);
-
-		//- TODO: implement tree node class like the button, so we can detect double-clicks etc
-		//- and customize its appearance
-
-		auto flags = C_TREE_NODE_BASE_FLAGS;
-
-		if (e.m_children.empty())
-		{
-			flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
-		}
-
-
-		//- show entity
-		ui::ctreenode node;
-		auto result = node.title(e.m_uuid.string().c_str())
-			.tooltip("A hint")
-			.icon(ICON_FA_ANKH)
-			.flags(flags).show();
-
-		if (result == ui::detail::icontrol::click_result_lmb)
-		{
-			sm::cui::create_notification("Notification", "LMB", sm::notification_type_info);
-
-			//- recursively show children
-			for (const auto& k : e.m_children)
-			{
-				const auto& kid = get(k);
-
-				show_entity(kid, depth + 1);
-			}
-		}
-		else if (result == ui::detail::icontrol::click_result_rmb)
-		{
-			sm::cui::create_notification("Notification", "RMB", sm::notification_type_info);
-			m_context_menu->open(e.m_entity);
-		}
-		else if (result == ui::detail::icontrol::click_result_lmb_repeated)
-		{
-			sm::cui::create_notification("Notification", "LMB repeated", sm::notification_type_info);
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

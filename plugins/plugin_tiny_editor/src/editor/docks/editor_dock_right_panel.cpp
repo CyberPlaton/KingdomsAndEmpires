@@ -1,5 +1,4 @@
 #include "editor_dock_right_panel.hpp"
-#include "../src/spritemancer/imgui_integration/imgui/imgui.h"
 
 namespace editor
 {

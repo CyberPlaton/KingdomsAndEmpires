@@ -629,15 +629,12 @@ namespace algorithm
 		stl::copy_if(from.begin(), from.end(), to, function);
 	}
 
-	//- TODO: There seems to be a problem with the previous implementation. Refactor me.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TIterator>
 	void shuffle(TIterator begin, TIterator end, unsigned seed = time(NULL))
 	{
 		std::random_device device;
 		std::mt19937 generator(device());
-
-		//static const std::default_random_engine C_RANDOM_ENGINE(seed);
 
 		stl::shuffle(begin, end, generator);
 	}
@@ -647,6 +644,13 @@ namespace algorithm
 	void sort(TIterator begin, TIterator end, TCallable&& function)
 	{
 		stl::sort(begin, end, function);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TIterator>
+	void copy_to(TIterator from_begin, TIterator from_end, TIterator to_begin)
+	{
+		stl::copy(from_begin, from_end, to_begin);
 	}
 
 	namespace detail

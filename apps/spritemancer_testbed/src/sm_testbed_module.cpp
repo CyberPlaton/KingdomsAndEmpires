@@ -661,11 +661,6 @@ int __real_main(int argc, char* argv[])
 	}
 
 	engine::cengine::sconfig cfg;
-	cfg.m_services_cfg.emplace_back("cthread_service");
-	cfg.m_services_cfg.emplace_back("cvirtual_filesystem");
-	cfg.m_services_cfg.emplace_back("cevent_service");
-	cfg.m_services_cfg.emplace_back("casset_service");
-	cfg.m_services_cfg.emplace_back("cresource_service");
 
 	cfg.m_layers_cfg.emplace_back("cexample_bad_app_layer");
 	cfg.m_layers_cfg.emplace_back("cexample_app_layer");
