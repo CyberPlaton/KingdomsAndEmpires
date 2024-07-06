@@ -784,13 +784,15 @@ namespace rttr
 	class cregistrator
 	{
 	public:
+		static constexpr rttr::string_view C_META_INFO = "C_META_INFO";
+
 		cregistrator(rttr::string_view name);
 
-		template<typename TMethod>
-		cregistrator& meth(rttr::string_view name, TMethod method);
+		template<typename TMethod, typename... TMeta>
+		cregistrator& meth(rttr::string_view name, TMethod method, TMeta&&... metadata);
 
-		template<typename TProp>
-		cregistrator& prop(rttr::string_view name, TProp property);
+		template<typename TProp, typename... TMeta>
+		cregistrator& prop(rttr::string_view name, TProp property, TMeta&&... metadata);
 
 		template<typename TKey, typename TValue>
 		cregistrator& meta(TKey key, TValue value);
@@ -884,19 +886,45 @@ namespace rttr
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TClass, typename TPolicy /*= rttr::detail::as_object*/>
-	template<typename TProp>
-	cregistrator<TClass, TPolicy>& rttr::cregistrator<TClass, TPolicy>::prop(rttr::string_view name, TProp property)
+	template<typename TProp, typename... TMeta>
+	cregistrator<TClass, TPolicy>& rttr::cregistrator<TClass, TPolicy>::prop(rttr::string_view name, TProp property, TMeta&&... metadata)
 	{
-		m_object.property(name, std::move(property));
+		if constexpr (sizeof... (TMeta) > 0)
+		{
+			auto prop = m_object.property(name, std::move(property));
+
+			prop
+			(
+				rttr::metadata(C_META_INFO, std::forward<TMeta>(metadata)...)
+			);
+		}
+		else
+		{
+			m_object.property(name, std::move(property));
+		}
+
 		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TClass, typename TPolicy /*= rttr::detail::as_object*/>
-	template<typename TMethod>
-	cregistrator<TClass, TPolicy>& rttr::cregistrator<TClass, TPolicy>::meth(rttr::string_view name, TMethod method)
+	template<typename TMethod, typename... TMeta>
+	cregistrator<TClass, TPolicy>& rttr::cregistrator<TClass, TPolicy>::meth(rttr::string_view name, TMethod method, TMeta&&... metadata)
 	{
-		m_object.method(name, std::move(method));
+		if constexpr (sizeof... (TMeta) > 0)
+		{
+			auto prop = m_object.method(name, std::move(method));
+
+			prop
+			(
+				rttr::metadata(C_META_INFO, std::forward<TMeta>(metadata)...)
+			);
+		}
+		else
+		{
+			m_object.method(name, std::move(method));
+		}
+
 		return *this;
 	}
 
