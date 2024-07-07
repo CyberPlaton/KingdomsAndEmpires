@@ -1,6 +1,38 @@
 #include "sm_testbed_module.hpp"
 #include <iostream>
 
+
+struct rttr_testing final
+{
+	void function()
+	{
+	}
+
+	std::string m_data;
+	int m_second;
+
+	RTTR_ENABLE();
+};
+
+REFLECT_INLINE(rttr_testing)
+{
+	rttr::cregistrator<rttr_testing>("rttr_testing")
+		.meth("function", &rttr_testing::function,
+			rttr::metadata("DisplayName",	"Function"),
+			rttr::metadata("Icon",			"<undefined>"),
+			rttr::metadata("Group",			"<undefined>"),
+			rttr::metadata("Category",		"<undefined>")
+		)
+		.prop("data", &rttr_testing::m_data)
+		.prop("second", &rttr_testing::m_second,
+			rttr::metadata("DisplayName",	"Second"),
+			rttr::metadata(0,				"<undefined>"),
+			rttr::metadata(1,				"<undefined>"),
+			rttr::metadata(2,				"<undefined>")
+		)
+		;
+}
+
 //------------------------------------------------------------------------------------------------------------------------
 void core_io_error_function(uint8_t level, const std::string& message)
 {

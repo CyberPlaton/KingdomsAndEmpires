@@ -2445,6 +2445,13 @@ namespace core
 	namespace fs
 	{
 		//------------------------------------------------------------------------------------------------------------------------
+		cfileinfo::cfileinfo(const char* filepath) :
+			std::filesystem::path(filepath), m_relative(filepath)
+		{
+			init();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		cfileinfo::cfileinfo(stringview_t filepath) :
 			std::filesystem::path(filepath.data()), m_relative(filepath.data())
 		{

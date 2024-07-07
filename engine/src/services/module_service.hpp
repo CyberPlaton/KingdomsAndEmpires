@@ -1,5 +1,6 @@
 #pragma once
 #include <core.h>
+#include "../config.hpp"
 #include "../module.hpp"
 
 namespace io
@@ -18,8 +19,10 @@ namespace io
 		void on_shutdown() override final;
 		void on_update(float dt) override final;
 
-		bool load_sync(const core::fs::cfileinfo& filepath);
-		core::cfuture_type<bool> load_async(const core::fs::cfileinfo& filepath);
+		void load(const core::fs::cfileinfo& filepath);
+		void unload(const core::fs::cfileinfo& filepath);
+
+		const umap_t<string_t, cmodule>& modules() const { return m_modules; }
 
 	private:
 		umap_t<string_t, cmodule> m_modules;
@@ -31,10 +34,11 @@ namespace io
 
 		core::ctimer m_timer;
 
-		RTTR_ENABLE(core::cservice);
+		RTTR_ENABLE(core::cservice, core::cresource_manager<cmodule>);
 
 	private:
-		bool load_module(const core::fs::cfileinfo& filepath);
+		void load_module(const core::fs::cfileinfo& filepath);
+		void unload_module(const core::fs::cfileinfo& filepath);
 	};
 
 } //- io

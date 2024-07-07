@@ -784,8 +784,6 @@ namespace rttr
 	class cregistrator
 	{
 	public:
-		static constexpr rttr::string_view C_META_INFO = "C_META_INFO";
-
 		cregistrator(rttr::string_view name);
 
 		template<typename TMethod, typename... TMeta>
@@ -891,12 +889,10 @@ namespace rttr
 	{
 		if constexpr (sizeof... (TMeta) > 0)
 		{
-			auto prop = m_object.property(name, std::move(property));
-
-			prop
-			(
-				rttr::metadata(C_META_INFO, std::forward<TMeta>(metadata)...)
-			);
+			m_object.property(name, std::move(property))
+				(
+					std::forward<TMeta>(metadata)...
+				);
 		}
 		else
 		{
@@ -913,12 +909,10 @@ namespace rttr
 	{
 		if constexpr (sizeof... (TMeta) > 0)
 		{
-			auto prop = m_object.method(name, std::move(method));
-
-			prop
-			(
-				rttr::metadata(C_META_INFO, std::forward<TMeta>(metadata)...)
-			);
+			m_object.method(name, std::move(method))
+				(
+					std::forward<TMeta>(metadata)...
+				);
 		}
 		else
 		{
@@ -2571,7 +2565,8 @@ namespace core
 		public:
 			cfileinfo(const cfileinfo& other);
 			cfileinfo(stringview_t basepath, stringview_t filepath);
-			cfileinfo(stringview_t filepath);
+			explicit cfileinfo(stringview_t filepath);
+			explicit cfileinfo(const char* filepath);
 			~cfileinfo() = default;
 
 			//- complete path of file containing the basepath from filesystem and relative path from file

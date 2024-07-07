@@ -3,13 +3,6 @@
 
 namespace io
 {
-	namespace
-	{
-		constexpr stringview_t C_MODULE_ON_LOAD_FUNC	= "on_load";
-		constexpr stringview_t C_MODULE_ON_UNLOAD_FUNC	= "on_unload";
-
-	} //- unnamed
-
 	//------------------------------------------------------------------------------------------------------------------------
 	cmodule_service::~cmodule_service()
 	{
@@ -19,13 +12,15 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmodule_service::on_start()
 	{
+		m_modules.reserve(engine::cfg::C_MODULE_RESERVE_COUNT);
+
 		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmodule_service::on_shutdown()
 	{
-
+		//- TODO: forcefully unload all modules
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -35,45 +30,46 @@ namespace io
 
 		while (m_timer.millisecs() < dt)
 		{
+			core::cscope_mutex m(m_mutex);
+
 			//- serve loading requests
 			if (!m_to_load.empty())
 			{
-				core::cscope_mutex m(m_mutex);
+				const auto& module = m_to_load.top(); m_to_load.pop();
 
-				const auto module = m_to_load.top(); m_to_load.pop();
+				load_module(module);
 			}
 
 			//- server unloading requests
 			if (!m_to_unload.empty())
 			{
-				core::cscope_mutex m(m_mutex);
+				const auto& module = m_to_unload.top(); m_to_unload.pop();
 
-				const auto module = m_to_unload.top(); m_to_unload.pop();
+				unload_module(module);
 			}
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cmodule_service::load_sync(const core::fs::cfileinfo& filepath)
+	void cmodule_service::load(const core::fs::cfileinfo& filepath)
 	{
+		core::cscope_mutex m(m_mutex);
+
+		m_to_load.push(filepath);
+
 		return load_module(filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<bool> cmodule_service::load_async(const core::fs::cfileinfo& filepath)
+	void cmodule_service::unload(const core::fs::cfileinfo& filepath)
 	{
-		core::cfuture_type<bool> result = core::casync::launch_async([&]() -> bool
-			{
+		core::cscope_mutex m(m_mutex);
 
-				return load_module(filepath);
-
-			}).share();
-
-		return result;
+		m_to_unload.push(filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cmodule_service::load_module(const core::fs::cfileinfo& filepath)
+	void cmodule_service::load_module(const core::fs::cfileinfo& filepath)
 	{
 		auto& vfs = core::cservice_manager::get<core::fs::cvirtual_filesystem>();
 
@@ -85,26 +81,31 @@ namespace io
 			{
 				auto module = core::io::from_json_blob<cmodule>(memory->data(), memory->size());
 
-				//- After module is loaded, we post loading requests for assets and resources
+				//- TODO: After module is loaded, we post loading requests for assets and resources
 
-				//- Lastly, we recursively load dependent modules
 				for (const auto& def : module.definitions())
 				{
 					for (const auto& dep : def.m_dependencies)
 					{
-						if (!load_sync(stringview_t(dep)))
-						{
-							logging::log_error(fmt::format("Failed loading dependent module '{}' while loading '{}'", dep, module.name()));
-
-							return false;
-						}
+						//- Push dependency modules to be loaded accross next frames
+						m_to_load.push(core::fs::cfileinfo(dep.data()));
 					}
 				}
 
-				return true;
+				m_modules[filepath.relative()] = std::move(module);
 			}
 		}
-		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmodule_service::unload_module(const core::fs::cfileinfo& filepath)
+	{
+		//- TODO: Before module is unloaded, post requests for unloading assets and resources
+
+		if (const auto it = m_modules.find(filepath.relative()); it != m_modules.end())
+		{
+			m_modules.erase(it);
+		}
 	}
 
 } //- io

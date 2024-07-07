@@ -1,26 +1,73 @@
 #pragma once
 //------------------------------------------------------------------------------------------------------------------------
-#define CORE_PLATFORM_WINDOWS 0
-#define CORE_PLATFORM_LINUX 0
-#define CORE_PLATFORM_OSX 0
-#define CORE_PLATFORM_ANDROID 0
-#define CORE_PLATFORM_IOS 0
-#define CORE_PLATFORM_NX 0
-#define CORE_PLATFORM_XBOXONE 0
-#define CORE_PLATFORM_XBOXSERIES 0
-#define CORE_PLATFORM_PS4 0
-#define CORE_PLATFORM_PS5 0
+#ifndef CORE_PLATFORM_WINDOWS
+	#define CORE_PLATFORM_WINDOWS 0
+#endif
+#ifndef CORE_PLATFORM_LINUX
+	#define CORE_PLATFORM_LINUX 0
+#endif
+#ifndef CORE_PLATFORM_OSX
+	#define CORE_PLATFORM_OSX 0
+#endif
+#ifndef CORE_PLATFORM_ANDROID
+	#define CORE_PLATFORM_ANDROID 0
+#endif
+#ifndef CORE_PLATFORM_IOS
+	#define CORE_PLATFORM_IOS 0
+#endif
+#ifndef CORE_PLATFORM_NX
+	#define CORE_PLATFORM_NX 0
+#endif
+#ifndef CORE_PLATFORM_XBOXONE
+	#define CORE_PLATFORM_XBOXONE 0
+#endif
+#ifndef CORE_PLATFORM_XBOXSERIES
+	#define CORE_PLATFORM_XBOXSERIES 0
+#endif
+#ifndef CORE_PLATFORM_PS4
+	#define CORE_PLATFORM_PS4 0
+#endif
+#ifndef CORE_PLATFORM_PS5
+	#define CORE_PLATFORM_PS5 0
+#endif
+
 //------------------------------------------------------------------------------------------------------------------------
-#define CORE_PLATFORM_DESKTOP 0
-#define CORE_PLATFORM_MOBILE 0
-#define CORE_PLATFORM_CONSOLE 0
+#ifndef CORE_PLATFORM_DESKTOP
+	#define CORE_PLATFORM_DESKTOP 0
+#endif
+#ifndef CORE_PLATFORM_MOBILE
+	#define CORE_PLATFORM_MOBILE 0
+#endif
+#ifndef CORE_PLATFORM_CONSOLE
+	#define CORE_PLATFORM_CONSOLE 0
+#endif
 //------------------------------------------------------------------------------------------------------------------------
-#define CORE_COMPILER_MSVC 0
-#define CORE_COMPILER_CLANG 0
-#define CORE_COMPILER_GCC 0
+#ifndef CORE_COMPILER_MSVC
+	#define CORE_COMPILER_MSVC 0
+#endif
+#ifndef CORE_COMPILER_CLANG
+	#define CORE_COMPILER_CLANG 0
+#endif
+#ifndef CORE_COMPILER_GCC
+	#define CORE_COMPILER_GCC 0
+#endif
 //------------------------------------------------------------------------------------------------------------------------
-#define CORE_ARCH_64BIT 0
-#define CORE_ARCH_32BIT 0
+#ifndef CORE_ARCH_64BIT
+	#define CORE_ARCH_64BIT 0
+#endif
+#ifndef CORE_ARCH_32BIT
+	#define CORE_ARCH_32BIT 0
+#endif
+//------------------------------------------------------------------------------------------------------------------------
+#ifndef CORE_DEBUG
+	#define CORE_DEBUG 0
+#endif
+#ifndef CORE_RELEASE
+	#define CORE_RELEASE 0
+#endif
+#ifndef CORE_HYBRID
+	#define CORE_HYBRID 0
+#endif
 
 //- @reference: bx/platform.h
 //------------------------------------------------------------------------------------------------------------------------
@@ -100,4 +147,16 @@
 #elif defined (CORE_PLATFORM_IOS) || defined(CORE_PLATFORM_ANDROID)
 	#undef CORE_PLATFORM_MOBILE
 	#define CORE_PLATFORM_MOBILE 1
+#endif
+
+//------------------------------------------------------------------------------------------------------------------------
+#if DEBUG
+	#undef CORE_DEBUG
+	#define CORE_DEBUG 1
+#elif RELEASE
+	#undef CORE_RELEASE
+	#define CORE_RELEASE 1
+#elif HYBRID
+	#undef CORE_HYBRID
+	#define CORE_HYBRID 1
 #endif
