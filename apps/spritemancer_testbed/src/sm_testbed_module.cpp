@@ -86,6 +86,17 @@ void cexample_app_layer::shutdown()
 //------------------------------------------------------------------------------------------------------------------------
 void cexample_app_layer::on_update(float dt)
 {
+	auto& vfs = core::vfs::instance();
+
+	//- '/orcs/' can be an alias that will be replaced with and actual path on system
+	auto file = vfs.open({"/orcs/textures/units/argonaut.png"}, 0);
+
+	//- iterate starting from aliased path '/orcs/textures', filtering for files only and iterating recursively
+	for(const auto& filepath : vfs.iterate({"/orcs/textures"}, core::filesystem_lookup_type_file, true))
+	{
+	}
+
+
 }
 
 //------------------------------------------------------------------------------------------------------------------------

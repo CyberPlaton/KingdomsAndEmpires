@@ -301,9 +301,9 @@ namespace ecs
 		simdjson::dom::parser parser;
 		simdjson::dom::element element;
 
-		auto string = core::cfile::load_text(path.view());
+		auto memory = core::fs::load_text_from_file(path.view());
 
-		if(parser.parse(string.data(), string.length()).get(element) == simdjson::SUCCESS)
+		if(parser.parse((const char*)memory->data(), (size_t)memory->size()).get(element) == simdjson::SUCCESS)
 		{
 			simdjson::dom::array entities_array;
 			simdjson::dom::array systems_array;
@@ -350,7 +350,7 @@ namespace ecs
 			serialize_entity(e, json[C_ENTITIES_PROP][i++]);
 		}
 
-		core::cfile::save_text(path.view(), json.dump(4));
+		core::fs::save_text_to_file(path.view(), json.dump(4).data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

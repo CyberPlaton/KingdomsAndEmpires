@@ -103,10 +103,10 @@ namespace ecs
 		simdjson::dom::element component_element;
 		stringview_t type_name;
 
-		auto string = core::cfile::load_text(path.view());
+		auto memory = core::fs::load_text_from_file(path.view());
 
 		//- loading component overrides
-		if (parser.parse(string.data(), string.length()).get(element) == simdjson::SUCCESS)
+		if (parser.parse((const char*)memory->data(), (unsigned)memory->size()).get(element) == simdjson::SUCCESS)
 		{
 			//- TODO: load common prefab data. If prefab has a parent then load it first.
 

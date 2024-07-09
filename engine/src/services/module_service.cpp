@@ -40,7 +40,7 @@ namespace io
 				load_module(module);
 			}
 
-			//- server unloading requests
+			//- serve unloading requests
 			if (!m_to_unload.empty())
 			{
 				const auto& module = m_to_unload.top(); m_to_unload.pop();
@@ -56,8 +56,6 @@ namespace io
 		core::cscope_mutex m(m_mutex);
 
 		m_to_load.push(filepath);
-
-		return load_module(filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -72,6 +70,7 @@ namespace io
 	void cmodule_service::load_module(const core::fs::cfileinfo& filepath)
 	{
 		auto& vfs = core::cservice_manager::get<core::fs::cvirtual_filesystem>();
+		auto has_deps = false;
 
 		//- Load module definition file
 		if (auto file = vfs.open(filepath, core::file_mode_read); file)
@@ -81,6 +80,34 @@ namespace io
 			{
 				auto module = core::io::from_json_blob<cmodule>(memory->data(), memory->size());
 
+				//- If this module has dependencies, we have to load them first and afterwards the module itself
+				for (const auto& def : module.definitions())
+				{
+					if (!def.m_dependencies.empty())
+					{
+						has_deps = true;
+
+						for (const auto& dep : def.m_dependencies)
+						{
+							m_to_load.push({ dep.data() });
+						}
+					}
+				}
+
+				if (has_deps)
+				{
+					m_to_load.push(filepath);
+
+					return;
+				}
+
+				//- Post loading requests for assets and resources
+				for (const auto& def : module.definitions())
+				{
+
+				}
+
+
 				//- TODO: After module is loaded, we post loading requests for assets and resources
 
 				for (const auto& def : module.definitions())
@@ -88,7 +115,7 @@ namespace io
 					for (const auto& dep : def.m_dependencies)
 					{
 						//- Push dependency modules to be loaded accross next frames
-						m_to_load.push(core::fs::cfileinfo(dep.data()));
+						m_to_load.push({ dep.data() });
 					}
 				}
 

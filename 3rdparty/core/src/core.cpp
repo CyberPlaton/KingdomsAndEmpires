@@ -892,9 +892,9 @@ namespace core
 			simdjson::dom::parser parser;
 			simdjson::dom::element element;
 
-			auto string = cfile::load_text(path.data());
+			auto memory = fs::load_text_from_file(path);
 
-			if (parser.parse(string.data(), string.length()).get(element) == simdjson::SUCCESS)
+			if (parser.parse((const char*)memory->data(), (size_t)memory->size()).get(element) == simdjson::SUCCESS)
 			{
 				return element;
 			}
@@ -1410,9 +1410,9 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	memory_ref_t cmemory::make_ref(byte_t* data, unsigned size, release_callback_t&& callback)
+	memory_ref_t cmemory::make_ref(byte_t* data, unsigned size)
 	{
-		return std::make_shared<cmemory>(data, size, std::move(callback));
+		return std::make_shared<cmemory>(data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1422,16 +1422,11 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cmemory::cmemory(byte_t* data, unsigned size, release_callback_t&& callback)
+	cmemory::cmemory(byte_t* data, unsigned size)
 	{
-		CORE_ASSERT(callback, "Invalid operation. A callback for freeing original memory must be provided!");
-
-		//- Take ownership of data
+		//- Copy data, freeing incoming data is not our responsibility
 		m_data.reserve(SCAST(size_t, size));
 		std::memcpy(m_data.data(), data, SCAST(size_t, size));
-
-		//- Free original memory
-		callback(data);
 	}
 
 	//- Allocate a piece of memory with requested size
@@ -1951,104 +1946,6 @@ namespace core
 		return *this;
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	string_t cfile::load_text(const string_t& path)
-	{
-		if (const char* s = load_text_file_data(path.c_str()); s)
-		{
-			return s;
-		}
-		return {};
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	std::future<string_t> cfile::load_text_async(const string_t& path)
-	{
-		auto result = casync::launch_async([&]() -> string_t
-			{
-				return load_text(path);
-			});
-
-		return result;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	file_io_status cfile::save_text(const string_t& path, const string_t& text)
-	{
-		return save_text_file_data(path.c_str(), text.c_str()) ? file_io_status_success : file_io_status_failed;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	std::future<file_io_status> cfile::save_text_async(const string_t& path, const string_t& text)
-	{
-		auto result = casync::launch_async([&]() -> file_io_status
-			{
-				return save_text(path, text);
-			});
-
-		return result;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	spair<uint8_t*, unsigned> cfile::load_binary(const string_t& path)
-	{
-		spair<uint8_t*, unsigned> out;
-
-		out.first = load_binary_file_data(path.c_str(), &out.second);
-
-		return out;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	uint8_t* cfile::load_binary(const string_t& path, unsigned& size_out)
-	{
-		auto [data, size] = load_binary(path);
-
-		size_out = size;
-
-		return data;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	std::future<spair<uint8_t*, unsigned>> cfile::load_binary_async(const string_t& path)
-	{
-		auto result = casync::launch_async([&]() -> spair<uint8_t*, unsigned>
-			{
-				return load_binary(path);
-			});
-
-		return result;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	file_io_status cfile::save_binary(const string_t& path, uint8_t* data, unsigned size)
-	{
-		return save_binary_file_data(path.c_str(), data, size) ? file_io_status_success : file_io_status_failed;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	std::future<file_io_status> cfile::save_binary_async(const string_t& path, uint8_t* data, unsigned size)
-	{
-		auto result = casync::launch_async([&]() -> file_io_status
-			{
-				return save_binary(path, data, size);
-			});
-
-		return result;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cfile::unload_text(uint8_t* data)
-	{
-		unload_file_text_data((char*)data);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cfile::unload_binary(void* data)
-	{
-		unload_file_binary_data(data);
-	}
-
 	using namespace std::chrono_literals;
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -2445,13 +2342,6 @@ namespace core
 	namespace fs
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		cfileinfo::cfileinfo(const char* filepath) :
-			std::filesystem::path(filepath), m_relative(filepath)
-		{
-			init();
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
 		cfileinfo::cfileinfo(stringview_t filepath) :
 			std::filesystem::path(filepath.data()), m_relative(filepath.data())
 		{
@@ -2717,6 +2607,137 @@ namespace core
 						fmt::format("Failed closing file '{}'", file->info().name()));
 				}
 			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		memory_ref_t load_text_from_file(stringview_t filepath)
+		{
+			memory_ref_t result = nullptr;
+
+			if (const auto* text = load_text_file_data(filepath.data()); text)
+			{
+				//- copy loaded data
+				result = cmemory::make_ref((byte_t*)text, (unsigned)strlen(text));
+
+				//- free original data
+				unload_file_text_data((char*)text);
+			}
+
+			return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::cfuture_type<memory_ref_t> load_text_from_file_async(stringview_t filepath)
+		{
+			auto result = casync::launch_async([p = filepath]()
+				{
+					return load_text_from_file(p);
+
+				}).share();
+
+			return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		memory_ref_t load_binary_from_file(stringview_t filepath)
+		{
+			memory_ref_t result = nullptr;
+			unsigned size = 0;
+
+			if (const auto* data = load_binary_file_data(filepath.data(), &size); data && size > 0)
+			{
+				//- copy loaded data
+				result = cmemory::make_ref((byte_t*)data, size);
+
+				//- free original data
+				unload_file_binary_data((void*)data);
+			}
+
+			return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::cfuture_type<memory_ref_t> load_binary_from_file_async(stringview_t filepath)
+		{
+			auto result = casync::launch_async([p = filepath]()
+				{
+					return load_binary_from_file(p);
+
+				}).share();
+
+			return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::file_io_status save_text_to_file(stringview_t filepath, const char* string)
+		{
+			return save_text_file_data(filepath, string) ? file_io_status_success : file_io_status_failed;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::file_io_status save_text_to_file(stringview_t filepath, const memory_ref_t& data)
+		{
+			return save_text_to_file(filepath, (const char*)data->data());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::cfuture_type<core::file_io_status> save_text_to_file_async(stringview_t filepath, const memory_ref_t& data)
+		{
+			auto result = casync::launch_async([p = filepath, d = data]()
+				{
+					return save_text_to_file(p, d);
+
+				}).share();
+
+			return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::cfuture_type<core::file_io_status> save_text_to_file_async(stringview_t filepath, const char* string)
+		{
+			auto result = casync::launch_async([p = filepath, s = string]()
+				{
+					return save_text_to_file(p, s);
+
+				}).share();
+
+				return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::file_io_status save_binary_to_file(stringview_t filepath, const memory_ref_t& data)
+		{
+			return save_binary_to_file(filepath, (void*)data->data(), (unsigned)data->size());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::file_io_status save_binary_to_file(stringview_t filepath, void* data, unsigned size)
+		{
+			return save_binary_file_data(filepath, (uint8_t*)data, size) ? file_io_status_success : file_io_status_failed;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::cfuture_type<core::file_io_status> save_binary_to_file_async(stringview_t filepath, const memory_ref_t& data)
+		{
+			auto result = casync::launch_async([p = filepath, d = data]()
+				{
+					return save_binary_to_file(p, d);
+
+				}).share();
+
+				return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::cfuture_type<core::file_io_status> save_binary_to_file_async(stringview_t filepath, void* data, unsigned size)
+		{
+			auto result = casync::launch_async([p = filepath, d = data, s = size]()
+				{
+					return save_binary_to_file(p, d, s);
+
+				}).share();
+
+				return result;
 		}
 
 	} //- fs

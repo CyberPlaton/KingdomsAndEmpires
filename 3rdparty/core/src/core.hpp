@@ -1312,14 +1312,12 @@ namespace core
 		public cnon_copyable
 	{
 	public:
-		using release_callback_t = std::function<void(byte_t*)>;
-
-		static memory_ref_t make_ref(byte_t* data, unsigned size, release_callback_t&& callback);
+		static memory_ref_t make_ref(byte_t* data, unsigned size);
 		static memory_ref_t make_ref(unsigned size);
 
 		//- Constructors must be declared as public, otherwise std::make_shared cannot access them.
 		cmemory(unsigned size);
-		cmemory(byte_t* data, unsigned size, release_callback_t&& callback);
+		cmemory(byte_t* data, unsigned size);
 		~cmemory();
 
 		byte_t* data() { return m_data.data(); }
@@ -1328,6 +1326,9 @@ namespace core
 
 		auto begin() { return m_data.begin(); }
 		auto end() { return m_data.end(); }
+
+		//- Take ownership of the data
+		[[nodiscard]] vector_t<uint8_t>&& take() { return std::move(m_data); }
 
 	private:
 		vector_t<uint8_t> m_data;
@@ -1476,31 +1477,6 @@ namespace core
 	//- Helper class for performing I/O operations both sync and async.
 	//- Note: when you are loading something, you are responsible for unloading it afterwards.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cfile final
-	{
-	public:
-		static string_t load_text(const string_t& path);
-
-		static std::future<string_t> load_text_async(const string_t& path);
-
-		static file_io_status save_text(const string_t& path, const string_t& text);
-
-		static std::future<file_io_status> save_text_async(const string_t& path, const string_t& text);
-
-		static spair<uint8_t*, unsigned> load_binary(const string_t& path);
-
-		static uint8_t* load_binary(const string_t& path, unsigned& size_out);
-
-		static std::future<spair<uint8_t*, unsigned>> load_binary_async(const string_t& path);
-
-		static file_io_status save_binary(const string_t& path, uint8_t* data, unsigned size);
-
-		static std::future<file_io_status> save_binary_async(const string_t& path, uint8_t* data, unsigned size);
-
-		static void unload_text(uint8_t* data);
-
-		static void unload_binary(void* data);
-	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	class ctimer final
@@ -2544,10 +2520,23 @@ namespace core
 	}
 
 	//- Implementation of a virtual filesystem inspired by
-	//- @refence https://github.com/yevgeniy-logachev/vfspp
+	//- @reference https://github.com/yevgeniy-logachev/vfspp
 	//------------------------------------------------------------------------------------------------------------------------
 	namespace fs
 	{
+		memory_ref_t				load_text_from_file(stringview_t filepath);
+		cfuture_type<memory_ref_t>	load_text_from_file_async(stringview_t filepath);
+		memory_ref_t				load_binary_from_file(stringview_t filepath);
+		cfuture_type<memory_ref_t>	load_binary_from_file_async(stringview_t filepath);
+		file_io_status				save_text_to_file(stringview_t filepath, const char* string);
+		file_io_status				save_text_to_file(stringview_t filepath, const memory_ref_t& data);
+		cfuture_type<file_io_status>save_text_to_file_async(stringview_t filepath, const memory_ref_t& data);
+		cfuture_type<file_io_status>save_text_to_file_async(stringview_t filepath, const char* string);
+		file_io_status				save_binary_to_file(stringview_t filepath, void* data, unsigned size);
+		file_io_status				save_binary_to_file(stringview_t filepath, const memory_ref_t& data);
+		cfuture_type<file_io_status>save_binary_to_file_async(stringview_t filepath, const memory_ref_t& data);
+		cfuture_type<file_io_status>save_binary_to_file_async(stringview_t filepath, void* data, unsigned size);
+
 		class ifile;
 		class cfileinfo;
 		class ifilesystem;
@@ -2565,8 +2554,7 @@ namespace core
 		public:
 			cfileinfo(const cfileinfo& other);
 			cfileinfo(stringview_t basepath, stringview_t filepath);
-			explicit cfileinfo(stringview_t filepath);
-			explicit cfileinfo(const char* filepath);
+			cfileinfo(stringview_t filepath);
 			~cfileinfo() = default;
 
 			//- complete path of file containing the basepath from filesystem and relative path from file
@@ -2658,7 +2646,7 @@ namespace core
 			virtual bool create_file(const cfileinfo& filepath) = 0;
 			virtual bool remove_file(const cfileinfo& filepath) = 0;
 			virtual bool copy_file(const cfileinfo& source, const cfileinfo& dest) = 0;
-			virtual bool rename_file(const cfileinfo& source, const cfileinfo& dest) = 0;
+			virtual bool rename_file(const cfileinfo& source, const cfileinfo& dest) = 0; 
 		};
 
 		//- Virtual file system implementation.
@@ -2680,6 +2668,7 @@ namespace core
 			file_ref_t open(const cfileinfo& filepath, int file_mode);
 			void close(file_ref_t file);
 
+
 		private:
 			umap_t<string_t, filesystem_ref_t> m_filesystems;
 			umap_t<uint64_t, filesystem_ref_t> m_opened_files;
@@ -2700,13 +2689,13 @@ namespace events
 {
 	namespace window
 	{
-		struct sresize { int w = 0; int h = 0; };
-		struct sminimize {};
-		struct sunminimize {};
-		struct shide {};
-		struct sunhide {};
-		struct sfocus {};
-		struct sunfocus {};
+		struct sresize		{ int w = 0; int h = 0; };
+		struct sminimize	{};
+		struct sunminimize	{};
+		struct shide		{};
+		struct sunhide		{};
+		struct sfocus		{};
+		struct sunfocus		{};
 
 	} //- window
 
@@ -2714,11 +2703,11 @@ namespace events
 
 namespace math
 {
-	constexpr mat4_t C_MAT4_ID = mat4_t(1.0f);
-	constexpr vec2_t C_VEC_UP = vec2_t(0.0f, -1.0f);
-	constexpr vec2_t C_VEC_RIGHT = vec2_t(1.0f, 0.0f);
-	constexpr float C_ALMOST_EQUAL_EPSILON = 0.04f;
-	constexpr float C_EPSILON = 0.0000001f;
+	constexpr mat4_t C_MAT4_ID				= mat4_t(1.0f);
+	constexpr vec2_t C_VEC_UP				= vec2_t(0.0f, -1.0f);
+	constexpr vec2_t C_VEC_RIGHT			= vec2_t(1.0f, 0.0f);
+	constexpr float C_ALMOST_EQUAL_EPSILON	= 0.04f;
+	constexpr float C_EPSILON				= 0.0000001f;
 
 	bool almost_equal(float a, float b, float e = C_ALMOST_EQUAL_EPSILON);
 	bool almost_equal(const vec2_t& a, const vec2_t& b, float e = C_ALMOST_EQUAL_EPSILON);

@@ -325,20 +325,19 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cshader::load_from_file(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath)
 	{
-		uint8_t* vs = nullptr; uint8_t* fs = nullptr;
-		unsigned vs_size = 0; unsigned fs_size = 0;
+		memory_ref_t vs = nullptr, fs = nullptr;
 
 		if (!vertex_filepath.empty())
 		{
-			vs = core::cfile::load_binary(vertex_filepath.data(), vs_size);
+			vs = core::fs::load_text_from_file(vertex_filepath);
 		}
 
 		if (!fragment_filepath.empty())
 		{
-			fs = core::cfile::load_binary(fragment_filepath.data(), fs_size);
+			fs = core::fs::load_text_from_file(fragment_filepath);
 		}
 
-		return load_from_memory(type, vs, vs_size, fs, fs_size);
+		return load_from_memory(type, (uint8_t*)vs->data(), (unsigned)vs->size(), (uint8_t*)fs->data(), (unsigned)fs->size());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -495,9 +494,9 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cimage::load_from_file(stringview_t filepath)
 	{
-		const auto [data, size] = core::cfile::load_binary(filepath.data());
+		const auto memory = core::fs::load_binary_from_file(filepath.data());
 
-		return load_from_memory(image_type_from_filepath(filepath), data, size);
+		return load_from_memory(image_type_from_filepath(filepath), (void*)memory->data(), (unsigned)memory->size());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

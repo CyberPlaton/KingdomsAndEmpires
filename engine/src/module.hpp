@@ -13,7 +13,7 @@ namespace io
 
 		struct sdefinition
 		{
-			vector_t<string_t> m_dependencies;
+			vector_t<string_t> m_dependencies; //- Modules this depends on
 			string_t m_directory;
 			string_t m_resource_extension;
 			string_t m_asset_group;
