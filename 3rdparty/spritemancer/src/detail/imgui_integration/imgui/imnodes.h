@@ -381,6 +381,7 @@ void ClearLinkSelection();
 void SelectNode(int node_id);
 void ClearNodeSelection(int node_id);
 bool IsNodeSelected(int node_id);
+bool IsNodeVisible(int node_id);
 void SelectLink(int link_id);
 void ClearLinkSelection(int link_id);
 bool IsLinkSelected(int link_id);

@@ -2916,6 +2916,14 @@ bool IsNodeSelected(int node_id)
     return IsObjectSelected(editor.Nodes, editor.SelectedNodeIndices, node_id);
 }
 
+bool IsNodeVisible(int node_id)
+{
+	const auto& ctx = *GetCurrentContext();
+	const auto p = GetNodeScreenSpacePos(node_id);
+	const auto s = GetNodeDimensions(node_id);
+	return ctx.CanvasRectScreenSpace.Overlaps({p.x, p.y, p.x + s.x, p.y + s.y});
+}
+
 bool IsLinkSelected(int link_id)
 {
     ImNodesEditorContext& editor = EditorContextGet();

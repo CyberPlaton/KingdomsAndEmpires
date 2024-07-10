@@ -178,6 +178,14 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	vector_t<core::fs::cfileinfo> cmemory_filesystem::iterate(const core::fs::cfileinfo& path,
+		core::filesystem_lookup_type type, bool recursive) const
+	{
+		CORE_ASSERT(false, "Invalid operation. Iterating a memory filesystem is undefined!");
+		return {};
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	core::fs::file_ref_t cmemory_filesystem::find_file(const core::fs::cfileinfo& fileinfo) const
 	{
 		const auto it = algorithm::find_if(m_file_list.begin(), m_file_list.end(), [&](const core::fs::file_ref_t& file)

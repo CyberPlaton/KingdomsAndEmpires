@@ -27,6 +27,8 @@ namespace io
 		bool copy_file(const core::fs::cfileinfo& source, const core::fs::cfileinfo& dest) override final;
 		bool rename_file(const core::fs::cfileinfo& source, const core::fs::cfileinfo& dest) override final;
 
+		vector_t<core::fs::cfileinfo> iterate(const core::fs::cfileinfo& path, core::filesystem_lookup_type type, bool recursive) const override final;
+
 	private:
 		core::fs::filelist_t m_file_list;
 		string_t m_basepath;

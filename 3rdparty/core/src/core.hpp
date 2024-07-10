@@ -605,6 +605,13 @@ namespace algorithm
 		}
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TStructure, typename TIterator>
+	void insert(TStructure& structure, TIterator begin, TIterator end)
+	{
+		structure.insert(structure.end(), begin, end);
+	}
+
 	//- Iterate a data structure and call given function with the iterator as argument.
 	//- If the callable returns true then we erase the element and return true, if nothing is removed we return false.
 	//------------------------------------------------------------------------------------------------------------------------
@@ -2524,6 +2531,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	namespace fs
 	{
+		//- Utility functions to load data from files directly without using VFS
 		memory_ref_t				load_text_from_file(stringview_t filepath);
 		cfuture_type<memory_ref_t>	load_text_from_file_async(stringview_t filepath);
 		memory_ref_t				load_binary_from_file(stringview_t filepath);
@@ -2646,7 +2654,9 @@ namespace core
 			virtual bool create_file(const cfileinfo& filepath) = 0;
 			virtual bool remove_file(const cfileinfo& filepath) = 0;
 			virtual bool copy_file(const cfileinfo& source, const cfileinfo& dest) = 0;
-			virtual bool rename_file(const cfileinfo& source, const cfileinfo& dest) = 0; 
+			virtual bool rename_file(const cfileinfo& source, const cfileinfo& dest) = 0;
+
+			virtual vector_t<cfileinfo> iterate(const cfileinfo& path, filesystem_lookup_type type, bool recursive) const = 0;
 		};
 
 		//- Virtual file system implementation.
@@ -2668,6 +2678,7 @@ namespace core
 			file_ref_t open(const cfileinfo& filepath, int file_mode);
 			void close(file_ref_t file);
 
+			vector_t<cfileinfo> iterate(const cfileinfo& filepath, filesystem_lookup_type type, bool recursive) const;
 
 		private:
 			umap_t<string_t, filesystem_ref_t> m_filesystems;

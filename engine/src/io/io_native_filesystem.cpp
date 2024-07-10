@@ -253,6 +253,39 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	vector_t<core::fs::cfileinfo> cnative_filesystem::iterate(const core::fs::cfileinfo& path,
+		core::filesystem_lookup_type type, bool recursive) const
+	{
+		vector_t<core::fs::cfileinfo> result;
+
+		const auto base = base_path();
+
+		for (const auto& entry : std::filesystem::directory_iterator{ path })
+		{
+			if (entry.is_directory())
+			{
+				if (type == core::filesystem_lookup_type_directory || type == core::filesystem_lookup_type_any)
+				{
+					result.emplace_back(entry.path().generic_u8string());
+				}
+
+				if (recursive)
+				{
+					auto recursive_result = iterate({ entry.path().generic_u8string() }, type, recursive);
+
+					algorithm::insert(result, recursive_result.begin(), recursive_result.end());
+				}
+			}
+			else if (type == core::filesystem_lookup_type_file || type == core::filesystem_lookup_type_any)
+			{
+				result.emplace_back(entry.path().generic_u8string());
+			}
+		}
+
+		return result;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	core::fs::file_ref_t cnative_filesystem::find_file(const core::fs::cfileinfo& fileinfo) const
 	{
 		const auto it = algorithm::find_if(m_file_list.begin(), m_file_list.end(), [&](const core::fs::file_ref_t& file)

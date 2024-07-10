@@ -2610,6 +2610,35 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		vector_t<core::fs::cfileinfo> cvirtual_filesystem::iterate(const cfileinfo& filepath,
+			filesystem_lookup_type type, bool recursive) const
+		{
+			vector_t<core::fs::cfileinfo> result;
+
+			if (std::all_of(m_sorted_aliases.begin(), m_sorted_aliases.end(), [&](const auto& pair)
+				{
+					const auto& path = pair.first;
+					const auto& filesystem = pair.second;
+
+					if (core::string_utils::starts_with(filepath.path(), path) &&
+						filepath.path().length() != path.length())
+					{
+						const auto files = filesystem->iterate(filepath, type, recursive);
+
+						algorithm::insert(result, files.begin(), files.end());
+
+						return false;
+					}
+
+					return true;
+				}))
+			{
+			}
+
+			return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		memory_ref_t load_text_from_file(stringview_t filepath)
 		{
 			memory_ref_t result = nullptr;
