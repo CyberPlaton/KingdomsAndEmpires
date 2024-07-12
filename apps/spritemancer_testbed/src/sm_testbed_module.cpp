@@ -381,25 +381,10 @@ int __real_main(int argc, char* argv[])
 
 	logging::init(core::logging_verbosity::logging_verbosity_debug);
 
+	core::set_logger(core_io_error_function);
+	sm::set_logger(core_io_error_function);
+
 	logging::log_info(fmt::format("Unittests result: '{}'", UnitTest::RunAllTests()));
-
-	auto fs = std::make_shared<io::cnative_filesystem>();
-	auto cwd = core::cfilesystem::cwd();
-
-	fs->init(cwd.view());
-
-	//- '/orcs/' can be an alias that will be replaced with and actual path on system
-	//auto file = vfs.open({"/orcs/textures/units/argonaut.png"}, 0);
-
-	//- iterate starting from aliased path '/orcs/textures', filtering for files only and iterating recursively
-	logging::log_info(fmt::format("Iterating directory '{}'", cwd.path().generic_u8string()));
-
-	for (const auto& filepath : fs->iterate({ cwd.path().generic_u8string() }, core::filesystem_lookup_type_file, true))
-	{
-		logging::log_info(fmt::format("{}", filepath.path()));
-	}
-
-	logging::log_info("");
 
 	if (false)
 	{
@@ -412,8 +397,6 @@ int __real_main(int argc, char* argv[])
 	cfg.m_layers_cfg.emplace_back("cexample_app_layer");
 	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");
-
-	sm::set_logger(core_io_error_function);
 
 	sm::configure(&engine::cengine::instance(),	//- engine class as the application
 		(void*)&cfg,							//- engine configuration

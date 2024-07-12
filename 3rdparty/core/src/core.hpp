@@ -707,6 +707,8 @@ namespace core
 		error_report_function_t m_callback = nullptr;
 	};
 
+	void set_logger(error_report_function_t callback);
+
 } //- core
 
 namespace asio::detail
@@ -1124,7 +1126,7 @@ namespace core
 		cservice() = default;
 		virtual ~cservice() = default;
 
-		virtual bool on_start() { return false; }
+		virtual bool on_start() { CORE_ASSERT(false, "Invalid operation. Base class function must be implemented for derived class!"); return false; }
 		virtual void on_shutdown() {}
 		virtual void on_update(float) {}
 
@@ -2670,6 +2672,10 @@ namespace core
 
 			cvirtual_filesystem();
 			~cvirtual_filesystem();
+
+			bool on_start() override final;
+			void on_shutdown() override final;
+			void on_update(float) override final;
 
 			void add_filesystem(stringview_t alias, filesystem_ref_t filesystem);
 			void remove_filesystem(stringview_t alias);

@@ -1,6 +1,7 @@
 #include "tiny_editor_module.hpp"
 #include <iostream>
 
+//------------------------------------------------------------------------------------------------------------------------
 void core_io_error_function(uint8_t level, const std::string& message)
 {
 	switch (level)
@@ -37,21 +38,21 @@ void core_io_error_function(uint8_t level, const std::string& message)
 	}
 	}
 }
+
+//------------------------------------------------------------------------------------------------------------------------
 int __real_main(int argc, char* argv[])
 {
 	AllocConsole();
 
-	logging::init(core::logging_verbosity::logging_verbosity_debug);
+	logging::init(core::logging_verbosity::logging_verbosity_trace);
+
+	core::set_logger(core_io_error_function);
+	sm::set_logger(core_io_error_function);
 
 	engine::cengine::sconfig cfg;
-	cfg.m_services_cfg.emplace_back("cthread_service");
-	cfg.m_services_cfg.emplace_back("cvirtual_filesystem");
-	cfg.m_services_cfg.emplace_back("cevent_service");
 
 	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");
-
-	sm::set_logger(core_io_error_function);
 
 	sm::configure(&engine::cengine::instance(),	//- engine class as the application
 		(void*)&cfg,							//- engine configuration
@@ -67,11 +68,13 @@ int __real_main(int argc, char* argv[])
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
+//------------------------------------------------------------------------------------------------------------------------
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
 	return __real_main(0, nullptr);
 }
 #else
+//------------------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
 	return __real_main(argc, argv);

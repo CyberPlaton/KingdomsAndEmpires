@@ -43,26 +43,29 @@ namespace editor
 		m_inspector->on_ui_render();
 		ImGui::End();
 
-		const auto& world = ecs::cworld_manager::instance().active();
-		const auto& entities = world.em().entities();
-		auto e = entities[0];
-
-		if (ImGui::Begin("Component UI test"))
+		if (ecs::cworld_manager::instance().has_active())
 		{
-			for (const auto& c : world.em().components(e))
-			{
-				if (ImGui::CollapsingHeader(c.c_str()))
-				{
-					auto type = rttr::type::get_by_name(c);
+			const auto& world = ecs::cworld_manager::instance().active();
+			const auto& entities = world.em().entities();
+			auto e = entities[0];
 
-					if (auto m = type.get_method(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME); m.is_valid())
+			if (ImGui::Begin("Component UI test"))
+			{
+				for (const auto& c : world.em().components(e))
+				{
+					if (ImGui::CollapsingHeader(c.c_str()))
 					{
-						m.invoke({}, e);
+						auto type = rttr::type::get_by_name(c);
+
+						if (auto m = type.get_method(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME); m.is_valid())
+						{
+							m.invoke({}, e);
+						}
 					}
 				}
 			}
+			ImGui::End();
 		}
-		ImGui::End();
 	}
 
 } //- editor

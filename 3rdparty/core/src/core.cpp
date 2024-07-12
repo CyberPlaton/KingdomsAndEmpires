@@ -84,7 +84,9 @@ namespace core
 {
 	namespace
 	{
-		constexpr stringview_t C_EMPTY_STRING = "";
+		constexpr stringview_t C_EMPTY_STRING					= "";
+		constexpr auto C_FILESYSTEMS_RESERVE_COUNT				= 16;
+		constexpr auto C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT	= 256;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool is_path_directory(stringview_t path)
@@ -2454,9 +2456,12 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		cvirtual_filesystem::cvirtual_filesystem()
 		{
+			m_filesystems.reserve(C_FILESYSTEMS_RESERVE_COUNT);
+			m_opened_files.reserve(C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT);
+
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(logging_verbosity_info, "Virtual File System created");
+				serror_reporter::instance().m_callback(logging_verbosity_debug, "Created Virtual File System");
 			}
 		}
 
@@ -2467,6 +2472,22 @@ namespace core
 				{
 					pair.second->shutdown();
 				});
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cvirtual_filesystem::on_start()
+		{
+			return true;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cvirtual_filesystem::on_shutdown()
+		{
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cvirtual_filesystem::on_update(float)
+		{
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -2770,6 +2791,12 @@ namespace core
 		}
 
 	} //- fs
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void set_logger(error_report_function_t callback)
+	{
+		serror_reporter::instance().m_callback = std::move(callback);
+	}
 
 } //- core
 
