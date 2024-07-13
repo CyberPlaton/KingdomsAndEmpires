@@ -4,12 +4,13 @@
 
 namespace editor
 {
-	//- Not a dock or layer per-se, intended to be used directly by the respective panel.
+	//- Window responsible for showing current snapshot of the edited world. From here yo can create new entities and
+	//- select them for editing.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cworld_inspector final : public clayer_base
 	{
 	public:
-		cworld_inspector(ccontext& ctx) : clayer_base(ctx) {};
+		cworld_inspector(scontext& ctx) : clayer_base(ctx) {};
 		~cworld_inspector() = default;
 
 		bool init() override;

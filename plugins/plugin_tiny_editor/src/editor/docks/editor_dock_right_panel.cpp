@@ -32,9 +32,9 @@ namespace editor
 		if(!ctx().m_docks_enabled)
 			return;
 
-		const ImVec2 size = { algorithm::percent_value(C_WIDTH, ctx().window_width()),
-			algorithm::percent_value(C_HEIGHT, ctx().window_height()) };
-		const ImVec2 pos = { ctx().window_width() - algorithm::percent_value(C_WIDTH, ctx().window_width()),
+		const ImVec2 size = { algorithm::percent_value(C_WIDTH, ctx().m_window_width),
+			algorithm::percent_value(C_HEIGHT, ctx().m_window_width) };
+		const ImVec2 pos = { ctx().m_window_width - algorithm::percent_value(C_WIDTH, ctx().m_window_width),
 			ctx().m_mainmenu_height };
 
 		ImGui::SetNextWindowSize(size, ImGuiCond_Always);

@@ -25,6 +25,9 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cdock_system::on_update(float dt)
 	{
+		//- Update central context data where known and wanted
+		cdock_system::instance().update_context(dt);
+
 		for (auto& d : cdock_system::instance().docks())
 		{
 			d->on_update(dt);
@@ -59,9 +62,19 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::deque<ref_t<clayer_base>>& cdock_system::docks()
+	deque_t<layer_ref_t>& cdock_system::docks()
 	{
 		return m_docks;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cdock_system::update_context(float dt)
+	{
+		auto& context = ctx();
+
+		//- As of now there is only one main window, so just query directly
+		context.m_window_width = raylib::GetScreenWidth();
+		context.m_window_height = raylib::GetScreenHeight();
 	}
 
 } //- editor

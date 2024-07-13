@@ -15,15 +15,24 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cbottom_panel::init()
 	{
-		m_browser = std::make_shared<casset_browser>(ctx());
-		return m_browser->init();
+		auto browser = detail::create_ui_element<casset_browser>(ctx());
+
+		if (browser->init())
+		{
+			m_elements.push_back(browser);
+
+			return true;
+		}
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cbottom_panel::shutdown()
 	{
-		m_browser->shutdown();
-		m_browser.reset();
+		for (const auto& element : m_elements)
+		{
+			element->shutdown();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -32,26 +41,16 @@ namespace editor
 		if (!ctx().m_docks_enabled)
 			return;
 
-		const ImVec2 size = { algorithm::percent_value(C_WIDTH, ctx().window_width()),
-			algorithm::percent_value(C_HEIGHT, ctx().window_height()) };
-		const ImVec2 pos = { 0.0f, ctx().window_height() - algorithm::percent_value(C_HEIGHT, ctx().window_height()) + ctx().m_mainmenu_height };
+		const ImVec2 size = { algorithm::percent_value(C_WIDTH, ctx().m_window_width),
+			algorithm::percent_value(C_HEIGHT, ctx().m_window_height) };
+		const ImVec2 pos = { 0.0f, ctx().m_window_height - algorithm::percent_value(C_HEIGHT, ctx().m_window_height) + ctx().m_mainmenu_height };
 
 
 		ImGui::SetNextWindowSize(size, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
 		ImGui::Begin(C_BOTTOM_PANEL_ID.data(), nullptr, C_BOTTOM_PANEL_FLAGS);
-		m_browser->on_ui_render();
-		ImGui::End();
 
-
-
-		ImGui::SetNextWindowPos({ (float)1920 / 2.0f, (float)1080 / 2.0f }, ImGuiCond_Appearing);
-		ImGui::Begin("Camera");
-
-		if (ecs::cworld_manager::instance().has_active())
-		{
-			const auto& w = ecs::cworld_manager::instance().active();
-		}
+		m_elements[m_active]->on_ui_render();
 
 		ImGui::End();
 	}

@@ -9,7 +9,7 @@ namespace editor
 	class centity_context_menu : public ccontext_holder
 	{
 	public:
-		centity_context_menu(ccontext& ctx);
+		centity_context_menu(scontext& ctx);
 		~centity_context_menu();
 
 		void on_ui_render();

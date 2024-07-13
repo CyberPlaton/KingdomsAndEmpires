@@ -8,7 +8,7 @@ namespace editor
 	class casset_browser final : public clayer_base
 	{
 	public:
-		casset_browser(ccontext& ctx) : clayer_base(ctx) {};
+		casset_browser(scontext& ctx) : clayer_base(ctx) {};
 		~casset_browser() = default;
 
 		bool init() override;

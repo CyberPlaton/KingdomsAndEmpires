@@ -4,20 +4,14 @@
 
 namespace editor
 {
-	//- Central access to editor for all deeper seated layers. Values inside are modified by the root editor layer.
+	//- Class contains basic data useful almost everywhere. Can also be used to synchronize between systems.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ccontext : core::cnon_copyable
+	struct scontext : core::cnon_copyable
 	{
-	public:
-		ccontext();
-		~ccontext() = default;
-
-		float window_width();
-		float window_height();
-
-	public:
-		float m_mainmenu_height;
-		bool m_docks_enabled = true;
+		unsigned m_window_width		= 0;
+		unsigned m_window_height	= 0;
+		float m_mainmenu_height		= 0.0f;
+		bool m_docks_enabled		= true;
 	};
 
 	//- Access to context.
@@ -25,15 +19,15 @@ namespace editor
 	class ccontext_holder
 	{
 	public:
-		ccontext_holder(ccontext& ctx) : m_ctx(ctx) {}
+		ccontext_holder(scontext& ctx) : m_ctx(ctx) {}
 		virtual ~ccontext_holder() {}
 
 	protected:
-		inline const ccontext& ctx() const {return m_ctx;}
-		inline ccontext& ctx() {return m_ctx;}
+		inline const scontext& ctx() const {return m_ctx;}
+		inline scontext& ctx() {return m_ctx;}
 
 	private:
-		ccontext& m_ctx;
+		scontext& m_ctx;
 	};
 
 } //- editor

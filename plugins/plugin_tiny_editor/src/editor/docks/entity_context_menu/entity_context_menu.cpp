@@ -11,7 +11,7 @@ namespace editor
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	centity_context_menu::centity_context_menu(ccontext& ctx) :
+	centity_context_menu::centity_context_menu(scontext& ctx) :
 		ccontext_holder(ctx)
 	{
 	}

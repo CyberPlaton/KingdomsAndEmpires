@@ -15,10 +15,16 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cmain_menu::on_update(float dt)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cmain_menu::on_ui_render()
 	{
 		if (ImGui::BeginMainMenuBar())
 		{
+
 			ctx().m_mainmenu_height = ImGui::GetWindowSize().y;
 
 			if (ImGui::BeginMenu("Menu"))

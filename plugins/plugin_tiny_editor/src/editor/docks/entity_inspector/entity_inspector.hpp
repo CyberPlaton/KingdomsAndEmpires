@@ -3,12 +3,12 @@
 
 namespace editor
 {
-	//- Not a dock or layer per-se, intended to be used directly by the respective panel.
+	//- Responsible for working with an entity, i.e. adding/removing components or altering their data
 	//------------------------------------------------------------------------------------------------------------------------
 	class centity_inspector final : public clayer_base
 	{
 	public:
-		centity_inspector(ccontext& ctx) : clayer_base(ctx) {};
+		centity_inspector(scontext& ctx) : clayer_base(ctx) {};
 		~centity_inspector() = default;
 
 		bool init() override;
