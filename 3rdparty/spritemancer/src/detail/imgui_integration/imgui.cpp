@@ -7,8 +7,6 @@ namespace imgui
 	{
 		static auto S_W = 0;
 		static auto S_H = 0;
-		static ImNodesContext* S_IMNODES_CTX = nullptr;
-		static ImPlotContext* S_IMPLOT_CTX = nullptr;
 
 	} //- unnamed
 
@@ -17,9 +15,8 @@ namespace imgui
 	{
 		//- init imgui and create icon font from ICON_FA data
 		rlImGuiSetup(true);
-
-		S_IMPLOT_CTX = ImPlot::CreateContext();
-		S_IMNODES_CTX = ImNodes::CreateContext();
+		ImPlot::CreateContext();
+		ImNodes::CreateContext();
 
 		//- setup default style
 		ImGui::GetStyle().WindowRounding = 0;
@@ -47,8 +44,8 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void shutdown()
 	{
-		ImNodes::DestroyContext(S_IMNODES_CTX);
-		ImPlot::DestroyContext(S_IMPLOT_CTX);
+		ImPlot::DestroyContext();
+		ImNodes::DestroyContext();
 		rlImGuiShutdown();
 	}
 
@@ -62,18 +59,6 @@ namespace imgui
 	void end()
 	{
 		rlImGuiEnd();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ImPlotContext* implot_ctx()
-	{
-		return S_IMPLOT_CTX;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ImNodesContext* imnodes_ctx()
-	{
-		return S_IMNODES_CTX;
 	}
 
 } //- imgui

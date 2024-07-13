@@ -1360,8 +1360,8 @@ namespace core
 
 		vec4_t normalize() const;
 
-		unsigned rgba() const;
-		unsigned abgr() const;
+		unsigned rgba() const;	//- Useful conversion for raylib etc.
+		unsigned abgr() const;	//- Useful conversion for ImGui
 
 		uint8_t m_r, m_g, m_b, m_a;
 

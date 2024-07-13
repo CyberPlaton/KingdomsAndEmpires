@@ -1,5 +1,6 @@
 #pragma once
 #include "editor_dock_base.hpp"
+#include "material_editor/editor_material_editor.hpp"
 
 namespace editor
 {
@@ -16,7 +17,7 @@ namespace editor
 		void on_ui_render() override final;
 
 	private:
-
+		layer_ref_t m_material_editor;
 	};
 
 } //- editor

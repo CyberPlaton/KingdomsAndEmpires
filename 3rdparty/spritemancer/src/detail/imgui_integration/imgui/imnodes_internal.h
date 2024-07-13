@@ -25,6 +25,30 @@ typedef int ImNodesAttributeType;
 typedef int ImNodesUIState;
 typedef int ImNodesClickInteractionType;
 typedef int ImNodesLinkCreationType;
+typedef int ImNodesNodeType;
+typedef int ImNodesLinkLabelPosition;
+typedef int ImNodesFlags;
+
+enum ImNodesFlags_
+{
+	ImNodesFlags_None = 0,
+	ImNodesFlags_Titlebar = 1 << 1,
+};
+
+enum ImNodesNodeType_
+{
+	ImNodesNodeType_None = 1,
+	ImNodesNodeType_Dynamic = 1 << 1,
+	ImNodesNodeType_Static = 1 << 2,
+};
+
+enum ImNodesLinkLabelPosition_
+{
+	ImNodesLinkLabelPosition_None = 1,
+	ImNodesLinkLabelPosition_Start = 1 << 1,
+	ImNodesLinkLabelPosition_End = 1 << 2,
+	ImNodesLinkLabelPosition_Center = 1 << 3,
+};
 
 enum ImNodesScope_
 {
@@ -133,6 +157,9 @@ struct ImNodeData
     ImVec2 Origin; // The node origin is in editor space
     ImRect TitleBarContentRect;
     ImRect Rect;
+	const char* Label;
+	ImNodesNodeType Type;
+	ImNodesFlags Flags;
 
     struct
     {
@@ -153,7 +180,7 @@ struct ImNodeData
     ImNodeData(const int node_id)
         : Id(node_id), Origin(0.0f, 0.0f), TitleBarContentRect(),
           Rect(ImVec2(0.0f, 0.0f), ImVec2(0.0f, 0.0f)), ColorStyle(), LayoutStyle(), PinIndices(),
-          Draggable(true)
+          Draggable(true), Label(nullptr), Type(ImNodesNodeType_None), Flags(ImNodesFlags_None)
     {
     }
 
@@ -169,6 +196,8 @@ struct ImPinData
     ImNodesPinShape      Shape;
     ImVec2               Pos; // screen-space coordinates
     int                  Flags;
+	const char*          Label;
+	bool                 Enabled;
 
     struct
     {
@@ -178,7 +207,7 @@ struct ImPinData
     ImPinData(const int pin_id)
         : Id(pin_id), ParentNodeIdx(), AttributeRect(), Type(ImNodesAttributeType_None),
           Shape(ImNodesPinShape_CircleFilled), Pos(), Flags(ImNodesAttributeFlags_None),
-          ColorStyle()
+          ColorStyle(), Label(nullptr), Enabled(true)
     {
     }
 };
@@ -187,6 +216,11 @@ struct ImLinkData
 {
     int Id;
     int StartPinIdx, EndPinIdx;
+	float Thickness;
+	ImNodesFlags Flags = ImNodesFlags_None;
+	ImNodesLinkLabelPosition LabelPosition = ImNodesLinkLabelPosition_None;
+	bool Enabled = true;
+	const char* Label = nullptr;
 
     struct
     {

@@ -1652,9 +1652,9 @@ void BeginPinAttribute(
     pin.ParentNodeIdx = node_idx;
     pin.Type = type;
     pin.Shape = shape;
-    pin.Flags = GImNodes->CurrentAttributeFlags;
-    pin.ColorStyle.Background = GImNodes->Style.Colors[ImNodesCol_Pin];
-    pin.ColorStyle.Hovered = GImNodes->Style.Colors[ImNodesCol_PinHovered];
+
+	pin.ColorStyle.Background = GImNodes->Style.Colors[ImNodesCol_Pin];
+	pin.ColorStyle.Hovered = GImNodes->Style.Colors[ImNodesCol_PinHovered];
 }
 
 void EndPinAttribute()
@@ -2461,13 +2461,15 @@ void BeginNode(const int node_id)
     GImNodes->CurrentNodeIdx = node_idx;
 
     ImNodeData& node = editor.Nodes.Pool[node_idx];
-    node.ColorStyle.Background = GImNodes->Style.Colors[ImNodesCol_NodeBackground];
-    node.ColorStyle.BackgroundHovered = GImNodes->Style.Colors[ImNodesCol_NodeBackgroundHovered];
-    node.ColorStyle.BackgroundSelected = GImNodes->Style.Colors[ImNodesCol_NodeBackgroundSelected];
-    node.ColorStyle.Outline = GImNodes->Style.Colors[ImNodesCol_NodeOutline];
-    node.ColorStyle.Titlebar = GImNodes->Style.Colors[ImNodesCol_TitleBar];
+
+	node.ColorStyle.Background = GImNodes->Style.Colors[ImNodesCol_NodeBackground];
+	node.ColorStyle.BackgroundHovered = GImNodes->Style.Colors[ImNodesCol_NodeBackgroundHovered];
+	node.ColorStyle.BackgroundSelected = GImNodes->Style.Colors[ImNodesCol_NodeBackgroundSelected];
+	node.ColorStyle.Outline = GImNodes->Style.Colors[ImNodesCol_NodeOutline];
+	node.ColorStyle.Titlebar = GImNodes->Style.Colors[ImNodesCol_TitleBar];
     node.ColorStyle.TitlebarHovered = GImNodes->Style.Colors[ImNodesCol_TitleBarHovered];
     node.ColorStyle.TitlebarSelected = GImNodes->Style.Colors[ImNodesCol_TitleBarSelected];
+
     node.LayoutStyle.CornerRounding = GImNodes->Style.NodeCornerRounding;
     node.LayoutStyle.Padding = GImNodes->Style.NodePadding;
     node.LayoutStyle.BorderThickness = GImNodes->Style.NodeBorderThickness;
@@ -2482,6 +2484,15 @@ void BeginNode(const int node_id)
 
     ImGui::PushID(node.Id);
     ImGui::BeginGroup();
+
+	if (!!(node.Flags & ImNodesFlags_Titlebar))
+	{
+		BeginNodeTitleBar();
+
+		ImGui::Text(node.Label);
+
+		EndNodeTitleBar();
+	}
 }
 
 void EndNode()
@@ -2604,9 +2615,10 @@ void Link(const int id, const int start_attr_id, const int end_attr_id)
     link.Id = id;
     link.StartPinIdx = ObjectPoolFindOrCreateIndex(editor.Pins, start_attr_id);
     link.EndPinIdx = ObjectPoolFindOrCreateIndex(editor.Pins, end_attr_id);
-    link.ColorStyle.Base = GImNodes->Style.Colors[ImNodesCol_Link];
-    link.ColorStyle.Hovered = GImNodes->Style.Colors[ImNodesCol_LinkHovered];
-    link.ColorStyle.Selected = GImNodes->Style.Colors[ImNodesCol_LinkSelected];
+
+	link.ColorStyle.Base = GImNodes->Style.Colors[ImNodesCol_Link];
+	link.ColorStyle.Hovered = GImNodes->Style.Colors[ImNodesCol_LinkHovered];
+	link.ColorStyle.Selected = GImNodes->Style.Colors[ImNodesCol_LinkSelected];
 
     // Check if this link was created by the current link event
     if ((editor.ClickInteraction.Type == ImNodesClickInteractionType_LinkCreation &&

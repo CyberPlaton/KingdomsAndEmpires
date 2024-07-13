@@ -10,6 +10,9 @@ namespace editor
 		constexpr auto C_BOTTOM_PANEL_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
 			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
 
+		constexpr std::string_view C_TAB_BAR_ID = "##editor_dock_bottom_panel_tab_bar";
+		constexpr auto C_TAB_BAR_FLAGS = ImGuiTabBarFlags_None;
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -50,7 +53,11 @@ namespace editor
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
 		ImGui::Begin(C_BOTTOM_PANEL_ID.data(), nullptr, C_BOTTOM_PANEL_FLAGS);
 
-		m_elements[m_active]->on_ui_render();
+		auto active = ui::ctab_bar(C_TAB_BAR_ID, C_TAB_BAR_FLAGS)
+						.items(m_tab_bar_items.data(), (unsigned)m_tab_bar_items.size())
+						.draw();
+
+		m_elements[active]->on_ui_render();
 
 		ImGui::End();
 	}

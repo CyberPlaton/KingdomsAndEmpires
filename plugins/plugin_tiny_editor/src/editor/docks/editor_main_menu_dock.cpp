@@ -5,6 +5,8 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmain_menu::init()
 	{
+		m_material_editor = detail::create_ui_element<cmaterial_editor>(ctx());
+		m_material_editor->init();
 		return true;
 	}
 
@@ -57,6 +59,9 @@ namespace editor
 
 		}
 		ImGui::EndMainMenuBar();
+
+		m_material_editor->on_update(0.016f);
+		m_material_editor->on_ui_render();
 	}
 
 } //- editor

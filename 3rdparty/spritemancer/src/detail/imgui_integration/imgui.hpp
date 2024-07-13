@@ -2,8 +2,10 @@
 #include <core.h>
 #include "imgui/rlImGui.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include "imgui/implot.h"
 #include "imgui/imnodes.h"
+#include "imgui/imnodes_internal.h"
 #include "imgui/IconsFontAwesome6.h"
 #include "imgui/TextEditor.h"
 
@@ -13,9 +15,6 @@ namespace imgui
 	void shutdown();
 	void begin();
 	void end();
-
-	ImPlotContext*			implot_ctx();
-	ImNodesContext*			imnodes_ctx();
 
 } //- imgui
 

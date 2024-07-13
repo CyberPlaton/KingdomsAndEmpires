@@ -88,7 +88,7 @@ enum ImNodesPinShape_
     ImNodesPinShape_Triangle,
     ImNodesPinShape_TriangleFilled,
     ImNodesPinShape_Quad,
-    ImNodesPinShape_QuadFilled
+    ImNodesPinShape_QuadFilled,
 };
 
 // This enum controls the way the attribute pins behave.
