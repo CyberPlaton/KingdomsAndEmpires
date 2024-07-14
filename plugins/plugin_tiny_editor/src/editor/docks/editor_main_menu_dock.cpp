@@ -5,8 +5,6 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmain_menu::init()
 	{
-		m_material_editor = detail::create_ui_element<cmaterial_editor>(ctx());
-		m_material_editor->init();
 		return true;
 	}
 
@@ -19,6 +17,12 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmain_menu::on_update(float dt)
 	{
+		if (!m_material_editor)
+		{
+			m_material_editor = detail::create_ui_element<cmaterial_editor>(ctx());
+
+			m_material_editor->init();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

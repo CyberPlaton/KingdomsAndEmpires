@@ -389,6 +389,12 @@ namespace editor
 			return *this;
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		ImNodesStyle& get_global_style()
+		{
+			return ImNodes::GetStyle();
+		}
+
 	} //- nodes
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -406,6 +412,12 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmaterial_editor::init()
 	{
+		//- set some style variables
+		auto& style = nodes::get_global_style();
+		style.PinLineThickness = 1.0f;
+		style.LinkLineSegmentsPerLength = 10.0f;
+		style.LinkHoverDistance = 7.5f;
+
 		return true;
 	}
 
@@ -444,11 +456,7 @@ namespace editor
 				node.label(fmt::format("Title {}", ICON_FA_ARROWS_DOWN_TO_PEOPLE), true)
 					.begin();
 
-				if (ImNodes::IsNodeVisible(i))
-				{
-					ImGui::Text(fmt::format("Node '{}'", i).data());
-				}
-
+				//- output pin
 				nodes::cpin pin(i);
 
 				pin.type(nodes::pin_type_output)
@@ -468,12 +476,40 @@ namespace editor
 
 				pin.begin();
 
-				ImGui::Text(fmt::format("Pin '{}'", i).data());
+				ImGui::Text(fmt::format("Output '{}'", i).data());
 
 				pin.end();
 
+				//- input pin
+				nodes::cpin in_pin(256 + i);
+
+				in_pin.type(nodes::pin_type_input)
+					.shape(nodes::pin_shape_triangle)
+					;
+
+				if (i % 2 == 0)
+				{
+					in_pin.filled(true)
+						.color(ImNodesCol_Pin, { 115, 115, 25, 255 });
+				}
+				else
+				{
+					in_pin.filled(false)
+						.color(ImNodesCol_Pin, { 100, 25, 115, 255 });
+				}
+
+				in_pin.begin();
+
+				ImGui::Text(fmt::format("Input '{}'", 256 + i).data());
+
+				in_pin.end();
+
 				node.end();
 			}
+
+			nodes::clink link(1);
+
+ 			link.begin(4, 257);
 
 			ImNodes::EndNodeEditor();
 		}

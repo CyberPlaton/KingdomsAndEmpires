@@ -126,8 +126,8 @@ inline CubicBezier GetCubicBezier(
     const ImVec2 offset = ImVec2(0.25f * link_length, 0.f);
     CubicBezier  cubic_bezier;
     cubic_bezier.P0 = start;
-    cubic_bezier.P1 = start + offset;
-    cubic_bezier.P2 = end - offset;
+    cubic_bezier.P1 = start + offset * 1.5f;
+    cubic_bezier.P2 = end - offset * 1.5f;
     cubic_bezier.P3 = end;
     cubic_bezier.NumSegments = ImMax(static_cast<int>(link_length * line_segments_per_length), 1);
     return cubic_bezier;
@@ -1614,17 +1614,23 @@ void DrawLink(ImNodesEditorContext& editor, const int link_idx)
     }
 
 #if IMGUI_VERSION_NUM < 18000
-    GImNodes->CanvasDrawList->AddBezierCurve(
+	GImNodes->CanvasDrawList->AddBezierCurve(
 #else
-    GImNodes->CanvasDrawList->AddBezierCubic(
+	GImNodes->CanvasDrawList->AddBezierCubic(
 #endif
-        cubic_bezier.P0,
-        cubic_bezier.P1,
-        cubic_bezier.P2,
-        cubic_bezier.P3,
-        link_color,
-        GImNodes->Style.LinkThickness,
-        cubic_bezier.NumSegments);
+		cubic_bezier.P0,
+		cubic_bezier.P1,
+		cubic_bezier.P2,
+		cubic_bezier.P3,
+		link_color,
+		GImNodes->Style.LinkThickness,
+         cubic_bezier.NumSegments);
+
+// 	const unsigned red = ImGui::ColorConvertFloat4ToU32({ 1.0f, 0.0f, 0.0f, 1.0f });
+// 	GImNodes->CanvasDrawList->AddCircleFilled(cubic_bezier.P0, 2.5f, red, 8);
+// 	GImNodes->CanvasDrawList->AddCircleFilled(cubic_bezier.P1, 2.5f, red, 8);
+// 	GImNodes->CanvasDrawList->AddCircleFilled(cubic_bezier.P2, 2.5f, red, 8);
+// 	GImNodes->CanvasDrawList->AddCircleFilled(cubic_bezier.P3, 2.5f, red, 8);
 }
 
 void BeginPinAttribute(

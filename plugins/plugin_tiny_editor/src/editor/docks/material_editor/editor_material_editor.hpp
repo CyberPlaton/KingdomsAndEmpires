@@ -44,6 +44,8 @@ namespace editor::nodes
 		pin_type_static,
 	};
 
+	ImNodesStyle& get_global_style();
+
 	//------------------------------------------------------------------------------------------------------------------------
 	class cscoped_color_variable final
 	{
