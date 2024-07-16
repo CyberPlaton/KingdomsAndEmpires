@@ -9,70 +9,6 @@ namespace editor
 	namespace nodes
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		cnode::cnode(int id) : m_data(internal_data(id)), m_scope(false)
-		{
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cnode::~cnode()
-		{
-			if (m_scope)
-			{
-				end();
-			}
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cnode& cnode::group(int id)
-		{
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cnode& cnode::type(node_type value)
-		{
-			m_data.Type = (ImNodesNodeType)value;
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cnode& cnode::label(stringview_t value, bool titlebar /*= true*/)
-		{
-			m_data.Label = value.data();
-			if (titlebar)
-			{
-				algorithm::bit_set(m_data.Flags, ImNodesFlags_Titlebar);
-			}
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void cnode::begin()
-		{
-			ImNodes::BeginNode(m_data.Id);
-			m_scope = true;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void cnode::end()
-		{
-			ImNodes::EndNode();
-			m_scope = false;
-
-			//- reset colors and style variables
-			for (auto& variable : m_colors) { variable.end(); }
-			for (auto& variable : m_styles) { variable.end(); }
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		ImNodeData& cnode::internal_data(int id)
-		{
-			auto& context = ImNodes::EditorContextGet();
-			const int node_idx = ImNodes::ObjectPoolFindOrCreateIndex(context.Nodes, id);
-			return context.Nodes.Pool[node_idx];
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
 		clink::clink(int id) : m_data(internal_data(id)), m_enabled(true), m_scope(false), m_icon_position(link_icon_position_none)
 		{
 		}
@@ -258,63 +194,6 @@ namespace editor
 		{
 			m_filled = value;
 			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cscoped_color_variable::cscoped_color_variable(ImNodesCol var, const core::scolor& color, bool manual_scope /*= false*/) :
-			m_manual_scope(manual_scope)
-		{
-			ImNodes::PushColorStyle(var, color.abgr());
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cscoped_color_variable::~cscoped_color_variable()
-		{
-			if (!m_manual_scope)
-			{
-				ImNodes::PopColorStyle();
-			}
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cscoped_style_variable::cscoped_style_variable(ImNodesStyleVar var, const vec2_t& value, bool manual_scope /*= false*/) :
-			m_manual_scope(manual_scope)
-		{
-			ImNodes::PushStyleVar(var, {value.x, value.y});
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cscoped_style_variable::cscoped_style_variable(ImNodesStyleVar var, float value, bool manual_scope /*= false*/) :
-			m_manual_scope(manual_scope)
-		{
-			ImNodes::PushStyleVar(var, value);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cscoped_style_variable::~cscoped_style_variable()
-		{
-			if (!m_manual_scope)
-			{
-				ImNodes::PopStyleVar();
-			}
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void cscoped_color_variable::end()
-		{
-			if (m_manual_scope)
-			{
-				ImNodes::PopColorStyle();
-			}
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void cscoped_style_variable::end()
-		{
-			if (m_manual_scope)
-			{
-				ImNodes::PopStyleVar();
-			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

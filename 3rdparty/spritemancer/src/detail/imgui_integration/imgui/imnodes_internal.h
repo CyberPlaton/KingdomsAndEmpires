@@ -15,6 +15,7 @@
 // [SECTION] object pool implementation
 
 struct ImNodesContext;
+class IImNode;
 
 extern ImNodesContext* GImNodes;
 
@@ -25,7 +26,6 @@ typedef int ImNodesAttributeType;
 typedef int ImNodesUIState;
 typedef int ImNodesClickInteractionType;
 typedef int ImNodesLinkCreationType;
-typedef int ImNodesNodeType;
 typedef int ImNodesLinkLabelPosition;
 typedef int ImNodesFlags;
 
@@ -33,13 +33,6 @@ enum ImNodesFlags_
 {
 	ImNodesFlags_None = 0,
 	ImNodesFlags_Titlebar = 1 << 1,
-};
-
-enum ImNodesNodeType_
-{
-	ImNodesNodeType_None = 1,
-	ImNodesNodeType_Dynamic = 1 << 1,
-	ImNodesNodeType_Static = 1 << 2,
 };
 
 enum ImNodesLinkLabelPosition_
@@ -158,8 +151,8 @@ struct ImNodeData
     ImRect TitleBarContentRect;
     ImRect Rect;
 	const char* Label;
-	ImNodesNodeType Type;
 	ImNodesFlags Flags;
+	IImNode* Class = nullptr;
 
     struct
     {
@@ -180,7 +173,7 @@ struct ImNodeData
     ImNodeData(const int node_id)
         : Id(node_id), Origin(0.0f, 0.0f), TitleBarContentRect(),
           Rect(ImVec2(0.0f, 0.0f), ImVec2(0.0f, 0.0f)), ColorStyle(), LayoutStyle(), PinIndices(),
-          Draggable(true), Label(nullptr), Type(ImNodesNodeType_None), Flags(ImNodesFlags_None)
+          Draggable(true), Label(nullptr), Flags(ImNodesFlags_None)
     {
     }
 
@@ -272,6 +265,65 @@ struct ImNodesStyleVarElement
         FloatValue[0] = value.x;
         FloatValue[1] = value.y;
     }
+};
+
+//------------------------------------------------------------------------------------------------------------------------
+class cscoped_color_variable final
+{
+public:
+	cscoped_color_variable() = default;
+	cscoped_color_variable(ImNodesCol var, unsigned abgr);
+	~cscoped_color_variable();
+
+	void push(ImNodesCol var, unsigned abgr);
+	void pop();
+	void reset();
+
+private:
+	unsigned m_count = 0;
+};
+
+//------------------------------------------------------------------------------------------------------------------------
+class cscoped_style_variable final
+{
+public:
+	cscoped_style_variable() = default;
+	cscoped_style_variable(ImNodesStyleVar var, const ImVec2& value);
+	cscoped_style_variable(ImNodesStyleVar var, float value);
+	~cscoped_style_variable();
+
+	void push(ImNodesStyleVar var, const ImVec2& value);
+	void push(ImNodesStyleVar var, float value);
+	void pop();
+	void reset();
+
+private:
+	unsigned m_count = 0;
+};
+
+//- Node interface class and actual holder of data.
+//------------------------------------------------------------------------------------------------------------------------
+class IImNode
+{
+public:
+	virtual ~IImNode();
+
+	void begin();
+	void end();
+	void draw(ImNodesEditorContext& ctx, const int idx) { do_draw(ctx, idx); }
+
+protected:
+	ImNodeData* m_data = nullptr;
+	cscoped_color_variable m_colors;
+	cscoped_style_variable m_styles;
+	bool m_scope = false;
+
+protected:
+	//- This function must be used at least once on instantiating,
+	//- otherwise internal data will not be retrieved.
+	ImNodeData& internal_data(int id);
+	virtual void do_draw(ImNodesEditorContext& ctx, const int idx) = 0;
+	virtual void do_update(ImNodesEditorContext& ctx, const int idx) = 0;
 };
 
 // [SECTION] global and editor context structs

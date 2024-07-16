@@ -1496,6 +1496,12 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
     const ImNodeData& node = editor.Nodes.Pool[node_idx];
     ImGui::SetCursorPos(node.Origin + editor.Panning);
 
+	if(node.Class)
+	{
+		node.Class->draw(editor, node_idx);
+		return;
+	}
+
     const bool node_hovered =
         GImNodes->HoveredNodeIdx == node_idx &&
         editor.ClickInteraction.Type != ImNodesClickInteractionType_BoxSelection;

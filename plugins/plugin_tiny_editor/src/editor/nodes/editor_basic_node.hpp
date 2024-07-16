@@ -1,0 +1,19 @@
+#pragma once
+#include "editor_nodes_node.hpp"
+
+namespace editor::nodes
+{
+	//------------------------------------------------------------------------------------------------------------------------
+	class cbasic_node final : public cnode<cbasic_node>
+	{
+	public:
+		cbasic_node(int id);
+		~cbasic_node();
+
+	protected:
+		void do_draw(ImNodesEditorContext& ctx, const int idx) override final;
+		void do_update(ImNodesEditorContext& ctx, const int idx) override final;
+	};
+
+
+} //- editor::nodes
