@@ -30,8 +30,6 @@ namespace editor::nodes
 
 	private:
 		ImLinkData& m_data;
-		vector_t<cscoped_color_variable> m_colors;
-		vector_t<cscoped_style_variable> m_styles;
 		bool m_enabled;
 		bool m_scope;
 		link_icon_position m_icon_position;
@@ -62,8 +60,6 @@ namespace editor::nodes
 
 	private:
 		ImPinData& m_data;
-		vector_t<cscoped_color_variable> m_colors;
-		vector_t<cscoped_style_variable> m_styles;
 		bool m_scope;
 		bool m_filled;
 		pin_shape m_shape;

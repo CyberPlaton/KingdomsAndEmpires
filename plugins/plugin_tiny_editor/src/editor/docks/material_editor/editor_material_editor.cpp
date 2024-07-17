@@ -1,4 +1,5 @@
 #include "editor_material_editor.hpp"
+#include "../../nodes/editor_basic_node.hpp"
 
 namespace editor
 {
@@ -47,8 +48,6 @@ namespace editor
 			m_scope = false;
 
 			//- reset colors and style variables
-			for (auto& variable : m_colors) { variable.end(); }
-			for (auto& variable : m_styles) { variable.end(); }
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -157,8 +156,6 @@ namespace editor
 			m_scope = false;
 
 			//- reset colors and style variables
-			for (auto& variable : m_colors) { variable.end(); }
-			for (auto& variable : m_styles) { variable.end(); }
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -197,50 +194,23 @@ namespace editor
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		cnode& cnode::color(ImNodesCol variable, const core::scolor& value)
-		{
-			CORE_ASSERT(variable >= ImNodesCol_NodeBackground && variable <= ImNodesCol_TitleBarSelected,
-				"Invalid operation. Incorrect color variable selected!");
-
-			m_colors.emplace_back(variable, value, true);
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cnode& cnode::style(ImNodesStyleVar variable, const vec2_t& value)
-		{
-			m_styles.emplace_back(variable, value, true);
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cnode& cnode::style(ImNodesStyleVar variable, float value)
-		{
-			m_styles.emplace_back(variable, value, true);
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
 		cpin& cpin::color(ImNodesCol variable, const core::scolor& value)
 		{
 			CORE_ASSERT(variable >= ImNodesCol_Pin && variable <= ImNodesCol_PinHovered,
 				"Invalid operation. Incorrect color variable selected!");
 
-			m_colors.emplace_back(variable, value, true);
 			return *this;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		cpin& cpin::style(ImNodesStyleVar variable, const vec2_t& value)
 		{
-			m_styles.emplace_back(variable, value, true);
 			return *this;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		cpin& cpin::style(ImNodesStyleVar variable, float value)
 		{
-			m_styles.emplace_back(variable, value, true);
 			return *this;
 		}
 
@@ -250,21 +220,18 @@ namespace editor
 			CORE_ASSERT(variable >= ImNodesCol_Link && variable <= ImNodesCol_LinkSelected,
 				"Invalid operation. Incorrect color variable selected!");
 
-			m_colors.emplace_back(variable, value, true);
 			return *this;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		clink& clink::style(ImNodesStyleVar variable, const vec2_t& value)
 		{
-			m_styles.emplace_back(variable, value, true);
 			return *this;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		clink& clink::style(ImNodesStyleVar variable, float value)
 		{
-			m_styles.emplace_back(variable, value, true);
 			return *this;
 		}
 
@@ -322,18 +289,20 @@ namespace editor
 
 			for (auto i = 1; i < 6; ++i)
 			{
-				nodes::cnode node(i);
+				nodes::cbasic_node::cscope scope(i);
+
+				auto& settings = scope.settings();
 
 				if (i % 2 == 0)
 				{
-					node.color(ImNodesCol_NodeBackground, { 0, 255, 0, 255 });
+					settings.color(ImNodesCol_NodeBackground, { 0, 255, 0, 255 });
 				}
 				else
 				{
-					node.color(ImNodesCol_NodeBackground, { 255, 0, 0, 255 });
+					settings.color(ImNodesCol_NodeBackground, { 255, 0, 0, 255 });
 				}
-				node.label(fmt::format("Title {}", ICON_FA_ARROWS_DOWN_TO_PEOPLE), true)
-					.begin();
+				settings.header(fmt::format("Node {}", i), ICON_FA_ARROWS_DOWN_TO_PEOPLE,
+					"A node I loved so much", "... in truth, I didnt really 'loved' the node");
 
 				//- output pin
 				nodes::cpin pin(i);
@@ -382,8 +351,6 @@ namespace editor
 				ImGui::Text(fmt::format("Input '{}'", 256 + i).data());
 
 				in_pin.end();
-
-				node.end();
 			}
 
 			nodes::clink link(1);

@@ -91,28 +91,6 @@ void cscoped_style_variable::reset()
 //------------------------------------------------------------------------------------------------------------------------
 IImNode::~IImNode()
 {
-	if (m_scope)
-	{
-		end();
-	}
-}
-
-//------------------------------------------------------------------------------------------------------------------------
-void IImNode::begin()
-{
-	CORE_ASSERT(m_data, "Invalid operation. Internal data is not ready!");
-
-	ImNodes::BeginNode(m_data->Id);
-	m_scope = true;
-}
-
-//------------------------------------------------------------------------------------------------------------------------
-void IImNode::end()
-{
-	ImNodes::EndNode();
-	m_scope = false;
-	m_colors.reset();
-	m_styles.reset();
 }
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -120,11 +98,5 @@ ImNodeData& IImNode::internal_data(int id)
 {
 	auto& context = ImNodes::EditorContextGet();
 	const int idx = ImNodes::ObjectPoolFindOrCreateIndex(context.Nodes, id);
-
-	if (!m_data)
-	{
-		m_data = &context.Nodes.Pool[idx];
-	}
-
 	return context.Nodes.Pool[idx];
 }

@@ -6,13 +6,17 @@ namespace editor::nodes
 	//------------------------------------------------------------------------------------------------------------------------
 	class cbasic_node final : public cnode<cbasic_node>
 	{
+		DECLARE_NODE(cbasic_node);
+
 	public:
-		cbasic_node(int id);
 		~cbasic_node();
 
 	protected:
 		void do_draw(ImNodesEditorContext& ctx, const int idx) override final;
 		void do_update(ImNodesEditorContext& ctx, const int idx) override final;
+
+	private:
+		cbasic_node(int id);
 	};
 
 

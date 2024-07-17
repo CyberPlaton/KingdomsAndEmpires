@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <cstdint>
 #include "imgui.h"
 
 #ifdef IMNODES_USER_CONFIG
@@ -18,32 +19,36 @@ typedef int ImNodesPinShape;        // -> enum ImNodesPinShape_
 typedef int ImNodesAttributeFlags;  // -> enum ImNodesAttributeFlags_
 typedef int ImNodesMiniMapLocation; // -> enum ImNodesMiniMapLocation_
 
-//------------------------------------------------------------------------------------------------------------------------
-enum link_icon_position : uint8_t
+namespace editor::nodes
 {
-	link_icon_position_none		= 0,
-	link_icon_position_start	= 1 << 1,	//- icon at start of the link, just outside of the pin
-	link_icon_position_end		= 1 << 2,	//- icon at end of the link, just outside of the pin
-	link_icon_position_center	= 1 << 3	//- icon in middle of the link
-};
+	//------------------------------------------------------------------------------------------------------------------------
+	enum link_icon_position : uint8_t
+	{
+		link_icon_position_none = 0,
+		link_icon_position_start = 1 << 1,	//- icon at start of the link, just outside of the pin
+		link_icon_position_end = 1 << 2,	//- icon at end of the link, just outside of the pin
+		link_icon_position_center = 1 << 3	//- icon in middle of the link
+	};
 
-//------------------------------------------------------------------------------------------------------------------------
-enum pin_shape : uint8_t
-{
-	pin_shape_none = 0,
-	pin_shape_circle,
-	pin_shape_triangle,
-	pin_shape_quad,
-};
+	//------------------------------------------------------------------------------------------------------------------------
+	enum pin_shape : uint8_t
+	{
+		pin_shape_none = 0,
+		pin_shape_circle,
+		pin_shape_triangle,
+		pin_shape_quad,
+	};
 
-//------------------------------------------------------------------------------------------------------------------------
-enum pin_type : uint8_t
-{
-	pin_type_none = 0,
-	pin_type_input,
-	pin_type_output,
-	pin_type_static,
-};
+	//------------------------------------------------------------------------------------------------------------------------
+	enum pin_type : uint8_t
+	{
+		pin_type_none = 0,
+		pin_type_input,
+		pin_type_output,
+		pin_type_static,
+	};
+
+} //- editor::nodes
 
 enum ImNodesCol_
 {

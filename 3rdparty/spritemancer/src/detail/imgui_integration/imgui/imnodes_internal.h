@@ -153,6 +153,7 @@ struct ImNodeData
 	const char* Label;
 	ImNodesFlags Flags;
 	IImNode* Class = nullptr;
+	int Group = INT_MIN;
 
     struct
     {
@@ -308,8 +309,6 @@ class IImNode
 public:
 	virtual ~IImNode();
 
-	void begin();
-	void end();
 	void draw(ImNodesEditorContext& ctx, const int idx) { do_draw(ctx, idx); }
 
 protected:
@@ -319,11 +318,10 @@ protected:
 	bool m_scope = false;
 
 protected:
-	//- This function must be used at least once on instantiating,
-	//- otherwise internal data will not be retrieved.
-	ImNodeData& internal_data(int id);
 	virtual void do_draw(ImNodesEditorContext& ctx, const int idx) = 0;
 	virtual void do_update(ImNodesEditorContext& ctx, const int idx) = 0;
+
+	static ImNodeData& internal_data(int id);
 };
 
 // [SECTION] global and editor context structs
