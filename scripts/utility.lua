@@ -1,4 +1,5 @@
 IS_TRACY_ENABLED = false
+IS_DLMALLOC_ENABLED = true
 
 ------------------------------------------------------------------------------------------------------------------------
 function isempty(s)
@@ -22,6 +23,9 @@ function set_basic_defines()
 
 	if IS_TRACY_ENABLED == true then
 		defines{"TRACY_ENABLE"}
+	end
+	if IS_DLMALLOC_ENABLED == true then
+		defines{"DLMALLOC_ENABLE"}
 	end
 
 	filter{"configurations:debug"}

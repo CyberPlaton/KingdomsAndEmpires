@@ -5,6 +5,7 @@
 #include "imgui_internal.h"
 #include "imnodes.h"
 
+#include <core.h>
 #include <limits.h>
 
 // the structure of this file:
@@ -302,6 +303,29 @@ private:
 	unsigned m_count = 0;
 };
 
+//------------------------------------------------------------------------------------------------------------------------
+class IImNodeAllocator
+{
+public:
+	virtual ~IImNodeAllocator() = default;
+	virtual void* allocate(uint64_t) = 0;
+	virtual void deallocate(void*) = 0;
+};
+
+//------------------------------------------------------------------------------------------------------------------------
+class ImNodeAllocator : public IImNodeAllocator
+{
+public:
+	ImNodeAllocator() = default;
+	~ImNodeAllocator();
+
+	void* allocate(uint64_t n) override final;
+	void deallocate(void* p) override final;
+
+private:
+	umap_t<uint64_t, void*> m_allocations;
+};
+
 //- Node interface class and actual holder of data.
 //------------------------------------------------------------------------------------------------------------------------
 class IImNode
@@ -331,6 +355,7 @@ struct ImNodesEditorContext
     ImObjectPool<ImNodeData> Nodes;
     ImObjectPool<ImPinData>  Pins;
     ImObjectPool<ImLinkData> Links;
+	ptr_t<IImNodeAllocator> Allocator;
 
     ImVector<int> NodeDepthOrder;
 
@@ -371,6 +396,7 @@ struct ImNodesEditorContext
           MiniMapEnabled(false), MiniMapSizeFraction(0.0f), MiniMapNodeHoveringCallback(NULL),
           MiniMapNodeHoveringCallbackUserData(NULL), MiniMapScaling(0.0f)
     {
+		Allocator = std::make_unique<ImNodeAllocator>();
     }
 };
 

@@ -107,7 +107,7 @@ namespace miniz
 
 //------------------------------------------------------------------------------------------------------------------------
 #if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-	//------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------
 inline static void* tracy_malloc_trace(std::size_t size)
 {
 	void* p = std::malloc(size);
@@ -146,19 +146,27 @@ inline static void tracy_free_trace(void* ptr)
 	std::free(ptr);
 }
 
-//------------------------------------------------------------------------------------------------------------------------
-#define CORE_MALLOC(size)		tracy_malloc_trace(size)
-#define CORE_CALLOC(n, size)	tracy_calloc_trace(n, size)
-#define CORE_REALLOC(p, size)	tracy_realloc_trace(p, size)
-#define CORE_FREE(p)			tracy_free_trace(p)
-#define CORE_FREEN(p, n)		tracy_free_trace(p)
+	//------------------------------------------------------------------------------------------------------------------------
+	#define CORE_MALLOC(size)		tracy_malloc_trace(size)
+	#define CORE_CALLOC(n, size)	tracy_calloc_trace(n, size)
+	#define CORE_REALLOC(p, size)	tracy_realloc_trace(p, size)
+	#define CORE_FREE(p)			tracy_free_trace(p)
+	#define CORE_FREEN(p, n)		tracy_free_trace(p)
+#elif DLMALLOC_ENABLE
+#include <../src/dlmalloc/malloc.h>
+	//------------------------------------------------------------------------------------------------------------------------
+	#define CORE_MALLOC(size)		dlmalloc(size)
+	#define CORE_CALLOC(n, size)	dlcalloc(n, size)
+	#define CORE_REALLOC(p, size)	dlrealloc(p, size)
+	#define CORE_FREE(p)			dlfree(p)
+	#define CORE_FREEN(p, n)		CORE_FREE(p)
 #else
 	//------------------------------------------------------------------------------------------------------------------------
-#define CORE_MALLOC(size)		std::malloc(size)
-#define CORE_CALLOC(n, size)	std::calloc(n, size)
-#define CORE_REALLOC(p, size)	std::realloc(p, size)
-#define CORE_FREE(p)			std::free(p)
-#define CORE_FREEN(p, n)		CORE_FREE(p)
+	#define CORE_MALLOC(size)		std::malloc(size)
+	#define CORE_CALLOC(n, size)	std::calloc(n, size)
+	#define CORE_REALLOC(p, size)	std::realloc(p, size)
+	#define CORE_FREE(p)			std::free(p)
+	#define CORE_FREEN(p, n)		CORE_FREE(p)
 #endif
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -658,6 +666,13 @@ namespace algorithm
 	void copy_to(TIterator from_begin, TIterator from_end, TIterator to_begin)
 	{
 		stl::copy(from_begin, from_end, to_begin);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TIterator, typename TCallable>
+	void for_each(TIterator begin, TIterator end, TCallable&& function)
+	{
+		stl::for_each(begin, end, function);
 	}
 
 	namespace detail

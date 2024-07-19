@@ -100,3 +100,36 @@ ImNodeData& IImNode::internal_data(int id)
 	const int idx = ImNodes::ObjectPoolFindOrCreateIndex(context.Nodes, id);
 	return context.Nodes.Pool[idx];
 }
+
+//------------------------------------------------------------------------------------------------------------------------
+ImNodeAllocator::~ImNodeAllocator()
+{
+	while(!m_allocations.empty())
+	{
+		deallocate(m_allocations.begin()->second);
+	}
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+void* ImNodeAllocator::allocate(uint64_t n)
+{
+#if DLMALLOC_ENABLE
+	void* p = CORE_MALLOC(n);
+#else
+	void* p = ImGui::MemAlloc(n);
+#endif
+	m_allocations[(uint64_t)p] = p;
+
+	return p;
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+void ImNodeAllocator::deallocate(void* p)
+{
+#if DLMALLOC_ENABLE
+	CORE_FREE(p);
+#else
+	ImGui::MemFree(p);
+#endif
+	m_allocations.erase((uint64_t)p);
+}

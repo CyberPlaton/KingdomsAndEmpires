@@ -48,11 +48,16 @@ namespace editor::nodes
 	template<typename... ARGS>
 	cnode<TType>::cscope::cscope(int id, ARGS&&... args)
 	{
+		auto& ctx = ImNodes::EditorContextGet();
 		auto& data = IImNode::internal_data(id);
 
 		if (!data.Class)
 		{
-			data.Class = new TType(id, std::forward<ARGS>(args)...);
+			void* p = ctx.Allocator->allocate(sizeof(TType));
+
+			new (p) TType(id, std::forward<ARGS>(args)...);
+
+			data.Class = (IImNode*)p;
 		}
 
 		m_node = reinterpret_cast<TType*>(data.Class);
