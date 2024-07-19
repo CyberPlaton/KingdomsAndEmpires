@@ -2,6 +2,8 @@
 #include <core.h>
 #include <engine.h>
 
+//-- Use this macro to declare a new node type
+//------------------------------------------------------------------------------------------------------------------------
 #define DECLARE_NODE(_class) \
 private: \
 friend class cnode<_class>::cscope;
@@ -17,7 +19,8 @@ namespace editor::nodes
 		class cscope final
 		{
 		public:
-			cscope(int id);
+			template<typename... ARGS>
+			cscope(int id, ARGS&&... args);
 			~cscope();
 
 			TType& settings();
@@ -42,13 +45,14 @@ namespace editor::nodes
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
-	cnode<TType>::cscope::cscope(int id)
+	template<typename... ARGS>
+	cnode<TType>::cscope::cscope(int id, ARGS&&... args)
 	{
-		auto& data = internal_data(id);
+		auto& data = IImNode::internal_data(id);
 
 		if (!data.Class)
 		{
-			data.Class = new TType(id);
+			data.Class = new TType(id, std::forward<ARGS>(args)...);
 		}
 
 		m_node = reinterpret_cast<TType*>(data.Class);
