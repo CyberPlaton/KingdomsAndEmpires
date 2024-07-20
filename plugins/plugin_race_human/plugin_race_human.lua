@@ -5,7 +5,7 @@ function plugin_race_human()
 					{},
 					{},
 					{"plugin_logging", "plugin_kingdoms_core"},
-					{"spdlog", "core", "flecs", "spritemancer", "unittest"},
+					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

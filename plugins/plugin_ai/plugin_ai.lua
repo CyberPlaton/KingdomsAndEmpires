@@ -5,7 +5,7 @@ function plugin_ai()
 					{},
 					{},
 					{"plugin_logging"},
-					{"spdlog", "core", "flecs", "spritemancer", "unittest"},
+					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

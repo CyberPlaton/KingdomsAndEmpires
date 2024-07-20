@@ -4,7 +4,7 @@ function tiny_editor()
 	add_target_app("tiny_editor",
 					{},
 					{},
-					{"Lua", "spdlog", "core", "flecs", "spritemancer"},
+					{"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc"},
 					{"plugin_logging", "plugin_module_example", "plugin_kingdoms_core",
 					"plugin_camera_system", "plugin_race_human", "plugin_kingdoms_and_empires",
 					"plugin_status_effects", "plugin_tiny_editor", "plugin_render_system"},

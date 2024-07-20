@@ -152,13 +152,13 @@ inline static void tracy_free_trace(void* ptr)
 	#define CORE_REALLOC(p, size)	tracy_realloc_trace(p, size)
 	#define CORE_FREE(p)			tracy_free_trace(p)
 	#define CORE_FREEN(p, n)		tracy_free_trace(p)
-#elif DLMALLOC_ENABLE
-#include <../src/dlmalloc/malloc.h>
+#elif MIMALLOC_ENABLE
+#include <mimalloc.h>
 	//------------------------------------------------------------------------------------------------------------------------
-	#define CORE_MALLOC(size)		dlmalloc(size)
-	#define CORE_CALLOC(n, size)	dlcalloc(n, size)
-	#define CORE_REALLOC(p, size)	dlrealloc(p, size)
-	#define CORE_FREE(p)			dlfree(p)
+	#define CORE_MALLOC(size)		mi_malloc(size)
+	#define CORE_CALLOC(n, size)	mi_calloc(n, size)
+	#define CORE_REALLOC(p, size)	mi_realloc(p, size)
+	#define CORE_FREE(p)			mi_free(p)
 	#define CORE_FREEN(p, n)		CORE_FREE(p)
 #else
 	//------------------------------------------------------------------------------------------------------------------------
