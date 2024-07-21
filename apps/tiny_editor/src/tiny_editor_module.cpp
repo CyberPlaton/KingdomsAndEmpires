@@ -46,6 +46,8 @@ void core_io_error_function(uint8_t level, const std::string& message)
 //------------------------------------------------------------------------------------------------------------------------
 int __real_main(int argc, char* argv[])
 {
+	ZoneScoped;
+
 	AllocConsole();
 
 	logging::init(core::logging_verbosity::logging_verbosity_trace);
@@ -75,6 +77,10 @@ int __real_main(int argc, char* argv[])
 //------------------------------------------------------------------------------------------------------------------------
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
+#if PROFILE_ENABLE
+	core::profile::cprofiler::init();
+#endif
+
 	return __real_main(0, nullptr);
 }
 #else

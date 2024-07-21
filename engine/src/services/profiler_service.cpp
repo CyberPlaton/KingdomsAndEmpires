@@ -18,8 +18,6 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cprofiler_service::on_start()
 	{
-		core::profile::memory::set_default_aggregator();
-		core::profile::cpu::set_default_aggregator();
 		return true;
 	}
 

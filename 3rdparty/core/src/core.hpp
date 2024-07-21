@@ -11,7 +11,6 @@
 #include <list>
 #include <stack>
 namespace stl = std;
-#include <new>
 #include <glm.h>
 #include <magic_enum.h>
 #include <taskflow.h>
@@ -49,6 +48,25 @@ namespace miniz
 #else
 #define CORE_LIKELY(x) x
 #define CORE_UNLIKELY(x) x
+#endif
+
+//------------------------------------------------------------------------------------------------------------------------
+#if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
+#define CORE_FUNC_SIG __PRETTY_FUNCTION__
+#elif defined(__DMC__) && (__DMC__ >= 0x810)
+#define CORE_FUNC_SIG __PRETTY_FUNCTION__
+#elif (defined(__FUNCSIG__) || (_MSC_VER))
+#define CORE_FUNC_SIG __FUNCSIG__
+#elif (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 600)) || (defined(__IBMCPP__) && (__IBMCPP__ >= 500))
+#define CORE_FUNC_SIG __FUNCTION__
+#elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x550)
+#define CORE_FUNC_SIG __FUNC__
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)
+#define CORE_FUNC_SIG __func__
+#elif defined(__cplusplus) && (__cplusplus >= 201103)
+#define CORE_FUNC_SIG __func__
+#else
+#define CORE_FUNC_SIG "CORE_FUNC_SIG unknown"
 #endif
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -182,29 +200,37 @@ void operator delete(void* p) { CORE_FREE(p); }
 #if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 #define CORE_ZONE ZoneScoped
 #define CORE_NAMED_ZONE(name) ZoneScopedN(name)
+#define CORE_NAME_ZONE_
 #elif PROFILE_ENABLE
 //- TODO: Currently we have no way of setting the category of a function
 //------------------------------------------------------------------------------------------------------------------------
-#define CORE_ZONE																		\
-core::profile::cprofiler::push(															\
-		core::profile::cpu::sfunction_data{												\
-		std::hash<std::thread::id>{}(std::this_thread::get_id()),						\
-		"",																				\
-		"",																				\
-		__FILE__,																		\
-		__LINE__																		\
-	});
-//- 
+#define CORE_ZONE core::profile::cpu::cscoped_function			\
+ANONYMOUS_VARIABLE(cpu_profile_function)						\
+(																\
+	std::hash<std::thread::id>{}(std::this_thread::get_id()),	\
+	CORE_FUNC_SIG,												\
+	nullptr,													\
+	__FILE__,													\
+	__LINE__													\
+)
+//- Create a named zone
 //------------------------------------------------------------------------------------------------------------------------
-#define CORE_NAMED_ZONE(name)															\
-core::profile::cprofiler::push(															\
-		core::profile::cpu::sfunction_data{												\
-		std::hash<std::thread::id>{}(std::this_thread::get_id()),						\
-		name,																			\
-		"",																				\
-		__FILE__,																		\
-		__LINE__																		\
-	});
+#define CORE_NAMED_ZONE(name) core::profile::cpu::cscoped_function			\
+ANONYMOUS_VARIABLE(cpu_profile_function)									\
+(																			\
+	std::hash<std::thread::id>{}(std::this_thread::get_id()),				\
+	SSTRING(name),															\
+	nullptr,																\
+	__FILE__,																\
+	__LINE__																\
+)
+//- Create an allocation tracking override
+//------------------------------------------------------------------------------------------------------------------------
+#define new													\
+core::profile::memory::detail::ctype_capture(				\
+__FILE__,													\
+__LINE__													\
+) * (new)
 #else
 #define CORE_ZONE
 #define CORE_NAMED_ZONE(name)
@@ -1530,6 +1556,8 @@ namespace core
 	class ctimer final
 	{
 	public:
+		static int64_t now() { return std::chrono::high_resolution_clock::now().time_since_epoch().count(); }
+
 		ctimer(bool paused = true);
 		~ctimer() = default;
 
@@ -2746,6 +2774,17 @@ namespace core
 			class iaggregator;
 			using aggregator_ref_t = ref_t<iaggregator>;
 
+			//- Basic information about an allocation
+			//------------------------------------------------------------------------------------------------------------------------
+			struct sallocation_data final
+			{
+				uint64_t m_thread		= 0;
+				uint64_t m_pointer		= 0; //- Where the data is, can be used as a unique identifier
+				int64_t m_timepoint		= 0;
+				const char* m_file		= nullptr;
+				unsigned m_file_line	= 0;
+			};
+
 			//- One entry in the memory stats table. Consists of the value and a description of it.
 			//------------------------------------------------------------------------------------------------------------------------
 			struct smemory_stats_entry final
@@ -2798,6 +2837,7 @@ namespace core
 
 				virtual smemory_stats	stats() = 0;
 				virtual void			update() = 0;
+				virtual void			push(sallocation_data&& data) = 0;
 			};
 
 			void set_aggregator(aggregator_ref_t object);
@@ -2815,12 +2855,26 @@ namespace core
 			//------------------------------------------------------------------------------------------------------------------------
 			struct sfunction_data final
 			{
-				uint64_t m_thread = 0;
-				const char* m_name = nullptr;
-				const char* m_category = nullptr;
+				uint64_t m_thread		= 0;
+				float m_time			= 0.0f;
+				const char* m_name		= nullptr;
+				const char* m_category	= nullptr;
+				const char* m_file		= nullptr;
+				unsigned m_file_line	= 0;
+			};
 
-				const char* m_file = nullptr;
-				unsigned m_file_line = 0;
+			//- Scoped object that stores information about current scope and measures time it lived, meaning the time required to
+			//- execute that scope.
+			//------------------------------------------------------------------------------------------------------------------------
+			class cscoped_function final
+			{
+			public:
+				cscoped_function(uint64_t thread, const char* name, const char* category, const char* file, unsigned line);
+				~cscoped_function();
+
+			private:
+				sfunction_data m_data;
+				core::ctimer m_timer;
 			};
 
 			//------------------------------------------------------------------------------------------------------------------------
@@ -2851,13 +2905,56 @@ namespace core
 		{
 		} //- gpu
 
-		//- Helper class to push and retrieve profiling data from any used library, app or engine.
+		//- Helper class to push and retrieve profiling data from any used library, app or engine. Make sure to call the init
+		//- function as soon as possible.
 		//------------------------------------------------------------------------------------------------------------------------
 		class cprofiler final
 		{
 		public:
+			static void init();
+
+			//- CPU
 			static void push(cpu::sfunction_data&& data);
+			static cpu::scpu_stats cpu_stats();
+
+			//- Memory
+			static void push(memory::sallocation_data&& data);
+
 		};
+
+		namespace memory::detail
+		{
+			//- Utility class to capture the type of an allocation made with 'new'
+			//------------------------------------------------------------------------------------------------------------------------
+			class ctype_capture
+			{
+			public:
+				ctype_capture(const char* file, unsigned line) :
+					m_thread(std::hash<std::thread::id>{}(std::this_thread::get_id())), m_file(file), m_line(line) {}
+				~ctype_capture() = default;
+
+				template<class TType>
+				TType* operator* (TType* p)
+				{
+					//- Push actual allocation information
+					cprofiler::push(sallocation_data
+						{
+							m_thread,
+							reinterpret_cast<uint64_t>(p),
+							ctimer::now(),
+							m_file,
+							m_line
+						});
+					return p;
+				}
+
+			private:
+				uint64_t m_thread;
+				const char* m_file;
+				unsigned m_line;
+			};
+
+		} //- memory::detail
 
 	} //- profile
 

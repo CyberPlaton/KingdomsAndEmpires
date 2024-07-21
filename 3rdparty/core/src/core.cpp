@@ -2852,9 +2852,11 @@ namespace core
 
 					smemory_stats	stats() override final;
 					void			update() override final;
+					void			push(sallocation_data&& data) override final;
 
 				private:
 					smemory_stats m_current;
+					stack_t<sallocation_data> m_stack;
 				};
 
 				//------------------------------------------------------------------------------------------------------------------------
@@ -2905,6 +2907,14 @@ namespace core
 				}
 
 				//------------------------------------------------------------------------------------------------------------------------
+				void cdefault_aggregator::push(sallocation_data&& data)
+				{
+					core::cscope_mutex m(S_MUTEX);
+
+					m_stack.push(std::move(data));
+				}
+
+				//------------------------------------------------------------------------------------------------------------------------
 				smemory_stats cdefault_aggregator::stats()
 				{
 					core::cscope_mutex m(S_MUTEX);
@@ -2946,7 +2956,7 @@ namespace core
 				static core::cmutex S_MUTEX;
 				static aggregator_ref_t S_AGGREGATOR = nullptr;
 
-				//- 
+				//- Class responsible for aggregating raw CPU and function profiling data.
 				//------------------------------------------------------------------------------------------------------------------------
 				class cdefault_aggregator final : public iaggregator
 				{
@@ -2959,6 +2969,7 @@ namespace core
 					void			push(sfunction_data&& data) override final;
 
 				private:
+					stack_t<sfunction_data> m_stack;
 					scpu_stats m_current;
 				};
 
@@ -2981,6 +2992,7 @@ namespace core
 				{
 					core::cscope_mutex m(S_MUTEX);
 
+					m_stack.push(std::move(data));
 				}
 
 			} //- unnamed
@@ -3003,6 +3015,21 @@ namespace core
 				return S_AGGREGATOR;
 			}
 
+			//------------------------------------------------------------------------------------------------------------------------
+			cscoped_function::cscoped_function(uint64_t thread, const char* name, const char* category, const char* file, unsigned line) :
+				m_data({thread, 0.0f, name, category, file, line})
+			{
+				m_timer.start();
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			cscoped_function::~cscoped_function()
+			{
+				m_data.m_time = m_timer.microsecs();
+
+				core::profile::cprofiler::push(std::move(m_data));
+			}
+
 		} //- cpu
 
 		namespace gpu
@@ -3011,11 +3038,34 @@ namespace core
 		} //- gpu
 
 		//------------------------------------------------------------------------------------------------------------------------
+		void cprofiler::init()
+		{
+			cpu::set_default_aggregator();
+			memory::set_default_aggregator();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		void cprofiler::push(cpu::sfunction_data&& data)
 		{
 			CORE_ASSERT(cpu::get_aggregator(), "Invalid operation. No CPU aggregator was set!");
 
 			cpu::get_aggregator()->push(std::move(data));
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cprofiler::push(memory::sallocation_data&& data)
+		{
+			CORE_ASSERT(memory::get_aggregator(), "Invalid operation. No Memory aggregator was set!");
+
+			memory::get_aggregator()->push(std::move(data));
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::profile::cpu::scpu_stats cprofiler::cpu_stats()
+		{
+			CORE_ASSERT(cpu::get_aggregator(), "Invalid operation. No CPU aggregator was set!");
+
+			return cpu::get_aggregator()->stats();
 		}
 
 	} //- profile
@@ -3058,7 +3108,7 @@ namespace math
 	std::tuple<vec2_t, vec2_t, float> transform(const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
 		float rotation, const mat4_t& parent /*= C_MAT4_ID*/)
 	{
-		CORE_NAMED_ZONE("math::transform");
+		CORE_NAMED_ZONE(math::transform);
 
 		static thread_local vec3_t S_EULER_ANGLES = vec3_t(0.0f);
 		static thread_local mat4_t S_TRANSFORM = mat4_t(1.0f);
