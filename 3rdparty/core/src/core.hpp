@@ -26,6 +26,8 @@ namespace miniz
 {
 #include <../src/miniz.hpp>
 } //- miniz
+#include <mimalloc.h>
+#include <mimalloc/types.h>
 #include <cstddef>
 #include <memory>
 #include <filesystem>
@@ -153,7 +155,6 @@ inline static void tracy_free_trace(void* ptr)
 	#define CORE_FREE(p)			tracy_free_trace(p)
 	#define CORE_FREEN(p, n)		tracy_free_trace(p)
 #elif MIMALLOC_ENABLE
-#include <mimalloc.h>
 	//------------------------------------------------------------------------------------------------------------------------
 	#define CORE_MALLOC(size)		mi_malloc(size)
 	#define CORE_CALLOC(n, size)	mi_calloc(n, size)
@@ -181,6 +182,29 @@ void operator delete(void* p) { CORE_FREE(p); }
 #if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 #define CORE_ZONE ZoneScoped
 #define CORE_NAMED_ZONE(name) ZoneScopedN(name)
+#elif PROFILE_ENABLE
+//- TODO: Currently we have no way of setting the category of a function
+//------------------------------------------------------------------------------------------------------------------------
+#define CORE_ZONE																		\
+core::profile::cprofiler::push(															\
+		core::profile::cpu::sfunction_data{												\
+		std::hash<std::thread::id>{}(std::this_thread::get_id()),						\
+		"",																				\
+		"",																				\
+		__FILE__,																		\
+		__LINE__																		\
+	});
+//- 
+//------------------------------------------------------------------------------------------------------------------------
+#define CORE_NAMED_ZONE(name)															\
+core::profile::cprofiler::push(															\
+		core::profile::cpu::sfunction_data{												\
+		std::hash<std::thread::id>{}(std::this_thread::get_id()),						\
+		name,																			\
+		"",																				\
+		__FILE__,																		\
+		__LINE__																		\
+	});
 #else
 #define CORE_ZONE
 #define CORE_NAMED_ZONE(name)
@@ -2714,6 +2738,128 @@ namespace core
 	//- Shortcut to access the virtual file system.
 	//------------------------------------------------------------------------------------------------------------------------
 	using vfs = fs::cvirtual_filesystem;
+
+	namespace profile
+	{
+		namespace memory
+		{
+			class iaggregator;
+			using aggregator_ref_t = ref_t<iaggregator>;
+
+			//- One entry in the memory stats table. Consists of the value and a description of it.
+			//------------------------------------------------------------------------------------------------------------------------
+			struct smemory_stats_entry final
+			{
+				uint64_t m_value;
+				stringview_t m_desc;
+			};
+
+			//- Gathered stats on memory usage and the like. Ready to go.
+			//------------------------------------------------------------------------------------------------------------------------
+			struct smemory_stats final
+			{
+				//- General
+				smemory_stats_entry m_total_reserved_memory;
+				smemory_stats_entry m_peak_total_reserved_memory;
+				smemory_stats_entry m_total_used_memory;
+				smemory_stats_entry m_peak_total_used_memory;
+
+				smemory_stats_entry m_elapsed_process_time;
+				smemory_stats_entry m_elapsed_user_code_time;
+				smemory_stats_entry m_elapsed_system_code_time;
+
+				smemory_stats_entry m_total_resident_set_size;
+				smemory_stats_entry m_peak_total_resident_set_size;
+
+				//- Allocations
+				smemory_stats_entry m_normal_allocations_bytes;
+				smemory_stats_entry m_large_allocations_bytes;
+				smemory_stats_entry m_huge_allocations_bytes;
+
+				//- Operations/Counters
+				smemory_stats_entry m_modifications_count;
+				smemory_stats_entry m_reset_count;
+				smemory_stats_entry m_purge_count;
+				smemory_stats_entry m_system_call_memory_map_count;
+				smemory_stats_entry m_system_call_memory_commit_count;
+				smemory_stats_entry m_free_block_search_operations_count;
+
+				//- Segementations/Paging
+				smemory_stats_entry m_segments_count;
+				smemory_stats_entry m_pages_count;
+			};
+
+			//- Interface for a class to gather stats on memory and return them back.
+			//------------------------------------------------------------------------------------------------------------------------
+			class iaggregator
+			{
+			public:
+				virtual ~iaggregator() = default;
+
+				virtual smemory_stats	stats() = 0;
+				virtual void			update() = 0;
+			};
+
+			void set_aggregator(aggregator_ref_t object);
+			void set_default_aggregator();
+			aggregator_ref_t get_aggregator();
+
+		} //- memory
+
+		namespace cpu
+		{
+			class iaggregator;
+			using aggregator_ref_t = ref_t<iaggregator>;
+
+			//- Basic information about a function
+			//------------------------------------------------------------------------------------------------------------------------
+			struct sfunction_data final
+			{
+				uint64_t m_thread = 0;
+				const char* m_name = nullptr;
+				const char* m_category = nullptr;
+
+				const char* m_file = nullptr;
+				unsigned m_file_line = 0;
+			};
+
+			//------------------------------------------------------------------------------------------------------------------------
+			struct scpu_stats final
+			{
+
+			};
+
+			//- Interface for a class to gather stats on cpu and functions and return them back.
+			//------------------------------------------------------------------------------------------------------------------------
+			class iaggregator
+			{
+			public:
+				virtual ~iaggregator() = default;
+
+				virtual scpu_stats		stats() = 0;
+				virtual void			update() = 0;
+				virtual void			push(sfunction_data&& data) = 0;
+			};
+
+			void set_aggregator(aggregator_ref_t object);
+			void set_default_aggregator();
+			aggregator_ref_t get_aggregator();
+
+		} //- cpu
+
+		namespace gpu
+		{
+		} //- gpu
+
+		//- Helper class to push and retrieve profiling data from any used library, app or engine.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cprofiler final
+		{
+		public:
+			static void push(cpu::sfunction_data&& data);
+		};
+
+	} //- profile
 
 } //- core
 

@@ -1,5 +1,6 @@
 IS_TRACY_ENABLED	= false
 IS_MIMALLOC_ENABLED = true
+IS_PROFILE_ENABLED	= true
 
 ------------------------------------------------------------------------------------------------------------------------
 function isempty(s)
@@ -26,6 +27,9 @@ function set_basic_defines()
 	end
 	if IS_MIMALLOC_ENABLED == true then
 		defines{"MIMALLOC_ENABLE"}
+	end
+	if IS_PROFILE_ENABLED == true then
+		defines{"PROFILE_ENABLE"}
 	end
 
 	filter{"configurations:debug"}

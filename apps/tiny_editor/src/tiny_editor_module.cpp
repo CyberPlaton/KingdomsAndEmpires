@@ -1,5 +1,9 @@
 #include "tiny_editor_module.hpp"
 #include <iostream>
+#if MIMALLOC_ENABLE
+#include <mimalloc-new-delete.h>
+#include <mimalloc-override.h>
+#endif
 
 //------------------------------------------------------------------------------------------------------------------------
 void core_io_error_function(uint8_t level, const std::string& message)

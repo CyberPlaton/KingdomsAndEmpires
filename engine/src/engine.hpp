@@ -6,6 +6,7 @@
 #include "editor/editor_tool.hpp"
 #include "editor/editor_visualizer.hpp"
 #include "layer.hpp"
+#include "services/profiler_service.hpp"
 #include "services/thread_service.hpp"
 #include "services/asset_service.hpp"
 #include "services/resource_service.hpp"
