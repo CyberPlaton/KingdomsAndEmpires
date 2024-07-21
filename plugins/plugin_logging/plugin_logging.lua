@@ -5,7 +5,7 @@ function plugin_logging()
 					{},
 					{},
 					{},
-					{"spdlog", "core", "mimalloc"},
+					{"spdlog", "core", "mimalloc", "hwinfo"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

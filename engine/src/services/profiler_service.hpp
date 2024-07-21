@@ -17,7 +17,7 @@ namespace engine
 		void on_update(float dt) override final;
 
 		core::profile::memory::smemory_stats memory_stats() const;
-		core::profile::cpu::scpu_stats cpu_stats() const;
+		vector_t<core::profile::cpu::scpu_stats> cpu_stats() const;
 
 	private:
 		RTTR_ENABLE(core::cservice);

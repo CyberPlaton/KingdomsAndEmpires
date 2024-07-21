@@ -2,3 +2,6 @@
 [submodule "3rdparty/unittest/unittest"]
 	path = 3rdparty/unittest/unittest
 	url = https://github.com/unittest-cpp/unittest-cpp.git
+[submodule "3rdparty/hwinfo/hwinfo"]
+	path = 3rdparty/hwinfo/hwinfo
+	url = https://github.com/lfreist/hwinfo.git

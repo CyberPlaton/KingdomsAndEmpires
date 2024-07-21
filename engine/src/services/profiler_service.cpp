@@ -59,7 +59,7 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::profile::cpu::scpu_stats cprofiler_service::cpu_stats() const
+	vector_t<core::profile::cpu::scpu_stats> cprofiler_service::cpu_stats() const
 	{
 		if (auto aggregator = core::profile::cpu::get_aggregator(); aggregator)
 		{

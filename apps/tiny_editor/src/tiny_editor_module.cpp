@@ -48,12 +48,20 @@ int __real_main(int argc, char* argv[])
 {
 	ZoneScoped;
 
+	core::profile::cprofiler::init();
+
 	AllocConsole();
 
 	logging::init(core::logging_verbosity::logging_verbosity_trace);
 
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
+
+	core::profile::cpu::get_aggregator()->update();
+	core::profile::memory::get_aggregator()->update();
+
+	auto cpustats = core::profile::cprofiler::cpu_stats();
+	auto memstats = core::profile::cprofiler::memory_stats();
 
 	engine::cengine::sconfig cfg;
 

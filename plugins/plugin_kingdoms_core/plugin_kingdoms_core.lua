@@ -5,7 +5,7 @@ function plugin_kingdoms_core()
 					{},
 					{},
 					{"plugin_logging"},
-					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc"},
+					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
 					{},

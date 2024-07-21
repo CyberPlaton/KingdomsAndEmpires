@@ -27,6 +27,7 @@ namespace miniz
 } //- miniz
 #include <mimalloc.h>
 #include <mimalloc/types.h>
+#include <hwinfo.h>		//- Used only for CPU information at this time
 #include <cstddef>
 #include <memory>
 #include <filesystem>
@@ -224,13 +225,6 @@ ANONYMOUS_VARIABLE(cpu_profile_function)									\
 	__FILE__,																\
 	__LINE__																\
 )
-//- Create an allocation tracking override
-//------------------------------------------------------------------------------------------------------------------------
-#define new													\
-core::profile::memory::detail::ctype_capture(				\
-__FILE__,													\
-__LINE__													\
-) * (new)
 #else
 #define CORE_ZONE
 #define CORE_NAMED_ZONE(name)
@@ -2774,17 +2768,6 @@ namespace core
 			class iaggregator;
 			using aggregator_ref_t = ref_t<iaggregator>;
 
-			//- Basic information about an allocation
-			//------------------------------------------------------------------------------------------------------------------------
-			struct sallocation_data final
-			{
-				uint64_t m_thread		= 0;
-				uint64_t m_pointer		= 0; //- Where the data is, can be used as a unique identifier
-				int64_t m_timepoint		= 0;
-				const char* m_file		= nullptr;
-				unsigned m_file_line	= 0;
-			};
-
 			//- One entry in the memory stats table. Consists of the value and a description of it.
 			//------------------------------------------------------------------------------------------------------------------------
 			struct smemory_stats_entry final
@@ -2837,7 +2820,6 @@ namespace core
 
 				virtual smemory_stats	stats() = 0;
 				virtual void			update() = 0;
-				virtual void			push(sallocation_data&& data) = 0;
 			};
 
 			void set_aggregator(aggregator_ref_t object);
@@ -2877,10 +2859,22 @@ namespace core
 				core::ctimer m_timer;
 			};
 
+			//- Basic information about one hardware CPU in the system.
 			//------------------------------------------------------------------------------------------------------------------------
 			struct scpu_stats final
 			{
+				string_t m_model_vendor;
 
+				uint8_t m_cores_logical = 0;
+				uint8_t m_cores_physical = 0;
+
+				int64_t m_core_max_clock_speed;	//- MHz
+				int64_t m_core_clock_speed;		//- MHz
+				float m_load;					//- %
+
+				int64_t m_cache_size_L1 = 0;	//- Bytes
+				int64_t m_cache_size_L2 = 0;	//- Bytes
+				int64_t m_cache_size_L3 = 0;	//- Bytes
 			};
 
 			//- Interface for a class to gather stats on cpu and functions and return them back.
@@ -2890,9 +2884,9 @@ namespace core
 			public:
 				virtual ~iaggregator() = default;
 
-				virtual scpu_stats		stats() = 0;
-				virtual void			update() = 0;
-				virtual void			push(sfunction_data&& data) = 0;
+				virtual vector_t<scpu_stats>	stats() = 0;
+				virtual void					update() = 0;
+				virtual void					push(sfunction_data&& data) = 0;
 			};
 
 			void set_aggregator(aggregator_ref_t object);
@@ -2915,46 +2909,11 @@ namespace core
 
 			//- CPU
 			static void push(cpu::sfunction_data&& data);
-			static cpu::scpu_stats cpu_stats();
+			static vector_t<cpu::scpu_stats> cpu_stats();
 
 			//- Memory
-			static void push(memory::sallocation_data&& data);
-
+			static memory::smemory_stats memory_stats();
 		};
-
-		namespace memory::detail
-		{
-			//- Utility class to capture the type of an allocation made with 'new'
-			//------------------------------------------------------------------------------------------------------------------------
-			class ctype_capture
-			{
-			public:
-				ctype_capture(const char* file, unsigned line) :
-					m_thread(std::hash<std::thread::id>{}(std::this_thread::get_id())), m_file(file), m_line(line) {}
-				~ctype_capture() = default;
-
-				template<class TType>
-				TType* operator* (TType* p)
-				{
-					//- Push actual allocation information
-					cprofiler::push(sallocation_data
-						{
-							m_thread,
-							reinterpret_cast<uint64_t>(p),
-							ctimer::now(),
-							m_file,
-							m_line
-						});
-					return p;
-				}
-
-			private:
-				uint64_t m_thread;
-				const char* m_file;
-				unsigned m_line;
-			};
-
-		} //- memory::detail
 
 	} //- profile
 

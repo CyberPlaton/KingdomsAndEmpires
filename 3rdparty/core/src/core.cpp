@@ -2852,11 +2852,9 @@ namespace core
 
 					smemory_stats	stats() override final;
 					void			update() override final;
-					void			push(sallocation_data&& data) override final;
 
 				private:
 					smemory_stats m_current;
-					stack_t<sallocation_data> m_stack;
 				};
 
 				//------------------------------------------------------------------------------------------------------------------------
@@ -2904,14 +2902,6 @@ namespace core
 
 					m_current.m_segments_count = pair(mistats->segments.current, C_SEGMENTS_COUNT_DESC);
 					m_current.m_pages_count = pair(mistats->pages.current, C_PAGES_COUNT_DESC);
-				}
-
-				//------------------------------------------------------------------------------------------------------------------------
-				void cdefault_aggregator::push(sallocation_data&& data)
-				{
-					core::cscope_mutex m(S_MUTEX);
-
-					m_stack.push(std::move(data));
 				}
 
 				//------------------------------------------------------------------------------------------------------------------------
@@ -2964,17 +2954,21 @@ namespace core
 					cdefault_aggregator() = default;
 					~cdefault_aggregator() = default;
 
-					scpu_stats		stats() override final;
-					void			update() override final;
-					void			push(sfunction_data&& data) override final;
+					vector_t<scpu_stats>	stats() override final;
+					void					update() override final;
+					void					push(sfunction_data&& data) override final;
 
 				private:
 					stack_t<sfunction_data> m_stack;
-					scpu_stats m_current;
+					vector_t<scpu_stats> m_current;
+
+				private:
+					void gather_hardware_information();
+					void gather_function_information();
 				};
 
 				//------------------------------------------------------------------------------------------------------------------------
-				scpu_stats cdefault_aggregator::stats()
+				vector_t<cpu::scpu_stats> cdefault_aggregator::stats()
 				{
 					core::cscope_mutex m(S_MUTEX);
 
@@ -2985,6 +2979,9 @@ namespace core
 				void cdefault_aggregator::update()
 				{
 					core::cscope_mutex m(S_MUTEX);
+
+					gather_hardware_information();
+					gather_function_information();
 				}
 
 				//------------------------------------------------------------------------------------------------------------------------
@@ -2993,6 +2990,35 @@ namespace core
 					core::cscope_mutex m(S_MUTEX);
 
 					m_stack.push(std::move(data));
+				}
+
+				//------------------------------------------------------------------------------------------------------------------------
+				void cdefault_aggregator::gather_hardware_information()
+				{
+					m_current.clear();
+
+					for (const auto& info : hwinfo::getAllCPUs())
+					{
+						scpu_stats cpu_stat;
+
+						cpu_stat.m_model_vendor				= fmt::format("{}-{}", info.vendor(), info.modelName());
+						cpu_stat.m_cores_logical			= static_cast<uint8_t>(info.numLogicalCores());
+						cpu_stat.m_cores_physical			= static_cast<uint8_t>(info.numPhysicalCores());
+						cpu_stat.m_core_max_clock_speed		= info.maxClockSpeed_MHz();
+						cpu_stat.m_core_clock_speed			= info.regularClockSpeed_MHz();
+						cpu_stat.m_load						= static_cast<float>(info.currentUtilisation());
+						cpu_stat.m_cache_size_L1			= info.L1CacheSize_Bytes();
+						cpu_stat.m_cache_size_L2			= info.L2CacheSize_Bytes();
+						cpu_stat.m_cache_size_L3			= info.L3CacheSize_Bytes();
+
+						m_current.push_back(cpu_stat);
+					}
+				}
+
+				//------------------------------------------------------------------------------------------------------------------------
+				void cdefault_aggregator::gather_function_information()
+				{
+
 				}
 
 			} //- unnamed
@@ -3053,19 +3079,19 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void cprofiler::push(memory::sallocation_data&& data)
-		{
-			CORE_ASSERT(memory::get_aggregator(), "Invalid operation. No Memory aggregator was set!");
-
-			memory::get_aggregator()->push(std::move(data));
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		core::profile::cpu::scpu_stats cprofiler::cpu_stats()
+		vector_t<cpu::scpu_stats> cprofiler::cpu_stats()
 		{
 			CORE_ASSERT(cpu::get_aggregator(), "Invalid operation. No CPU aggregator was set!");
 
 			return cpu::get_aggregator()->stats();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		memory::smemory_stats cprofiler::memory_stats()
+		{
+			CORE_ASSERT(memory::get_aggregator(), "Invalid operation. No Memory aggregator was set!");
+
+			return memory::get_aggregator()->stats();
 		}
 
 	} //- profile

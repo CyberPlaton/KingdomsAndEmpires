@@ -5,7 +5,7 @@ function engine()
 		{}, -- build_options
 		{}, -- define_flags
 		{"plugin_logging"}, -- plugin_deps
-		{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc"}, -- thirdparty_deps
+		{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo"}, -- thirdparty_deps
 		"c++",
 		{}, -- plugin_headeronly_deps
 		{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"}, -- thirdparty_headeronly_deps
