@@ -2838,11 +2838,22 @@ namespace core
 			struct sfunction_data final
 			{
 				uint64_t m_thread		= 0;
-				float m_time			= 0.0f;
+				float m_time			= 0.0f;		//- microsecs
 				const char* m_name		= nullptr;
 				const char* m_category	= nullptr;
 				const char* m_file		= nullptr;
 				unsigned m_file_line	= 0;
+			};
+
+			//- Refined function data gathered and accumulated over time
+			//------------------------------------------------------------------------------------------------------------------------
+			struct saggregated_function_data final
+			{
+				sfunction_data m_data;	//- Contains only the latest data about the function
+				unsigned m_callcount	= 0;
+				float m_time_cumulative = 0.0f;	//- microsecs
+				float m_time_peak		= 0.0f;	//- microsecs
+				float m_time_average	= 0.0f;	//- microsecs
 			};
 
 			//- Scoped object that stores information about current scope and measures time it lived, meaning the time required to
@@ -2887,6 +2898,9 @@ namespace core
 				virtual vector_t<scpu_stats>	stats() = 0;
 				virtual void					update() = 0;
 				virtual void					push(sfunction_data&& data) = 0;
+
+				virtual saggregated_function_data						function_data(stringview_t) = 0;
+				virtual umap_t<const char*, saggregated_function_data>	function_data() = 0;
 			};
 
 			void set_aggregator(aggregator_ref_t object);
@@ -2910,6 +2924,9 @@ namespace core
 			//- CPU
 			static void push(cpu::sfunction_data&& data);
 			static vector_t<cpu::scpu_stats> cpu_stats();
+
+			static cpu::saggregated_function_data						function_data(stringview_t name);
+			static umap_t<const char*, cpu::saggregated_function_data>	function_data();
 
 			//- Memory
 			static memory::smemory_stats memory_stats();

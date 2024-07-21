@@ -2958,7 +2958,11 @@ namespace core
 					void					update() override final;
 					void					push(sfunction_data&& data) override final;
 
+					saggregated_function_data						function_data(stringview_t name) override final;
+					umap_t<const char*, saggregated_function_data>	function_data() override final;
+
 				private:
+					umap_t<const char*, saggregated_function_data> m_functions;
 					stack_t<sfunction_data> m_stack;
 					vector_t<scpu_stats> m_current;
 
@@ -2993,6 +2997,22 @@ namespace core
 				}
 
 				//------------------------------------------------------------------------------------------------------------------------
+				saggregated_function_data cdefault_aggregator::function_data(stringview_t name)
+				{
+					core::cscope_mutex m(S_MUTEX);
+
+					return m_functions.at(name.data());
+				}
+
+				//------------------------------------------------------------------------------------------------------------------------
+				umap_t<const char*, saggregated_function_data> cdefault_aggregator::function_data()
+				{
+					core::cscope_mutex m(S_MUTEX);
+
+					return m_functions;
+				}
+
+				//------------------------------------------------------------------------------------------------------------------------
 				void cdefault_aggregator::gather_hardware_information()
 				{
 					m_current.clear();
@@ -3018,7 +3038,25 @@ namespace core
 				//------------------------------------------------------------------------------------------------------------------------
 				void cdefault_aggregator::gather_function_information()
 				{
+					while (!m_stack.empty())
+					{
+						const auto& fun = m_stack.top(); m_stack.pop();
 
+						auto& data = m_functions[fun.m_name];
+
+						data.m_data.m_thread = fun.m_thread;
+						data.m_data.m_time = fun.m_time;
+						data.m_data.m_name = fun.m_name;
+						data.m_data.m_category = fun.m_category;
+						data.m_data.m_file = fun.m_file;
+						data.m_data.m_file_line = fun.m_file_line;
+
+						++data.m_callcount;
+
+						data.m_time_cumulative += fun.m_time;
+						data.m_time_peak = glm::max(data.m_time_peak, fun.m_time);
+						data.m_time_average = (data.m_time_cumulative / static_cast<float>(data.m_callcount));
+					}
 				}
 
 			} //- unnamed
@@ -3092,6 +3130,22 @@ namespace core
 			CORE_ASSERT(memory::get_aggregator(), "Invalid operation. No Memory aggregator was set!");
 
 			return memory::get_aggregator()->stats();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		cpu::saggregated_function_data cprofiler::function_data(stringview_t name)
+		{
+			CORE_ASSERT(cpu::get_aggregator(), "Invalid operation. No CPU aggregator was set!");
+
+			return cpu::get_aggregator()->function_data(name);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		umap_t<const char*, cpu::saggregated_function_data> cprofiler::function_data()
+		{
+			CORE_ASSERT(cpu::get_aggregator(), "Invalid operation. No CPU aggregator was set!");
+
+			return cpu::get_aggregator()->function_data();
 		}
 
 	} //- profile

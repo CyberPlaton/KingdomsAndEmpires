@@ -57,12 +57,6 @@ int __real_main(int argc, char* argv[])
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
 
-	core::profile::cpu::get_aggregator()->update();
-	core::profile::memory::get_aggregator()->update();
-
-	auto cpustats = core::profile::cprofiler::cpu_stats();
-	auto memstats = core::profile::cprofiler::memory_stats();
-
 	engine::cengine::sconfig cfg;
 
 	cfg.m_layers_cfg.emplace_back("cgame");
@@ -74,6 +68,17 @@ int __real_main(int argc, char* argv[])
 		argv);									//- command line args values
 
 	sm::init("tiny editor", 1360, 768, false, false);
+
+	{
+		CORE_NAMED_ZONE(__real_main::test);
+	}
+
+	core::profile::cpu::get_aggregator()->update();
+	core::profile::memory::get_aggregator()->update();
+
+	auto cpustats = core::profile::cprofiler::cpu_stats();
+	auto funcstats = core::profile::cprofiler::function_data();
+	auto memstats = core::profile::cprofiler::memory_stats();
 
 	sm::run();
 
