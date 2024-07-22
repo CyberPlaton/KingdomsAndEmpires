@@ -1,4 +1,5 @@
 #include "profiler_service.hpp"
+#include <spritemancer.h>
 
 namespace engine
 {
@@ -8,6 +9,16 @@ namespace engine
 		constexpr float S_UPDATE_INTERVAL = 5.0f;
 
 	} //- unnamed
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cprofiler_service::init()
+	{
+		core::profile::cpu::set_default_aggregator();
+		core::profile::memory::set_default_aggregator();
+		sm::profile::gpu::set_default_aggregator();
+
+		return true;
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cprofiler_service::~cprofiler_service()

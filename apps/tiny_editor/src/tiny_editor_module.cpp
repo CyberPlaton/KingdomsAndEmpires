@@ -48,8 +48,6 @@ int __real_main(int argc, char* argv[])
 {
 	ZoneScoped;
 
-	core::profile::cprofiler::init();
-
 	AllocConsole();
 
 	logging::init(core::logging_verbosity::logging_verbosity_trace);
@@ -69,16 +67,14 @@ int __real_main(int argc, char* argv[])
 
 	sm::init("tiny editor", 1360, 768, false, false);
 
-	{
-		CORE_NAMED_ZONE(__real_main::test);
-	}
-
 	core::profile::cpu::get_aggregator()->update();
 	core::profile::memory::get_aggregator()->update();
+	sm::profile::gpu::get_aggregator()->update();
 
 	auto cpustats = core::profile::cprofiler::cpu_stats();
 	auto funcstats = core::profile::cprofiler::function_data();
 	auto memstats = core::profile::cprofiler::memory_stats();
+	auto gpustats = sm::profile::gpu::get_aggregator()->stats();
 
 	sm::run();
 
@@ -91,7 +87,7 @@ int __real_main(int argc, char* argv[])
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
 #if PROFILE_ENABLE
-	core::profile::cprofiler::init();
+	engine::cprofiler_service::init();
 #endif
 
 	return __real_main(0, nullptr);

@@ -9,6 +9,8 @@ namespace engine
 	class cprofiler_service final : public core::cservice
 	{
 	public:
+		static bool init();
+
 		cprofiler_service() = default;
 		~cprofiler_service();
 

@@ -863,4 +863,85 @@ namespace sm
 			m_dst_factor == other.m_dst_factor && m_src_factor == other.m_src_factor;
 	}
 
+	namespace profile::gpu
+	{
+		namespace
+		{
+			static core::cmutex S_MUTEX;
+			static aggregator_ref_t S_AGGREGATOR = nullptr;
+
+			//- GPU aggregator for raylib
+			//------------------------------------------------------------------------------------------------------------------------
+			class craylib_aggregator final : public iaggregator
+			{
+			public:
+				craylib_aggregator() = default;
+				~craylib_aggregator() = default;
+
+				vector_t<sgpu_stats> stats() override final;
+				void update() override final;
+
+			private:
+				vector_t<sgpu_stats> m_current;
+
+			private:
+				void gather_gpu_information();
+			};
+
+			//------------------------------------------------------------------------------------------------------------------------
+			vector_t<sgpu_stats> craylib_aggregator::stats()
+			{
+				core::cscope_mutex m(S_MUTEX);
+
+				return m_current;
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			void craylib_aggregator::update()
+			{
+				core::cscope_mutex m(S_MUTEX);
+
+				gather_gpu_information();
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			void craylib_aggregator::gather_gpu_information()
+			{
+				m_current.clear();
+
+				for (const auto& info : hwinfo::getAllGPUs())
+				{
+					sgpu_stats stat;
+
+					stat.m_model_vendor_driver = fmt::format("{}-{}-{}", info.vendor(), info.name(), info.driverVersion());
+					stat.m_cores = static_cast<int64_t>(info.num_cores());
+					stat.m_clock_speed = info.frequency_MHz();
+					stat.m_memory = info.memory_Bytes();
+
+					m_current.push_back(stat);
+				}
+			}
+
+		} //- unnamed
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void set_aggregator(aggregator_ref_t object)
+		{
+			S_AGGREGATOR = object;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void set_default_aggregator()
+		{
+			S_AGGREGATOR = std::make_shared<craylib_aggregator>();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		aggregator_ref_t get_aggregator()
+		{
+			return S_AGGREGATOR;
+		}
+
+	} //- profile::gpu
+
 } //- sm

@@ -586,6 +586,41 @@ namespace sm
 		virtual void on_shutdown() = 0;
 	};
 
+	namespace profile::gpu
+	{
+		class iaggregator;
+		using aggregator_ref_t = ref_t<iaggregator>;
+
+
+
+		//- Basic information about GPU. Note: Currently cores and clock speed seem not to work correctly.
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sgpu_stats
+		{
+			string_t m_model_vendor_driver;
+
+			int64_t m_cores;
+			int64_t m_clock_speed;	//- MHz
+			int64_t m_memory;		//- Bytes
+		};
+
+		//- Interface class to gather stats on GPU memory usage and allocations.
+		//------------------------------------------------------------------------------------------------------------------------
+		class iaggregator
+		{
+		public:
+			virtual ~iaggregator() = default;
+
+			virtual vector_t<sgpu_stats> stats() = 0;
+			virtual void update() = 0;
+		};
+
+		void set_aggregator(aggregator_ref_t object);
+		void set_default_aggregator();
+		aggregator_ref_t get_aggregator();
+
+	} //- profile::gpu
+
 } //- sm
 
 namespace sm

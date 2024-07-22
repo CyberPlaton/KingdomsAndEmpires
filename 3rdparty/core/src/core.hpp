@@ -2909,18 +2909,12 @@ namespace core
 
 		} //- cpu
 
-		namespace gpu
-		{
-		} //- gpu
-
 		//- Helper class to push and retrieve profiling data from any used library, app or engine. Make sure to call the init
 		//- function as soon as possible.
 		//------------------------------------------------------------------------------------------------------------------------
 		class cprofiler final
 		{
 		public:
-			static void init();
-
 			//- CPU
 			static void push(cpu::sfunction_data&& data);
 			static vector_t<cpu::scpu_stats> cpu_stats();
