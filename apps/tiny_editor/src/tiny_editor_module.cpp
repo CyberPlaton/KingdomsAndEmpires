@@ -75,6 +75,7 @@ int __real_main(int argc, char* argv[])
 	auto funcstats = core::profile::cprofiler::function_data();
 	auto memstats = core::profile::cprofiler::memory_stats();
 	auto gpustats = sm::profile::gpu::get_aggregator()->stats();
+	auto drawcallstats = sm::profile::gpu::get_aggregator()->drawcall_data();
 
 	sm::run();
 

@@ -333,6 +333,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
 	{
+		SM_DRAW_CALL(6); //- 6 vertices? Really???
+
 		auto& command = S_LAYERS[layer].m_commands.emplace_back();
 
 		command.create([=]()
@@ -344,6 +346,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_circle(unsigned layer, const vec2_t& center, float radius, const core::scolor& color)
 	{
+		SM_DRAW_CALL(4);
+
 		auto& command = S_LAYERS[layer].m_commands.emplace_back();
 
 		command.create([=]()
@@ -355,6 +359,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_rect(unsigned layer, const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
 	{
+		SM_DRAW_CALL(4);
+
 		auto& command = S_LAYERS[layer].m_commands.emplace_back();
 
 		command.create([=]()
@@ -427,6 +433,8 @@ namespace sm
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin, const core::srect& source)
 	{
+		SM_DRAW_CALL(4);
+
 		if (algorithm::bit_check(state.m_flags, renderable_flag_invisible))
 		{
 			return;

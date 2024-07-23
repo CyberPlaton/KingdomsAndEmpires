@@ -6,13 +6,32 @@
 #include "raylib_integration/raylib.hpp"
 #include "imgui_integration/imgui.hpp"
 
+#if PROFILE_ENABLE
+//------------------------------------------------------------------------------------------------------------------------
+#define SM_DRAW_CALL(vertices)				\
+sm::profile::gpu::cscoped_drawcall			\
+ANONYMOUS_VARIABLE(gpu_profile_function)	\
+(											\
+	static_cast<uint64_t>(vertices),		\
+	CORE_FUNC_SIG							\
+)
+//------------------------------------------------------------------------------------------------------------------------
+#define SM_NAMED_DRAW_CALL(vertices, name)	\
+sm::profile::gpu::cscoped_drawcall			\
+ANONYMOUS_VARIABLE(gpu_profile_function)	\
+(											\
+	static_cast<uint64_t>(vertices),		\
+	name									\
+)
+#endif
+
 namespace sm
 {
-	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT = 256;
-	constexpr auto C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT = 512;
-	constexpr auto C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT = 512;
-	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT = 128;
-	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT = 64;
+	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT			= 256;
+	constexpr auto C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT			= 512;
+	constexpr auto C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT			= 512;
+	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT		= 128;
+	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT	= 64;
 
 	using image_handle_t = unsigned;
 	using texture_handle_t = unsigned;
@@ -591,7 +610,44 @@ namespace sm
 		class iaggregator;
 		using aggregator_ref_t = ref_t<iaggregator>;
 
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sdrawcall_data
+		{
+			uint64_t m_vertices = 0;
+			float m_time		= 0.0f;	//- microsecs
+			const char* m_name	= nullptr;
+		};
 
+		//------------------------------------------------------------------------------------------------------------------------
+		class cscoped_drawcall final
+		{
+		public:
+			cscoped_drawcall(uint64_t vertices, const char* name);
+			~cscoped_drawcall();
+
+		private:
+			sdrawcall_data m_data;
+			core::ctimer m_timer;
+		};
+
+		//- As long as we use raylib the stats are meant to be quite inaccurate, giving only a general idea of resources used.
+		//------------------------------------------------------------------------------------------------------------------------
+		struct saggregated_drawcall_data
+		{
+			uint64_t m_drawcalls			= 0;
+			uint64_t m_vertices				= 0;
+
+			uint64_t m_textures_count		= 0;
+			uint64_t m_shaders_count		= 0;
+			uint64_t m_rendertargets_count	= 0;
+
+			uint64_t m_textures_bytes		= 0;
+			uint64_t m_shaders_bytes		= 0;
+			uint64_t m_rendertargets_bytes	= 0;
+
+			float m_drawing_time_total		= 0.0f;
+			float m_drawing_time_mean		= 0.0f;
+		};
 
 		//- Basic information about GPU. Note: Currently cores and clock speed seem not to work correctly.
 		//------------------------------------------------------------------------------------------------------------------------
@@ -599,9 +655,9 @@ namespace sm
 		{
 			string_t m_model_vendor_driver;
 
-			int64_t m_cores;
-			int64_t m_clock_speed;	//- MHz
-			int64_t m_memory;		//- Bytes
+			int64_t m_cores			= 0;
+			int64_t m_clock_speed	= 0; //- MHz
+			int64_t m_memory		= 0; //- Bytes
 		};
 
 		//- Interface class to gather stats on GPU memory usage and allocations.
@@ -611,8 +667,10 @@ namespace sm
 		public:
 			virtual ~iaggregator() = default;
 
-			virtual vector_t<sgpu_stats> stats() = 0;
-			virtual void update() = 0;
+			virtual vector_t<sgpu_stats>		stats() = 0;
+			virtual saggregated_drawcall_data	drawcall_data() = 0;
+			virtual void						update() = 0;
+			virtual void						push(gpu::sdrawcall_data&& data) = 0;
 		};
 
 		void set_aggregator(aggregator_ref_t object);
@@ -620,6 +678,19 @@ namespace sm
 		aggregator_ref_t get_aggregator();
 
 	} //- profile::gpu
+
+	namespace profile
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		class cprofiler final
+		{
+		public:
+			//- GPU
+			static void								push(gpu::sdrawcall_data&& data);
+			static gpu::saggregated_drawcall_data	drawcall_data();
+		};
+
+	} //- profile
 
 } //- sm
 

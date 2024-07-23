@@ -1749,6 +1749,8 @@ namespace core
 		template<typename TCallable>
 		void each(TCallable&& callback);
 
+		unsigned count() const { return static_cast<unsigned>(m_data.size()); }
+
 	protected:
 		umap_t<unsigned, TResource> m_data;
 

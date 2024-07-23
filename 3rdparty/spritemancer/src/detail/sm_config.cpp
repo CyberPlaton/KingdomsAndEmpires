@@ -1,4 +1,5 @@
 #include "sm_config.hpp"
+#include "../sm_resource_manager.hpp"
 
 namespace sm
 {
@@ -216,6 +217,93 @@ namespace sm
 			}
 
 			return nullptr;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		uint64_t texture_gpu_memory_usage(int w, int h, int mips, int format)
+		{
+			switch(format)
+			{
+			default:
+				break;
+			case texture_format_8bpp:
+			{
+				//- luminance, grayscale, i.e. generally one channel
+				return static_cast<uint64_t>(w * h);
+			}
+			case texture_format_16bpp:
+			case texture_format_8x2bpp:
+			{
+				//- two channels
+				return static_cast<uint64_t>(w * h * 2);
+			}
+			case texture_format_16x4bpp:
+			{
+				//- RGBA16
+				return static_cast<uint64_t>(w * h * 4 * 2);
+			}
+			case texture_format_24bpp:
+			{
+				//- RGB
+				return static_cast<uint64_t>(w * h * 3);
+			}
+			case texture_format_qoi:
+			case texture_format_32bpp:
+			{
+				//- RGBA
+				return static_cast<uint64_t>(w * h * 4);
+			}
+			case texture_format_32x4bpp:
+			{
+				//- RGBA32
+				return static_cast<uint64_t>(w * h * 4 * 4);
+			}
+			case texture_format_bc1:
+			{
+				//- RGB and binary color, 8:1 compression ratio
+				return (w * h * 4) / 8;
+			}
+			case texture_format_bc3:
+			case texture_format_bc2:
+			{
+				//- RGB and gradient alpha, 4:1 compression ratio
+				return (w * h * 4) / 4;
+			}
+			//- @reference: https://www.cs.cmu.edu/afs/cs/academic/class/15869-f11/www/readings/nystad12_astc.pdf
+			case texture_format_astc_4x4:
+			{
+				//- 8bpp
+				return w * h;
+			}
+			case texture_format_astc_8x8:
+			{
+				//- 2bpp
+				return (w * h) / 4;
+			}
+			}
+			return 0;
+		}
+
+		//- FIXME: only while we are using raylib
+	#include "raylib/rlgl.h"
+#if CORE_PLATFORM_DESKTOP
+	#include "raylib/external/glad.h"
+#elif CORE_PLATFORM_MOBILE
+	#include "raylib/external/glad_gles2.h"
+#endif
+		//------------------------------------------------------------------------------------------------------------------------
+		uint64_t shader_gpu_memory_usage(int id)
+		{
+			int binary_size = 0;
+			int shader_buffer_size = 0;
+
+			//- Get shader binary size
+			glGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binary_size);
+
+			//- Get uniforms and their storage size
+			shader_buffer_size = raylib::rlGetShaderBufferSize(id);
+
+			return static_cast<uint64_t>(shader_buffer_size + binary_size);
 		}
 
 	} //- unnamed
@@ -878,14 +966,19 @@ namespace sm
 				craylib_aggregator() = default;
 				~craylib_aggregator() = default;
 
-				vector_t<sgpu_stats> stats() override final;
-				void update() override final;
+				vector_t<sgpu_stats>		stats() override final;
+				saggregated_drawcall_data	drawcall_data() override final;
+				void						update() override final;
+				void						push(gpu::sdrawcall_data&& data) override final;
 
 			private:
+				saggregated_drawcall_data m_drawcalls;
+				stack_t<sdrawcall_data> m_stack;
 				vector_t<sgpu_stats> m_current;
 
 			private:
 				void gather_gpu_information();
+				void gather_drawcall_information();
 			};
 
 			//------------------------------------------------------------------------------------------------------------------------
@@ -902,6 +995,7 @@ namespace sm
 				core::cscope_mutex m(S_MUTEX);
 
 				gather_gpu_information();
+				gather_drawcall_information();
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
@@ -920,6 +1014,58 @@ namespace sm
 
 					m_current.push_back(stat);
 				}
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			void craylib_aggregator::push(gpu::sdrawcall_data&& data)
+			{
+				core::cscope_mutex m(S_MUTEX);
+
+				m_stack.push(std::move(data));
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			void craylib_aggregator::gather_drawcall_information()
+			{
+				//- First gather information about draw calls and their time
+				while (!m_stack.empty())
+				{
+					const auto& drawcall = m_stack.top(); m_stack.pop();
+
+					++m_drawcalls.m_drawcalls;
+					m_drawcalls.m_vertices += drawcall.m_vertices;
+					m_drawcalls.m_drawing_time_total += drawcall.m_time;
+					m_drawcalls.m_drawing_time_mean = (m_drawcalls.m_drawing_time_total / static_cast<float>(m_drawcalls.m_drawcalls));
+				}
+
+				//- Second gather information about textures and shaders and their used GPU memory
+				auto& tm = core::cservice_manager::get<ctexture_manager>();
+				auto& sm = core::cservice_manager::get<cshader_manager>();
+
+				m_drawcalls.m_textures_count = tm.count();
+				m_drawcalls.m_shaders_count = sm.count();
+
+				tm.each([&](const ctexture& texture)
+					{
+						auto& tex = texture.texture();
+
+						m_drawcalls.m_textures_bytes += texture_gpu_memory_usage(tex.width, tex.height, tex.mipmaps, tex.format);
+					});
+
+				sm.each([&](const cshader& shader)
+					{
+						m_drawcalls.m_shaders_bytes += shader_gpu_memory_usage(shader.shader().id);
+					});
+
+				//- TODO: as of now we ignore the GPU memory used by rendertarget textures
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			saggregated_drawcall_data craylib_aggregator::drawcall_data()
+			{
+				core::cscope_mutex m(S_MUTEX);
+
+				return m_drawcalls;
 			}
 
 		} //- unnamed
@@ -942,6 +1088,37 @@ namespace sm
 			return S_AGGREGATOR;
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		cscoped_drawcall::cscoped_drawcall(uint64_t vertices, const char* name) :
+			m_data({vertices, 0.0f, name})
+		{
+			m_timer.start();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		cscoped_drawcall::~cscoped_drawcall()
+		{
+			m_data.m_time = m_timer.microsecs();
+
+			cprofiler::push(std::move(m_data));
+		}
+
 	} //- profile::gpu
+
+	namespace profile
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		void cprofiler::push(gpu::sdrawcall_data&& data)
+		{
+			gpu::get_aggregator()->push(std::move(data));
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		gpu::saggregated_drawcall_data cprofiler::drawcall_data()
+		{
+			return gpu::get_aggregator()->drawcall_data();
+		}
+
+	} //- profile
 
 } //- sm
