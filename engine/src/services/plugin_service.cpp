@@ -84,14 +84,14 @@ namespace engine
 		//-- Load plugin information so we can load dependencies if required
 		if (const auto json = core::fs::load_text_from_file(fmt::format("{}/resources/{}.plugin", core::cfilesystem::cwd().view(), filename.data())); json)
 		{
-			auto info = core::io::from_json_blob<cplugin::sinfo>(json->data(), json->size());
+			auto info = core::io::from_json_blob<cplugin::sconfig>(json->data(), json->size());
 
 			auto plugin = std::make_shared<cplugin>(std::move(info));
 
 			//- Check for dependencies
-			if (!plugin->info().m_dependencies.empty())
+			if (!plugin->config().m_dependencies.empty())
 			{
-				for (const auto& dep : plugin->info().m_dependencies)
+				for (const auto& dep : plugin->config().m_dependencies)
 				{
 					load_plugin(dep);
 				}

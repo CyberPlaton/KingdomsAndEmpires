@@ -9,7 +9,7 @@ namespace engine
 	class cplugin final
 	{
 	public:
-		struct sinfo
+		struct sconfig
 		{
 			string_t m_path;
 			string_t m_name;
@@ -21,20 +21,20 @@ namespace engine
 		};
 
 		cplugin(stringview_t filename);
-		cplugin(sinfo&& info);
+		cplugin(sconfig&& cfg);
 		~cplugin();
 
 		bool load();
 		void unload();
 
-		inline const sinfo&					info() const { return m_info; }
+		inline const sconfig&				config() const { return m_cfg; }
 		inline string_t						error() const { return m_library.get_error_string().data(); }
 		rttr::array_range<rttr::type>		types() const;
 		rttr::array_range<rttr::property>	props() const;
 		rttr::array_range<rttr::method>		methods() const;
 
 	private:
-		sinfo m_info;
+		sconfig m_cfg;
 		rttr::library m_library;
 	};
 

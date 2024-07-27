@@ -6,11 +6,12 @@ namespace engine
 	{
 		//- Default services required for engine and others
 		constexpr array_t<stringview_t, 7> C_SERVICES = { "cthread_service"
-														/*, "cvirtual_filesystem"*/
+														, "cvirtual_filesystem"
 														, "cevent_service"
 														, "casset_service"
 														, "cresource_service"
-														, "cmodule_service"};
+														, "cmodule_service"
+														, "cproject_service" };
 
 	} //- unnamed
 
@@ -32,6 +33,14 @@ namespace engine
 		register_services();
 		register_resource_managers();
 		register_layers();
+
+		//- load startup project
+		auto* project_service = service<cproject_service>();
+
+		if (!project_service->load(m_config.m_startup_project))
+		{
+			m_result = engine_run_result_failed_loading_startup_project;
+		}
 
 		return m_result == engine_run_result_ok;
 	}
@@ -238,6 +247,8 @@ RTTR_REGISTRATION
 	using namespace engine;
 
 	rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
+		.property("m_startup_project",	&cengine::sconfig::m_startup_project)
+		.property("m_mode",				&cengine::sconfig::m_mode)
 		.property("m_services_cfg",		&cengine::sconfig::m_services_cfg)
 		.property("m_layers_cfg",		&cengine::sconfig::m_layers_cfg)
 		.property("m_plugins_cfg",		&cengine::sconfig::m_plugins_cfg)

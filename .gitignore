@@ -54,3 +54,6 @@ GopnikCity/GopnikCity/*.txt
 
 .vs/
 .git/
+
+# Resources not to be ignored
+!resources/*

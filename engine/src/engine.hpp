@@ -12,6 +12,7 @@
 #include "services/resource_service.hpp"
 #include "services/module_service.hpp"
 #include "services/plugin_service.hpp"
+#include "services/project_service.hpp"
 #include "io/io_memory_filesystem.hpp"
 #include "io/io_native_filesystem.hpp"
 #include <argparse.h>
@@ -29,6 +30,7 @@ namespace engine
 		engine_run_result_failed_registering_resource_managers,
 		engine_run_result_failed_loading_plugins,
 		engine_run_result_failed_pushing_layers,
+		engine_run_result_failed_loading_startup_project,
 		engine_run_result_fail = 255,
 	};
 
@@ -44,6 +46,9 @@ namespace engine
 			vector_t<string_t> m_services_cfg;
 			vector_t<string_t> m_layers_cfg;
 			vector_t<string_t> m_plugins_cfg;
+
+			string_t m_startup_project;
+			launch_context_t m_mode;
 
 			RTTR_ENABLE();
 		};

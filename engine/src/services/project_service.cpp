@@ -1,55 +1,54 @@
-#include "plugin.hpp"
+#include "project_service.hpp"
 
 namespace engine
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	cplugin::cplugin(stringview_t filename) : m_library(filename.data())
+	cproject_service::~cproject_service()
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cplugin::cplugin(sconfig&& cfg) :
-		m_cfg(std::move(cfg)), m_library(m_cfg.m_path)
+	bool cproject_service::on_start()
+	{
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cproject_service::on_shutdown()
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cplugin::~cplugin()
+	void cproject_service::on_update(float dt)
 	{
-		if (m_library.is_loaded())
-		{
-			unload();
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cplugin::load()
+	const editor::cproject& cproject_service::current() const
 	{
-		return m_library.load();
+		CORE_ASSERT(has(), "Invalid operation. Retrieving empty project!");
+
+		return *m_current.get();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cplugin::unload()
+	editor::cproject& cproject_service::current()
 	{
-		m_library.unload();
+		CORE_ASSERT(has(), "Invalid operation. Retrieving empty project!");
+
+		return *m_current.get();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	rttr::array_range<rttr::type> cplugin::types() const
+	bool cproject_service::load(stringview_t filepath)
 	{
-		return m_library.get_types();
+		m_current = std::make_shared<editor::cproject>(filepath); return has();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	rttr::array_range<rttr::property> cplugin::props() const
+	bool cproject_service::has() const
 	{
-		return m_library.get_global_properties();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	rttr::array_range<rttr::method> cplugin::methods() const
-	{
-		return m_library.get_global_methods();
+		return m_current.get() != nullptr;
 	}
 
 } //- engine
@@ -58,11 +57,6 @@ RTTR_REGISTRATION
 {
 	using namespace engine;
 
-	rttr::cregistrator<cplugin::sconfig>("cplugin::sconfig")
-		.prop("m_name",			&cplugin::sconfig::m_name)
-		.prop("m_path",			&cplugin::sconfig::m_path)
-		.prop("m_desc",			&cplugin::sconfig::m_desc)
-		.prop("m_dependencies", &cplugin::sconfig::m_dependencies)
-		.prop("m_version",		&cplugin::sconfig::m_version)
+	rttr::cregistrator<cproject_service, rttr::detail::as_raw_pointer>("cproject_service")
 		;
 }

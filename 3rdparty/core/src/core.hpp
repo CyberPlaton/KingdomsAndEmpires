@@ -294,6 +294,7 @@ using handle_type_t = uint64_t;
 using service_type_t = handle_type_t;
 using entity_proxy_t = int;
 using query_t = handle_type_t;
+using launch_context_t = int; //- enum core::launch_context
 
 //------------------------------------------------------------------------------------------------------------------------
 using ivec2_t = glm::lowp_u32vec2;
@@ -366,7 +367,15 @@ namespace core
 
 	//- common enums etc.
 	//------------------------------------------------------------------------------------------------------------------------
-	enum future_status
+	enum launch_context : uint8_t
+	{
+		launch_context_none		= 0,
+		launch_context_client	= BIT(1), //- Application launched in client mode
+		launch_context_editor	= BIT(2), //- Application launched in editor mode
+		launch_context_server	= BIT(3), //- Application launched in server mode
+	};
+
+	enum future_status : uint8_t
 	{
 		future_status_none = 0,
 		future_status_pending,	//- result is not ready yet
