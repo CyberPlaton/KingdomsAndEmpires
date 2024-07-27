@@ -1,5 +1,4 @@
 #include "io_native_file.hpp"
-#include <plugin_logging.h>
 
 namespace io
 {
@@ -110,7 +109,7 @@ namespace io
 		else
 		{
 			//- report failure to open
-			logging::log_warn(fmt::format("Failed to open native file '{}' with error '{}'", info().path(), strerror(errno)));
+			log_warn(fmt::format("Failed to open native file '{}' with error '{}'", info().path(), strerror(errno)));
 		}
 	}
 
@@ -191,7 +190,7 @@ namespace io
 			return count;
 		}
 
-		logging::log_warn(fmt::format("Failed to read from native file '{}' with error '{}'", info().path(), err.message()));
+		log_warn(fmt::format("Failed to read from native file '{}' with error '{}'", info().path(), err.message()));
 
 		return 0;
 	}
@@ -242,7 +241,7 @@ namespace io
 			return count;
 		}
 
-		logging::log_warn(fmt::format("Failed to write to native file '{}' with error '{}'", info().path(), err.message()));
+		log_warn(fmt::format("Failed to write to native file '{}' with error '{}'", info().path(), err.message()));
 
 		return 0;
 	}

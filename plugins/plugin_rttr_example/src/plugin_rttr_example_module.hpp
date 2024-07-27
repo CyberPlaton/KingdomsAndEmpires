@@ -4,7 +4,7 @@
 #include <rttr.h>
 
 //------------------------------------------------------------------------------------------------------------------------
-struct PLUGIN_RTTR_EXAMPLE_API smy_class
+struct smy_class
 {
 	void function()
 	{

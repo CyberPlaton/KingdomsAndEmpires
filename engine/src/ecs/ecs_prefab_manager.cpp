@@ -1,6 +1,5 @@
 #include "ecs_prefab_manager.hpp"
 #include "ecs_component.hpp"
-#include <plugin_logging.h>
 
 namespace ecs
 {
@@ -43,7 +42,7 @@ namespace ecs
 		else
 		{
 			//- report warning
-			logging::log_warn(fmt::format("Trying to create a prefab with a duplicate name '{}'", name));
+			log_warn(fmt::format("Trying to create a prefab with a duplicate name '{}'", name));
 		}
 
 		return m_prefabs.at(h);
@@ -63,7 +62,7 @@ namespace ecs
 		else
 		{
 			//- report warning
-			logging::log_warn(fmt::format("Trying to create a prefab from entity with a duplicate name '{}'", name));
+			log_warn(fmt::format("Trying to create a prefab from entity with a duplicate name '{}'", name));
 		}
 
 		return m_prefabs.at(h);
@@ -81,7 +80,7 @@ namespace ecs
 		else
 		{
 			//- report warning
-			logging::log_warn(fmt::format("Prefab with name '{}' does not exist! Creating new one...", name));
+			log_warn(fmt::format("Prefab with name '{}' does not exist! Creating new one...", name));
 		}
 
 		return m_prefabs.at(h);
@@ -130,30 +129,30 @@ namespace ecs
 								if (var.is_valid())
 								{
 									//-- success. Component deserialized
-									logging::log_info(fmt::format("\tdeserialized component '{}'", type_name));
+									log_info(fmt::format("\tdeserialized component '{}'", type_name));
 								}
 								else
 								{
 									//-- error. Could not deserialize component from JSON
-									logging::log_error(fmt::format("\tfailed deserializing component '{}' from JSON", type_name));
+									log_error(fmt::format("\tfailed deserializing component '{}' from JSON", type_name));
 								}
 							}
 							else
 							{
 								//-- JSON error. Cant find component object by given type key
-								logging::log_error(fmt::format("\tcould not find component by type key '__type__' = '{}'", type_name));
+								log_error(fmt::format("\tcould not find component by type key '__type__' = '{}'", type_name));
 							}
 						}
 						else
 						{
 							//-- RTTR error. Cant find type by name
-							logging::log_error(fmt::format("\tcould not locate component '{}' within RTTR", type_name));
+							log_error(fmt::format("\tcould not locate component '{}' within RTTR", type_name));
 						}
 					}
 					else
 					{
 						//-- JSON error. Cant find type name
-						logging::log_error("\tcould not locate '__type__' of component");
+						log_error("\tcould not locate '__type__' of component");
 					}
 				}
 			}
@@ -183,14 +182,14 @@ namespace ecs
 
 			if (auto serialize_method = type.get_method(ecs::detail::C_COMPONENT_SERIALIZE_FUNC_NAME.data()); serialize_method.is_valid())
 			{
-				logging::log_error(fmt::format("\tserializing component '{}'", c));
+				log_error(fmt::format("\tserializing component '{}'", c));
 
 				serialize_method.invoke({}, prefab.self(), json[C_COMPONENTS_PROP][i++]);
 			}
 			else
 			{
 				//- RTTR error, component does not have a serialize function
-				logging::log_error(fmt::format("\tcould not find 'serialize' method for component '{}'", c));
+				log_error(fmt::format("\tcould not find 'serialize' method for component '{}'", c));
 			}
 		}
 	}

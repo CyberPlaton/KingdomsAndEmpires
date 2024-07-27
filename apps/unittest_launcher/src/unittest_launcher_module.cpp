@@ -19,32 +19,32 @@ void core_io_error_function(uint8_t level, const std::string& message)
 	{
 	case SPDLOG_LEVEL_TRACE:
 	{
-		logging::log_trace(message);
+		log_trace(message);
 		break;
 	}
 	case SPDLOG_LEVEL_DEBUG:
 	{
-		logging::log_debug(message);
+		log_debug(message);
 		break;
 	}
 	case SPDLOG_LEVEL_INFO:
 	{
-		logging::log_info(message);
+		log_info(message);
 		break;
 	}
 	case SPDLOG_LEVEL_WARN:
 	{
-		logging::log_warn(message);
+		log_warn(message);
 		break;
 	}
 	case SPDLOG_LEVEL_ERROR:
 	{
-		logging::log_error(message);
+		log_error(message);
 		break;
 	}
 	case SPDLOG_LEVEL_CRITICAL:
 	{
-		logging::log_critical(message);
+		log_critical(message);
 		break;
 	}
 	}
@@ -58,30 +58,30 @@ namespace UnitTest
 	private:
 		virtual void ReportTestStart(TestDetails const& test)
 		{
-			logging::log_debug(fmt::format("Beginning test '{}::{}' from '{}::{}'",
+			log_debug(fmt::format("Beginning test '{}::{}' from '{}::{}'",
 				test.suiteName, test.testName, test.filename, test.lineNumber));
 		}
 
 		virtual void ReportFailure(TestDetails const& test, char const* failure)
 		{
-			logging::log_error(fmt::format("\t...failed with message: '{}'", failure));
+			log_error(fmt::format("\t...failed with message: '{}'", failure));
 		}
 
 		virtual void ReportTestFinish(TestDetails const& test, float secondsElapsed)
 		{
-			logging::log_info(fmt::format("\t...successfully finished in '{}'secs", secondsElapsed));
+			log_info(fmt::format("\t...successfully finished in '{}'secs", secondsElapsed));
 		}
 
 		virtual void ReportSummary(int totalTestCount, int failedTestCount, int failureCount, float secondsElapsed)
 		{
 			if (failedTestCount > 0)
 			{
-				logging::log_error(fmt::format("Finished test run in '{}'secs: Total '{}', Success '{}', Failed '{}'",
+				log_error(fmt::format("Finished test run in '{}'secs: Total '{}', Success '{}', Failed '{}'",
 					secondsElapsed, totalTestCount, (totalTestCount - failedTestCount), failedTestCount));
 			}
 			else
 			{
-				logging::log_info(fmt::format("Finished test run in '{}'secs: Total '{}', Success '{}', Failed '{}'",
+				log_info(fmt::format("Finished test run in '{}'secs: Total '{}', Success '{}', Failed '{}'",
 					secondsElapsed, totalTestCount, (totalTestCount - failedTestCount), failedTestCount));
 			}
 		}
@@ -95,7 +95,7 @@ namespace UnitTest
 //------------------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-	logging::init(core::logging_verbosity::logging_verbosity_trace);
+	logging::clog::instance().init(core::logging_verbosity::logging_verbosity_trace);
 
 	UnitTest::CoreReporter reporter;
 	UnitTest::TestRunner runner(reporter);

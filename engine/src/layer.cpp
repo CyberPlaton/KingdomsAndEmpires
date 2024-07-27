@@ -1,5 +1,4 @@
 #include "layer.hpp"
-#include <plugin_logging.h>
 
 namespace engine
 {
@@ -22,17 +21,17 @@ namespace engine
 
 			CORE_ASSERT(meth.is_valid(), "Invalid operation. Layer init function must be present!");
 
-			logging::log_info(fmt::format("\t'{}'", m_layers[i].m_name));
+			log_info(fmt::format("\t'{}'", m_layers[i].m_name));
 
 			if (const auto var = meth.invoke({}); !var.to_bool())
 			{
-				logging::log_error("\t\t...fail. This layer will be removed!");
+				log_error("\t\t...fail. This layer will be removed!");
 
 				failed_layers.push_back(i);
 			}
 			else
 			{
-				logging::log_info("\t\t...ok");
+				log_info("\t\t...ok");
 			}
 		}
 

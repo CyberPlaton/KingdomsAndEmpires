@@ -4,5 +4,3 @@
 #include <flecs.h>
 //- engine features
 #include "engine.hpp"
-//- plugins
-#include <plugin_logging.h>

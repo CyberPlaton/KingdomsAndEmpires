@@ -1,5 +1,4 @@
 #include "engine.hpp"
-#include <plugin_logging.h>
 
 namespace engine
 {
@@ -25,23 +24,23 @@ namespace engine
 		//- do configuration based on provided arguments
 
 		//- register and init services
-		logging::log_info("Initialize services...");
+		log_info("Initialize services...");
 
 		m_config.m_services_cfg.assign(C_SERVICES.begin(), C_SERVICES.end());
 
 		for (const auto& name : m_config.m_services_cfg)
 		{
-			logging::log_info(fmt::format("\t'{}'", name));
+			log_info(fmt::format("\t'{}'", name));
 
 			const auto type = rttr::type::get_by_name(name.c_str());
 
 			if (type.is_valid() && core::cservice_manager::emplace(type))
 			{
-				logging::log_info("\t\t...ok");
+				log_info("\t\t...ok");
 			}
 			else
 			{
-				logging::log_critical("\t\t...fail");
+				log_critical("\t\t...fail");
 
 				//- fail configuration but let all try to register so we know all those that are bogus
 				m_result = engine_run_result_failed_registering_services;
@@ -51,7 +50,7 @@ namespace engine
 		core::cservice_manager::init();
 
 		//- register and init resource managers
-		logging::log_info("Initialize resource managers...");
+		log_info("Initialize resource managers...");
 
 		if (auto* rs = core::cservice_manager::find<cresource_service>(); rs)
 		{
@@ -63,7 +62,7 @@ namespace engine
 		}
 		else
 		{
-			logging::log_critical("\t... Resource Service does not exist!");
+			log_critical("\t... Resource Service does not exist!");
 
 			m_result = engine_run_result_failed_registering_resource_managers;
 
@@ -71,26 +70,26 @@ namespace engine
 		}
 
 		//- create and init layers
-		logging::log_info("Pushing layers...");
+		log_info("Pushing layers...");
 
 		for (const auto& layer : m_config.m_layers_cfg)
 		{
-			logging::log_info(fmt::format("\t'{}'", layer));
+			log_info(fmt::format("\t'{}'", layer));
 
 			if (!try_push_layer(layer))
 			{
-				logging::log_error("\t\t...fail");
+				log_error("\t\t...fail");
 
 				//- fail configuration but let all try to register so we know all those that are bogus
 				m_result = engine_run_result_failed_pushing_layers;
 			}
 			else
 			{
-				logging::log_info("\t\t...ok");
+				log_info("\t\t...ok");
 			}
 		}
 
-		logging::log_info("Initializing layers...");
+		log_info("Initializing layers...");
 
 		m_layers.init();
 
@@ -151,18 +150,18 @@ namespace engine
 			if (!(update_method.is_valid() && world_render_method.is_valid() && ui_render_method.is_valid() &&
 				post_update_method.is_valid() && init_method.is_valid() && shutdown_method.is_valid()))
 			{
-				logging::log_error("\t\tA function not defined, this can be detremental to performance!");
+				log_error("\t\tA function not defined, this can be detremental to performance!");
 
 				//- Check which functions are defined and which not
 				for (const auto& func_name : slayer::C_LAYER_FUNC_NAMES)
 				{
 					if (const auto& meth = type.get_method(func_name.data()); meth.is_valid())
 					{
-						logging::log_info(fmt::format("\t\t\t'{}'... OK", meth.get_signature().data()));
+						log_info(fmt::format("\t\t\t'{}'... OK", meth.get_signature().data()));
 					}
 					else
 					{
-						logging::log_warn(fmt::format("\t\t\t'{}'... UNDEFINED", func_name.data()));
+						log_warn(fmt::format("\t\t\t'{}'... UNDEFINED", func_name.data()));
 					}
 				}
 
@@ -172,18 +171,18 @@ namespace engine
 			if (!(update_method.is_static() && world_render_method.is_static() && ui_render_method.is_static() &&
 				post_update_method.is_static() && init_method.is_static() && shutdown_method.is_static()))
 			{
-				logging::log_error("\t\tA function not decalred 'static', this will result in undefined behavior!");
+				log_error("\t\tA function not decalred 'static', this will result in undefined behavior!");
 
 				//- Check which functions are static and which not
 				for (const auto& func_name : slayer::C_LAYER_FUNC_NAMES)
 				{
 					if (const auto& meth = type.get_method(func_name.data()); meth.is_valid())
 					{
-						logging::log_info(fmt::format("\t\t\t'{}'... OK", meth.get_signature().data()));
+						log_info(fmt::format("\t\t\t'{}'... OK", meth.get_signature().data()));
 					}
 					else
 					{
-						logging::log_warn(fmt::format("\t\t\t'{}'... NOT 'static'", func_name.data()));
+						log_warn(fmt::format("\t\t\t'{}'... NOT 'static'", func_name.data()));
 					}
 				}
 

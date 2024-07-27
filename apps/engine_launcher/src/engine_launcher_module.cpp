@@ -1,70 +1,38 @@
 #include "engine_launcher_module.hpp"
 #include <iostream>
 
-struct stest
-{
-	kingdoms::sskills skills;
-	core::cuuid uuid;
-	core::srect rect;
-	vec2_t vec;
-	vector_t<float> damages;
-	ecs::stransform transform;
-	ecs::ssprite sprite;
-
-	RTTR_ENABLE();
-};
-
-REFLECT_INLINE(stest)
-{
-	rttr::registration::class_<stest>("stest")
-		.constructor<>()
-		(
-			rttr::policy::ctor::as_object
-		)
-		.property("skills", &stest::skills)
-		.property("uuid", &stest::uuid)
-		.property("damages", &stest::damages)
-		.property("rect", &stest::rect)
-		.property("vec", &stest::vec)
-		.property("transform", &stest::transform)
-		.property("sprite", &stest::sprite)
-		;
-
-	rttr::default_constructor<vector_t<float>>();
-};
-
 void core_io_error_function(uint8_t level, const std::string& message)
 {
 	switch (level)
 	{
 	case SPDLOG_LEVEL_TRACE:
 	{
-		logging::log_trace(message);
+		log_trace(message);
 		break;
 	}
 	case SPDLOG_LEVEL_DEBUG:
 	{
-		logging::log_debug(message);
+		log_debug(message);
 		break;
 	}
 	case SPDLOG_LEVEL_INFO:
 	{
-		logging::log_info(message);
+		log_info(message);
 		break;
 	}
 	case SPDLOG_LEVEL_WARN:
 	{
-		logging::log_warn(message);
+		log_warn(message);
 		break;
 	}
 	case SPDLOG_LEVEL_ERROR:
 	{
-		logging::log_error(message);
+		log_error(message);
 		break;
 	}
 	case SPDLOG_LEVEL_CRITICAL:
 	{
-		logging::log_critical(message);
+		log_critical(message);
 		break;
 	}
 	}
@@ -82,14 +50,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 {
 	AllocConsole();
 
-	logging::init();
-	logging::log_debug(fmt::format("Starting on WinMain()").data());
-	logging::log_trace("Log log_trace");
-	logging::log_debug("Log log_debug");
-	logging::log_info("Log log_info");
-	logging::log_warn("Log log_warn");
-	logging::log_error("Log log_error");
-	logging::log_critical("Log log_critical");
+	logging::clog::instance().init(core::logging_verbosity::logging_verbosity_trace);
+
+	log_debug(fmt::format("Starting on WinMain()").data());
+	log_trace("Log log_trace");
+	log_debug("Log log_debug");
+	log_info("Log log_info");
+	log_warn("Log log_warn");
+	log_error("Log log_error");
+	log_critical("Log log_critical");
 
 	slang::slang_logger().init(core_io_slang_error_function, slang::detail::log_level_trace);
 

@@ -1,6 +1,5 @@
 #include "ecs_entity_manager.hpp"
 #include "ecs_component.hpp"
-#include <plugin_logging.h>
 
 namespace ecs
 {

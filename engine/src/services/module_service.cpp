@@ -1,5 +1,4 @@
 #include "module_service.hpp"
-#include <plugin_logging.h>
 
 namespace io
 {

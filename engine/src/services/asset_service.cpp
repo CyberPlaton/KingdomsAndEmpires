@@ -1,6 +1,5 @@
 #include "asset_service.hpp"
 #include "../io/io_native_filesystem.hpp"
-#include <plugin_logging.h>
 
 namespace engine
 {
@@ -61,7 +60,7 @@ namespace engine
 	asset_ref_t casset_service::create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type,
 		casset::asset_meta_t meta, rttr::variant options)
 	{
-		logging::log_debug(fmt::format("Creating asset file at '{}'", filepath.path()));
+		log_debug(fmt::format("Creating asset file at '{}'", filepath.path()));
 
 		auto* vfs = core::cservice_manager::find<core::fs::cvirtual_filesystem>();
 
@@ -75,13 +74,13 @@ namespace engine
 
 				file->write((const byte_t*)text.data(), SCAST(unsigned, text.length()));
 
-				logging::log_info(fmt::format("Successfully created asset file at '{}'", filepath.path()));
+				log_info(fmt::format("Successfully created asset file at '{}'", filepath.path()));
 
 				return asset;
 			}
 		}
 
-		logging::log_warn(fmt::format("Failed creating asset file at '{}'", filepath.path()));
+		log_warn(fmt::format("Failed creating asset file at '{}'", filepath.path()));
 
 		return nullptr;
 	}

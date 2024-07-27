@@ -135,8 +135,8 @@ namespace module_example
 						tr.y = rand.in_range_float(0.0f, 10.0f);
 						tr.rotation = rand.in_range_float(0.0f, 365.0f);
 
-						logging::log_debug(fmt::format("[{}][Transform] Updating transform [{}:{}:{}]",
-							logging::app_runtime_ms(), tr.x, tr.y, tr.rotation));
+						log_debug(fmt::format("[{}][Transform] Updating transform [{}:{}:{}]",
+							logging::clog::instance().runtime_ms(), tr.x, tr.y, tr.rotation));
 
 						transform_timer.start();
 					}
@@ -173,8 +173,8 @@ namespace module_example
 						}
 
 						//- example: showing firstly that entity name is equal to his uuid.
-						logging::log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{} ({})\":\n\t[{}:{}:{}]",
-							logging::app_runtime_ms(), n, id.uuid.string(), e.name(), trans.x, trans.y, trans.rotation));
+						log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{} ({})\":\n\t[{}:{}:{}]",
+							logging::clog::instance().runtime_ms(), n, id.uuid.string(), e.name(), trans.x, trans.y, trans.rotation));
 
 						network_timer.start();
 					}

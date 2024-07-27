@@ -1,5 +1,4 @@
 #include "thread_service.hpp"
-#include <plugin_logging.h>
 
 namespace engine
 {
@@ -30,7 +29,7 @@ namespace engine
 				}
 				catch (const std::exception& err)
 				{
-					logging::log_error(fmt::format("Failed to set name for thread '{}' to '{}'. Reason: '{}'",
+					log_error(fmt::format("Failed to set name for thread '{}' to '{}'. Reason: '{}'",
 						std::hash<std::thread::id>{}(thread.get_id()), name, err.what()));
 				}
 			}
@@ -58,7 +57,7 @@ namespace engine
 
 				m_threads[id] = std::this_thread::get_id();
 
-				logging::log_debug(fmt::format("\tworker '{}' entered loop...", name));
+				log_debug(fmt::format("\tworker '{}' entered loop...", name));
 			}
 
 			void scheduler_epilogue(tf::Worker& worker, std::exception_ptr ptr) override final
@@ -69,7 +68,7 @@ namespace engine
 
 				algorithm::erase_first(m_threads, id);
 
-				logging::log_debug(fmt::format("\tworker '{}' exited loop...", name));
+				log_debug(fmt::format("\tworker '{}' exited loop...", name));
 			}
 
 		private:
@@ -105,7 +104,7 @@ namespace engine
 		set_thread_names(m_bg->worker_threads(), bg_thread_prefix);
 		set_thread_names(m_fg->worker_threads(), fg_thread_prefix);
 
-		logging::log_info(fmt::format("Starting thread service with '{}' background workers and '{}' foreground workers",
+		log_info(fmt::format("Starting thread service with '{}' background workers and '{}' foreground workers",
 			bg_count, fg_count));
 
 		return true;

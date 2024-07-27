@@ -5,7 +5,7 @@ function spritemancer()
 	build_options = {}
 	define_flags = {"PLATFORM_DESKTOP"}
 	additional_includes = {"src/detail/raylib_integration"}
-	plugin_deps = {"plugin_logging"}
+	plugin_deps = {}
 	plugin_headeronly_deps = {}
 	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr"}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}

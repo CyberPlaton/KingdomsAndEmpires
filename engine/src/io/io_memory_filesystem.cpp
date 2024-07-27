@@ -1,5 +1,4 @@
 #include "io_memory_filesystem.hpp"
-#include <plugin_logging.h>
 
 namespace io
 {

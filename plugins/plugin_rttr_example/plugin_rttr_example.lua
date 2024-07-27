@@ -5,7 +5,7 @@ function plugin_rttr_example()
 	build_options = {}
 	define_flags = {"RTTR_DLL"}
 	additional_includes = {}
-	plugin_deps = {"plugin_logging"}
+	plugin_deps = {}
 	plugin_headeronly_deps = {}
 	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr"}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}

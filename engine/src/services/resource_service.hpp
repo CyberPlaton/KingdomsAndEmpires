@@ -1,6 +1,5 @@
 #pragma once
 #include <core.h>
-#include <plugin_logging.h>
 
 namespace engine
 {
@@ -60,14 +59,14 @@ namespace engine
 		//- Check that they are derived from required classes
 		if (!resource_type.is_derived_from<core::cresource>())
 		{
-			logging::log_warn(fmt::format("Resource '{}' was not derived from 'core::cresource'",
+			log_warn(fmt::format("Resource '{}' was not derived from 'core::cresource'",
 				resource_type.get_name().data()));
 
 			return false;
 		}
 		if (!manager_type.is_derived_from<core::cresource_manager<TResource>>())
 		{
-			logging::log_warn(fmt::format("Resource Manager '{}' was not derived from 'core::cresource_manager'",
+			log_warn(fmt::format("Resource Manager '{}' was not derived from 'core::cresource_manager'",
 				manager_type.get_name().data()));
 
 			return false;
@@ -77,7 +76,7 @@ namespace engine
 		if (const auto& m = resource_type.get_method(core::cresource::C_DESTROY_FUNCTION_NAME.data());
 			!m.is_valid() || !m.is_static())
 		{
-			logging::log_warn(fmt::format("Resource '{}' did not define a static 'destroy' function",
+			log_warn(fmt::format("Resource '{}' did not define a static 'destroy' function",
 				resource_type.get_name().data()));
 
 			return false;
@@ -86,7 +85,7 @@ namespace engine
 		//- Check that the resource manager is already registered with the service manager
 		if (const auto* service = core::cservice_manager::find(manager_type); !service)
 		{
-			logging::log_warn(fmt::format("Resource Manager '{}' is not yet emplaced with 'core::cservice_manager', this might result in an issue!",
+			log_warn(fmt::format("Resource Manager '{}' is not yet emplaced with 'core::cservice_manager', this might result in an issue!",
 				manager_type.get_name().data()));
 
 			//- Currently, we only issue a warning without failing...
@@ -110,7 +109,7 @@ namespace engine
 			}
 		}
 
-		logging::log_warn(fmt::format("Failed to find a manager for resource '{}'",
+		log_warn(fmt::format("Failed to find a manager for resource '{}'",
 			rttr::type::get<TResource>().get_name().data()));
 
 		return nullptr;

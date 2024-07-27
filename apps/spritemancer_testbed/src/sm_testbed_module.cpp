@@ -1,36 +1,12 @@
 #include "sm_testbed_module.hpp"
 #include <iostream>
 
-
-struct rttr_testing final
+RTTR_REGISTRATION
 {
-	void function()
-	{
-	}
+	REGISTER_LAYER(cexample_app_layer);
 
-	std::string m_data;
-	int m_second;
-
-	RTTR_ENABLE();
-};
-
-REFLECT_INLINE(rttr_testing)
-{
-	rttr::cregistrator<rttr_testing>("rttr_testing")
-		.meth("function", &rttr_testing::function,
-			rttr::metadata("DisplayName",	"Function"),
-			rttr::metadata("Icon",			"<undefined>"),
-			rttr::metadata("Group",			"<undefined>"),
-			rttr::metadata("Category",		"<undefined>")
-		)
-		.prop("data", &rttr_testing::m_data)
-		.prop("second", &rttr_testing::m_second,
-			rttr::metadata("DisplayName",	"Second"),
-			rttr::metadata(0,				"<undefined>"),
-			rttr::metadata(1,				"<undefined>"),
-			rttr::metadata(2,				"<undefined>")
-		)
-		;
+//- You wont be able to register the layer below, catching at compile time
+//	REGISTER_LAYER(cexample_bad_app_layer);
 }
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -40,32 +16,32 @@ void core_io_error_function(uint8_t level, const std::string& message)
 	{
 	case SPDLOG_LEVEL_TRACE:
 	{
-		logging::log_trace(message);
+		log_trace(message.data());
 		break;
 	}
 	case SPDLOG_LEVEL_DEBUG:
 	{
-		logging::log_debug(message);
+		log_debug(message.data());
 		break;
 	}
 	case SPDLOG_LEVEL_INFO:
 	{
-		logging::log_info(message);
+		log_info(message.data());
 		break;
 	}
 	case SPDLOG_LEVEL_WARN:
 	{
-		logging::log_warn(message);
+		log_warn(message.data());
 		break;
 	}
 	case SPDLOG_LEVEL_ERROR:
 	{
-		logging::log_error(message);
+		log_error(message.data());
 		break;
 	}
 	case SPDLOG_LEVEL_CRITICAL:
 	{
-		logging::log_critical(message);
+		log_critical(message.data());
 		break;
 	}
 	}
@@ -143,7 +119,7 @@ void filesystem_performance_tests(const core::fs::filesystem_ref_t& fs)
 	{
 		if (!fs->create_file({ C_FILENAME.data() }))
 		{
-			logging::log_critical(fmt::format("\t...failed creating testing file!"));
+			log_critical(fmt::format("\t...failed creating testing file!"));
 
 			//- fatal error, does not make sense to proceed
 			return;
@@ -184,12 +160,12 @@ void filesystem_performance_tests(const core::fs::filesystem_ref_t& fs)
 		//- get time data for all tests
 		const auto ms = general_timer.millisecs();
 
-		logging::log_warn("-----------------------------------------------------------------------------------------");
-		logging::log_info(fmt::format("Total Time: '{}ms' with '{}' Operations", ms, C_COUNT));
-		logging::log_info(fmt::format("'open' Time: '{}ms' (Total), '{}ms' (Per Operation)", open_time_cumulative, open_time_cumulative / C_COUNT));
-		logging::log_info(fmt::format("'close' Time: '{}ms' (Total), '{}ms' (Per Operation)", close_time_cumulative, close_time_cumulative / C_COUNT));
-		logging::log_info(fmt::format("'read' Time for '{}' Bytes: '{}ms' (Total), '{}ms' (Per Operation)", C_DATA.length(), read_time_cumulative, read_time_cumulative / C_COUNT));
-		logging::log_info(fmt::format("'write' Time for '{}' Bytes: '{}ms' (Total), '{}ms' (Per Operation)", C_DATA.length(), write_time_cumulative, write_time_cumulative / C_COUNT));
+		log_warn("-----------------------------------------------------------------------------------------");
+		log_info(fmt::format("Total Time: '{}ms' with '{}' Operations", ms, C_COUNT));
+		log_info(fmt::format("'open' Time: '{}ms' (Total), '{}ms' (Per Operation)", open_time_cumulative, open_time_cumulative / C_COUNT));
+		log_info(fmt::format("'close' Time: '{}ms' (Total), '{}ms' (Per Operation)", close_time_cumulative, close_time_cumulative / C_COUNT));
+		log_info(fmt::format("'read' Time for '{}' Bytes: '{}ms' (Total), '{}ms' (Per Operation)", C_DATA.length(), read_time_cumulative, read_time_cumulative / C_COUNT));
+		log_info(fmt::format("'write' Time for '{}' Bytes: '{}ms' (Total), '{}ms' (Per Operation)", C_DATA.length(), write_time_cumulative, write_time_cumulative / C_COUNT));
 	}
 }
 
@@ -218,7 +194,7 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 		{
 			if (!fs->create_file({ C_FILENAME.data() }))
 			{
-				logging::log_critical(fmt::format("\t...failed creating file!"));
+				log_critical(fmt::format("\t...failed creating file!"));
 
 				//- fatal error, does not make sense to proceed
 				return false;
@@ -232,34 +208,34 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 		{
 			if (file = fs->open({ C_FILENAME.data() }, core::file_mode_read_write | core::file_mode_truncate); !file)
 			{
-				logging::log_critical(fmt::format("\t...failed opening file!"));
+				log_critical(fmt::format("\t...failed opening file!"));
 
 				//- fatal error, does not make sense to proceed
 				return false;
 			}
 			else
 			{
-				logging::log_info(fmt::format("\t...success opening file '{}'", file->info().relative()));
+				log_info(fmt::format("\t...success opening file '{}'", file->info().relative()));
 			}
 
 			auto written = 0;
 			if (written = file->write((const uint8_t*)m_data.data(), m_data.length()); written != m_data.length())
 			{
-				logging::log_warn(fmt::format("\t...written only '{}', but should have '{}'", written, m_data.length()));
+				log_warn(fmt::format("\t...written only '{}', but should have '{}'", written, m_data.length()));
 			}
 			else
 			{
-				logging::log_info(fmt::format("\t...success writing '{}' bytes", written));
+				log_info(fmt::format("\t...success writing '{}' bytes", written));
 			}
 
 			//- set cursor position to start of file for read/write
 			if (!file->seek_to_start())
 			{
-				logging::log_error(fmt::format("\t...failed seeking to start. Expect subsequent operations to be failures"));
+				log_error(fmt::format("\t...failed seeking to start. Expect subsequent operations to be failures"));
 			}
 			else
 			{
-				logging::log_info(fmt::format("\t...file cursor position '{}'", file->tell()));
+				log_info(fmt::format("\t...file cursor position '{}'", file->tell()));
 			}
 		}
 
@@ -270,21 +246,21 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 			auto read = 0;
 			if (read = file->read(buffer.data(), m_data.length()); read != m_data.length())
 			{
-				logging::log_warn(fmt::format("\t...read only '{}', but should have '{}'", read, m_data.length()));
+				log_warn(fmt::format("\t...read only '{}', but should have '{}'", read, m_data.length()));
 			}
 			else
 			{
-				logging::log_info(fmt::format("\t...success reading '{}' bytes", read));
+				log_info(fmt::format("\t...success reading '{}' bytes", read));
 			}
 
 			//- set cursor position to start of file for read/write
 			if (!file->seek_to_start())
 			{
-				logging::log_error(fmt::format("\t...failed seeking to start. Expect subsequent operations to be failures"));
+				log_error(fmt::format("\t...failed seeking to start. Expect subsequent operations to be failures"));
 			}
 			else
 			{
-				logging::log_info(fmt::format("\t...file cursor position '{}'", file->tell()));
+				log_info(fmt::format("\t...file cursor position '{}'", file->tell()));
 			}
 		}
 
@@ -292,7 +268,7 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 		{
 			if (!fs->copy_file({ C_FILENAME.data() }, { C_COPY_FILENAME.data() }))
 			{
-				logging::log_error(fmt::format("\t...failed copying file!"));
+				log_error(fmt::format("\t...failed copying file!"));
 			}
 		}
 
@@ -300,7 +276,7 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 		{
 			if (copied_file = fs->open({ C_COPY_FILENAME.data() }, core::file_mode_read_write); !copied_file)
 			{
-				logging::log_critical(fmt::format("\t...failed opening copied file!"));
+				log_critical(fmt::format("\t...failed opening copied file!"));
 
 				//- fatal error, does not make sense to proceed
 				return false;
@@ -310,7 +286,7 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 
 			if (const auto read = copied_file->read(buffer.data(), m_data.length()); read != m_data.length())
 			{
-				logging::log_warn(fmt::format("\t...read only '{}' from copied file, but should have '{}'", read, m_data.length()));
+				log_warn(fmt::format("\t...read only '{}' from copied file, but should have '{}'", read, m_data.length()));
 			}
 		}
 
@@ -325,7 +301,7 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 
 			if (!fs->does_exist({ C_COPY_RENAME_FILENAME.data() }))
 			{
-				logging::log_error(fmt::format("\t...failed renaming file!"));
+				log_error(fmt::format("\t...failed renaming file!"));
 			}
 		}
 
@@ -333,15 +309,15 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 		{
 			if (!fs->remove_file({ C_COPY_RENAME_FILENAME.data() }))
 			{
-				logging::log_error(fmt::format("\t...failed removing file '{}'!", C_COPY_RENAME_FILENAME.data()));
+				log_error(fmt::format("\t...failed removing file '{}'!", C_COPY_RENAME_FILENAME.data()));
 			}
 			if (!fs->remove_file({ C_FILENAME.data() }))
 			{
-				logging::log_error(fmt::format("\t...failed removing file '{}'!", C_FILENAME.data()));
+				log_error(fmt::format("\t...failed removing file '{}'!", C_FILENAME.data()));
 			}
 			if (!fs->remove_file({ C_COPY_FILENAME.data() }))
 			{
-				logging::log_error(fmt::format("\t...failed removing file '{}'!", C_COPY_FILENAME.data()));
+				log_error(fmt::format("\t...failed removing file '{}'!", C_COPY_FILENAME.data()));
 			}
 		}
 
@@ -355,7 +331,7 @@ bool filesystem_functionality_tests(const core::fs::filesystem_ref_t& fs)
 //------------------------------------------------------------------------------------------------------------------------
 bool filesystem_tests(const core::fs::filesystem_ref_t& fs)
 {
-	logging::log_warn(fmt::format("\n#### Filesystem '{}' Testing Run ##########################################",
+	log_warn(fmt::format("\n#### Filesystem '{}' Testing Run ##########################################",
 		fs->filesystem_name().data()));
 
 	if (filesystem_functionality_tests(fs))
@@ -379,12 +355,12 @@ int __real_main(int argc, char* argv[])
 {
 	AllocConsole();
 
-	logging::init(core::logging_verbosity::logging_verbosity_debug);
+	logging::clog::instance().init(core::logging_verbosity::logging_verbosity_debug);
 
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
 
-	logging::log_info(fmt::format("Unittests result: '{}'", UnitTest::RunAllTests()));
+	log_info(fmt::format("Unittests result: '{}'", UnitTest::RunAllTests()));
 
 	if (false)
 	{
@@ -406,6 +382,8 @@ int __real_main(int argc, char* argv[])
 	sm::init("spritemancer testbed", 1920, 1080, false, true);
 
 	sm::run();
+
+	logging::clog::instance().shutdown();
 
 	return 0;
 }

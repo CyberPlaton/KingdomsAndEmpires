@@ -1,6 +1,5 @@
 #pragma once
 #include <engine.h>
-#include <plugin_logging.h>
 //- TODO: our editor should not be including anything from the kingdoms project
 #include <plugin_kingdoms_core.h>
 #include <plugin_race_human.h>

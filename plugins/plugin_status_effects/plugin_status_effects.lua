@@ -4,7 +4,7 @@ function plugin_status_effects()
 	add_target_plugin("plugin_status_effects",
 					{},
 					{},
-					{"plugin_logging", "plugin_kingdoms_core"},
+					{"plugin_kingdoms_core"},
 					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},

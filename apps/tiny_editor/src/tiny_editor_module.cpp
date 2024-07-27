@@ -12,32 +12,32 @@ void core_io_error_function(uint8_t level, const std::string& message)
 	{
 	case SPDLOG_LEVEL_TRACE:
 	{
-		logging::log_trace(message);
+		log_trace(message);
 		break;
 	}
 	case SPDLOG_LEVEL_DEBUG:
 	{
-		logging::log_debug(message);
+		log_debug(message);
 		break;
 	}
 	case SPDLOG_LEVEL_INFO:
 	{
-		logging::log_info(message);
+		log_info(message);
 		break;
 	}
 	case SPDLOG_LEVEL_WARN:
 	{
-		logging::log_warn(message);
+		log_warn(message);
 		break;
 	}
 	case SPDLOG_LEVEL_ERROR:
 	{
-		logging::log_error(message);
+		log_error(message);
 		break;
 	}
 	case SPDLOG_LEVEL_CRITICAL:
 	{
-		logging::log_critical(message);
+		log_critical(message);
 		break;
 	}
 	}
@@ -50,7 +50,7 @@ int __real_main(int argc, char* argv[])
 
 	AllocConsole();
 
-	logging::init(core::logging_verbosity::logging_verbosity_trace);
+	logging::clog::instance().init(core::logging_verbosity::logging_verbosity_trace);
 
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
@@ -66,7 +66,7 @@ int __real_main(int argc, char* argv[])
 	{
 		if (type.is_class() && !type.is_wrapper())
 		{
-			logging::log_info(fmt::format("'{}'", type.get_name().data()));
+			log_info(fmt::format("'{}'", type.get_name().data()));
 		}
 	}
 
@@ -95,6 +95,8 @@ int __real_main(int argc, char* argv[])
 	auto drawcallstats = sm::profile::gpu::get_aggregator()->drawcall_data();
 
 	sm::run();
+
+	logging::clog::instance().shutdown();
 
 	return 0;
 }

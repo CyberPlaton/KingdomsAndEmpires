@@ -1,5 +1,4 @@
 #include "io_native_filesystem.hpp"
-#include <plugin_logging.h>
 
 namespace io
 {
@@ -151,7 +150,7 @@ namespace io
 			}
 			else
 			{
-				logging::log_error(fmt::format("Failed to remove file '{}' with message '{}'", info.relative(), ec.message()));
+				log_error(fmt::format("Failed to remove file '{}' with message '{}'", info.relative(), ec.message()));
 
 				result = false;
 			}
@@ -211,12 +210,12 @@ namespace io
 		}
 		else if (!source_file)
 		{
-			logging::log_error(fmt::format("Failed to find source file '{}' for copyingto file '{}'",
+			log_error(fmt::format("Failed to find source file '{}' for copyingto file '{}'",
 				source.relative(), dest.relative()));
 		}
 		else if (!dest_file)
 		{
-			logging::log_error(fmt::format("Failed to open destination file '{}' for copying from source '{}'",
+			log_error(fmt::format("Failed to open destination file '{}' for copying from source '{}'",
 				dest.relative(), source.relative()));
 		}
 

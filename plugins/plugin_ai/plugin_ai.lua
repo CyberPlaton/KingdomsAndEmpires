@@ -4,7 +4,7 @@ function plugin_ai()
 	add_target_plugin("plugin_ai",
 					{},
 					{},
-					{"plugin_logging"},
+					{},
 					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},

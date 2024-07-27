@@ -2,7 +2,6 @@
 #include "ecs_world_context_holder.hpp"
 #include "ecs_system.hpp"
 #include "ecs_component.hpp"
-#include <plugin_logging.h>
 
 namespace ecs
 {
@@ -111,11 +110,11 @@ namespace ecs
 
 		if (success)
 		{
-			logging::log_info(fmt::format("Successfully imported module '{}'", typeid(TModule).name()));
+			log_info(fmt::format("Successfully imported module '{}'", typeid(TModule).name()));
 		}
 		else
 		{
-			logging::log_error(fmt::format("Failed importing module '{}'", typeid(TModule).name()));
+			log_error(fmt::format("Failed importing module '{}'", typeid(TModule).name()));
 		}
 
 		return success;

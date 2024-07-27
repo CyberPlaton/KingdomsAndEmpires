@@ -1,6 +1,5 @@
 #pragma once
 #include <engine.h>
-#include <plugin_logging.h>
 
 namespace camera_system
 {

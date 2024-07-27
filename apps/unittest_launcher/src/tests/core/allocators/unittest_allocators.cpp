@@ -48,15 +48,15 @@ namespace unittest
 		//- stop time
 		const auto ms = timer.millisecs();
 
-		logging::log_warn("-----------------------------------------------------------------------------------------");
-		logging::log_debug(fmt::format("Object Count: '{}'", C_OBJECTS));
-		logging::log_debug(fmt::format("Memory Capacity: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_debug(fmt::format("Memory Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_debug(fmt::format("Memory Peak Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_info(fmt::format("Total Time: '{}ms'", ms));
-		logging::log_info(fmt::format("Allocation Time: '{}us' (Total), '{}us' (Per Object)",
+		log_warn("-----------------------------------------------------------------------------------------");
+		log_debug(fmt::format("Object Count: '{}'", C_OBJECTS));
+		log_debug(fmt::format("Memory Capacity: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_debug(fmt::format("Memory Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_debug(fmt::format("Memory Peak Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_info(fmt::format("Total Time: '{}ms'", ms));
+		log_info(fmt::format("Allocation Time: '{}us' (Total), '{}us' (Per Object)",
 			allocation_time_cumulative, allocation_time_cumulative / C_OBJECTS));
-		logging::log_info(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)",
+		log_info(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)",
 			object_access_time_cumulative, object_access_time_cumulative / C_OBJECTS));
 	}
 
@@ -113,17 +113,17 @@ namespace unittest
 		//- stop time
 		const auto ms = timer.millisecs();
 
-		logging::log_warn("-----------------------------------------------------------------------------------------");
-		logging::log_debug(fmt::format("Object Count: '{}'", C_OBJECTS));
-		logging::log_debug(fmt::format("Memory Capacity: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_debug(fmt::format("Memory Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_debug(fmt::format("Memory Peak Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_info(fmt::format("Total Time: '{}ms'", ms));
-		logging::log_info(fmt::format("Allocation Time: '{}us' (Total), '{}us' (Per Object)",
+		log_warn("-----------------------------------------------------------------------------------------");
+		log_debug(fmt::format("Object Count: '{}'", C_OBJECTS));
+		log_debug(fmt::format("Memory Capacity: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_debug(fmt::format("Memory Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_debug(fmt::format("Memory Peak Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_info(fmt::format("Total Time: '{}ms'", ms));
+		log_info(fmt::format("Allocation Time: '{}us' (Total), '{}us' (Per Object)",
 			allocation_time_cumulative, allocation_time_cumulative / C_OBJECTS));
-		logging::log_info(fmt::format("Deallocation Time: '{}us' (Total), '{}us' (Per Object)",
+		log_info(fmt::format("Deallocation Time: '{}us' (Total), '{}us' (Per Object)",
 			deallocation_time_cumulative, deallocation_time_cumulative / C_OBJECTS));
-		logging::log_info(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)",
+		log_info(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)",
 			object_access_time_cumulative, object_access_time_cumulative / C_OBJECTS));
 	}
 
@@ -179,17 +179,17 @@ namespace unittest
 		//- stop time
 		const auto ms = timer.millisecs();
 
-		logging::log_warn("-----------------------------------------------------------------------------------------");
-		logging::log_debug(fmt::format("Object Count: '{}'", C_OBJECTS));
-		logging::log_debug(fmt::format("Memory Capacity: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_debug(fmt::format("Memory Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_debug(fmt::format("Memory Peak Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
-		logging::log_info(fmt::format("Total Time: '{}ms'", ms));
-		logging::log_info(fmt::format("Allocation Time: '{}us' (Total), '{}us' (Per Object)",
+		log_warn("-----------------------------------------------------------------------------------------");
+		log_debug(fmt::format("Object Count: '{}'", C_OBJECTS));
+		log_debug(fmt::format("Memory Capacity: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_debug(fmt::format("Memory Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_debug(fmt::format("Memory Peak Used: '{}KB'", algorithm::bytes_to_kilobytes(allocator.capacity())));
+		log_info(fmt::format("Total Time: '{}ms'", ms));
+		log_info(fmt::format("Allocation Time: '{}us' (Total), '{}us' (Per Object)",
 			allocation_time_cumulative, allocation_time_cumulative / C_OBJECTS));
-		logging::log_info(fmt::format("Deallocation Time: '{}us' (Total), '{}us' (Per Object)",
+		log_info(fmt::format("Deallocation Time: '{}us' (Total), '{}us' (Per Object)",
 			deallocation_time_cumulative, deallocation_time_cumulative / C_OBJECTS));
-		logging::log_info(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)",
+		log_info(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)",
 			object_access_time_cumulative, object_access_time_cumulative / C_OBJECTS));
 	}
 
@@ -245,17 +245,17 @@ namespace unittest
 		//- stop time
 		const auto ms = timer.millisecs();
 
-		logging::log_warn("-----------------------------------------------------------------------------------------");
-		logging::log_debug(fmt::format("Object Count: '{}'", C_OBJECTS));
-		logging::log_debug("Memory Capacity: '-/-'");
-		logging::log_debug("Memory Used: '-/-'");
-		logging::log_debug("Memory Peak Used: '-/-'");
-		logging::log_info(fmt::format("Total Time: '{}ms'", ms));
-		logging::log_info(fmt::format("Allocation Time: '{}us' (Total), '{}us' (Per Object)",
+		log_warn("-----------------------------------------------------------------------------------------");
+		log_debug(fmt::format("Object Count: '{}'", C_OBJECTS));
+		log_debug("Memory Capacity: '-/-'");
+		log_debug("Memory Used: '-/-'");
+		log_debug("Memory Peak Used: '-/-'");
+		log_info(fmt::format("Total Time: '{}ms'", ms));
+		log_info(fmt::format("Allocation Time: '{}us' (Total), '{}us' (Per Object)",
 			allocation_time_cumulative, allocation_time_cumulative / C_OBJECTS));
-		logging::log_info(fmt::format("Deallocation Time: '{}us' (Total), '{}us' (Per Object)",
+		log_info(fmt::format("Deallocation Time: '{}us' (Total), '{}us' (Per Object)",
 			deallocation_time_cumulative, deallocation_time_cumulative / C_OBJECTS));
-		logging::log_info(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)",
+		log_info(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)",
 			object_access_time_cumulative, object_access_time_cumulative / C_OBJECTS));
 	}
 
@@ -266,7 +266,7 @@ namespace unittest
 		const auto C_RUNS = 8;
 		const auto C_INCREMENT = 2;
 
-		logging::log_warn("\n#### Linear Allocator Testing Run ##########################################");
+		log_warn("\n#### Linear Allocator Testing Run ##########################################");
 		OBJECTS = 2048;
 		for (auto i = 0; i < C_RUNS; ++i)
 		{
@@ -274,7 +274,7 @@ namespace unittest
 			OBJECTS *= C_INCREMENT;
 		}
 
-		logging::log_warn("\n#### Stack Allocator Testing Run ###########################################");
+		log_warn("\n#### Stack Allocator Testing Run ###########################################");
 		OBJECTS = 2048;
 		for (auto i = 0; i < C_RUNS; ++i)
 		{
@@ -283,7 +283,7 @@ namespace unittest
 			OBJECTS *= C_INCREMENT;
 		}
 
-		logging::log_warn("\n#### Pool Allocator Testing Run ############################################");
+		log_warn("\n#### Pool Allocator Testing Run ############################################");
 		OBJECTS = 2048;
 		for (auto i = 0; i < C_RUNS; ++i)
 		{
@@ -292,7 +292,7 @@ namespace unittest
 			OBJECTS *= C_INCREMENT;
 		}
 
-		logging::log_warn("\n#### STD Allocator Testing Run ############################################");
+		log_warn("\n#### STD Allocator Testing Run ############################################");
 		OBJECTS = 2048;
 		for (auto i = 0; i < C_RUNS; ++i)
 		{

@@ -4,7 +4,7 @@ function plugin_kingdoms_and_empires()
 	add_target_plugin("plugin_kingdoms_and_empires",
 					{},
 					{},
-					{"plugin_logging", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human"},
+					{"plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human"},
 					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},

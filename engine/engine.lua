@@ -4,7 +4,7 @@ function engine()
 	add_target_static_library("engine",
 		{}, -- build_options
 		{}, -- define_flags
-		{"plugin_logging"}, -- plugin_deps
+		{}, -- plugin_deps
 		{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr"}, -- thirdparty_deps
 		"c++",
 		{}, -- plugin_headeronly_deps

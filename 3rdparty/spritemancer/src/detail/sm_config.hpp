@@ -2,7 +2,6 @@
 #include "platform.hpp"
 #include <core.h>
 #include <argparse.h>
-#include <plugin_logging.h>
 #include "raylib_integration/raylib.hpp"
 #include "imgui_integration/imgui.hpp"
 
