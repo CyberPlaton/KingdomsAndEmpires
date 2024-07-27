@@ -4,6 +4,10 @@
 
 namespace effects
 {
+	//- Empty structure so that plugin can create lib file. To be removed after we have anything real in-here.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct STATUS_EFFECTS_API sdecoy {};
+
 } //- effects
 
 namespace effects
