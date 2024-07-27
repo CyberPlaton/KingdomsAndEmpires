@@ -84,18 +84,3 @@ namespace engine
 	}
 
 } //- engine
-
-namespace engine
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cthread_service)
-	{
-		rttr::registration::class_<cthread_service>("cthread_service")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
-			;
-	}
-
-} //- engine

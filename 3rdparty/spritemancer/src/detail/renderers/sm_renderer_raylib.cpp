@@ -229,3 +229,11 @@ namespace sm
 	}
 
 } //- sm
+
+RTTR_REGISTRATION
+{
+	using namespace sm;
+
+	rttr::cregistrator<crenderer_raylib>("crenderer_raylib")
+		;
+}

@@ -33,14 +33,3 @@ namespace sm
 	};
 
 } //- sm
-
-namespace sm
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(crenderer_headless)
-	{
-		rttr::cregistrator<crenderer_headless>("crenderer_headless")
-			;
-	};
-
-} //- sm

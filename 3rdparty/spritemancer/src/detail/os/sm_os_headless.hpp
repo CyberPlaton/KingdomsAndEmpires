@@ -27,14 +27,3 @@ namespace sm
 	};
 
 } //- sm
-
-namespace sm
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cos_headless)
-	{
-		rttr::cregistrator<cos_headless>("cos_headless")
-			;
-	};
-
-} //- sm

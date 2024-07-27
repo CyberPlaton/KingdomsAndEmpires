@@ -33,3 +33,17 @@ namespace engine
 	}
 
 } //- engine
+
+RTTR_REGISTRATION
+{
+	using namespace engine;
+
+	rttr::cregistrator<casset>("casset")
+		.prop("m_source_path", &casset::m_source_path)
+		.prop("m_resource_type", &casset::m_resource_type)
+		.prop("m_options", &casset::m_options)
+		.prop("m_meta", &casset::m_meta)
+		;
+	
+	rttr::default_constructor<umap_t<string_t, rttr::variant>>();
+}

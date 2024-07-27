@@ -76,6 +76,15 @@ namespace miniz
 #define SSTRING(s) STRING(s)
 
 //------------------------------------------------------------------------------------------------------------------------
+#define __CONCAT_IMPL__(a, b) a##b
+#define CONCAT(a, b) __CONCAT_IMPL__(a, b)
+#ifdef __COUNTER__
+#define ANONYMOUS_VARIABLE(str) CONCAT(str, __COUNTER__)
+#else
+#define ANONYMOUS_VARIABLE(str) CONCAT(str, __LINE__)
+#endif
+
+//------------------------------------------------------------------------------------------------------------------------
 #define MAX(type) std::numeric_limits<type>().max()
 #define MIN(type) std::numeric_limits<type>().min()
 #define BIT(x) 1 << x
@@ -1307,7 +1316,7 @@ namespace core
 		string_t generate_string() const;
 
 		RTTR_ENABLE();
-		RTTR_REFLECTABLE();
+		RTTR_REGISTRATION_FRIEND;
 	};
 
 	//- random number generator
@@ -2972,146 +2981,3 @@ namespace math
 		float rotation, const mat4_t& parent = C_MAT4_ID);
 
 } //- math
-
-
-namespace core
-{
-	namespace fs
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		REFLECT_INLINE(cvirtual_filesystem)
-		{
-			rttr::registration::class_<cvirtual_filesystem>("cvirtual_filesystem")
-				.constructor<>()
-				(
-					rttr::policy::ctor::as_raw_ptr
-				)
-				;
-		}
-
-	} //- fs
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cevent_service)
-	{
-		rttr::registration::class_<cevent_service>("cevent_service")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cservice_manager::sconfig)
-	{
-		rttr::registration::class_<cservice_manager::sconfig>("cservice_manager::sconfig")
-			.property("m_services", &cservice_manager::sconfig::m_services)
-			;
-
-		rttr::default_constructor<cservice_manager::sconfig>();
-		rttr::default_constructor<vector_t<string_t>>();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cservice)
-	{
-		rttr::registration::class_<cservice>("cservice")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
-			.method("on_start", &cservice::on_start)
-			.method("on_shutdown", &cservice::on_shutdown)
-			.method("on_update", &cservice::on_update)
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cuuid)
-	{
-		rttr::registration::class_<cuuid>("cuuid")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_object
-			)
-			.property("m_data", &cuuid::m_data)
-			;
-
-		rttr::default_constructor<array_t<unsigned char, 16u>>();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(scolor)
-	{
-		rttr::registration::class_<scolor>("scolor")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_object
-			)
-			.property("m_r", &scolor::m_r)
-			.property("m_g", &scolor::m_g)
-			.property("m_b", &scolor::m_b)
-			.property("m_a", &scolor::m_a)
-			;
-
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(srect)
-	{
-		rttr::registration::class_<srect>("srect")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_object
-			)
-			.property("m_x", &srect::m_x)
-			.property("m_y", &srect::m_y)
-			.property("m_w", &srect::m_w)
-			.property("m_h", &srect::m_h)
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(vec2_t)
-	{
-		rttr::registration::class_<vec2_t>("vec2_t")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_object
-			)
-			.property("x", &vec2_t::x)
-			.property("y", &vec2_t::y)
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(vec3_t)
-	{
-		rttr::registration::class_<vec3_t>("vec3_t")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_object
-			)
-			.property("x", &vec3_t::x)
-			.property("y", &vec3_t::y)
-			.property("z", &vec3_t::z)
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(vec4_t)
-	{
-		rttr::registration::class_<vec4_t>("vec4_t")
-			.constructor<>()
-			(
-				rttr::policy::ctor::as_object
-			)
-			.property("x", &vec4_t::x)
-			.property("y", &vec4_t::y)
-			.property("z", &vec4_t::z)
-			.property("w", &vec4_t::w)
-			;
-	}
-
-} //- core

@@ -80,3 +80,11 @@ namespace engine
 	}
 
 } //- engine
+
+RTTR_REGISTRATION
+{
+	using namespace engine;
+
+	rttr::cregistrator<cprofiler_service, rttr::detail::as_raw_pointer>("cprofiler_service")
+		;
+}

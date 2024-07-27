@@ -136,3 +136,11 @@ namespace io
 	}
 
 } //- io
+
+RTTR_REGISTRATION
+{
+	using namespace io;
+
+	rttr::cregistrator<cmodule_service, rttr::detail::as_raw_pointer>("cmodule_service")
+		;
+}

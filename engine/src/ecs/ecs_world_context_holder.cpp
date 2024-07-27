@@ -65,3 +65,12 @@ namespace ecs
 	}
 
 } //- ecs
+
+RTTR_REGISTRATION
+{
+	using namespace ecs;
+
+	rttr::cregistrator<iworld_context_holder, rttr::detail::no_default>("iworld_context_holder")
+		.ctor<rttr::detail::as_raw_pointer, flecs::world&>()
+		;
+}

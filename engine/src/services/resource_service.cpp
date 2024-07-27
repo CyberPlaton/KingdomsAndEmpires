@@ -47,3 +47,11 @@ namespace engine
 	}
 
 } //- engine
+
+RTTR_REGISTRATION
+{
+	using namespace engine;
+
+	rttr::cregistrator<cresource_service, rttr::detail::as_raw_pointer>("cresource_service")
+		;
+}

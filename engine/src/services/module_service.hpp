@@ -42,14 +42,3 @@ namespace io
 	};
 
 } //- io
-
-namespace io
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cmodule_service)
-	{
-		rttr::cregistrator<cmodule_service, rttr::detail::as_raw_pointer>("cmodule_service")
-			;
-	};
-
-} //- io

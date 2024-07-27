@@ -50,18 +50,3 @@ namespace render_system
 	};
 
 } //- render_system
-
-namespace render_system
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cscene_render_module)
-	{
-		rttr::registration::class_<cscene_render_module>("cscene_render_module")
-			.constructor<flecs::world&>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
-			;
-	}
-
-} //- render_system

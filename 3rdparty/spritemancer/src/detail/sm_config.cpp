@@ -1122,3 +1122,44 @@ namespace sm
 	} //- profile
 
 } //- sm
+
+RTTR_REGISTRATION
+{
+	using namespace sm;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::cregistrator<cspriteatlas>("cspriteatlas")
+		.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cspriteatlas::destroy)
+		.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+			vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+			".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::cregistrator<crendertarget>("crendertarget")
+		.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &crendertarget::destroy)
+		.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{})
+	;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::cregistrator<ctexture>("ctexture")
+		.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &ctexture::destroy)
+		.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+			vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+			".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::cregistrator<cimage>("cimage")
+		.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cimage::destroy)
+		.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+			vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+			".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::cregistrator<cshader>("cshader")
+		.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cshader::destroy)
+		.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
+	;
+}

@@ -42,7 +42,8 @@ function set_basic_defines()
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
 			"__STDC_FORMAT_MACROS",
-			"_CRT_SECURE_NO_DEPRECATE"}
+			"_CRT_SECURE_NO_DEPRECATE",
+			"RTTR_DLL"}
 end
 
 ------------------------------------------------------------------------------------------------------------------------

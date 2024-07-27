@@ -37,14 +37,3 @@ namespace engine
 	};
 
 } //- engine
-
-namespace engine
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(casset_service)
-	{
-		rttr::cregistrator<casset_service, rttr::detail::as_raw_pointer>("casset_service")
-			;
-	};
-
-} //- engine

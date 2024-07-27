@@ -5,7 +5,7 @@ function core()
 					{},
 					{"core_EXPORTS"},
 					{},
-					{"spdlog", "mimalloc", "hwinfo"},
+					{"spdlog", "mimalloc", "hwinfo", "rttr"},
 					"c++",
 					{}, -- plugin_headeronly_deps
 					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy"}, -- thirdparty_headeronly_deps

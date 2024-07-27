@@ -1,8 +1,8 @@
 #include "tiny_editor_module.hpp"
 #include <iostream>
 #if MIMALLOC_ENABLE
-#include <mimalloc-new-delete.h>
-#include <mimalloc-override.h>
+// #include <mimalloc-new-delete.h>
+// #include <mimalloc-override.h>
 #endif
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -54,6 +54,23 @@ int __real_main(int argc, char* argv[])
 
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
+
+	rttr::library lib("plugin_rttr_example");
+
+	if(!lib.load())
+	{
+		return -1;
+	}
+
+	for (auto type : lib.get_types())
+	{
+		if (type.is_class() && !type.is_wrapper())
+		{
+			logging::log_info(fmt::format("'{}'", type.get_name().data()));
+		}
+	}
+
+
 
 	engine::cengine::sconfig cfg;
 

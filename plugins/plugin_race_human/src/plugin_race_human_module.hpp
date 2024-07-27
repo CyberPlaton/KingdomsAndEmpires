@@ -84,28 +84,3 @@ namespace races
 	};
 
 } //- races
-
-namespace races
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(shuman)
-	{
-		rttr::registration::class_<shuman>("shuman")
-			.method("serialize", &shuman::serialize)
-			;
-
-		rttr::default_constructor<shuman>();
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(chuman_race_module)
-	{
-		rttr::registration::class_<chuman_race_module>("chuman_race_module")
-			.constructor<flecs::world&>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
-			;
-	}
-
-} //- races

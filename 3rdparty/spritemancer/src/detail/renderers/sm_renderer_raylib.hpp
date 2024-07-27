@@ -33,14 +33,3 @@ namespace sm
 	};
 
 } //- sm
-
-namespace sm
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(crenderer_raylib)
-	{
-		rttr::cregistrator<crenderer_raylib>("crenderer_raylib")
-			;
-	};
-
-} //- sm

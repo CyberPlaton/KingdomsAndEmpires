@@ -270,3 +270,48 @@ namespace sm
 	}
 
 } //- sm
+
+RTTR_REGISTRATION
+{
+	using namespace sm;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::registration::class_<crendertarget_manager>("crendertarget_manager")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+		)
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::registration::class_<cspriteatlas_manager>("cspriteatlas_manager")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+		)
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::registration::class_<cshader_manager>("cshader_manager")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+		)
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::registration::class_<ctexture_manager>("ctexture_manager")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+		)
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::registration::class_<cimage_manager>("cimage_manager")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+		)
+		;
+}

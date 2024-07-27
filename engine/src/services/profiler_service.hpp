@@ -26,13 +26,3 @@ namespace engine
 	};
 
 } //- engine
-
-namespace engine
-{
-	REFLECT_INLINE(cprofiler_service)
-	{
-		rttr::cregistrator<cprofiler_service, rttr::detail::as_raw_pointer>("cprofiler_service")
-			;
-	}
-
-} //- engine

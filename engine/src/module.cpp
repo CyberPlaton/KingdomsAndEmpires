@@ -45,3 +45,24 @@ namespace io
 	}
 
 } //- io
+
+RTTR_REGISTRATION
+{
+	using namespace io;
+
+	rttr::cregistrator<cmodule::sdefinition>("cmodule::sdefinition")
+		.prop("m_directory", &cmodule::sdefinition::m_directory)
+		.prop("m_resource_extension", &cmodule::sdefinition::m_resource_extension)
+		.prop("m_asset_group", &cmodule::sdefinition::m_asset_group)
+		.prop("m_recursive", &cmodule::sdefinition::m_recursive)
+		.prop("m_dependencies", &cmodule::sdefinition::m_dependencies)
+		;
+	
+	rttr::cregistrator<cmodule>("cmodule")
+		.prop("m_name", &cmodule::m_name)
+		.prop("m_path_alias", &cmodule::m_path_alias)
+		.prop("m_definitions", &cmodule::m_definitions)
+		.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cmodule::destroy)
+		.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".module"})
+		;
+}

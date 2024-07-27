@@ -194,3 +194,11 @@ namespace sm
 	}
 
 } //- sm
+
+RTTR_REGISTRATION
+{
+	using namespace sm;
+
+	rttr::cregistrator<cos_raylib>("cos_raylib")
+		;
+}

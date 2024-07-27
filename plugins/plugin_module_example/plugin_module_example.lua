@@ -5,7 +5,7 @@ function plugin_module_example()
 					{},
 					{},
 					{"plugin_logging"},
-					{"spdlog", "core", "flecs", "spritemancer", "spritemancer", "unittest", "mimalloc", "hwinfo"},
+					{"spdlog", "core", "flecs", "spritemancer", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr"},
 					{},
 					{"nlohmann", "magic_enum", "taskflow", "argparse", "glm", "Tracy"},
 					{},

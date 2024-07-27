@@ -41,18 +41,3 @@ namespace render_system
 	};
 
 } //- render_system
-
-namespace render_system
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(canimation_module)
-	{
-		rttr::registration::class_<canimation_module>("canimation_module")
-			.constructor<flecs::world&>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
-			;
-	}
-
-} //- render_system

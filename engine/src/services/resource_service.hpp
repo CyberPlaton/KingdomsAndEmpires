@@ -129,14 +129,3 @@ namespace engine
 
 
 } //- engine
-
-namespace engine
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cresource_service)
-	{
-		rttr::cregistrator<cresource_service, rttr::detail::as_raw_pointer>("cresource_service")
-			;
-	};
-
-} //- engine

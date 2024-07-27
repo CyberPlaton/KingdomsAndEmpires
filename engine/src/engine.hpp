@@ -90,20 +90,3 @@ namespace engine
 	}
 
 } //- engine
-
-namespace engine
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cengine::sconfig)
-	{
-		rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
-			.property("m_services_cfg", &cengine::sconfig::m_services_cfg)
-			.property("m_layers_cfg", &cengine::sconfig::m_layers_cfg)
-			.property("m_tests", &cengine::sconfig::m_tests)
-			;
-
-		rttr::default_constructor<cengine::sconfig>();
-		rttr::default_constructor<vector_t<string_t>>();
-	}
-
-} //- engine

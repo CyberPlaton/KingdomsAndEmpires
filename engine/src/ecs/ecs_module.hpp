@@ -52,7 +52,7 @@ namespace ecs
 		smodule_info m_info;
 
 		RTTR_ENABLE(iworld_context_holder);
-		RTTR_REFLECTABLE();
+		RTTR_REGISTRATION_FRIEND;
 	};
 
 	//-------------------------------------------------------------------------------------------------------------------------
@@ -119,32 +119,6 @@ namespace ecs
 		}
 
 		return success;
-	}
-
-} //- ecs
-
-namespace ecs
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(smodule_info)
-	{
-		rttr::registration::class_<smodule_info>("smodule_info")
-			.property("m_name", &smodule_info::m_name)
-			.property("m_module_entity", &smodule_info::m_module_entity)
-			.property("m_dependencies", &smodule_info::m_dependencies)
-			;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(imodule)
-	{
-		rttr::registration::class_<imodule>("imodule")
-			.constructor<flecs::world&>()
-			(
-				rttr::policy::ctor::as_raw_ptr
-			)
-			.property("m_info", &imodule::m_info)
-			;
 	}
 
 } //- ecs

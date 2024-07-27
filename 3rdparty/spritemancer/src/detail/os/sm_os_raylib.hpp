@@ -28,14 +28,3 @@ namespace sm
 	};
 
 } //- sm
-
-namespace sm
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(cos_raylib)
-	{
-		rttr::cregistrator<cos_raylib>("cos_raylib")
-			;
-	};
-
-} //- sm

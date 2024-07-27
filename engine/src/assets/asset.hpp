@@ -40,8 +40,8 @@ namespace engine
 		rttr::type m_resource_type;
 		rttr::variant m_options;
 
-		RTTR_REFLECTABLE();
 		RTTR_ENABLE();
+		RTTR_REGISTRATION_FRIEND;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -68,22 +68,5 @@ namespace engine
 		}
 		return m_data.m_meta.m_data[name].convert<TType>();
 	}
-
-} //- engine
-
-namespace engine
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(casset)
-	{
-		rttr::cregistrator<casset>("casset")
-			.prop("m_source_path",		&casset::m_source_path)
-			.prop("m_resource_type",	&casset::m_resource_type)
-			.prop("m_options",			&casset::m_options)
-			.prop("m_meta",				&casset::m_meta)
-			;
-
-		rttr::default_constructor<umap_t<string_t, rttr::variant>>();
-	};
 
 } //- engine
