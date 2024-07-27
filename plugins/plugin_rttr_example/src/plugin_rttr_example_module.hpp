@@ -1,10 +1,10 @@
 #pragma once
-#include "../include/config.hpp"
+#include "config.hpp"
 #include <core.h>
 #include <rttr.h>
 
 //------------------------------------------------------------------------------------------------------------------------
-struct smy_class
+struct RTTR_EXAMPLE_API smy_class
 {
 	void function()
 	{

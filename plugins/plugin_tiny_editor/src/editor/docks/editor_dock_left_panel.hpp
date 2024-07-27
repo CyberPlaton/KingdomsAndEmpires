@@ -5,7 +5,7 @@
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cleft_panel final : public clayer_base
+	class EDITOR_API cleft_panel final : public clayer_base
 	{
 	public:
 		cleft_panel(scontext& ctx) : clayer_base(ctx) {};

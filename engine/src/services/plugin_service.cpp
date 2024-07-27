@@ -81,10 +81,8 @@ namespace engine
 			return;
 		}
 
-		auto cwd = core::cfilesystem::cwd();
-
 		//-- Load plugin information so we can load dependencies if required
-		if (const auto json = core::fs::load_text_from_file(fmt::format("{}/resources/{}.plugin", cwd.view(), filename.data())); json)
+		if (const auto json = core::fs::load_text_from_file(fmt::format("{}/resources/{}.plugin", core::cfilesystem::cwd().view(), filename.data())); json)
 		{
 			auto info = core::io::from_json_blob<cplugin::sinfo>(json->data(), json->size());
 

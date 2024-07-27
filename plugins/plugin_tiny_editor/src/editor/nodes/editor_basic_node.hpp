@@ -4,7 +4,7 @@
 namespace editor::nodes
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cbasic_node final : public cnode<cbasic_node>
+	class EDITOR_API cbasic_node final : public cnode<cbasic_node>
 	{
 		DECLARE_NODE(cbasic_node);
 

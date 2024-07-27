@@ -1,11 +1,12 @@
 #pragma once
 #include <engine.h>
+#include "../config.hpp"
 
 namespace render_system
 {
 	//- TODO: we need easing functions
 	//------------------------------------------------------------------------------------------------------------------------
-	class canimation_system : public ecs::csystem<ecs::sanimation>
+	class RENDER_API canimation_system : public ecs::csystem<ecs::sanimation>
 	{
 	public:
 		canimation_system(flecs::world& w) :
@@ -27,7 +28,7 @@ namespace render_system
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class canimation_module : public ecs::imodule
+	class RENDER_API canimation_module : public ecs::imodule
 	{
 	public:
 		canimation_module(flecs::world& w) : ecs::imodule(w)

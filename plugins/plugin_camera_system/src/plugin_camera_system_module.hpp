@@ -1,5 +1,6 @@
 #pragma once
 #include <engine.h>
+#include "config.hpp"
 
 namespace camera_system
 {

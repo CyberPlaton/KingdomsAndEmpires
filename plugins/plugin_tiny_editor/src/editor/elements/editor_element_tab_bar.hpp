@@ -1,13 +1,14 @@
 #pragma once
 #include <core.h>
 #include <engine.h>
+#include "../../config.hpp"
 
 namespace editor::ui
 {
 	//- A tab bar consists of any number of horizontal columns and vertical rows. The individual slots can be defined
 	//- visually and do something when interacted with.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ctab_bar final
+	class EDITOR_API ctab_bar final
 	{
 	public:
 		struct sitem

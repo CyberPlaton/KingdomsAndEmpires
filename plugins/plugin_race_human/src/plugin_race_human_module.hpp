@@ -1,5 +1,6 @@
 #pragma once
 #include <plugin_kingdoms_core.h>
+#include "config.hpp"
 
 namespace races
 {
@@ -7,7 +8,7 @@ namespace races
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct shuman : kingdoms::irace
+	struct HUMAN_API shuman : kingdoms::irace
 	{
 		DECLARE_COMPONENT(shuman);
 
@@ -15,7 +16,7 @@ namespace races
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class chuman_race_module : public ecs::imodule
+	class HUMAN_API chuman_race_module : public ecs::imodule
 	{
 	public:
 		chuman_race_module(flecs::world& w) : ecs::imodule(w)

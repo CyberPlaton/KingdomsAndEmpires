@@ -5,7 +5,7 @@ namespace editor
 {
 	//- Base class for any UI entity, such as asset browser or entity inspector etc.
 	//------------------------------------------------------------------------------------------------------------------------
-	class clayer_base : public ccontext_holder
+	class EDITOR_API clayer_base : public ccontext_holder
 	{
 	public:
 		clayer_base(scontext& ctx) : ccontext_holder(ctx) {};

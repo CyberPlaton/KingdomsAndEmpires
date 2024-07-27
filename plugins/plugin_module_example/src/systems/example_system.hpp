@@ -12,7 +12,7 @@ namespace module_example
 
 	//- Example module system
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmy_system : public ecs::csystem<stargeting_component>
+	class EXAMPLE_API cmy_system : public ecs::csystem<stargeting_component>
 	{
 	public:
 		cmy_system(flecs::world& w) :
@@ -44,7 +44,7 @@ namespace module_example
 
 	//- mainly a duplicate of above system to be used as test in multithreaded environment
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmy_second_system : public ecs::csystem<stargeting_component>
+	class EXAMPLE_API cmy_second_system : public ecs::csystem<stargeting_component>
 	{
 	public:
 		cmy_second_system(flecs::world& w) :
@@ -78,7 +78,7 @@ namespace module_example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmy_third_system : public ecs::csystem<stargeting_component>
+	class EXAMPLE_API cmy_third_system : public ecs::csystem<stargeting_component>
 	{
 	public:
 		cmy_third_system(flecs::world& w) :
@@ -113,7 +113,7 @@ namespace module_example
 
 	//- 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cexample_transform_system : public ecs::csystem<stransform_component>
+	class EXAMPLE_API cexample_transform_system : public ecs::csystem<stransform_component>
 	{
 	public:
 		cexample_transform_system(flecs::world& world) :
@@ -147,7 +147,7 @@ namespace module_example
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class sexample_module_system : public ecs::csystem<sreplicable_component, stransform_component, sidentifier_component>
+	class EXAMPLE_API sexample_module_system : public ecs::csystem<sreplicable_component, stransform_component, sidentifier_component>
 	{
 	public:
 		sexample_module_system(flecs::world& w) :

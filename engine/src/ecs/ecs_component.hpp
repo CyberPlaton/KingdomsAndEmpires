@@ -60,8 +60,8 @@ static void set(flecs::entity e, const rttr::variant& var) \
 //- Shortcut macro for defining a 'tag' component. A tag component does not have any data
 //- and is useful in ecs queries and systems.
 //- Declaring a tag does not require registration to RTTR, it is done automatically.
-#define DECLARE_TAG(c) \
-struct c final : public ecs::icomponent \
+#define DECLARE_TAG(c, ...) \
+struct __VA_ARGS__ c final : public ecs::icomponent \
 { \
 	DECLARE_COMPONENT(c); \
 	RTTR_ENABLE(ecs::icomponent) \

@@ -285,7 +285,7 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		language ("c++")
 		location (path.join(".project", name))
 
-		kind ("StaticLib")
+		kind ("SharedLib")
 
 		files{"src/**.h",
 			  "src/**.cpp",

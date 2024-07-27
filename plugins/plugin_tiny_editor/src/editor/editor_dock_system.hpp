@@ -11,7 +11,7 @@ namespace editor
 	//- The dock system is the central entry point into the editor. The update and ui render are started from here and
 	//- propagate from base panels down to more basic ui entities
 	//------------------------------------------------------------------------------------------------------------------------
-	class cdock_system
+	class EDITOR_API cdock_system
 	{
 	public:
 		STATIC_INSTANCE_EX(cdock_system);

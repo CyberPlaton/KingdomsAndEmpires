@@ -1,5 +1,6 @@
 #pragma once
 #include <engine.h>
+#include "config.hpp"
 #include <plugin_kingdoms_core.h>
 #include <plugin_camera_system.h>
 #include <plugin_race_human.h>
@@ -7,7 +8,7 @@
 #include <luabridge.h>
 
 //------------------------------------------------------------------------------------------------------------------------
-class cgame
+class KINGDOMS_API cgame
 {
 public:
 	static void on_update(float dt);

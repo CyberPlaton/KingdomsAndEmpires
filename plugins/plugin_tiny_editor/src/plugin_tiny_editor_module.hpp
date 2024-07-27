@@ -1,5 +1,6 @@
 #pragma once
 #include <engine.h>
+#include "config.hpp"
 //- TODO: our editor should not be including anything from the kingdoms project
 #include <plugin_kingdoms_core.h>
 #include <plugin_race_human.h>
@@ -14,7 +15,7 @@ namespace editor
 {
 	//- Editor layer. Adding this to engine layers basically enables editor functionality.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ceditor
+	class EDITOR_API ceditor
 	{
 	public:
 		static bool init();

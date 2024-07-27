@@ -5,7 +5,7 @@
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cright_panel final : public clayer_base
+	class EDITOR_API cright_panel final : public clayer_base
 	{
 	public:
 		cright_panel(scontext& ctx) : clayer_base(ctx) {};

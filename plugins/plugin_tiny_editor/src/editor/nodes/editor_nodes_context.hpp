@@ -9,7 +9,7 @@ namespace editor::nodes
 {
 	//- Responsible for style of current node editor.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cstyle final
+	class EDITOR_API cstyle final
 	{
 	public:
 		cstyle();

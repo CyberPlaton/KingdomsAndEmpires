@@ -1,12 +1,13 @@
 #pragma once
 #include <core.h>
 #include <engine.h>
+#include "../../config.hpp"
 
 namespace editor::nodes
 {
 	//- Immediate mode imnodes link defining a links visuals and settings that are used in imnodes internally
 	//------------------------------------------------------------------------------------------------------------------------
-	class clink final
+	class EDITOR_API clink final
 	{
 	public:
 		clink(int id);

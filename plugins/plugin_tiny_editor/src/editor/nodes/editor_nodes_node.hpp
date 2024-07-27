@@ -1,6 +1,7 @@
 #pragma once
 #include <core.h>
 #include <engine.h>
+#include "../../config.hpp"
 
 //-- Use this macro to declare a new node type
 //------------------------------------------------------------------------------------------------------------------------
@@ -128,7 +129,7 @@ namespace editor::nodes
 	template<typename TType>
 	TType& cnode<TType>::style(ImNodesStyleVar variable, const vec2_t& value)
 	{
-		m_styles.push(variable, value);
+		m_styles.push(variable, ImVec2(value.x, value.y));
 
 		return self();
 	}

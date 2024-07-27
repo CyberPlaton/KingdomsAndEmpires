@@ -5,7 +5,7 @@ namespace editor
 {
 	//- Not a dock or layer per-se, intended to be used directly by the respective panel.
 	//------------------------------------------------------------------------------------------------------------------------
-	class casset_browser final : public clayer_base
+	class EDITOR_API casset_browser final : public clayer_base
 	{
 	public:
 		casset_browser(scontext& ctx) : clayer_base(ctx) {};

@@ -6,7 +6,7 @@ namespace editor
 {
 	//- Responsible for creating materials in a visual way.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmaterial_editor final : public clayer_base
+	class EDITOR_API cmaterial_editor final : public clayer_base
 	{
 	public:
 		cmaterial_editor(scontext& ctx);

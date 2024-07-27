@@ -1,10 +1,11 @@
 #pragma once
 #include <engine.h>
+#include "../config.hpp"
 
 namespace render_system
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cscenerender_system final : public ecs::ctask
+	class RENDER_API cscenerender_system final : public ecs::ctask
 	{
 	public:
 		cscenerender_system(flecs::world& w) :
@@ -19,7 +20,8 @@ namespace render_system
 		}
 	};
 
-	class cscenedebugrender_system final : public ecs::ctask
+	//------------------------------------------------------------------------------------------------------------------------
+	class RENDER_API cscenedebugrender_system final : public ecs::ctask
 	{
 	public:
 		cscenedebugrender_system(flecs::world& w) :
@@ -35,7 +37,7 @@ namespace render_system
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cscene_render_module : public ecs::imodule
+	class RENDER_API cscene_render_module : public ecs::imodule
 	{
 	public:
 		cscene_render_module(flecs::world& w) : ecs::imodule(w)

@@ -5,7 +5,7 @@
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmain_menu final : public clayer_base
+	class EDITOR_API cmain_menu final : public clayer_base
 	{
 	public:
 		cmain_menu(scontext& ctx) : clayer_base(ctx) {};

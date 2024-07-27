@@ -5,7 +5,7 @@
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class centity_context_panel final : public clayer_base
+	class EDITOR_API centity_context_panel final : public clayer_base
 	{
 	public:
 		centity_context_panel(scontext& ctx) : clayer_base(ctx) {};

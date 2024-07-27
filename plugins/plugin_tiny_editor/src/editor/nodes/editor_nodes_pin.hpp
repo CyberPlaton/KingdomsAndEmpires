@@ -1,12 +1,13 @@
 #pragma once
 #include <core.h>
 #include <engine.h>
+#include "../../config.hpp"
 
 namespace editor::nodes
 {
 	//- Immediate mode imnodes pin defining a pins visual and settings that are used in imnodes internally
 	//------------------------------------------------------------------------------------------------------------------------
-	class cpin final
+	class EDITOR_API cpin final
 	{
 	public:
 		cpin(int id);

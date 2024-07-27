@@ -5,7 +5,7 @@ namespace editor
 {
 	//- Responsible for working with an entity, i.e. adding/removing components or altering their data
 	//------------------------------------------------------------------------------------------------------------------------
-	class centity_inspector final : public clayer_base
+	class EDITOR_API centity_inspector final : public clayer_base
 	{
 	public:
 		centity_inspector(scontext& ctx) : clayer_base(ctx) {};

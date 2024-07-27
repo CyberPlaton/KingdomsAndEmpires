@@ -1,6 +1,7 @@
 #pragma once
 #include <core.h>
 #include <engine.h>
+#include "config.hpp"
 
 namespace kingdoms
 {
@@ -13,7 +14,7 @@ namespace kingdoms
 
 	//- Each player of current session has this central component.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct splayer : ecs::icomponent
+	struct KINGDOMS_CORE_API splayer : ecs::icomponent
 	{
 		DECLARE_COMPONENT(splayer);
 
@@ -95,7 +96,7 @@ namespace kingdoms
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sattributes : ecs::icomponent
+	struct KINGDOMS_CORE_API sattributes : ecs::icomponent
 	{
 		static constexpr unsigned C_ATTRIBUTE_VALUE_MAX = 100;
 		static constexpr unsigned C_MAJOR_DEVIATION_NEG = 10;
@@ -118,7 +119,7 @@ namespace kingdoms
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sderived_attributes : ecs::icomponent
+	struct KINGDOMS_CORE_API sderived_attributes : ecs::icomponent
 	{
 		static constexpr unsigned C_DERIVED_ATTRIBUTE_VALUE_MAX = 100;
 
@@ -133,7 +134,7 @@ namespace kingdoms
 
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sskills : ecs::icomponent
+	struct KINGDOMS_CORE_API sskills : ecs::icomponent
 	{
 		static constexpr unsigned C_SKILL_VALUE_MAX = 100;
 		static constexpr unsigned C_MAJOR_DEVIATION_NEG = 10;
@@ -173,7 +174,7 @@ namespace kingdoms
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct irace : ecs::icomponent
+	struct KINGDOMS_CORE_API irace : ecs::icomponent
 	{
 		DECLARE_COMPONENT(irace);
 
@@ -185,7 +186,7 @@ namespace kingdoms
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct iunit : ecs::icomponent
+	struct KINGDOMS_CORE_API iunit : ecs::icomponent
 	{
 		DECLARE_COMPONENT(irace);
 
@@ -202,7 +203,7 @@ namespace resource
 	//- base class for resource definitions. A resource should basically be an inherited child with no data
 	//- apart from meta data for rttr.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct iresource : ecs::icomponent
+	struct KINGDOMS_CORE_API iresource : ecs::icomponent
 	{
 		DECLARE_COMPONENT(iresource);
 
@@ -210,7 +211,7 @@ namespace resource
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct swood : iresource
+	struct KINGDOMS_CORE_API swood : iresource
 	{
 		DECLARE_COMPONENT(swood);
 
@@ -218,7 +219,7 @@ namespace resource
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sclay : iresource
+	struct KINGDOMS_CORE_API sclay : iresource
 	{
 		DECLARE_COMPONENT(sclay);
 
@@ -226,7 +227,7 @@ namespace resource
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sfood : iresource
+	struct KINGDOMS_CORE_API sfood : iresource
 	{
 		DECLARE_COMPONENT(sfood);
 
@@ -234,7 +235,7 @@ namespace resource
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sleather : iresource
+	struct KINGDOMS_CORE_API sleather : iresource
 	{
 		DECLARE_COMPONENT(sleather);
 
@@ -249,46 +250,46 @@ namespace building
 	{
 		//- Tags building entity as eligible for building inside a City.
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(scity_buildable);
+		DECLARE_TAG(scity_buildable, KINGDOMS_CORE_API);
 
 		//- Tags building entity as eligible for building inside a Castle.
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(scastle_buildable);
+		DECLARE_TAG(scastle_buildable, KINGDOMS_CORE_API);
 
 		//- Tags building entity as eligible for building inside a Colony.
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(scolony_buildable);
+		DECLARE_TAG(scolony_buildable, KINGDOMS_CORE_API);
 
 		//- Tags building entity as eligible for building by a specific race.
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(shuman_buildable);
+		DECLARE_TAG(shuman_buildable, KINGDOMS_CORE_API);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(sorc_buildable);
+		DECLARE_TAG(sorc_buildable, KINGDOMS_CORE_API);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(sgoblin_buildable);
+		DECLARE_TAG(sgoblin_buildable, KINGDOMS_CORE_API);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(self_buildable);
+		DECLARE_TAG(self_buildable, KINGDOMS_CORE_API);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(sgnome_buildable);
+		DECLARE_TAG(sgnome_buildable, KINGDOMS_CORE_API);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(sdwarf_buildable);
+		DECLARE_TAG(sdwarf_buildable, KINGDOMS_CORE_API);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(shigh_troll_buildable);
+		DECLARE_TAG(shigh_troll_buildable, KINGDOMS_CORE_API);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		DECLARE_TAG(sdark_elf_buildable);
+		DECLARE_TAG(sdark_elf_buildable, KINGDOMS_CORE_API);
 
 	} //- tag
 
 	//- Component for building definitions
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sbuilding final : ecs::icomponent
+	struct KINGDOMS_CORE_API sbuilding final : ecs::icomponent
 	{
 		DECLARE_COMPONENT(sbuilding);
 
@@ -311,7 +312,7 @@ namespace building
 			RTTR_ENABLE();
 		};
 
-		struct sdata
+		struct KINGDOMS_CORE_API sdata
 		{
 			using profession_level_pair_t = core::spair<std::string, unsigned>;
 
@@ -374,7 +375,7 @@ namespace technology
 	//- forward decl.
 	struct itech;
 
-	bool available_for_race(const ref_t<itech>& tech, kingdoms::kingdom_race race);
+	KINGDOMS_CORE_API bool available_for_race(const ref_t<itech>& tech, kingdoms::kingdom_race race);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum tech_category : uint8_t
@@ -386,7 +387,7 @@ namespace technology
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct itech
+	struct KINGDOMS_CORE_API itech
 	{
 		std::string m_name;
 		vector_t<ref_t<itech>> m_requirements;
@@ -406,15 +407,15 @@ namespace professions
 {
 	namespace archetype
 	{
-		struct sworker{};
-		struct smilitary{};
+		struct KINGDOMS_CORE_API sworker{};
+		struct KINGDOMS_CORE_API smilitary{};
 
 	} //- archetype
 
 	//- both functions have to be defined for a inheriting profession. Input are the resources and amount that is consumed
 	//- when producing and output is what is produced, in terms of per tick/turn.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sprofession
+	struct KINGDOMS_CORE_API sprofession
 	{
 		static constexpr std::string_view C_RESOURCE_INPUT_FUNC_NAME = "input_resources";
 		static constexpr std::string_view C_RESOURCE_OUTPUT_FUNC_NAME = "output_resources";
@@ -426,13 +427,13 @@ namespace professions
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct swoodcutter : sprofession
+	struct KINGDOMS_CORE_API swoodcutter : sprofession
 	{
 		RTTR_ENABLE(sprofession);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sspearman : sprofession
+	struct KINGDOMS_CORE_API sspearman : sprofession
 	{
 		RTTR_ENABLE(sprofession);
 	};
@@ -440,7 +441,7 @@ namespace professions
 	//- each kingdom unit starts life as a citizen, when choosing a profession the citizen component
 	//- is replaced with the other component and the unit becomes i.e. a 'Spearman' and 'gains' new abilities
 	//------------------------------------------------------------------------------------------------------------------------
-	struct scitizen : ecs::icomponent
+	struct KINGDOMS_CORE_API scitizen : ecs::icomponent
 	{
 		DECLARE_COMPONENT(scitizen);
 
@@ -459,7 +460,7 @@ namespace settlement
 {
 	//- base class for a city or fort.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct isettlement : ecs::icomponent
+	struct KINGDOMS_CORE_API isettlement : ecs::icomponent
 	{
 		DECLARE_COMPONENT(isettlement);
 
@@ -478,10 +479,10 @@ namespace settlement
 		RTTR_ENABLE(ecs::icomponent);
 	};
 
-	bool can_settlement_produce_resource(const isettlement& city, const umap_t<std::string, unsigned>& input);
+	KINGDOMS_CORE_API bool can_settlement_produce_resource(const isettlement& city, const umap_t<std::string, unsigned>& input);
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class csettlement_update_system : public ecs::csystem<isettlement>
+	class KINGDOMS_CORE_API csettlement_update_system : public ecs::csystem<isettlement>
 	{
 	public:
 		csettlement_update_system(flecs::world& w) :
