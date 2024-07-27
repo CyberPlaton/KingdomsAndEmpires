@@ -4,9 +4,13 @@ namespace engine
 {
 	namespace
 	{
-		//- default services required for engine and other
-		constexpr array_t<stringview_t, 6> C_SERVICES = {"cthread_service", "cvirtual_filesystem" , "cevent_service" ,
-			"casset_service" , "cresource_service" , "cmodule_service"};
+		//- Default services required for engine and others
+		constexpr array_t<stringview_t, 7> C_SERVICES = { "cthread_service"
+														/*, "cvirtual_filesystem"*/
+														, "cevent_service"
+														, "casset_service"
+														, "cresource_service"
+														, "cmodule_service"};
 
 	} //- unnamed
 
@@ -23,75 +27,11 @@ namespace engine
 
 		//- do configuration based on provided arguments
 
-		//- register and init services
-		log_info("Initialize services...");
-
-		m_config.m_services_cfg.assign(C_SERVICES.begin(), C_SERVICES.end());
-
-		for (const auto& name : m_config.m_services_cfg)
-		{
-			log_info(fmt::format("\t'{}'", name));
-
-			const auto type = rttr::type::get_by_name(name.c_str());
-
-			if (type.is_valid() && core::cservice_manager::emplace(type))
-			{
-				log_info("\t\t...ok");
-			}
-			else
-			{
-				log_critical("\t\t...fail");
-
-				//- fail configuration but let all try to register so we know all those that are bogus
-				m_result = engine_run_result_failed_registering_services;
-			}
-		}
-
-		core::cservice_manager::init();
-
-		//- register and init resource managers
-		log_info("Initialize resource managers...");
-
-		if (auto* rs = core::cservice_manager::find<cresource_service>(); rs)
-		{
-			rs->register_manager<sm::cshader,		sm::cshader_manager>();
-			rs->register_manager<sm::cimage,		sm::cimage_manager>();
-			rs->register_manager<sm::ctexture,		sm::ctexture_manager>();
-			rs->register_manager<sm::crendertarget, sm::crendertarget_manager>();
-			rs->register_manager<sm::cspriteatlas,	sm::cspriteatlas_manager>();
-		}
-		else
-		{
-			log_critical("\t... Resource Service does not exist!");
-
-			m_result = engine_run_result_failed_registering_resource_managers;
-
-			return false;
-		}
-
-		//- create and init layers
-		log_info("Pushing layers...");
-
-		for (const auto& layer : m_config.m_layers_cfg)
-		{
-			log_info(fmt::format("\t'{}'", layer));
-
-			if (!try_push_layer(layer))
-			{
-				log_error("\t\t...fail");
-
-				//- fail configuration but let all try to register so we know all those that are bogus
-				m_result = engine_run_result_failed_pushing_layers;
-			}
-			else
-			{
-				log_info("\t\t...ok");
-			}
-		}
-
-		log_info("Initializing layers...");
-
-		m_layers.init();
+		//- initialize
+		register_plugins();
+		register_services();
+		register_resource_managers();
+		register_layers();
 
 		return m_result == engine_run_result_ok;
 	}
@@ -198,6 +138,99 @@ namespace engine
 		return false;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::register_plugins()
+	{
+		log_info("Initializing plugins...");
+
+		//- But first, we have to create the plugin service and all it depends on
+		core::cservice_manager::emplace<core::fs::cvirtual_filesystem>()->on_start();
+
+		auto* plugin_service =  core::cservice_manager::emplace<cplugin_service>();
+
+		for (const auto& plugin : m_config.m_plugins_cfg)
+		{
+			plugin_service->load(plugin);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::register_services()
+	{
+		log_info("Initialize services...");
+
+		m_config.m_services_cfg.assign(C_SERVICES.begin(), C_SERVICES.end());
+
+		for (const auto& name : m_config.m_services_cfg)
+		{
+			log_info(fmt::format("\t'{}'", name));
+
+			const auto type = rttr::type::get_by_name(name.c_str());
+
+			if (type.is_valid() && core::cservice_manager::emplace(type))
+			{
+				log_info("\t\t...ok");
+			}
+			else
+			{
+				log_critical("\t\t...fail");
+
+				//- fail configuration but let all try to register so we know all those that are bogus
+				m_result = engine_run_result_failed_registering_services;
+			}
+		}
+
+		core::cservice_manager::init();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::register_resource_managers()
+	{
+		log_info("Initialize resource managers...");
+
+		if (auto* rs = core::cservice_manager::find<cresource_service>(); rs)
+		{
+			rs->register_manager<sm::cshader, sm::cshader_manager>();
+			rs->register_manager<sm::cimage, sm::cimage_manager>();
+			rs->register_manager<sm::ctexture, sm::ctexture_manager>();
+			rs->register_manager<sm::crendertarget, sm::crendertarget_manager>();
+			rs->register_manager<sm::cspriteatlas, sm::cspriteatlas_manager>();
+		}
+		else
+		{
+			log_critical("\t... Resource Service does not exist!");
+
+			m_result = engine_run_result_failed_registering_resource_managers;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::register_layers()
+	{
+		log_info("Pushing layers...");
+
+		for (const auto& layer : m_config.m_layers_cfg)
+		{
+			log_info(fmt::format("\t'{}'", layer));
+
+			if (!try_push_layer(layer))
+			{
+				log_error("\t\t...fail");
+
+				//- fail configuration but let all try to register so we know all those that are bogus
+				m_result = engine_run_result_failed_pushing_layers;
+			}
+			else
+			{
+				log_info("\t\t...ok");
+			}
+		}
+
+		log_info("Initializing layers...");
+
+		m_layers.init();
+	}
+
 } //- engine
 
 RTTR_REGISTRATION
@@ -205,9 +238,9 @@ RTTR_REGISTRATION
 	using namespace engine;
 
 	rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
-		.property("m_services_cfg", &cengine::sconfig::m_services_cfg)
-		.property("m_layers_cfg", &cengine::sconfig::m_layers_cfg)
-		.property("m_tests", &cengine::sconfig::m_tests)
+		.property("m_services_cfg",		&cengine::sconfig::m_services_cfg)
+		.property("m_layers_cfg",		&cengine::sconfig::m_layers_cfg)
+		.property("m_plugins_cfg",		&cengine::sconfig::m_plugins_cfg)
 		;
 	
 	rttr::default_constructor<cengine::sconfig>();

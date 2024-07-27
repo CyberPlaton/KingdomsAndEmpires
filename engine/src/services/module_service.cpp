@@ -25,12 +25,12 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmodule_service::on_update(float dt)
 	{
+		core::cscope_mutex m(m_mutex);
+
 		m_timer.start();
 
 		while (m_timer.millisecs() < dt)
 		{
-			core::cscope_mutex m(m_mutex);
-
 			//- serve loading requests
 			if (!m_to_load.empty())
 			{

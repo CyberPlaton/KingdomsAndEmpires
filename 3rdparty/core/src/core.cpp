@@ -1427,7 +1427,7 @@ namespace core
 	cmemory::cmemory(byte_t* data, unsigned size)
 	{
 		//- Copy data, freeing incoming data is not our responsibility
-		m_data.reserve(SCAST(size_t, size));
+		m_data.resize(SCAST(size_t, size));
 		std::memcpy(m_data.data(), data, SCAST(size_t, size));
 	}
 

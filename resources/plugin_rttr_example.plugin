@@ -1,0 +1,7 @@
+{
+  "m_name": "plugin_rttr_example",
+  "m_path": "plugin_rttr_example",
+  "m_desc": "Example plugin",
+  "m_dependencies": [],
+  "m_version": 1
+}

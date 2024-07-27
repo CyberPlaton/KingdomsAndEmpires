@@ -77,6 +77,8 @@ int __real_main(int argc, char* argv[])
 	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");
 
+	cfg.m_plugins_cfg.emplace_back("plugin_rttr_example");
+
 	sm::configure(&engine::cengine::instance(),	//- engine class as the application
 		(void*)&cfg,							//- engine configuration
 		argc,									//- command line args count
@@ -84,15 +86,15 @@ int __real_main(int argc, char* argv[])
 
 	sm::init("tiny editor", 1360, 768, false, false);
 
-	core::profile::cpu::get_aggregator()->update();
-	core::profile::memory::get_aggregator()->update();
-	sm::profile::gpu::get_aggregator()->update();
-
-	auto cpustats = core::profile::cprofiler::cpu_stats();
-	auto funcstats = core::profile::cprofiler::function_data();
-	auto memstats = core::profile::cprofiler::memory_stats();
-	auto gpustats = sm::profile::gpu::get_aggregator()->stats();
-	auto drawcallstats = sm::profile::gpu::get_aggregator()->drawcall_data();
+// 	core::profile::cpu::get_aggregator()->update();
+// 	core::profile::memory::get_aggregator()->update();
+// 	sm::profile::gpu::get_aggregator()->update();
+// 
+// 	auto cpustats = core::profile::cprofiler::cpu_stats();
+// 	auto funcstats = core::profile::cprofiler::function_data();
+// 	auto memstats = core::profile::cprofiler::memory_stats();
+// 	auto gpustats = sm::profile::gpu::get_aggregator()->stats();
+// 	auto drawcallstats = sm::profile::gpu::get_aggregator()->drawcall_data();
 
 	sm::run();
 

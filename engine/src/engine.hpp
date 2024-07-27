@@ -11,6 +11,7 @@
 #include "services/asset_service.hpp"
 #include "services/resource_service.hpp"
 #include "services/module_service.hpp"
+#include "services/plugin_service.hpp"
 #include "io/io_memory_filesystem.hpp"
 #include "io/io_native_filesystem.hpp"
 #include <argparse.h>
@@ -26,6 +27,7 @@ namespace engine
 		engine_run_result_failed_parsing_invalid_config,
 		engine_run_result_failed_registering_services,
 		engine_run_result_failed_registering_resource_managers,
+		engine_run_result_failed_loading_plugins,
 		engine_run_result_failed_pushing_layers,
 		engine_run_result_fail = 255,
 	};
@@ -41,7 +43,7 @@ namespace engine
 		{
 			vector_t<string_t> m_services_cfg;
 			vector_t<string_t> m_layers_cfg;
-			vector_t<string_t> m_tests;
+			vector_t<string_t> m_plugins_cfg;
 
 			RTTR_ENABLE();
 		};
@@ -53,8 +55,7 @@ namespace engine
 		template<typename TResource>
 		static auto manager();
 
-
-		STATIC_INSTANCE(cengine, s_cengine);
+		STATIC_INSTANCE_EX(cengine);
 		~cengine();
 
 		bool on_init(void* config, argparse::ArgumentParser& args) override final;
@@ -70,6 +71,10 @@ namespace engine
 	private:
 		cengine() = default;
 		bool try_push_layer(stringview_t name);
+		void register_plugins();
+		void register_services();
+		void register_resource_managers();
+		void register_layers();
 	};
 
 	//- Shortcuts for common operations
