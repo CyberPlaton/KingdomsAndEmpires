@@ -3,7 +3,8 @@
 
 namespace editor
 {
-	//- Base class for any UI entity, such as asset browser or entity inspector etc.
+	//- Base class for any UI entity, such as asset browser or entity inspector etc. For windows and elements that can be
+	//- closed, use the 'active' function to indicate whether to close or not, thats important as other systems may depend on it.
 	//------------------------------------------------------------------------------------------------------------------------
 	class clayer_base : public ccontext_holder
 	{
@@ -19,9 +20,11 @@ namespace editor
 		virtual void on_post_update(float dt)	{}
 
 		inline ImGuiID id() const {return m_id; }
+		inline bool& active() { return m_active; }
 
 	private:
 		ImGuiID m_id = 0;
+		bool m_active = true;
 	};
 
 	using layer_ref_t = ref_t<clayer_base>;

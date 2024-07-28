@@ -1,5 +1,6 @@
 #pragma once
 #include "editor_dock_base.hpp"
+#include "../editor_element_stack_system.hpp"
 #include "material_editor/editor_material_editor.hpp"
 
 namespace editor
@@ -17,6 +18,7 @@ namespace editor
 		void on_ui_render() override final;
 
 	private:
+		celement_stack_system m_elements_stack;
 		layer_ref_t m_material_editor;
 	};
 

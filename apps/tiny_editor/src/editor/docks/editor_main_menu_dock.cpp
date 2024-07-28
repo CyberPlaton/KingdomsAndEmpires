@@ -34,6 +34,15 @@ namespace editor
 
 			if (ImGui::BeginMenu("Menu"))
 			{
+				if (ImGui::BeginMenu("New"))
+				{
+					if (ImGui::MenuItem("Project"))
+					{
+						//- Push project creation element
+					}
+					ImGui::EndMenu();
+				}
+
 				if (ImGui::MenuItem("Exit"))
 				{
 				}

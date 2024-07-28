@@ -16,6 +16,7 @@ namespace editor
 		void on_ui_render() override;
 
 	private:
+		celement_stack_system m_elements_stack;
 		ref_t<cworld_inspector> m_inspector;
 	};
 

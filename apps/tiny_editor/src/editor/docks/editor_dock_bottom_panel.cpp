@@ -13,6 +13,9 @@ namespace editor
 		constexpr std::string_view C_TAB_BAR_ID = "##editor_dock_bottom_panel_tab_bar";
 		constexpr auto C_TAB_BAR_FLAGS = ImGuiTabBarFlags_None;
 
+		static ImVec2 S_SIZE = { 0, 0 };
+		static ImVec2 S_POS = { 0, 0 };
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -32,6 +35,8 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cbottom_panel::shutdown()
 	{
+		m_elements_stack.shutdown();
+
 		for (const auto& element : m_elements)
 		{
 			element->shutdown();
@@ -44,14 +49,11 @@ namespace editor
 		if (!ctx().m_docks_enabled)
 			return;
 
-		const ImVec2 size = { algorithm::percent_value(C_WIDTH, ctx().m_window_width),
-			algorithm::percent_value(C_HEIGHT, ctx().m_window_height) };
-		const ImVec2 pos = { 0.0f, ctx().m_window_height - algorithm::percent_value(C_HEIGHT, ctx().m_window_height) + ctx().m_mainmenu_height };
-
-
-		ImGui::SetNextWindowSize(size, ImGuiCond_Always);
-		ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
+		ImGui::SetNextWindowSize(S_SIZE, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(S_POS, ImGuiCond_Always);
 		ImGui::Begin(C_BOTTOM_PANEL_ID.data(), nullptr, C_BOTTOM_PANEL_FLAGS);
+
+		m_elements_stack.on_ui_render();
 
 		auto active = ui::ctab_bar(C_TAB_BAR_ID, C_TAB_BAR_FLAGS)
 						.items(m_tab_bar_items.data(), (unsigned)m_tab_bar_items.size())
@@ -60,6 +62,27 @@ namespace editor
 		m_elements[active]->on_ui_render();
 
 		ImGui::End();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cbottom_panel::on_world_render()
+	{
+		m_elements_stack.on_world_render();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cbottom_panel::on_update(float dt)
+	{
+		S_SIZE = { algorithm::percent_value(C_WIDTH, ctx().m_window_width), algorithm::percent_value(C_HEIGHT, ctx().m_window_height) };
+		S_POS = { 0.0f, ctx().m_window_height - algorithm::percent_value(C_HEIGHT, ctx().m_window_height) + ctx().m_mainmenu_height };
+
+		m_elements_stack.on_update(dt);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cbottom_panel::on_post_update(float dt)
+	{
+		m_elements_stack.on_post_update(dt);
 	}
 
 } //- editor
