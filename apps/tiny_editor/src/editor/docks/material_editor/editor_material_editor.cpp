@@ -9,7 +9,7 @@ namespace editor
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cmaterial_editor::cmaterial_editor(scontext& ctx) :
-		clayer_base(ctx)
+		clayer_base(ImGui::GetID("##material_editor"), ctx)
 	{
 	}
 

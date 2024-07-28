@@ -30,7 +30,6 @@ namespace editor
 	{
 		if (ImGui::BeginMainMenuBar())
 		{
-
 			ctx().m_mainmenu_height = ImGui::GetWindowSize().y;
 
 			if (ImGui::BeginMenu("Menu"))

@@ -8,7 +8,7 @@ namespace editor
 	class cmain_menu final : public clayer_base
 	{
 	public:
-		cmain_menu(scontext& ctx) : clayer_base(ctx) {};
+		cmain_menu(scontext& ctx) : clayer_base(ImGui::GetID("##main_menu_dock"), ctx) {};
 		~cmain_menu() = default;
 
 		bool init() override final;

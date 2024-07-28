@@ -25,9 +25,6 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cdock_system::on_update(float dt)
 	{
-		//- Set central imgui and other contexts
-		ImGui::SetCurrentContext(imgui::imgui_ctx());
-
 		//- Update central context data where known and wanted
 		cdock_system::instance().update_context(dt);
 

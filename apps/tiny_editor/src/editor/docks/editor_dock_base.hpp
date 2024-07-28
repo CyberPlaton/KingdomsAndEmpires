@@ -8,7 +8,7 @@ namespace editor
 	class clayer_base : public ccontext_holder
 	{
 	public:
-		clayer_base(scontext& ctx) : ccontext_holder(ctx) {};
+		clayer_base(ImGuiID id, scontext& ctx) : m_id(id), ccontext_holder(ctx) {};
 		virtual ~clayer_base() {}
 
 		virtual bool init()						{ CORE_ASSERT(false, "Invalid operation. Base class function must be implemented!"); return false; }
@@ -18,7 +18,10 @@ namespace editor
 		virtual void on_ui_render()				{}
 		virtual void on_post_update(float dt)	{}
 
+		inline ImGuiID id() const {return m_id; }
+
 	private:
+		ImGuiID m_id = 0;
 	};
 
 	using layer_ref_t = ref_t<clayer_base>;

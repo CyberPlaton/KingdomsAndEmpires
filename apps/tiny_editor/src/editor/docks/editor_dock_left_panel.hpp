@@ -8,7 +8,7 @@ namespace editor
 	class cleft_panel final : public clayer_base
 	{
 	public:
-		cleft_panel(scontext& ctx) : clayer_base(ctx) {};
+		cleft_panel(scontext& ctx) : clayer_base(ImGui::GetID("##left_panel"), ctx) {};
 		~cleft_panel() = default;
 
 		bool init() override;

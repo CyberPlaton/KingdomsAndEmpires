@@ -8,7 +8,7 @@ namespace editor
 	class cright_panel final : public clayer_base
 	{
 	public:
-		cright_panel(scontext& ctx) : clayer_base(ctx) {};
+		cright_panel(scontext& ctx) : clayer_base(ImGui::GetID("##right_panel"), ctx) {};
 		~cright_panel() = default;
 
 		bool init() override;
