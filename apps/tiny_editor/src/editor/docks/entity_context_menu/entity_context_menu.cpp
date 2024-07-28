@@ -12,7 +12,7 @@ namespace editor
 
 	//------------------------------------------------------------------------------------------------------------------------
 	centity_context_menu::centity_context_menu(scontext& ctx) :
-		ccontext_holder(ImGui::GetID("##entity_context_menu"), ctx)
+		ccontext_holder(ctx)
 	{
 	}
 

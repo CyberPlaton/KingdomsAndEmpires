@@ -1,5 +1,6 @@
 #pragma once
 #include "editor_dock_base.hpp"
+#include "../editor_element_stack_system.hpp"
 #include "entity_inspector/entity_inspector.hpp"
 
 namespace editor
@@ -11,13 +12,15 @@ namespace editor
 		cright_panel(scontext& ctx) : clayer_base(ImGui::GetID("##right_panel"), ctx) {};
 		~cright_panel() = default;
 
-		bool init() override;
-		void shutdown() override;
-		void on_ui_render() override;
+		bool init() override final;
+		void shutdown() override final;
+		void on_ui_render() override final;
+		void on_world_render() override final;
+		void on_update(float dt) override final;
+		void on_post_update(float dt) override final;
 
 	private:
 		celement_stack_system m_elements_stack;
-		ref_t<centity_inspector> m_inspector;
 	};
 
 } //- editor

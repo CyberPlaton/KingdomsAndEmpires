@@ -24,7 +24,7 @@ namespace editor
 		//- Check for elements that are to be removed and remove them
 		stack_t<ImGuiID> to_remove;
 
-		algorithm::for_each(m_elements.begin(), m_elements.end(), [](const auto& pair)
+		algorithm::for_each(m_elements.begin(), m_elements.end(), [&](const auto& pair)
 			{
 				if (!pair.second->active())
 				{

@@ -21,12 +21,8 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cbottom_panel::init()
 	{
-		auto browser = detail::create_ui_element<casset_browser>(ctx());
-
-		if (browser->init())
+		if (auto browser = m_elements_stack.push<casset_browser>(ctx()); browser && browser->init())
 		{
-			m_elements.push_back(browser);
-
 			return true;
 		}
 		return false;
@@ -36,11 +32,6 @@ namespace editor
 	void cbottom_panel::shutdown()
 	{
 		m_elements_stack.shutdown();
-
-		for (const auto& element : m_elements)
-		{
-			element->shutdown();
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -53,13 +44,16 @@ namespace editor
 		ImGui::SetNextWindowPos(S_POS, ImGuiCond_Always);
 		ImGui::Begin(C_BOTTOM_PANEL_ID.data(), nullptr, C_BOTTOM_PANEL_FLAGS);
 
+		//- Display tab
+		auto active = ui::ctab_bar(C_TAB_BAR_ID, C_TAB_BAR_FLAGS)
+			.items(m_tab_bar_items.data(), (unsigned)m_tab_bar_items.size())
+			.draw();
+
+		//- Display all other elements
 		m_elements_stack.on_ui_render();
 
-		auto active = ui::ctab_bar(C_TAB_BAR_ID, C_TAB_BAR_FLAGS)
-						.items(m_tab_bar_items.data(), (unsigned)m_tab_bar_items.size())
-						.draw();
-
-		m_elements[active]->on_ui_render();
+		//- TODO: make it possible to run a specific element from stack?!
+		//m_elements[active]->on_ui_render();
 
 		ImGui::End();
 	}

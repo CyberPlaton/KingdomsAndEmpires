@@ -26,6 +26,12 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cmain_menu::on_post_update(float dt)
+	{
+		m_elements_stack.on_post_update(dt);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cmain_menu::on_ui_render()
 	{
 		if (ImGui::BeginMainMenuBar())
@@ -74,6 +80,12 @@ namespace editor
 
 		m_material_editor->on_update(0.016f);
 		m_material_editor->on_ui_render();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmain_menu::on_world_render()
+	{
+		m_elements_stack.on_world_render();
 	}
 
 } //- editor

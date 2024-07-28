@@ -5,6 +5,9 @@ namespace editor
 {
 	//- TODO: refactor. This approach is not good and does not really work out as desired.
 	//- Maybe we want derive this from some basic ui window class.
+	//-
+	//- Extension of a context menu specially designed for entities. Intended to be opened from world inspector when clicking
+	//- RMB on an entity.
 	//------------------------------------------------------------------------------------------------------------------------
 	class centity_context_menu : public ccontext_holder
 	{

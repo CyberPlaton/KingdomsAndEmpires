@@ -15,15 +15,17 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cright_panel::init()
 	{
-		m_inspector = std::make_shared<centity_inspector>(ctx());
-		return m_inspector->init();
+		if (auto inspector = m_elements_stack.push<centity_inspector>(ctx()); inspector && inspector->init())
+		{
+			return true;
+		}
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cright_panel::shutdown()
 	{
-		m_inspector->shutdown();
-		m_inspector.reset();
+		m_elements_stack.shutdown();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -40,7 +42,9 @@ namespace editor
 		ImGui::SetNextWindowSize(size, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
 		ImGui::Begin(C_RIGHT_PANEL_ID.data(), nullptr, C_RIGHT_PANEL_FLAGS);
-		m_inspector->on_ui_render();
+
+		m_elements_stack.on_ui_render();
+
 		ImGui::End();
 
 		if (ecs::cworld_manager::instance().has_active())
@@ -66,6 +70,24 @@ namespace editor
 			}
 			ImGui::End();
 		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cright_panel::on_world_render()
+	{
+		m_elements_stack.on_world_render();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cright_panel::on_update(float dt)
+	{
+		m_elements_stack.on_update(dt);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cright_panel::on_post_update(float dt)
+	{
+		m_elements_stack.on_post_update(dt);
 	}
 
 } //- editor

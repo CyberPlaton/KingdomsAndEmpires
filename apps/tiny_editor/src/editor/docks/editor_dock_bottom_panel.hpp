@@ -13,17 +13,16 @@ namespace editor
 		cbottom_panel(scontext& ctx) : clayer_base(ImGui::GetID("##bottom_panel"), ctx) {};
 		~cbottom_panel() = default;
 
-		bool init() override;
-		void shutdown() override;
-		void on_ui_render() override;
-		void on_world_render() override;
-		void on_update(float dt) override;
-		void on_post_update(float dt) override;
+		bool init() override final;
+		void shutdown() override final;
+		void on_ui_render() override final;
+		void on_world_render() override final;
+		void on_update(float dt) override final;
+		void on_post_update(float dt) override final;
 
 	private:
 		celement_stack_system m_elements_stack;
 		vector_t<ui::ctab_bar::sitem> m_tab_bar_items;
-		vector_t<layer_ref_t> m_elements;
 		unsigned m_active = 0;
 	};
 

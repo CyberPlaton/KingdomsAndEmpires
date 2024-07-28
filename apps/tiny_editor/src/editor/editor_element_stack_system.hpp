@@ -22,7 +22,7 @@ namespace editor
 		void on_post_update(float dt);
 
 		template<typename T, typename... ARGS>
-		void push(ARGS&&... args);
+		layer_ref_t push(ARGS&&... args);
 
 		void pop(const char* id);
 		void pop(ImGuiID id);
@@ -33,12 +33,16 @@ namespace editor
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename T, typename... ARGS>
-	void editor::celement_stack_system::push(ARGS&&... args)
+	layer_ref_t editor::celement_stack_system::push(ARGS&&... args)
 	{
-		if (const auto element = detail::create_ui_element<T>(std::forward<ARGS>(args)...); element && element->init())
+		layer_ref_t element = nullptr;
+
+		if (element = detail::create_ui_element<T>(std::forward<ARGS>(args)...); element && element->init())
 		{
-			m_elements[element->id()] = std::move(element);
+			m_elements[element->id()] = element;
 		}
+
+		return element;
 	}
 
 } //- editor
