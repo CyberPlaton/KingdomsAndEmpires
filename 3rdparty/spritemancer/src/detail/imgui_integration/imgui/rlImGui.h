@@ -32,7 +32,7 @@
 #include <core.h>
 #include "../../raylib_integration/raylib.hpp"
 #ifndef NO_FONT_AWESOME
-#include "IconsFontAwesome6.h"
+#include <imgui.h>
 #ifndef FONT_AWESOME_ICON_SIZE
 #define FONT_AWESOME_ICON_SIZE 11
 #endif

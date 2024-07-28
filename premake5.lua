@@ -4,7 +4,7 @@ VERBOSE = true
 SCRIPTS_DIR = "<undefined>"
 VENDOR_DIR = "<undefined>"
 WORKSPACE_DIR = "<undefined>"
-THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann", "mimalloc",
+THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann", "mimalloc", "imgui",
 			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua", "rttr",
 			  "Tracy", "slang", "spritemancer", "tree_sitter", "unittest", "hwinfo"}
 PLUGINS = {"plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human", "plugin_render_system",

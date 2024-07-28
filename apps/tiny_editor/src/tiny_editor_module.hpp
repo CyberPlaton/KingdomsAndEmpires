@@ -4,6 +4,7 @@
 //- TODO: we should not be including any of these in order to work with the editor,
 //- however we do this for testing as of now; remove later
 #include <plugin_kingdoms_core.h>
+#include <plugin_kingdoms_and_empires.h>
 #include <plugin_race_human.h>
 #include <plugin_status_effects.h>
 //-

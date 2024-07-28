@@ -115,6 +115,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	engine::cprofiler_service::init();
 #endif
 
+	//- FIXME: just for decoy, use any type of class so that they wont get optimized out for not being used...
+	{
+		editor::ceditor editor_decoy;
+		cgame game_decoy;
+	}
+
 	return __real_main(0, nullptr);
 }
 #else

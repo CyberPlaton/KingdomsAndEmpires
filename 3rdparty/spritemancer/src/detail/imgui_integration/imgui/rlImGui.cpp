@@ -28,15 +28,11 @@
 *
 **********************************************************************************************/
 #include "rlImGui.h"
-#include "imgui.h"
+#include <imgui.h>
 #include <raylib/external/glfw/include/GLFW/glfw3.h>
 #include <math.h>
 #include <vector>
 #include <map>
-
-#ifndef NO_FONT_AWESOME
-#include "FA6FreeSolidFontData.h"
-#endif
 
 using namespace raylib;
 
@@ -402,7 +398,7 @@ void rlImGuiEndInitImGui()
 
 void rlImGuiSetup(bool dark)
 {
-    rlImGuiBeginInitImGui();
+    /*rlImGuiBeginInitImGui();*/
 
     if (dark)
         ImGui::StyleColorsDark();
@@ -417,7 +413,7 @@ void rlImGuiSetup(bool dark)
     ImFontConfig icons_config;
     icons_config.MergeMode = true;
     icons_config.PixelSnapH = true;
-    io.Fonts->AddFontFromMemoryCompressedTTF((void*)fa_solid_900_compressed_data, fa_solid_900_compressed_size, 13, &icons_config, icons_ranges);
+    io.Fonts->AddFontFromMemoryCompressedTTF((void*)fontdata::fa_solid_900_compressed_data, fontdata::fa_solid_900_compressed_size, 13, &icons_config, icons_ranges);
 #endif
 
     rlImGuiEndInitImGui();

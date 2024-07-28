@@ -7,7 +7,7 @@ function spritemancer()
 	additional_includes = {"src/detail/raylib_integration"}
 	plugin_deps = {}
 	plugin_headeronly_deps = {}
-	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr"}
+	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr", "imgui"}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}
 	raylib_path = "src/detail/raylib_integration/raylib"
 	glfw_path = path.join(raylib_path, "external", "glfw", "src")

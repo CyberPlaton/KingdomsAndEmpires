@@ -1,6 +1,6 @@
 #pragma once
 #include "../editor_dock_base.hpp"
-#include "../../nodes/editor_nodes_context.hpp"
+/*#include "../../nodes/editor_nodes_context.hpp"*/
 
 namespace editor
 {
@@ -18,7 +18,6 @@ namespace editor
 		void on_ui_render() override final;
 
 	private:
-		ImNodesEditorContext* m_ctx;
 	};
 
 } //- editor

@@ -11,6 +11,8 @@
 class KINGDOMS_API cgame
 {
 public:
+	static bool init();
+	static void shutdown();
 	static void on_update(float dt);
 	static void on_world_render();
 	static void on_ui_render();

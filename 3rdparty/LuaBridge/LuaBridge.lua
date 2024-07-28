@@ -4,8 +4,8 @@ function LuaBridge()
 	add_target_library("LuaBridge",
 					{},
 					{},
-					{"Lua"},
 					{},
+					{"Lua"},
 					true,
 					"c++")
 end

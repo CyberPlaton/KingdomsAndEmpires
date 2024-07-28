@@ -180,7 +180,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function add_target_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, headeronly, target_language)
+function add_target_library(name, build_options, define_flags, thirdparty_headeronly_deps, thirdparty_deps, headeronly, target_language)
 	if VERBOSE == true then
 		print("\tshared library: " .. name)
 	end
@@ -209,10 +209,9 @@ function add_target_library(name, build_options, define_flags, plugin_deps, thir
 		set_libs_path()
 
 		-- include and link deps from other plugins and thirdparty
-		for ii = 1, #plugin_deps do
-			p = plugin_deps[ii]
-			links{p}
-			set_include_path(false, p)
+		for ii = 1, #thirdparty_headeronly_deps do
+			p = thirdparty_headeronly_deps[ii]
+			set_include_path(true, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]

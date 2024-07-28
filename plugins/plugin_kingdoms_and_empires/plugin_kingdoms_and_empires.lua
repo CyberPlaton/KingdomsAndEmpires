@@ -5,7 +5,7 @@ function plugin_kingdoms_and_empires()
 					{},
 					{},
 					{"plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human"},
-					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr"},
+					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
 					{},

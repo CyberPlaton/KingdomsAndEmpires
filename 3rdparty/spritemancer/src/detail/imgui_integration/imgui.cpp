@@ -1,5 +1,4 @@
 #include "imgui.hpp"
-#include "imgui/imgui_internal.h"
 
 namespace imgui
 {
@@ -14,9 +13,10 @@ namespace imgui
 	bool init()
 	{
 		//- init imgui and create icon font from ICON_FA data
+		detail::S_IMGUI_CONTEXT = ImGui::CreateContext(nullptr);
+		detail::S_IMNODES_CONTEXT = ImNodes::CreateEditor(nullptr);
+		detail::S_IMPLOT_CONTEXT = ImPlot::CreateContext();
 		rlImGuiSetup(true);
-		ImPlot::CreateContext();
-		ImNodes::CreateContext();
 
 		//- setup default style
 		ImGui::GetStyle().WindowRounding = 0;
@@ -44,9 +44,10 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void shutdown()
 	{
-		ImPlot::DestroyContext();
-		ImNodes::DestroyContext();
+		ImPlot::DestroyContext(detail::S_IMPLOT_CONTEXT);
+		ImNodes::DestroyEditor(detail::S_IMNODES_CONTEXT);
 		rlImGuiShutdown();
+		ImGui::DestroyContext(detail::S_IMGUI_CONTEXT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

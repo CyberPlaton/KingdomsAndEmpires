@@ -18,6 +18,10 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	cengine::~cengine()
 	{
+		//- FIXME: just for decoy, use some of the services so that they wont get optimized out for not being used...
+		cthread_service thread_service_decoy;
+		casset_service asset_service_decoy;
+		io::cmodule_service module_service_decoy;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -141,7 +145,12 @@ namespace engine
 			if (result)
 			{
 				m_layers.emplace_new_layer(name, update_method, world_render_method, ui_render_method, post_update_method, init_method, shutdown_method);
+				return true;
 			}
+		}
+		else
+		{
+			log_critical("\t\t...layer type unknown. Make sure the layer is reflected and actually used somewhere throughout the program!");
 		}
 
 		return false;
@@ -176,13 +185,21 @@ namespace engine
 
 			const auto type = rttr::type::get_by_name(name.c_str());
 
-			if (type.is_valid() && core::cservice_manager::emplace(type))
+			if (type.is_valid())
 			{
-				log_info("\t\t...ok");
+				if (core::cservice_manager::emplace(type))
+				{
+					log_info("\t\t...ok");
+				}
+				else
+				{
+					log_critical("\t\t...failed to emplace");
+					m_result = engine_run_result_failed_registering_services;
+				}
 			}
 			else
 			{
-				log_critical("\t\t...fail");
+				log_critical("\t\t...service type unknown. Make sure the service is reflected and actually used somewhere throughout the program!");
 
 				//- fail configuration but let all try to register so we know all those that are bogus
 				m_result = engine_run_result_failed_registering_services;

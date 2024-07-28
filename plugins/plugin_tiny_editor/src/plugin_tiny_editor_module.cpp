@@ -59,14 +59,5 @@ RTTR_REGISTRATION
 {
 	using namespace editor;
 
-rttr::registration::class_<ceditor>("ceditor")
-.method("on_update", &ceditor::on_update)
-.method("on_world_render", &ceditor::on_world_render)
-.method("on_ui_render", &ceditor::on_ui_render)
-.method("on_post_update", &ceditor::on_post_update)
-.method("init", &ceditor::init)
-.method("shutdown", &ceditor::shutdown)
-;
-
-rttr::default_constructor<ceditor>();
+	REGISTER_LAYER(ceditor);
 }
