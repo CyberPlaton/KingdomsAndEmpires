@@ -1,22 +1,22 @@
 #pragma once
-#include "editor_dock_base.hpp"
-#include "world_inspector/world_inspector.hpp"
+#include "../editor_dock_base.hpp"
 
 namespace editor
 {
+	//- Not a dock or layer per-se, intended to be used directly by the respective panel.
 	//------------------------------------------------------------------------------------------------------------------------
-	class EDITOR_API cleft_panel final : public clayer_base
+	class casset_browser final : public clayer_base
 	{
 	public:
-		cleft_panel(scontext& ctx) : clayer_base(ctx) {};
-		~cleft_panel() = default;
+		casset_browser(scontext& ctx) : clayer_base(ctx) {};
+		~casset_browser() = default;
 
 		bool init() override;
 		void shutdown() override;
 		void on_ui_render() override;
 
 	private:
-		ref_t<cworld_inspector> m_inspector;
+
 	};
 
 } //- editor

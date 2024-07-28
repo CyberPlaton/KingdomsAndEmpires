@@ -6,7 +6,7 @@
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class EDITOR_API cbottom_panel final : public clayer_base
+	class cbottom_panel final : public clayer_base
 	{
 	public:
 		cbottom_panel(scontext& ctx) : clayer_base(ctx) {};

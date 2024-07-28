@@ -1,22 +1,22 @@
 #pragma once
 #include "editor_dock_base.hpp"
-#include "entity_inspector/entity_inspector.hpp"
+#include "world_inspector/world_inspector.hpp"
 
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class EDITOR_API cright_panel final : public clayer_base
+	class cleft_panel final : public clayer_base
 	{
 	public:
-		cright_panel(scontext& ctx) : clayer_base(ctx) {};
-		~cright_panel() = default;
+		cleft_panel(scontext& ctx) : clayer_base(ctx) {};
+		~cleft_panel() = default;
 
 		bool init() override;
 		void shutdown() override;
 		void on_ui_render() override;
 
 	private:
-		ref_t<centity_inspector> m_inspector;
+		ref_t<cworld_inspector> m_inspector;
 	};
 
 } //- editor

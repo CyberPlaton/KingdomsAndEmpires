@@ -1,13 +1,12 @@
 #pragma once
 #include <core.h>
 #include <engine.h>
-#include "../../config.hpp"
 
 namespace editor
 {
 	//- Class contains basic data useful almost everywhere. Can also be used to synchronize between systems.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct EDITOR_API scontext : core::cnon_copyable
+	struct scontext : core::cnon_copyable
 	{
 		unsigned m_window_width		= 0;
 		unsigned m_window_height	= 0;
@@ -17,7 +16,7 @@ namespace editor
 
 	//- Access to context.
 	//------------------------------------------------------------------------------------------------------------------------
-	class EDITOR_API ccontext_holder
+	class ccontext_holder
 	{
 	public:
 		ccontext_holder(scontext& ctx) : m_ctx(ctx) {}

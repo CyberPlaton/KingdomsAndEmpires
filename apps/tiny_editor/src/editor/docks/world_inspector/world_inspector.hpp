@@ -7,7 +7,7 @@ namespace editor
 	//- Window responsible for showing current snapshot of the edited world. From here yo can create new entities and
 	//- select them for editing.
 	//------------------------------------------------------------------------------------------------------------------------
-	class EDITOR_API cworld_inspector final : public clayer_base
+	class cworld_inspector final : public clayer_base
 	{
 	public:
 		cworld_inspector(scontext& ctx) : clayer_base(ctx) {};

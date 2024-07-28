@@ -1,15 +1,16 @@
 #pragma once
-#include "editor_dock_base.hpp"
-#include "material_editor/editor_material_editor.hpp"
+#include "../editor_dock_base.hpp"
+/*#include "../../nodes/editor_nodes_context.hpp"*/
 
 namespace editor
 {
+	//- Responsible for creating materials in a visual way.
 	//------------------------------------------------------------------------------------------------------------------------
-	class EDITOR_API cmain_menu final : public clayer_base
+	class cmaterial_editor final : public clayer_base
 	{
 	public:
-		cmain_menu(scontext& ctx) : clayer_base(ctx) {};
-		~cmain_menu() = default;
+		cmaterial_editor(scontext& ctx);
+		~cmaterial_editor();
 
 		bool init() override final;
 		void shutdown() override final;
@@ -17,7 +18,6 @@ namespace editor
 		void on_ui_render() override final;
 
 	private:
-		layer_ref_t m_material_editor;
 	};
 
 } //- editor

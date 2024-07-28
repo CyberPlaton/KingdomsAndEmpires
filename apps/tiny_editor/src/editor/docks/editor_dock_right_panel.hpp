@@ -1,22 +1,22 @@
 #pragma once
-#include "../editor_dock_base.hpp"
+#include "editor_dock_base.hpp"
+#include "entity_inspector/entity_inspector.hpp"
 
 namespace editor
 {
-	//- Not a dock or layer per-se, intended to be used directly by the respective panel.
 	//------------------------------------------------------------------------------------------------------------------------
-	class EDITOR_API casset_browser final : public clayer_base
+	class cright_panel final : public clayer_base
 	{
 	public:
-		casset_browser(scontext& ctx) : clayer_base(ctx) {};
-		~casset_browser() = default;
+		cright_panel(scontext& ctx) : clayer_base(ctx) {};
+		~cright_panel() = default;
 
 		bool init() override;
 		void shutdown() override;
 		void on_ui_render() override;
 
 	private:
-
+		ref_t<centity_inspector> m_inspector;
 	};
 
 } //- editor
