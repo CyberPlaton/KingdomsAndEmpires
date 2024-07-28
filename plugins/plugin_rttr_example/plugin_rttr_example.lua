@@ -7,7 +7,7 @@ function plugin_rttr_example()
 	additional_includes = {}
 	plugin_deps = {}
 	plugin_headeronly_deps = {}
-	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr", "imgui"}
+	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}
 	depends_on_engine = true
 

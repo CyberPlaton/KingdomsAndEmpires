@@ -1,5 +1,5 @@
 #include "sm_config.hpp"
-#include "../sm_resource_manager.hpp"
+#include "sm_resource_manager.hpp"
 
 namespace sm
 {
@@ -285,11 +285,11 @@ namespace sm
 		}
 
 		//- FIXME: only while we are using raylib
-	#include "raylib/rlgl.h"
+	#include <raylib.h>
 #if CORE_PLATFORM_DESKTOP
-	#include "raylib/external/glad.h"
+	#include <../src/raylib/external/glad.h>
 #elif CORE_PLATFORM_MOBILE
-	#include "raylib/external/glad_gles2.h"
+	#include <../src/raylib/external/glad_gles2.h>
 #endif
 		//------------------------------------------------------------------------------------------------------------------------
 		uint64_t shader_gpu_memory_usage(int id)

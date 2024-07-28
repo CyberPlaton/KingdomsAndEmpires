@@ -86,6 +86,8 @@
 #define RAYLIB_VERSION_PATCH 0
 #define RAYLIB_VERSION  "5.1-dev"
 
+#include "../config.hpp"
+
 // Function specifiers in case library is build/used as a shared library
 // NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll
 // NOTE: visibility("default") attribute makes symbols "visible" when compiled with -fvisibility=hidden

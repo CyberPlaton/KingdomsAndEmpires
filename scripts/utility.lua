@@ -47,7 +47,10 @@ function set_basic_defines()
 			"_CRT_SECURE_NO_WARNINGS",
 			"__STDC_FORMAT_MACROS",
 			"_CRT_SECURE_NO_DEPRECATE",
-			"RTTR_DLL"}
+			"RTTR_DLL",						-- RTTR
+			"BUILD_LIBTYPE_SHARED",			-- raylib
+			"GLAD_API_CALL_EXPORT",			-- raylib glad/glad_es2
+			}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
