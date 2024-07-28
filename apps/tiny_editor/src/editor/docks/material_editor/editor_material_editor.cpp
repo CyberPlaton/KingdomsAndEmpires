@@ -8,12 +8,6 @@ namespace editor
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial_editor::cmaterial_editor(scontext& ctx) :
-		clayer_base(ImGui::GetID("##material_editor"), ctx)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	cmaterial_editor::~cmaterial_editor()
 	{
 	}

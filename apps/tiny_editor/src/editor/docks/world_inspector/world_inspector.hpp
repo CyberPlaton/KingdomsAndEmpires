@@ -10,7 +10,7 @@ namespace editor
 	class cworld_inspector final : public clayer_base
 	{
 	public:
-		cworld_inspector(scontext& ctx) : clayer_base(ImGui::GetID("##world_inspector"), ctx) {};
+		cworld_inspector(scontext& ctx) : clayer_base("##world_inspector", ctx) {};
 		~cworld_inspector() = default;
 
 		bool init() override;

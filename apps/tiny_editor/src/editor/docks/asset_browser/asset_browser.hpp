@@ -8,7 +8,7 @@ namespace editor
 	class casset_browser final : public clayer_base
 	{
 	public:
-		casset_browser(scontext& ctx) : clayer_base(ImGui::GetID("##asset_browser"), ctx) {};
+		casset_browser(scontext& ctx) : clayer_base("##asset_browser", ctx) {};
 		~casset_browser() = default;
 
 		bool init() override;

@@ -8,7 +8,7 @@ namespace editor
 	class centity_inspector final : public clayer_base
 	{
 	public:
-		centity_inspector(scontext& ctx) : clayer_base(ImGui::GetID("##entity_inspector"), ctx) {};
+		centity_inspector(scontext& ctx) : clayer_base("##entity_inspector", ctx) {};
 		~centity_inspector() = default;
 
 		bool init() override;
