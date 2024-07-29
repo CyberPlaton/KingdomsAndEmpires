@@ -2,27 +2,125 @@
 
 namespace editor::ui
 {
+	namespace
+	{
+	} //- unnamed
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ccontext_menu::ccontext_menu(stringview_t id, scontext& ctx, ImGuiWindowFlags flags /*= ImGuiWindowFlags_None*/) :
+		m_id(id), m_ctx(ctx), m_flags(flags | ImGuiWindowFlags_MenuBar)
+	{
+	}
+
 	//------------------------------------------------------------------------------------------------------------------------
 	ccontext_menu::~ccontext_menu()
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool ccontext_menu::draw()
+	void ccontext_menu::draw()
 	{
-		if (ImGui::BeginPopup(m_id, m_flags))
+		CORE_NAMED_ZONE(ccontext_menu::draw);
+
+		if (ImGui::BeginPopup(m_id.data(), m_flags))
 		{
+			//- Show context menu
+			if (ImGui::BeginMenu("##context_menu_name"))
+			{
+				show_submenu(m_root->m_entries);
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndPopup();
 		}
-
-		//- Returns false when the popup was closed
-		return ImGui::IsPopupOpen(m_id, m_flags);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ccontext_menu::ccontext_menu(const char* id, scontext& ctx, ImGuiWindowFlags flags /*= ImGuiWindowFlags_None*/) :
-		m_id(id), m_ctx(ctx), m_flags(flags)
+	ccontext_menu& ccontext_menu::begin(stringview_t label, const bool enabled /*= true*/)
 	{
+		auto menu = std::make_shared<sentry>();
+
+		menu->m_parent = m_current;
+		menu->m_label = label;
+		menu->m_enabled = enabled;
+		menu->m_type = entry_type_menu;
+
+		//- Set root entry if none present
+		if (!m_current)
+		{
+			m_root = menu;
+		}
+		else
+		{
+			m_current->m_entries.push_back(menu);
+		}
+
+		m_current = menu;
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ccontext_menu& ccontext_menu::end()
+	{
+		CORE_ASSERT(m_current, "Invalid operation. Begin/end mismatch!");
+
+		m_current = m_current->m_parent;
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ccontext_menu& ccontext_menu::item(stringview_t label, bool* selected, item_callback_t&& callback, const bool enabled /*= true*/)
+	{
+		CORE_ASSERT(m_current, "Invalid operation. No menu specified for entry!");
+
+		auto entry = std::make_shared<sentry>();
+
+		entry->m_parent = m_current;
+		entry->m_callback = std::move(callback);
+		entry->m_label = label;
+		entry->m_enabled = enabled;
+		entry->m_selected = selected;
+		entry->m_type = entry_type_item;
+
+		m_current->m_entries.push_back(entry);
+
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ccontext_menu::show_submenu(const vector_t<ref_t<sentry>>& entries)
+	{
+		for (const auto& entry : entries)
+		{
+			switch (entry->m_type)
+			{
+			case entry_type_menu:
+			{
+				if (ImGui::BeginMenu(entry->m_label.data(), entry->m_enabled))
+				{
+					if (!entry->m_entries.empty())
+					{
+						show_submenu(entry->m_entries);
+					}
+
+					ImGui::EndMenu();
+				}
+				break;
+			}
+			case entry_type_item:
+			{
+				if (ImGui::MenuItem(entry->m_label.data(), nullptr, entry->m_selected, entry->m_enabled))
+				{
+					entry->m_callback();
+				}
+				break;
+			}
+			case entry_type_none:
+			default:
+				break;
+			}
+		}
 	}
 
 } //- editor::ui

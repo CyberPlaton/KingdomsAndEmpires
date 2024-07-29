@@ -22,7 +22,7 @@ namespace editor
 	void celement_stack_system::on_update(float dt)
 	{
 		//- Check for elements that are to be removed and remove them
-		stack_t<ImGuiID> to_remove;
+		stack_t<const char*> to_remove;
 
 		algorithm::for_each(m_elements.begin(), m_elements.end(), [&](const auto& pair)
 			{
@@ -75,12 +75,6 @@ namespace editor
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void celement_stack_system::pop(const char* id)
-	{
-		pop(ImGui::GetID(id));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void celement_stack_system::pop(ImGuiID id)
 	{
 		auto it = m_elements.find(id);
 

@@ -5,11 +5,12 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool centity_context_panel::init()
 	{
-		if (auto context_menu = m_elements_stack.push<centity_context_menu>(ctx()); context_menu && context_menu->init())
-		{
-			return true;
-		}
-		return false;
+// 		if (auto context_menu = m_elements_stack.push<centity_context_menu>(ctx()); context_menu && context_menu->init())
+// 		{
+// 			return true;
+// 		}
+//		return false;
+		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

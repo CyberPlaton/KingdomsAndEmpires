@@ -20,12 +20,12 @@ namespace imgui
 
 		//- setup default style
 		ImGui::GetStyle().WindowRounding = 0;
-		ImGui::GetStyle().ChildRounding = 12;
-		ImGui::GetStyle().FrameRounding = 6;
-		ImGui::GetStyle().PopupRounding = 12;
-		ImGui::GetStyle().ScrollbarRounding = 9;
-		ImGui::GetStyle().GrabRounding = 12;
-		ImGui::GetStyle().TabRounding = 6;
+		ImGui::GetStyle().ChildRounding = 0;
+		ImGui::GetStyle().FrameRounding = 0;
+		ImGui::GetStyle().PopupRounding = 0;
+		ImGui::GetStyle().ScrollbarRounding = 0;
+		ImGui::GetStyle().GrabRounding = 0;
+		ImGui::GetStyle().TabRounding = 0;
 
 		auto& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;

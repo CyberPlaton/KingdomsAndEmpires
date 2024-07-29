@@ -19,7 +19,6 @@ namespace editor
 		virtual void on_ui_render()				{}
 		virtual void on_post_update(float dt)	{}
 
-		inline ImGuiID id_hash() const { return ImGui::GetID(m_id); }
 		inline const char* id() const { return m_id; }
 		inline bool& active() { return m_active; }
 

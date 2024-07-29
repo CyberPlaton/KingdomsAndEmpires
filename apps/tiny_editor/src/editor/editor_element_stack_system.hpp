@@ -25,10 +25,9 @@ namespace editor
 		layer_ref_t push(ARGS&&... args);
 
 		void pop(const char* id);
-		void pop(ImGuiID id);
 
 	private:
-		umap_t<ImGuiID, layer_ref_t> m_elements;
+		umap_t<const char*, layer_ref_t> m_elements;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

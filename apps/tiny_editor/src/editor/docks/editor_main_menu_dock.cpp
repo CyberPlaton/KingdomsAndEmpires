@@ -1,4 +1,5 @@
 #include "editor_main_menu_dock.hpp"
+#include "../elements/editor_element_context_menu.hpp"
 
 namespace editor
 {
@@ -38,42 +39,61 @@ namespace editor
 		{
 			ctx().m_mainmenu_height = ImGui::GetWindowSize().y;
 
-			if (ImGui::BeginMenu("Menu"))
+			if (ImGui::BeginMenu("Context Menu"))
 			{
-				if (ImGui::BeginMenu("New"))
-				{
-					if (ImGui::MenuItem("Project"))
-					{
-						//- Push project creation element
-					}
-					ImGui::EndMenu();
-				}
+				if(ImGui::Button("Popup"))
+					ImGui::OpenPopup("##main_menu_context_menu");
 
-				if (ImGui::MenuItem("Exit"))
-				{
-				}
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("File"))
-			{
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Edit"))
-			{
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Project"))
-			{
-				if (ImGui::MenuItem("Docks", nullptr, &ctx().m_docks_enabled))
-				{
-				}
+				ui::ccontext_menu("##main_menu_context_menu", ctx())
+					.begin("Menu")
+						.begin("New")
+							.item("Project", nullptr, []()
+								{
+									log_debug(fmt::format("Creating new project"));
+								})
+						.end()
+					.end()
+					.draw();
 
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginMenu("Debug"))
-			{
-				ImGui::EndMenu();
-			}
+
+// 			if (ImGui::BeginMenu("Menu"))
+// 			{
+// 				if (ImGui::BeginMenu("New"))
+// 				{
+// 					if (ImGui::MenuItem("Project"))
+// 					{
+// 						//- Push project creation element
+// 					}
+// 					ImGui::EndMenu();
+// 				}
+// 
+// 				if (ImGui::MenuItem("Exit"))
+// 				{
+// 				}
+// 				ImGui::EndMenu();
+// 			}
+// 			if (ImGui::BeginMenu("File"))
+// 			{
+// 				ImGui::EndMenu();
+// 			}
+// 			if (ImGui::BeginMenu("Edit"))
+// 			{
+// 				ImGui::EndMenu();
+// 			}
+// 			if (ImGui::BeginMenu("Project"))
+// 			{
+// 				if (ImGui::MenuItem("Docks", nullptr, &ctx().m_docks_enabled))
+// 				{
+// 				}
+// 
+// 				ImGui::EndMenu();
+// 			}
+// 			if (ImGui::BeginMenu("Debug"))
+// 			{
+// 				ImGui::EndMenu();
+// 			}
 
 		}
 		ImGui::EndMainMenuBar();
