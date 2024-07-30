@@ -43,7 +43,7 @@ namespace editor::ui
 		};
 
 		scontext& m_ctx;
-		ref_t<sentry> m_root;
+		vector_t<ref_t<sentry>> m_entries;
 		ref_t<sentry> m_current;
 		stringview_t m_id;
 		ImGuiWindowFlags m_flags;

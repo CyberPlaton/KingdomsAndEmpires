@@ -4,6 +4,8 @@ namespace editor::ui
 {
 	namespace
 	{
+		constexpr ImVec2 C_CONTEXT_MENU_SIZE_MIN = { 200.0f, FLT_MAX };
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -22,15 +24,12 @@ namespace editor::ui
 	{
 		CORE_NAMED_ZONE(ccontext_menu::draw);
 
+		ImGui::SetNextWindowSize(C_CONTEXT_MENU_SIZE_MIN, ImGuiCond_Appearing);
+
 		if (ImGui::BeginPopup(m_id.data(), m_flags))
 		{
 			//- Show context menu
-			if (ImGui::BeginMenu("##context_menu_name"))
-			{
-				show_submenu(m_root->m_entries);
-
-				ImGui::EndMenu();
-			}
+			show_submenu(m_entries);
 
 			ImGui::EndPopup();
 		}
@@ -49,7 +48,7 @@ namespace editor::ui
 		//- Set root entry if none present
 		if (!m_current)
 		{
-			m_root = menu;
+			m_entries.push_back(menu);
 		}
 		else
 		{
