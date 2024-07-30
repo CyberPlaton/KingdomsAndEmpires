@@ -10,7 +10,7 @@ namespace editor::ui
 
 	//------------------------------------------------------------------------------------------------------------------------
 	ccontext_menu::ccontext_menu(stringview_t id, scontext& ctx, ImGuiWindowFlags flags /*= ImGuiWindowFlags_None*/) :
-		m_id(id), m_ctx(ctx), m_flags(flags | ImGuiWindowFlags_MenuBar)
+		ccontext_holder(ctx), m_id(id), m_flags(flags | ImGuiWindowFlags_MenuBar)
 	{
 	}
 

@@ -8,7 +8,7 @@ namespace editor::ui
 	//- An extendable context menu, or popup in imgui terms, that is opened and allows for some actions to occurr.
 	//- Employs factory pattern to create menues.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ccontext_menu
+	class ccontext_menu : public ccontext_holder
 	{
 	public:
 		using item_callback_t = std::function<void()>;
@@ -42,7 +42,6 @@ namespace editor::ui
 			entry_type m_type					= entry_type_none;
 		};
 
-		scontext& m_ctx;
 		vector_t<ref_t<sentry>> m_entries;
 		ref_t<sentry> m_current;
 		stringview_t m_id;
