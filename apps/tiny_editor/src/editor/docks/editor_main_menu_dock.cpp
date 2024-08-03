@@ -5,6 +5,9 @@ namespace editor
 {
 	namespace
 	{
+		static bool S_CREATE_PROJECT_WINDOW = false;
+		static const char* C_PROJECT_EXTENSION[] = {".project"};
+
 		//------------------------------------------------------------------------------------------------------------------------
 		class cmenu_item final : core::cnon_copyable
 		{
@@ -48,6 +51,7 @@ namespace editor
 		{
 			if (m_result) { ImGui::EndMenu(); }
 		}
+
 
 	} //- unnamed
 
@@ -115,7 +119,7 @@ namespace editor
 			{
 				if (const auto new_scope = cmenu_scope("New"))
 				{
-
+					cmenu_item("Project", &S_CREATE_PROJECT_WINDOW, true);
 				}
 				if (const auto pref_cope = cmenu_scope("Preferences"))
 				{
@@ -149,6 +153,14 @@ namespace editor
 			}
 		}
 		ImGui::EndMainMenuBar();
+
+		if (S_CREATE_PROJECT_WINDOW)
+		{
+			auto mouse = ImGui::GetMousePos();
+			auto dir = core::cfilesystem::cwd();
+
+			imgui::cui::create_file_dialog("Create Project...", "", &S_CREATE_PROJECT_WINDOW, {mouse.x, mouse.y}, {250, 200}, C_PROJECT_EXTENSION, 1, dir.view());
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

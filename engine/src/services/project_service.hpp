@@ -15,12 +15,15 @@ namespace engine
 		void on_shutdown() override final;
 		void on_update(float dt) override final;
 
+		ref_t<editor::cproject> create(stringview_t name);
+		void set(const ref_t<editor::cproject>& project);
 		const editor::cproject& current() const;
 		editor::cproject& current();
 		bool load(stringview_t filepath);
 		bool has() const;
 
 	private:
+		umap_t<unsigned, ref_t<editor::cproject>> m_projects;
 		core::cmutex m_mutex;
 		ref_t<editor::cproject> m_current;
 

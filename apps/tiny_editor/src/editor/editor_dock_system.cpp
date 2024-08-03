@@ -50,6 +50,8 @@ namespace editor
 		{
 			d->on_ui_render();
 		}
+
+		imgui::cui::show_notifications(0.0167f);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -73,8 +75,17 @@ namespace editor
 		auto& context = ctx();
 
 		//- As of now there is only one main window, so just query directly
-		context.m_window_width = raylib::GetScreenWidth();
-		context.m_window_height = raylib::GetScreenHeight();
+		unsigned w = static_cast<unsigned>(raylib::GetScreenWidth());
+		unsigned h = static_cast<unsigned>(raylib::GetScreenHeight());
+
+		if (w != context.m_window_width || h != context.m_window_height)
+		{
+			imgui::cui::on_resize(w, h);
+			context.m_window_width = w;
+			context.m_window_height = h;
+		}
+
+
 	}
 
 } //- editor
