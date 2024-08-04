@@ -131,14 +131,19 @@ namespace editor
 					input
 						.multiline(false)
 						.value(&S_PROJECT_NAME_TEXT_BUFFER)
+						.tooltip(S_PROJECT_NAME_TEXT_BUFFER)
 						.option(ui::ctext_input::options_allow_tab, true)
-						.hint("A Hint")
+						.hint("Project Name")
 						.draw();
 
-					//imgui::cui::help_marker_no_question_mark(S_PROJECT_NAME_TEXT_BUFFER, imgui::tooltip_hovering_delay_normal);
+					ui::ctext_input folder("##projectFolderInputName");
 
-					//ImGui::InputText("##createProjectDialog_ProjectPathInput", (char*)S_PROJECT_PATH_TEXT_BUFFER.data(), S_PROJECT_PATH_TEXT_BUFFER.length());
-					//imgui::cui::help_marker_no_question_mark(S_PROJECT_PATH_TEXT_BUFFER, imgui::tooltip_hovering_delay_normal);
+					folder
+						.multiline(false)
+						.value(&S_PROJECT_PATH_TEXT_BUFFER)
+						.tooltip(S_PROJECT_PATH_TEXT_BUFFER)
+						.hint("Project Directory")
+						.draw();
 
 					ImGui::SameLine();
 
@@ -155,9 +160,15 @@ namespace editor
 				})
 			.draw())
 		{
-			if (core::cfilesystem::create_file_in(S_PROJECT_PATH_TEXT_BUFFER.data(), S_PROJECT_NAME_TEXT_BUFFER.data(), "project"))
+			//- Verify specified data is correct
+			auto verified = true;
+
+			verified &= !S_PROJECT_NAME_TEXT_BUFFER.empty();
+			verified &= !S_PROJECT_PATH_TEXT_BUFFER.empty();
+
+			if (verified && core::cfilesystem::create_file_in(S_PROJECT_PATH_TEXT_BUFFER.data(), S_PROJECT_NAME_TEXT_BUFFER.data(), "project"))
 			{
-				imgui::cui::create_notification("Success!", fmt::format("Successfully create project '{}' at path '{}'!", S_PROJECT_NAME_TEXT_BUFFER, S_PROJECT_PATH_TEXT_BUFFER),
+				imgui::cui::create_notification("Success!", fmt::format("Successfully create project '{}' at path '{}'!", S_PROJECT_NAME_TEXT_BUFFER.data(), S_PROJECT_PATH_TEXT_BUFFER.data()),
 					imgui::notification_type_success);
 
 				S_PROJECT_NAME_TEXT_BUFFER.clear();
@@ -165,7 +176,7 @@ namespace editor
 			}
 			else
 			{
-				imgui::cui::create_notification("Failure!", fmt::format("Failed to create project '{}' at path '{}'!", S_PROJECT_NAME_TEXT_BUFFER, S_PROJECT_PATH_TEXT_BUFFER),
+				imgui::cui::create_notification("Failure!", fmt::format("Failed to create project '{}' at path '{}'!", S_PROJECT_NAME_TEXT_BUFFER.data(), S_PROJECT_PATH_TEXT_BUFFER.data()),
 					imgui::notification_type_error);
 			}
 		}

@@ -62,4 +62,16 @@ namespace imgui
 		ImGui::PopID();
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	cdisabled_scope::cdisabled_scope(const bool is_disabled /*= true*/)
+	{
+		ImGui::BeginDisabled(is_disabled);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cdisabled_scope::~cdisabled_scope()
+	{
+		ImGui::EndDisabled();
+	}
+
 } //- imgui

@@ -4,6 +4,7 @@ namespace editor::ui
 {
 	namespace
 	{
+		constexpr uint64_t C_STRING_TOOLTIP_MINIMAL_SIZE = 25;
 		constexpr uint64_t C_STRING_CAPACITY_DEFAULT = 64;
 		constexpr stringview_t C_INPUT_TEXT_ID = "##inputTextId";
 
@@ -126,6 +127,18 @@ namespace editor::ui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	ctext_input& ctext_input::tooltip(stringview_t text, const bool show /*= true*/)
+	{
+		m_tooltip = text;
+
+		//- FIXME: reconsider how to handle options for when to show tooltips...
+		//- Here we take away the minimal length option as a temporary solution.
+		m_show_tooltip = show && strlen(text.data()) > C_STRING_TOOLTIP_MINIMAL_SIZE;
+
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	bool ctext_input::draw()
 	{
 		if (m_id.empty())
@@ -135,7 +148,16 @@ namespace editor::ui
 
 		CORE_ASSERT(!m_id.empty(), "Invalid operation. Identifier cannot be empty, defined a valid Id or a unique Hint!");
 
-		m_result = input_text(m_id, m_hint, m_size, m_value, m_flags, input_text_callback, nullptr);
+		{
+			imgui::cdisabled_scope disabled_scope(!m_enabled);
+
+			m_result = input_text(m_id, m_hint, m_size, m_value, m_flags, input_text_callback, nullptr);
+		}
+
+		if (m_show_tooltip)
+		{
+			imgui::cui::help_marker_no_question_mark(m_tooltip.data(), imgui::tooltip_hovering_delay_normal);
+		}
 
 		return m_result;
 	}

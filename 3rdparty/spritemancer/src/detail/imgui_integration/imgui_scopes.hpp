@@ -53,4 +53,12 @@ namespace imgui
 		~cid_scope();
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class cdisabled_scope final : core::cnon_copyable
+	{
+	public:
+		cdisabled_scope(const bool is_disabled = true);
+		~cdisabled_scope();
+	};
+
 } //- imgui

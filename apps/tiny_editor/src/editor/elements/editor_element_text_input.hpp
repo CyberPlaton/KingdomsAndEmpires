@@ -33,15 +33,18 @@ namespace editor::ui
 		ctext_input& multiline(const bool value);
 		ctext_input& size(const vec2_t& value);
 		ctext_input& option(options op, const bool value);
+		ctext_input& tooltip(stringview_t text, const bool show = true);
 
 		bool draw();
 
 	private:
 		string_t m_id;
 		string_t* m_value;
+		stringview_t m_tooltip;
 		stringview_t m_hint;
 		ImVec2 m_size;
 		ImGuiInputTextFlags m_flags;
+		bool m_show_tooltip;
 		bool m_enabled;
 		bool m_result = false;
 
