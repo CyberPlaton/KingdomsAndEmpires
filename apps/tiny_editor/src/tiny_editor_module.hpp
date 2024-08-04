@@ -13,7 +13,7 @@
 /*#include <plugin_kingdoms_and_empires.h>*/
 #include <lua.h>
 #include <luabridge.h>
-
+#include <tiny_editor.h>
 #include "editor/editor_dock_system.hpp"
 
 namespace editor

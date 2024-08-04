@@ -1,12 +1,6 @@
 #pragma once
 namespace raylib
 {
-#ifdef far
-#undef far
-#endif
-#ifdef near
-#undef near
-#endif
 
 extern "C"
 {

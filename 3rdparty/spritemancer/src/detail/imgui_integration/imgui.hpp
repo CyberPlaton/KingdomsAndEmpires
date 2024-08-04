@@ -2,6 +2,7 @@
 #include <core.h>
 #include <imgui.h>
 #include "imgui/rlImGui.h"
+#include "imgui_scopes.hpp"
 
 namespace ImNodes = ax::NodeEditor;
 

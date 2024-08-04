@@ -1,63 +1,26 @@
 #include "editor_main_menu_dock.hpp"
 #include "../elements/editor_element_context_menu.hpp"
+#include "../elements/editor_element_dialog.hpp"
+#include "../elements/editor_element_text_input.hpp"
+#include <pfd.h>
 
 namespace editor
 {
 	namespace
 	{
+		constexpr stringview_t C_CREATE_PROJECT_DIALOG_ID = "##createProjectDialog";
+		static string_t S_PROJECT_NAME_TEXT_BUFFER;
+		static string_t S_PROJECT_PATH_TEXT_BUFFER;
 		static bool S_CREATE_PROJECT_WINDOW = false;
 		static const char* C_PROJECT_EXTENSION[] = {".project"};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		class cmenu_item final : core::cnon_copyable
-		{
-		public:
-			cmenu_item(const char* name, bool* selected = nullptr, const bool enabled = true);
-			~cmenu_item() = default;
-
-			operator bool() const noexcept { return m_result; }
-
-		private:
-			bool m_result = false;
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cmenu_item::cmenu_item(const char* name, bool* selected /*= nullptr*/, const bool enabled /*= true*/)
-		{
-			m_result = ImGui::MenuItem(name, nullptr, selected, enabled);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		class cmenu_scope final : core::cnon_copyable
-		{
-		public:
-			cmenu_scope(const char* name, const bool enabled = true);
-			~cmenu_scope();
-
-			operator bool() const noexcept{ return m_result; }
-
-		private:
-			bool m_result = false;
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cmenu_scope::cmenu_scope(const char* name, const bool enabled /*= true*/)
-		{
-			m_result = ImGui::BeginMenu(name, enabled);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cmenu_scope::~cmenu_scope()
-		{
-			if (m_result) { ImGui::EndMenu(); }
-		}
-
 
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmain_menu::init()
 	{
+		S_PROJECT_NAME_TEXT_BUFFER.resize(128);
+		S_PROJECT_PATH_TEXT_BUFFER.resize(256);
 		return true;
 	}
 
@@ -115,51 +78,96 @@ namespace editor
 			//- in an orderly fashion. However, for now we dont do that.
 
 			//- General editor section
-			if (const auto editor_scope = cmenu_scope("Editor"))
+			if (const auto editor_scope = imgui::cmenu_scope("Editor"))
 			{
-				if (const auto new_scope = cmenu_scope("New"))
+				if (const auto new_scope = imgui::cmenu_scope("New"))
 				{
-					cmenu_item("Project", &S_CREATE_PROJECT_WINDOW, true);
+					imgui::cmenu_item("Project", &S_CREATE_PROJECT_WINDOW, true);
 				}
-				if (const auto pref_cope = cmenu_scope("Preferences"))
+				if (const auto pref_cope = imgui::cmenu_scope("Preferences"))
 				{
 
 				}
-				if (const auto exit_scope = cmenu_scope("Exit"))
+				if (const auto exit_scope = imgui::cmenu_scope("Exit"))
 				{
 
 				}
 			}
 			//- Project specific section
-			if (const auto project_scope = cmenu_scope("Project"))
+			if (const auto project_scope = imgui::cmenu_scope("Project"))
 			{
 
 			}
 			//- Tools section
-			if (const auto tools_scope = cmenu_scope("Tools"))
+			if (const auto tools_scope = imgui::cmenu_scope("Tools"))
 			{
 
 			}
 
 			//- Developer and debug section
-			if (const auto dev_scope = cmenu_scope("Developer"))
+			if (const auto dev_scope = imgui::cmenu_scope("Developer"))
 			{
-				cmenu_item("Docks", &ctx().m_docks_enabled);
+				imgui::cmenu_item("Docks", &ctx().m_docks_enabled);
 			}
 
-			if (const auto debug_scope = cmenu_scope("Debug"))
+			if (const auto debug_scope = imgui::cmenu_scope("Debug"))
 			{
 
 			}
 		}
 		ImGui::EndMainMenuBar();
 
-		if (S_CREATE_PROJECT_WINDOW)
-		{
-			auto mouse = ImGui::GetMousePos();
-			auto dir = core::cfilesystem::cwd();
 
-			imgui::cui::create_file_dialog("Create Project...", "", &S_CREATE_PROJECT_WINDOW, {mouse.x, mouse.y}, {250, 200}, C_PROJECT_EXTENSION, 1, dir.view());
+		//- Create a new project dialog. Might be useful to extend this to a 'create file' dialog or something...
+		ui::cdialog dialog(C_CREATE_PROJECT_DIALOG_ID, &S_CREATE_PROJECT_WINDOW, ImGuiWindowFlags_None);
+
+		if (S_CREATE_PROJECT_WINDOW && dialog
+			.title("Create Project...")
+			.icon(ICON_FA_DIAGRAM_PROJECT)
+			.tooltip("Create Project...")
+			.callback([]()
+				{
+					ui::ctext_input input("##inputProjectName");
+					input
+						.multiline(false)
+						.value(&S_PROJECT_NAME_TEXT_BUFFER)
+						.option(ui::ctext_input::options_allow_tab, true)
+						.hint("A Hint")
+						.draw();
+
+					//imgui::cui::help_marker_no_question_mark(S_PROJECT_NAME_TEXT_BUFFER, imgui::tooltip_hovering_delay_normal);
+
+					//ImGui::InputText("##createProjectDialog_ProjectPathInput", (char*)S_PROJECT_PATH_TEXT_BUFFER.data(), S_PROJECT_PATH_TEXT_BUFFER.length());
+					//imgui::cui::help_marker_no_question_mark(S_PROJECT_PATH_TEXT_BUFFER, imgui::tooltip_hovering_delay_normal);
+
+					ImGui::SameLine();
+
+					if (ImGui::SmallButton(ICON_FA_FOLDER_OPEN))
+					{
+						S_PROJECT_PATH_TEXT_BUFFER = pfd::select_folder("Select Project Path", pfd::path::home()).result();
+					}
+				})
+			.confirm_button("Confirm", []()
+				{
+				})
+			.cancel_button("Cancel", []()
+				{
+				})
+			.draw())
+		{
+			if (core::cfilesystem::create_file_in(S_PROJECT_PATH_TEXT_BUFFER.data(), S_PROJECT_NAME_TEXT_BUFFER.data(), "project"))
+			{
+				imgui::cui::create_notification("Success!", fmt::format("Successfully create project '{}' at path '{}'!", S_PROJECT_NAME_TEXT_BUFFER, S_PROJECT_PATH_TEXT_BUFFER),
+					imgui::notification_type_success);
+
+				S_PROJECT_NAME_TEXT_BUFFER.clear();
+				S_PROJECT_PATH_TEXT_BUFFER.clear();
+			}
+			else
+			{
+				imgui::cui::create_notification("Failure!", fmt::format("Failed to create project '{}' at path '{}'!", S_PROJECT_NAME_TEXT_BUFFER, S_PROJECT_PATH_TEXT_BUFFER),
+					imgui::notification_type_error);
+			}
 		}
 	}
 

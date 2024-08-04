@@ -128,7 +128,8 @@ namespace imgui
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cui::create_file_dialog(const string_t& field_text, const string_t& field_desc, bool* is_open,
-		const vec2_t& position, const vec2_t& size, const char* allowed_file_types[], unsigned file_type_count, const string_t& directory, const string_t& ok_text /*= "OK"*/, const string_t& cancel_text /*= "Cancel"*/, ImGuiInputTextFlags flags /*= ImGuiInputTextFlags_None*/)
+		const vec2_t& position, const vec2_t& size, const char* allowed_file_types[], unsigned file_type_count, const string_t& directory,
+		const string_t& ok_text /*= "OK"*/, const string_t& cancel_text /*= "Cancel"*/, ImGuiInputTextFlags flags /*= ImGuiInputTextFlags_None*/)
 	{
 		static const char* selected_file_type;
 		static int selected_file_type_option = -1;
@@ -139,9 +140,7 @@ namespace imgui
 
 		ImGui::Begin(field_text.c_str(), is_open);
 
-
 		ImGui::InputText("## File_Naming_Textinput", &buffer[0], sizeof(buffer), flags);
-
 
 		ImGui::SameLine();
 
@@ -1172,9 +1171,9 @@ namespace imgui
 			}
 
 			//- Remove notifications we dont need anymore.
-			for (auto index : to_be_removed)
+			for (const auto& idx: to_be_removed)
 			{
-				algorithm::erase_at_index(S_NOTIFICATIONS, index);
+				algorithm::erase_at_index(S_NOTIFICATIONS, idx);
 			}
 		}
 	}

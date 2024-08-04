@@ -4,6 +4,7 @@
 #include <argparse.h>
 #include "raylib_integration/raylib.hpp"
 #include "imgui_integration/imgui.hpp"
+#include "imgui_integration/imgui_scopes.hpp"
 
 #if PROFILE_ENABLE
 //------------------------------------------------------------------------------------------------------------------------

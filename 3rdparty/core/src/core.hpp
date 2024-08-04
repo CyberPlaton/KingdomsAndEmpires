@@ -131,7 +131,7 @@ namespace miniz
 #ifdef ARRAYSIZE
 #undef ARRAYSIZE
 #endif
-#define ARRAYSIZE(__array) ((u32)(sizeof(__array) / sizeof(*(__array))))
+#define ARRAYSIZE(__array) ((unsigned)(sizeof(__array) / sizeof(*(__array))))
 #define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
 #define STATIC_INSTANCE_EX(__class) STATIC_INSTANCE(__class, s_instance)
 
