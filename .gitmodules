@@ -14,3 +14,6 @@
 [submodule "3rdparty/pfd/pfd"]
 	path = 3rdparty/pfd/pfd
 	url = https://github.com/samhocevar/portable-file-dialogs.git
+[submodule "3rdparty/flecs/flecs"]
+	path = 3rdparty/flecs/flecs
+	url = https://github.com/CyberPlaton/flecs.git
