@@ -89,7 +89,7 @@ namespace ecs
 		if (m_transform_change_tracker.changed())
 		{
 			//- TODO: does not look like we only observe 'changes', but rather do this every tick
-			m_transform_change_tracker.iter([this](flecs::iter& it)
+			m_transform_change_tracker.run([this](flecs::iter& it)
 				{
 					for (auto i : it)
 					{

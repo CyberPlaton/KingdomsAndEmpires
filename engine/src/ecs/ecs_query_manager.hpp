@@ -134,8 +134,7 @@ namespace ecs
 	{
 		//- use ad-hoc filter, as this does not require building tables
 		//- and thus can be used inside a progress tick
-		return world().filter_builder<TComps...>()
-			.term(flecs::Any)
+		return world().query_builder<TComps...>()
 			.build()
 			.find(callback);
 	}

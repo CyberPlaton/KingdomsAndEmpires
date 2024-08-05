@@ -107,7 +107,7 @@ namespace ecs
 	template<typename... TComps>
 	void csystem<TComps...>::immediate()
 	{
-		m_builder.no_readonly();
+		m_builder.immediate();
 		m_multithreaded = false;
 	}
 
@@ -178,7 +178,7 @@ namespace ecs
 	template<typename TCallable>
 	void ctask::build(TCallable&& callback)
 	{
-		m_self = m_builder.iter([&](flecs::iter& it)
+		m_self = m_builder.run([&](flecs::iter& it)
 			{
 				callback(it.delta_time());
 			});
