@@ -9,6 +9,10 @@ namespace engine
 	class cplugin final
 	{
 	public:
+		using types_t = rttr::array_range<rttr::type>;
+		using props_t = rttr::array_range<rttr::property>;
+		using methods_t = rttr::array_range<rttr::method>;
+
 		struct sconfig
 		{
 			string_t m_path;
@@ -27,11 +31,11 @@ namespace engine
 		bool load();
 		void unload();
 
-		inline const sconfig&				config() const { return m_cfg; }
-		inline string_t						error() const { return m_library.get_error_string().data(); }
-		rttr::array_range<rttr::type>		types() const;
-		rttr::array_range<rttr::property>	props() const;
-		rttr::array_range<rttr::method>		methods() const;
+		inline const sconfig& config() const { return m_cfg; }
+		inline string_t error() const { return m_library.get_error_string().data(); }
+		types_t types() const;
+		props_t props() const;
+		methods_t methods() const;
 
 	private:
 		sconfig m_cfg;

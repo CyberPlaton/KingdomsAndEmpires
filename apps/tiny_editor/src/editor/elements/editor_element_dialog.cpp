@@ -77,7 +77,8 @@ namespace editor::ui
 
 		imgui::cid_scope id_scope(m_id.data());
 
-		if (const auto window_scope = imgui::cwindow_scope(fmt::format("{} {}", m_icon, m_title), m_open, m_flags))
+		if (const auto window_scope = imgui::cwindow_scope(fmt::format("{} {}", m_icon, m_title), m_open, m_flags,
+			{0, 0}, { C_DIALOG_WIDTH, C_DIALOG_HEIGHT }))
 		{
 			if (!m_tooltip.empty())
 			{

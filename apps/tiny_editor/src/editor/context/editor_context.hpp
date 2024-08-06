@@ -12,6 +12,8 @@ namespace editor
 		unsigned m_window_height	= 0;
 		float m_mainmenu_height		= 0.0f;
 		bool m_docks_enabled		= true;
+		bool m_imgui_demo			= false;
+		bool m_implot_demo			= false;
 	};
 
 	//- Access to context.

@@ -27,7 +27,15 @@ namespace imgui
 	{
 		CORE_ASSERT(open, "Invalid operation");
 
-		ImGui::SetNextWindowPos({ position.x, position.y }, ImGuiCond_Appearing);
+		vec2_t p = position;
+
+		if (p.x == 0 && p.y == 0)
+		{
+			p.x = SCAST(float, raylib::GetScreenWidth()) * 0.5f - glm::max(size_max.x, size_min.x) * 0.5f;
+			p.y = SCAST(float, raylib::GetScreenHeight()) * 0.5f - glm::max(size_max.y, size_min.y) * 0.5f;
+		}
+
+		ImGui::SetNextWindowPos({p.x, p.y}, ImGuiCond_Appearing);
 
 		if (size_min.x > 0 && size_min.y > 0 && size_max.x > 0 && size_max.y > 0)
 		{

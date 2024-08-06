@@ -72,8 +72,6 @@ namespace engine
 	void cengine::on_imgui()
 	{
 		m_layers.on_ui_render();
-
-		ImGui::ShowDemoWindow();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

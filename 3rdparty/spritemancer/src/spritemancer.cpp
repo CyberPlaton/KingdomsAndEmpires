@@ -312,6 +312,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t window_size()
+	{
+		return vec2_t{ SCAST(float, raylib::GetScreenWidth()), SCAST(float, raylib::GetScreenHeight()) };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	unsigned create_layer()
 	{
 		if (S_LAYER_COUNT < C_LAYER_COUNT_MAX)

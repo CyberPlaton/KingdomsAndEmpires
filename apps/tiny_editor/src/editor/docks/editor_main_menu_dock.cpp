@@ -107,6 +107,8 @@ namespace editor
 			//- Developer and debug section
 			if (const auto dev_scope = imgui::cmenu_scope("Developer"))
 			{
+				imgui::cmenu_item("ImGui Demo", &ctx().m_imgui_demo);
+				imgui::cmenu_item("ImPlot Demo", &ctx().m_implot_demo);
 				imgui::cmenu_item("Docks", &ctx().m_docks_enabled);
 			}
 
@@ -116,7 +118,6 @@ namespace editor
 			}
 		}
 		ImGui::EndMainMenuBar();
-
 
 		//- Create a new project dialog. Might be useful to extend this to a 'create file' dialog or something...
 		ui::cdialog dialog(C_CREATE_PROJECT_DIALOG_ID, &S_CREATE_PROJECT_WINDOW, ImGuiWindowFlags_None);
@@ -179,6 +180,16 @@ namespace editor
 				imgui::cui::create_notification("Failure!", fmt::format("Failed to create project '{}' at path '{}'!", S_PROJECT_NAME_TEXT_BUFFER.data(), S_PROJECT_PATH_TEXT_BUFFER.data()),
 					imgui::notification_type_error);
 			}
+		}
+
+		//- Showing common demo UIs
+		if (ctx().m_implot_demo)
+		{
+			ImPlot::ShowDemoWindow(&ctx().m_implot_demo);
+		}
+		if (ctx().m_imgui_demo)
+		{
+			ImGui::ShowDemoWindow(&ctx().m_imgui_demo);
 		}
 	}
 

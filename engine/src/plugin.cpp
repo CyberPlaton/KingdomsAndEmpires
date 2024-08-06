@@ -35,19 +35,19 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	rttr::array_range<rttr::type> cplugin::types() const
+	cplugin::types_t cplugin::types() const
 	{
 		return m_library.get_types();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	rttr::array_range<rttr::property> cplugin::props() const
+	cplugin::props_t cplugin::props() const
 	{
 		return m_library.get_global_properties();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	rttr::array_range<rttr::method> cplugin::methods() const
+	cplugin::methods_t cplugin::methods() const
 	{
 		return m_library.get_global_methods();
 	}
