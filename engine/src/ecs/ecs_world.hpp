@@ -82,7 +82,7 @@ namespace ecs
 			bool m_any;
 		};
 
-		static constexpr auto C_MASTER_QUERY_KEY_MAX = cquery_manager::C_QUERY_COUNT_MAX;
+		static constexpr auto C_MASTER_QUERY_KEY_MAX = engine::cfg::C_ECS_QUERY_COUNT_MAX;
 		umap_t<flecs::id_t, sentity_proxy> m_proxies;
 		query_type m_master_query_type;
 		unsigned m_master_query_key;

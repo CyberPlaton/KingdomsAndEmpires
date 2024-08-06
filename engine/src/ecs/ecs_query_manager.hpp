@@ -101,8 +101,6 @@ namespace ecs
 		bool ready(unsigned id);
 
 	private:
-		static constexpr unsigned C_QUERY_COUNT_MAX = 256;
-
 		core::detail::cdynamic_pool<cquery> m_queries;
 
 		//- order of queries.

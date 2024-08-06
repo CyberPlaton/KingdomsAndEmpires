@@ -1,6 +1,7 @@
 #pragma once
 #include <core.h>
 #include <flecs.h>
+#include "../config.hpp"
 
 namespace ecs
 {
