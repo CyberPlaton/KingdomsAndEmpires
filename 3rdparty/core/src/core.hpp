@@ -284,8 +284,12 @@ using bitset_t = stl::bitset<TSize>;
 template<typename T>
 using list_t = stl::list<T>;
 
-template<typename T>
-using stack_t = stl::stack<T>;
+namespace core
+{
+	template<typename T>
+	using stack_t = stl::stack<T>;
+	
+} //- core
 
 //- defining handles here as they migh have to be registered in RTTR
 //------------------------------------------------------------------------------------------------------------------------
@@ -830,7 +834,7 @@ namespace rttr
 
 			auto value = property.get_metadata(key);
 
-			return value.get_value<TValue>();
+			return value.template get_value<TValue>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -864,7 +868,7 @@ namespace rttr
 	//-		- rttr::detail::as_object
 	//-		- rttr::detail::as_std_shared_ptr
 	//-		- rttr::detail::as_raw_pointer
-	//-		- rttr::detail::no_default (omits registering a default constructor, useful when you explicitly don´t want one)
+	//-		- rttr::detail::no_default (omits registering a default constructor, useful when you explicitly don\B4t want one)
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TClass, typename TPolicy = rttr::detail::as_object>
 	class cregistrator
@@ -1775,7 +1779,6 @@ namespace core
 		//- Utility function that calls 'destroy' on data of resource manager. A resource must define a static 'destroy' function,
 		//- for examples see sm_config.hpp
 		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TResource>
 		void destroy_all(umap_t<unsigned, TResource>& data)
 		{
 			for (auto& pair : data)
@@ -1786,7 +1789,7 @@ namespace core
 
 		//- Utility function to load a resource synchronously and construct it in-place with given arguments.
 		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TResource, typename THandle, typename... ARGS>
+		template<typename THandle, typename... ARGS>
 		THandle load_of_sync(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
 		{
 			unsigned hash = algorithm::hash(name);
@@ -1802,7 +1805,7 @@ namespace core
 		//- Utility function to load a resource asynchronously and construct it in-place with given arguments. Returns a future that
 		//- will notify when resource handle is ready.
 		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TResource, typename THandle, typename... ARGS>
+		template<typename THandle, typename... ARGS>
 		core::cfuture_type<THandle> load_of_async(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
 		{
 			core::cfuture_type<THandle> result = core::casync::launch_async([&]() -> THandle
@@ -1992,8 +1995,6 @@ namespace core
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::modify(uint64_t index)
 		{
-			CORE_NAMED_ZONE("cdynamic_pool::modify");
-
 			return unsafe(index);
 		}
 
@@ -2001,8 +2002,6 @@ namespace core
 		template<class TType>
 		const TType* core::detail::cdynamic_pool<TType>::find(uint64_t index) const
 		{
-			CORE_NAMED_ZONE("cdynamic_pool::find");
-
 			return unsafe(index);
 		}
 
@@ -2017,8 +2016,6 @@ namespace core
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::advance(TType* object)
 		{
-			CORE_NAMED_ZONE("cdynamic_pool::advance");
-
 			auto next = memloc(object) + sizeof(TType);
 
 			while (next <= RCAST(uint64_t, m_end) && !initialized_at_index(memloc_index(RCAST(void*, next), m_start, sizeof(TType))))
@@ -2033,8 +2030,6 @@ namespace core
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::begin()
 		{
-			CORE_NAMED_ZONE("cdynamic_pool::begin");
-
 			if (m_size == 0)
 			{
 				return nullptr;
@@ -2093,8 +2088,6 @@ namespace core
 		template<typename... ARGS>
 		TType* core::detail::cdynamic_pool<TType>::create(uint64_t* index_out, ARGS&&... args)
 		{
-			CORE_NAMED_ZONE("cdynamic_pool::create");
-
 			if (size() == capacity())
 			{
 				resize(m_size * 2);
@@ -2132,8 +2125,6 @@ namespace core
 		template<class TType>
 		TType* core::detail::cdynamic_pool<TType>::create(uint64_t* index_out)
 		{
-			CORE_NAMED_ZONE("cdynamic_pool::create");
-
 			if (size() == capacity())
 			{
 				resize(m_size * 2);
