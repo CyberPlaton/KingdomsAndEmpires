@@ -1853,7 +1853,7 @@ namespace core
 		cpath p(path);
 		if (p.exists())
 		{
-			p.append(name);
+			cpath check(p); check /= name;
 
 			for (const auto& entry : std::filesystem::directory_iterator{ p.path() })
 			{
@@ -1862,7 +1862,7 @@ namespace core
 				default:
 				case filesystem_lookup_type_any:
 				{
-					if (p == entry.path())
+					if (check == entry.path())
 					{
 						return true;
 					}
@@ -1870,7 +1870,7 @@ namespace core
 				}
 				case filesystem_lookup_type_directory:
 				{
-					if (entry.is_directory() && p == entry.path())
+					if (entry.is_directory() && check == entry.path())
 					{
 						return true;
 					}
@@ -1878,7 +1878,7 @@ namespace core
 				}
 				case filesystem_lookup_type_file:
 				{
-					if (entry.is_regular_file() && p == entry.path())
+					if (entry.is_regular_file() && check == entry.path())
 					{
 						return true;
 					}

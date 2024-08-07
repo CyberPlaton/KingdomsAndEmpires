@@ -2712,7 +2712,7 @@ namespace core
 			bool read(TType& value) { return read(&value, sizeof(TType)) == sizeof(TType); }
 
 			template<typename TType>
-			bool write(const TType& value) { return write(&value, sizeof(TType)) == sizeof(TType); }
+			bool write(const TType& value);
 
 		protected:
 			int m_filemode = core::file_mode_none;
@@ -2774,6 +2774,20 @@ namespace core
 
 			RTTR_ENABLE(core::cservice);
 		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TType>
+		bool core::fs::ifile::write(const TType& value)
+		{
+			if constexpr (std::is_same_v<TType, string_t> || std::is_same_v<TType, stringview_t>)
+			{
+				return write((const byte_t*)value.c_str(), SCAST(unsigned, value.size()));
+			}
+			else
+			{
+				return write(&value, sizeof(TType)) == sizeof(TType);
+			}
+		}
 
 	} //- fs
 

@@ -25,6 +25,9 @@ namespace editor
 
 	private:
 		sconfig m_cfg;
+
+		RTTR_ENABLE();
+		RTTR_REGISTRATION_FRIEND;
 	};
 
 } //- editor
