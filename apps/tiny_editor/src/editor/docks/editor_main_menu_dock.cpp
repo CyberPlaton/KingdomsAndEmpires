@@ -168,27 +168,9 @@ namespace editor
 			verified &= !S_PROJECT_NAME_TEXT_BUFFER.empty();
 			verified &= !S_PROJECT_PATH_TEXT_BUFFER.empty();
 
-			//- Create file if required
-			if (verified && !core::cfilesystem::find_file(S_PROJECT_PATH_TEXT_BUFFER.data(), fmt::format("{}.project", S_PROJECT_NAME_TEXT_BUFFER.data()).data()) &&
-				!core::cfilesystem::create_file_in(S_PROJECT_PATH_TEXT_BUFFER.data(), S_PROJECT_NAME_TEXT_BUFFER.data(), "project"))
+			if (verified)
 			{
-				result = false;
-			}
-			else if(verified)
-			{
-				editor::cproject::sconfig cfg;
-				cfg.m_project_name = S_PROJECT_NAME_TEXT_BUFFER.data();
-				cfg.m_basepath = S_PROJECT_PATH_TEXT_BUFFER.data();
-
-				editor::cproject project(std::move(cfg));
-
-				auto s = core::io::to_json_string(project);
-
-				if (const auto save_result = core::fs::save_text_to_file(fmt::format("{}/{}.project", S_PROJECT_PATH_TEXT_BUFFER.data(), S_PROJECT_NAME_TEXT_BUFFER.data()), s.data());
-					save_result != core::file_io_status_success)
-				{
-					result = false;
-				}
+				result = engine::cengine::service<engine::cproject_service>()->create_project(S_PROJECT_PATH_TEXT_BUFFER, S_PROJECT_NAME_TEXT_BUFFER) != nullptr;
 			}
 
 			if (result)

@@ -31,3 +31,5 @@ namespace editor
 	};
 
 } //- editor
+
+using project_ref_t = ref_t<editor::cproject>;

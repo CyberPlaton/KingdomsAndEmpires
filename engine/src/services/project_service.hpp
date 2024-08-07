@@ -15,17 +15,21 @@ namespace engine
 		void on_shutdown() override final;
 		void on_update(float dt) override final;
 
-		ref_t<editor::cproject> create(stringview_t name);
-		void set(const ref_t<editor::cproject>& project);
-		const editor::cproject& current() const;
-		editor::cproject& current();
-		bool load(stringview_t filepath);
+		project_ref_t create_project(stringview_t basepath, stringview_t name);
+		bool open_project(const core::fs::cfileinfo& filepath);
+		void remove_project(stringview_t name);
+		void delete_project(const core::fs::cfileinfo& filepath);
+
+		bool set_current(const core::fs::cfileinfo& filepath);
+		bool set_current(stringview_t name);
+
+		project_ref_t current() const;
 		bool has() const;
 
 	private:
-		umap_t<unsigned, ref_t<editor::cproject>> m_projects;
+		umap_t<unsigned, project_ref_t> m_projects;
 		core::cmutex m_mutex;
-		ref_t<editor::cproject> m_current;
+		project_ref_t m_current;
 
 		RTTR_ENABLE(core::cservice);
 	};
