@@ -9,6 +9,7 @@
 #include <cstring>
 #include <memory>
 #include <functional>
+#include <limits>
 
 //- If overriding STL classes define the namespace they are coming from same as below
 //------------------------------------------------------------------------------------------------------------------------

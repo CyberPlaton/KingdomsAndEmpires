@@ -84,7 +84,7 @@ function raylib()
 				  path.join(glfw_path, "posix_poll.h"),
 				  path.join(glfw_path, "posix_poll.c"),
 			}
-			links{"GL", "rt", "lm", "x11"}
+			links{"GL", "rt", "m", "X11"}
 		elseif PLATFORM == "macosx" then
 			defines{"_GLFW_COCOA"}
 			files{path.join(glfw_path, "cocoa_time.c"),
