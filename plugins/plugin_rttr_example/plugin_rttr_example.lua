@@ -8,7 +8,7 @@ function plugin_rttr_example()
 	plugin_deps = {}
 	plugin_headeronly_deps = {}
 	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"}
-	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}
+	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse", "asio"}
 	depends_on_engine = true
 
 	if VERBOSE == true then

@@ -19,6 +19,7 @@ namespace stl = std;
 #include <nlohmann.h>
 #include <../src/simdjson.h>
 #include <../src/tracy.hpp>
+#define ASIO_NO_EXCEPTIONS
 #include <asio.h>
 namespace miniz
 {

@@ -7,7 +7,7 @@ function plugin_camera_system()
 					{},
 					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy", "asio"},
 					{"../../3rdparty/rttr/rttr/src"},
 					true)
 end

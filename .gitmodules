@@ -17,3 +17,6 @@
 [submodule "3rdparty/flecs/flecs"]
 	path = 3rdparty/flecs/flecs
 	url = https://github.com/CyberPlaton/flecs.git
+[submodule "3rdparty/asio/include/asio"]
+	path = 3rdparty/asio/include/asio
+	url = https://github.com/chriskohlhoff/asio.git

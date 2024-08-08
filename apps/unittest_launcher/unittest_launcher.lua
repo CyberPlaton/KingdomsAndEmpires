@@ -10,7 +10,7 @@ function unittest_launcher()
 					"plugin_status_effects", "plugin_kingdoms_and_empires", "plugin_race_human",
 					"plugin_render_system", "plugin_tiny_editor"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "asio"},
 					{"../../3rdparty/rttr/rttr/src"},
 					"ConsoleApp"
 					)

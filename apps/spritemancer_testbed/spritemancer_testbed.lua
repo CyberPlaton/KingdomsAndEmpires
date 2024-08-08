@@ -7,7 +7,7 @@ function spritemancer_testbed()
 					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"},
 					{"plugin_ai"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "asio"},
 					{"../../3rdparty/rttr/rttr/src"}
 					)
 end

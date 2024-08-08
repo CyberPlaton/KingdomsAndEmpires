@@ -7,7 +7,7 @@ function plugin_module_example()
 					{},
 					{"spdlog", "core", "flecs", "spritemancer", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"},
 					{},
-					{"nlohmann", "magic_enum", "taskflow", "argparse", "glm", "Tracy"},
+					{"nlohmann", "magic_enum", "taskflow", "argparse", "glm", "Tracy", "asio"},
 					{"../../3rdparty/rttr/rttr/src"},
 					true)
 end
