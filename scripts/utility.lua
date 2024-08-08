@@ -150,7 +150,8 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
-		externalincludedirs {additional_includes}
+		externalincludedirs{additional_includes}
+		includedirs{additional_includes}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
@@ -357,8 +358,9 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
-		externalincludedirs {"include"}
-		externalincludedirs {additional_includes}
+		externalincludedirs{"include"}
+		externalincludedirs{additional_includes}
+		includedirs{additional_includes}
 		set_include_path_to_engine()
 		link_with_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))

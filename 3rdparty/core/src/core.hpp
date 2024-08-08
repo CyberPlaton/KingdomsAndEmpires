@@ -15,7 +15,7 @@ namespace stl = std;
 #include <magic_enum.h>
 #include <taskflow.h>
 #include <spdlog.h>
-#include <../src/rttr.hpp>
+#include <rttr.h>
 #include <nlohmann.h>
 #include <../src/simdjson.h>
 #include <../src/tracy.hpp>

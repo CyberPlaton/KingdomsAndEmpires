@@ -9,7 +9,7 @@ function engine()
 		"c++",
 		{}, -- plugin_headeronly_deps
 		{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"}, -- thirdparty_headeronly_deps
-		{"src/physics"}, -- additional_includes
+		{"src/physics", "../3rdparty/rttr/rttr/src"}, -- additional_includes
 		true)
 end
 engine()

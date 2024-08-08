@@ -9,7 +9,7 @@ function engine_launcher()
 					"plugin_status_effects", "plugin_race_human", "plugin_render_system"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
-					{}
+					{"../../3rdparty/rttr/rttr/src"}
 					)
 end
 engine_launcher()

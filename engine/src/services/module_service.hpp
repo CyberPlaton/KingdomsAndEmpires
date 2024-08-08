@@ -29,8 +29,8 @@ namespace io
 
 		core::cmutex m_mutex;
 
-		stack_t<core::fs::cfileinfo> m_to_load;
-		stack_t<core::fs::cfileinfo> m_to_unload;
+		core::stack_t<core::fs::cfileinfo> m_to_load;
+		core::stack_t<core::fs::cfileinfo> m_to_unload;
 
 		core::ctimer m_timer;
 

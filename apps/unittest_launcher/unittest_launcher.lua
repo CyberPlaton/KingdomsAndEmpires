@@ -11,7 +11,7 @@ function unittest_launcher()
 					"plugin_render_system", "plugin_tiny_editor"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
-					{},
+					{"../../3rdparty/rttr/rttr/src"},
 					"ConsoleApp"
 					)
 end

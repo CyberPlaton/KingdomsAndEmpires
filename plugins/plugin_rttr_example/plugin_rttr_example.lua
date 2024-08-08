@@ -4,7 +4,7 @@ function plugin_rttr_example()
 	name = "plugin_rttr_example"
 	build_options = {}
 	define_flags = {"RTTR_DLL"}
-	additional_includes = {}
+	additional_includes = {"../../3rdparty/rttr/rttr/src"}
 	plugin_deps = {}
 	plugin_headeronly_deps = {}
 	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"}
@@ -28,7 +28,8 @@ function plugin_rttr_example()
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
-		externalincludedirs {additional_includes}
+		externalincludedirs{additional_includes}
+		includedirs{additional_includes}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))

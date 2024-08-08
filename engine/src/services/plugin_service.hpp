@@ -23,8 +23,8 @@ namespace engine
 		void unload(stringview_t filename);
 
 	private:
-		stack_t<string_t> m_loading_queue;
-		stack_t<string_t> m_unloading_queue;
+		core::stack_t<string_t> m_loading_queue;
+		core::stack_t<string_t> m_unloading_queue;
 		umap_t<string_t, plugin_ref_t> m_plugins;
 		core::cmutex m_mutex;
 		core::ctimer m_timer;

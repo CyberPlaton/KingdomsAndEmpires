@@ -9,7 +9,7 @@ function spritemancer()
 					"c++",
 					{}, -- plugin_headeronly_deps
 					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse"}, -- thirdparty_headeronly_deps
-					{"src"} -- additional_includes
+					{"src", "../rttr/rttr/src"} -- additional_includes
 					)
 end
 spritemancer()

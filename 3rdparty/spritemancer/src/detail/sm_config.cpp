@@ -973,7 +973,7 @@ namespace sm
 
 			private:
 				saggregated_drawcall_data m_drawcalls;
-				stack_t<sdrawcall_data> m_stack;
+				core::stack_t<sdrawcall_data> m_stack;
 				vector_t<sgpu_stats> m_current;
 
 			private:

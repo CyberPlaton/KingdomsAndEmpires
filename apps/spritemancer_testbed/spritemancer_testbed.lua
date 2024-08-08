@@ -8,7 +8,7 @@ function spritemancer_testbed()
 					{"plugin_ai"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy"},
-					{}
+					{"../../3rdparty/rttr/rttr/src"}
 					)
 end
 spritemancer_testbed()

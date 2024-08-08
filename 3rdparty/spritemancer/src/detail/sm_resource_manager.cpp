@@ -33,25 +33,25 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::image_handle_t cimage_manager::load_sync(stringview_t name, stringview_t filepath)
 	{
-		return load_of_sync<cimage, image_handle_t>(name, m_data, filepath);
+		return load_of_sync<image_handle_t>(name, m_data, filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::image_handle_t cimage_manager::load_sync(stringview_t name, image_type type, void* data, unsigned size)
 	{
-		return load_of_sync<cimage, image_handle_t>(name, m_data, type, data, size);
+		return load_of_sync<image_handle_t>(name, m_data, type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::image_handle_t> cimage_manager::load_async(stringview_t name, stringview_t filepath)
 	{
-		return load_of_async<cimage, image_handle_t>(name, m_data, filepath);
+		return load_of_async<image_handle_t>(name, m_data, filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::image_handle_t> cimage_manager::load_async(stringview_t name, image_type type, void* data, unsigned size)
 	{
-		return load_of_async<cimage, image_handle_t>(name, m_data, type, data, size);
+		return load_of_async<image_handle_t>(name, m_data, type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -85,37 +85,37 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, const cimage& image)
 	{
-		return load_of_sync<ctexture, texture_handle_t>(name, m_data, image);
+		return load_of_sync<texture_handle_t>(name, m_data, image);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, stringview_t filepath)
 	{
-		return load_of_sync<ctexture, texture_handle_t>(name, m_data, filepath);
+		return load_of_sync<texture_handle_t>(name, m_data, filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, image_type type, void* data, unsigned size)
 	{
-		return load_of_sync<ctexture, texture_handle_t>(name, m_data, type, data, size);
+		return load_of_sync<texture_handle_t>(name, m_data, type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, const cimage& image)
 	{
-		return load_of_async<ctexture, texture_handle_t>(name, m_data, image);
+		return load_of_async<texture_handle_t>(name, m_data, image);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, stringview_t filepath)
 	{
-		return load_of_async<ctexture, texture_handle_t>(name, m_data, filepath);
+		return load_of_async<texture_handle_t>(name, m_data, filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, image_type type, void* data, unsigned size)
 	{
-		return load_of_async<ctexture, texture_handle_t>(name, m_data, type, data, size);
+		return load_of_async<texture_handle_t>(name, m_data, type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -150,41 +150,41 @@ namespace sm
 	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type,
 		stringview_t vertex_filepath, stringview_t fragment_filepath)
 	{
-		return load_of_sync<cshader, shader_handle_t>(name, m_data, type, vertex_filepath, fragment_filepath);
+		return load_of_sync<shader_handle_t>(name, m_data, type, vertex_filepath, fragment_filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type, const char* vs, const char* fs)
 	{
-		return load_of_sync<cshader, shader_handle_t>(name, m_data, type, vs, fs);
+		return load_of_sync<shader_handle_t>(name, m_data, type, vs, fs);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type,
 		const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size)
 	{
-		return load_of_sync<cshader, shader_handle_t>(name, m_data, type, vs, vs_size, fs, fs_size);
+		return load_of_sync<shader_handle_t>(name, m_data, type, vs, vs_size, fs, fs_size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type,
 		stringview_t vertex_filepath, stringview_t fragment_filepath)
 	{
-		return load_of_async<cshader, shader_handle_t>(name, m_data, type, vertex_filepath, fragment_filepath);
+		return load_of_async<shader_handle_t>(name, m_data, type, vertex_filepath, fragment_filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type,
 		const char* vs, const char* fs)
 	{
-		return load_of_async<cshader, shader_handle_t>(name, m_data, type, vs, fs);
+		return load_of_async<shader_handle_t>(name, m_data, type, vs, fs);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type,
 		const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size)
 	{
-		return load_of_async<cshader, shader_handle_t>(name, m_data, type, vs, vs_size, fs, fs_size);
+		return load_of_async<shader_handle_t>(name, m_data, type, vs, vs_size, fs, fs_size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -219,14 +219,14 @@ namespace sm
 	sm::spriteatlas_handle_t cspriteatlas_manager::load_sync(stringview_t name,
 		unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
 	{
-		return load_of_sync<cspriteatlas, spriteatlas_handle_t>(name, m_data, w, h, names, frames);
+		return load_of_sync<spriteatlas_handle_t>(name, m_data, w, h, names, frames);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::spriteatlas_handle_t> cspriteatlas_manager::load_async(stringview_t name,
 		unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
 	{
-		return load_of_async<cspriteatlas, spriteatlas_handle_t>(name, m_data, w, h, names, frames);
+		return load_of_async<spriteatlas_handle_t>(name, m_data, w, h, names, frames);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -260,13 +260,13 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::rendertarget_handle_t crendertarget_manager::load_sync(stringview_t name, unsigned w, unsigned h)
 	{
-		return load_of_sync<crendertarget, rendertarget_handle_t>(name, m_data, w, h);
+		return load_of_sync<rendertarget_handle_t>(name, m_data, w, h);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::rendertarget_handle_t> crendertarget_manager::load_async(stringview_t name, unsigned w, unsigned h)
 	{
-		return load_of_async<crendertarget, rendertarget_handle_t>(name, m_data, w, h);
+		return load_of_async<rendertarget_handle_t>(name, m_data, w, h);
 	}
 
 } //- sm

@@ -41,10 +41,12 @@ namespace engine
 		//- load startup project
 		auto* project_service = service<cproject_service>();
 
-		if (!project_service->load(m_config.m_startup_project))
+		if (!project_service->open_project({ m_config.m_startup_project }))
 		{
 			m_result = engine_run_result_failed_loading_startup_project;
 		}
+
+		project_service->set_current(m_config.m_startup_project);
 
 		return m_result == engine_run_result_ok;
 	}
