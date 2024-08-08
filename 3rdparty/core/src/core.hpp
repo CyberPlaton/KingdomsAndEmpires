@@ -19,8 +19,7 @@ namespace stl = std;
 #include <nlohmann.h>
 #include <../src/simdjson.h>
 #include <../src/tracy.hpp>
-#define ASIO_NO_EXCEPTIONS
-#include <../src/asio.hpp>
+#include <asio.h>
 namespace miniz
 {
 #include <../src/miniz.hpp>
@@ -796,11 +795,11 @@ namespace asio::detail
 {
 	//------------------------------------------------------------------------------------------------------------------------
 	template <typename Exception>
-	void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_DEFAULTED_PARAM);
+	static inline void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_DEFAULTED_PARAM);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template <typename Exception>
-	void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_PARAM)
+	static inline void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_PARAM)
 	{
 		if (core::serror_reporter::instance().m_callback)
 		{
