@@ -1048,10 +1048,11 @@ namespace core
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TType>
-		[[nodiscard]] TType from_json_blob(const uint8_t* data, unsigned size)
+		[[nodiscard]] TType& from_json_blob(const uint8_t* data, unsigned size)
 		{
 			auto var = from_json_blob(rttr::type::get<TType>(), data, size);
-			return std::move(var.template get_value<TType>());
+
+			return var.template get_value<TType>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
