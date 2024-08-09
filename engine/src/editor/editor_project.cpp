@@ -30,6 +30,8 @@ RTTR_REGISTRATION
 	rttr::cregistrator<cproject::sconfig>("cproject::sconfig")
 		.prop("m_project_name", &cproject::sconfig::m_project_name)
 		.prop("m_basepath",		&cproject::sconfig::m_basepath)
+		.prop("m_startup_world", &cproject::sconfig::m_startup_world)
+		.prop("m_project_plugins", &cproject::sconfig::m_project_plugins)
 		;
 
 	rttr::cregistrator<cproject, rttr::detail::no_default>("cproject")

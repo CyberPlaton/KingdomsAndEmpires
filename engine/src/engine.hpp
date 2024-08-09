@@ -38,7 +38,10 @@ namespace engine
 	//- configures self and registers services etc. Does create a window and a rendering context and provides the main loop.
 	//- Constructible from cengine::instance() only to ensure correct functioning.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cengine final : public sm::iapp, core::cnon_copyable
+	class cengine final :
+		public sm::iapp,
+		private core::cnon_copyable,
+		private core::cnon_movable
 	{
 	public:
 		struct sconfig

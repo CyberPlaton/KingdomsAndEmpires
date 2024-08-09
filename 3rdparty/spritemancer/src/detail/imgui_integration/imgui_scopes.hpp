@@ -6,7 +6,9 @@
 namespace imgui
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmenu_scope final : core::cnon_copyable
+	class cmenu_scope final :
+		private core::cnon_copyable,
+		private core::cnon_movable
 	{
 	public:
 		cmenu_scope(const char* name, const bool enabled = true);
@@ -19,7 +21,9 @@ namespace imgui
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmenu_item final : core::cnon_copyable
+	class cmenu_item final :
+		private core::cnon_copyable,
+		private core::cnon_movable
 	{
 	public:
 		cmenu_item(const char* name, bool* selected = nullptr, const bool enabled = true);
@@ -32,7 +36,9 @@ namespace imgui
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cwindow_scope final : core::cnon_copyable
+	class cwindow_scope final :
+		private core::cnon_copyable,
+		private core::cnon_movable
 	{
 	public:
 		cwindow_scope(stringview_t name, bool* open, ImGuiWindowFlags flags = ImGuiWindowFlags_None, const vec2_t& position = { 0, 0 }, const vec2_t& size_min = { 0, 0 }, const vec2_t& size_max = { 0, 0 });
@@ -46,7 +52,9 @@ namespace imgui
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cid_scope final : core::cnon_copyable
+	class cid_scope final :
+		private core::cnon_copyable,
+		private core::cnon_movable
 	{
 	public:
 		cid_scope(const char* name);
@@ -54,7 +62,9 @@ namespace imgui
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cdisabled_scope final : core::cnon_copyable
+	class cdisabled_scope final :
+		private core::cnon_copyable,
+		private core::cnon_movable
 	{
 	public:
 		cdisabled_scope(const bool is_disabled = true);

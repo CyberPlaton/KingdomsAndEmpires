@@ -553,6 +553,17 @@ namespace core
 		cnon_copyable(const cnon_copyable&) = delete;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class cnon_movable
+	{
+	public:
+		cnon_movable() = default;
+		virtual ~cnon_movable() = default;
+	private:
+		cnon_movable(cnon_movable&&) = delete;
+		cnon_movable& operator=(const cnon_movable&&) = delete;
+	};
+
 } //- core
 
 namespace algorithm
@@ -1398,7 +1409,8 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	class cmemory final :
 		public std::enable_shared_from_this<cmemory>,
-		public cnon_copyable
+		private cnon_copyable,
+		private cnon_movable
 	{
 	public:
 		static memory_ref_t make_ref(byte_t* data, unsigned size);
@@ -1409,12 +1421,12 @@ namespace core
 		cmemory(byte_t* data, unsigned size);
 		~cmemory();
 
-		byte_t* data() { return m_data.data(); }
-		const byte_t* data() const { return m_data.data(); }
-		unsigned size() const { return SCAST(unsigned, m_data.size()); }
-
-		auto begin() { return m_data.begin(); }
-		auto end() { return m_data.end(); }
+		inline byte_t* data() { return m_data.data(); }
+		inline const byte_t* data() const { return m_data.data(); }
+		inline unsigned size() const { return SCAST(unsigned, m_data.size()); }
+		inline bool empty() const { return size() == 0; }
+		inline auto begin() { return m_data.begin(); }
+		inline auto end() { return m_data.end(); }
 
 		//- Take ownership of the data
 		[[nodiscard]] vector_t<uint8_t>&& take() { return std::move(m_data); }

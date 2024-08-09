@@ -11,8 +11,12 @@ namespace editor
 	public:
 		struct sconfig
 		{
+			//- Plugins etc. specific to the project
+			vector_t<string_t> m_project_plugins;
+
 			string_t m_basepath;
 			string_t m_project_name;
+			string_t m_startup_world;
 
 			RTTR_ENABLE();
 		};
@@ -22,6 +26,7 @@ namespace editor
 		~cproject();
 
 		inline const sconfig& config() const { return m_cfg; }
+		inline sconfig& config() { return m_cfg; }
 
 	private:
 		sconfig m_cfg;

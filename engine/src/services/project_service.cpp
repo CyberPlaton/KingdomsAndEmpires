@@ -55,6 +55,7 @@ namespace engine
 			{
 				log_error(fmt::format("Could not save file for project '{}' at '{}'", name.data(), basepath.data()));
 			}
+
 			return project;
 		}
 		else if (m_projects.find(h) != m_projects.end())
@@ -67,7 +68,33 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cproject_service::open_project(const core::fs::cfileinfo& filepath)
 	{
+		if (filepath.exists())
+		{
+			if (const auto mem = core::fs::load_text_from_file(filepath.relative()); mem && !mem->empty())
+			{
+				auto project = core::io::from_json_blob<editor::cproject>(mem->data(), mem->size());
 
+				const auto& cfg = project.config();
+				const auto h = algorithm::hash(cfg.m_project_name);
+
+				//- Sanity checks
+				if (!cfg.m_basepath.empty() &&
+					cfg.m_project_name.empty() &&
+					cfg.m_basepath == filepath.directory_path() && cfg.m_project_name == filepath.name() &&
+					m_projects.find(h) == m_projects.end())
+				{
+					m_projects[h] = std::make_shared<editor::cproject>(project);
+
+					log_info(fmt::format("Successfully opened project '{}'", filepath.relative()));
+
+					return true;
+				}
+			}
+		}
+
+		log_error(fmt::format("Could not open project '{}'", filepath.relative()));
+
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -82,7 +109,21 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	void cproject_service::delete_project(const core::fs::cfileinfo& filepath)
 	{
+		if (filepath.exists())
+		{
+			auto result = true;
 
+			const auto path = filepath.directory_path();
+			const auto name = filepath.filename().generic_u8string();
+
+			result &= core::cfilesystem::remove(path.c_str());
+			result &= core::cfilesystem::remove(name.c_str());
+
+			if (!result)
+			{
+				log_warn(fmt::format("Could not delete project '{}' at '{}'", name.data(), path.data()));
+			}
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -90,8 +131,7 @@ namespace engine
 	{
 		if (const auto it = m_projects.find(algorithm::hash(name)); it != m_projects.end())
 		{
-			m_current = it->second;
-			return true;
+			return set_current(it->second);
 		}
 		return false;
 	}
@@ -100,6 +140,14 @@ namespace engine
 	bool cproject_service::set_current(const core::fs::cfileinfo& filepath)
 	{
 		return set_current(filepath.stem());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cproject_service::set_current(const project_ref_t& project)
+	{
+		m_current = project;
+
+		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

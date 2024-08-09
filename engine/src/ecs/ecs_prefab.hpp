@@ -9,7 +9,9 @@ namespace ecs
 	//- looked up in a manager etc.
 	//- A serialized prefab is a distinct scene file, load and save is managed from prefab manager.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cprefab : public core::cnon_copyable, iworld_context_holder
+	class cprefab :
+		public iworld_context_holder,
+		private core::cnon_copyable
 	{
 	public:
 		cprefab(const string_t& name, flecs::world& w);

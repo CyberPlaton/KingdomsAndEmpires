@@ -22,7 +22,7 @@ namespace editor
 	void celement_stack_system::on_update(float dt)
 	{
 		//- Check for elements that are to be removed and remove them
-		stack_t<const char*> to_remove;
+		core::stack_t<const char*> to_remove;
 
 		algorithm::for_each(m_elements.begin(), m_elements.end(), [&](const auto& pair)
 			{

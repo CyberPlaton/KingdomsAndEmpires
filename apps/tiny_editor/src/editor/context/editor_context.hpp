@@ -6,7 +6,7 @@ namespace editor
 {
 	//- Class contains basic data useful almost everywhere. Can also be used to synchronize between systems.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct scontext : core::cnon_copyable
+	struct scontext : private core::cnon_copyable
 	{
 		unsigned m_window_width		= 0;
 		unsigned m_window_height	= 0;
