@@ -5,11 +5,11 @@ function core()
 					{},
 					{"core_EXPORTS"},
 					{},
-					{"spdlog", "mimalloc", "hwinfo", "rttr", "asio"},
+					{"spdlog", "mimalloc", "hwinfo", "rttr"},
 					"c++",
 					{}, -- plugin_headeronly_deps
-					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy"}, -- thirdparty_headeronly_deps
-					{"src", "../rttr/rttr/src"} -- additional_includes
+					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "asio"}, -- thirdparty_headeronly_deps
+					{"src", "../rttr/rttr/src", "../asio/include/asio/asio/include"} -- additional_includes
 					)
 end
 core()

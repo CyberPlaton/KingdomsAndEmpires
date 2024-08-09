@@ -58,7 +58,7 @@ function set_basic_links()
 	if PLATFORM == "windows" then
 		links{"gdi32", "ws2_32", "kernel32", "opengl32", "psapi", "winmm"}
 	elseif PLATFORM == "linux" then
-		links{"GL", "rt", "lm", "x11"}
+		links{"GL", "rt", "m", "X11"}
 	elseif PLATFORM == "macosx" then
 		links{"Cocoa", "IOKit", "CoreFoundation"}
 	else
@@ -184,7 +184,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function add_target_library(name, build_options, define_flags, thirdparty_headeronly_deps, thirdparty_deps, headeronly, target_language)
+function add_target_library(name, build_options, define_flags, thirdparty_headeronly_deps, thirdparty_deps, headeronly, target_language, additional_includes)
 	if VERBOSE == true then
 		print("\tshared library: " .. name)
 	end
@@ -208,6 +208,8 @@ function add_target_library(name, build_options, define_flags, thirdparty_header
 		defines{define_flags}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
+		includedirs{additional_includes}
+		externalincludedirs{additional_includes}
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
@@ -252,7 +254,8 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 		buildoptions{build_options}
 		set_basic_defines()
 		defines{define_flags}
-		externalincludedirs {additional_includes}
+		externalincludedirs{additional_includes}
+		includedirs{additional_includes}
 		set_include_path_to_self(name)
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))

@@ -48,25 +48,25 @@ namespace engine
 	template<typename TOptions>
 	const TOptions& engine::casset::options() const
 	{
-		return m_options.convert<TOptions>();
+		return m_options.template convert<TOptions>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
 	void engine::casset::set_meta(stringview_t name, const TType& value)
 	{
-		m_data.m_meta.m_data[name] = value;
+		m_meta[name.data()] = value;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
 	TType engine::casset::get_meta(stringview_t name, TType default_value)
 	{
-		if (m_data.m_meta.m_data.find(name) == m_data.m_meta.m_data.end())
+		if (m_meta.find(name.data()) == m_meta.end())
 		{
 			set_meta<TType>(name, default_value);
 		}
-		return m_data.m_meta.m_data[name].convert<TType>();
+		return m_meta[name.data()].template convert<TType>();
 	}
 
 } //- engine

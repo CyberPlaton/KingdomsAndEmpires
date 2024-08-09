@@ -7,6 +7,7 @@ function asio()
 					{},
 					{},
 					true,
-					"c++")
+					"c++",
+					"include/asio/asio/include")
 end
 asio()

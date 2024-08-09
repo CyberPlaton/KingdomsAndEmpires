@@ -8,7 +8,7 @@ function plugin_kingdoms_and_empires()
 					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "asio"},
-					{"../../3rdparty/rttr/rttr/src"},
+					{"../../3rdparty/rttr/rttr/src", "../3rdparty/asio/include/asio/asio/include"},
 					true)
 end
 plugin_kingdoms_and_empires()

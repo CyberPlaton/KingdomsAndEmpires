@@ -1047,7 +1047,7 @@ namespace sm
 
 				tm.each([&](const ctexture& texture)
 					{
-						auto& tex = texture.texture();
+						auto tex = texture.texture();
 
 						m_drawcalls.m_textures_bytes += texture_gpu_memory_usage(tex.width, tex.height, tex.mipmaps, tex.format);
 					});

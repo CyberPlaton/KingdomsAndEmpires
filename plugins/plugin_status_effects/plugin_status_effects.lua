@@ -8,7 +8,7 @@ function plugin_status_effects()
 					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy", "asio"},
-					{"../../3rdparty/rttr/rttr/src"},
+					{"../../3rdparty/rttr/rttr/src", "../3rdparty/asio/include/asio/asio/include"},
 					true)
 end
 plugin_status_effects()

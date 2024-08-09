@@ -3,7 +3,7 @@ include (path.join(SCRIPTS_DIR, "utility.lua"))
 function unittest()
 	name = "unittest"
 	build_options = {}
-	define_flags = {}
+	define_flags = {"UNITTEST_NO_EXCEPTIONS", "UNITTEST_DISABLE_SHORT_MACROS"}
 
 	project(name)
 		language ("c++")
@@ -24,7 +24,7 @@ function unittest()
 			}
 		end
 		if PLATFORM ~= "windows" then
-			defines{"-Wall -Wextra -Werror"}
+			defines{}
 			files{"unittest/UnitTest++/Posix/**.h",
 				  "unittest/UnitTest++/Posix/**.cpp"
 			}
