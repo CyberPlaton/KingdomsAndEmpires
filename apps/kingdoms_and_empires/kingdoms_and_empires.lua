@@ -12,7 +12,7 @@ function kingdoms_and_empires()
 					"plugin_status_effects", "plugin_kingdoms_and_empires"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "asio"},
-					{"../../3rdparty/rttr/rttr/src"}
+					{"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"}
 					)
 end
 kingdoms_and_empires()

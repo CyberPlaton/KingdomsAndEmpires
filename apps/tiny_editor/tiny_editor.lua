@@ -10,7 +10,7 @@ function tiny_editor()
 					"plugin_status_effects", "plugin_render_system"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "pfd", "asio"},
-					{"../../3rdparty/rttr/rttr/src"}
+					{"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"}
 					)
 end
 tiny_editor()

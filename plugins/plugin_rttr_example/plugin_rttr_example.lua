@@ -4,7 +4,7 @@ function plugin_rttr_example()
 	name = "plugin_rttr_example"
 	build_options = {}
 	define_flags = {"RTTR_DLL"}
-	additional_includes = {"../../3rdparty/rttr/rttr/src", "../3rdparty/asio/include/asio/asio/include"}
+	additional_includes = {"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"}
 	plugin_deps = {}
 	plugin_headeronly_deps = {}
 	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"}

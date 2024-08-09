@@ -9,7 +9,7 @@ function engine_launcher()
 					"plugin_status_effects", "plugin_race_human", "plugin_render_system"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "asio"},
-					{"../../3rdparty/rttr/rttr/src"}
+					{"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"}
 					)
 end
 engine_launcher()
