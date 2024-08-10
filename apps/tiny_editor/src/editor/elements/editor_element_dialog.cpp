@@ -11,9 +11,10 @@ namespace editor::ui
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cdialog::cdialog(stringview_t id /*= {}*/, bool* open /*= nullptr*/, ImGuiWindowFlags flags /*= ImGuiWindowFlags_None*/) :
+	cdialog::cdialog(bool* open, stringview_t id /*= {}*/, ImGuiWindowFlags flags /*= ImGuiWindowFlags_None*/) :
 		m_id(id), m_open(open), m_flags(flags == ImGuiWindowFlags_None ? C_DIALOG_FLAGS : flags)
 	{
+		CORE_ASSERT(open, "Invalid operation");
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -95,7 +96,7 @@ namespace editor::ui
 				m_result = true;
 			}
 
-			ImGui::SameLine(C_DIALOG_WIDTH * 0.5f);
+			ImGui::SameLine(C_DIALOG_WIDTH * 0.75f);
 
 			if (ImGui::SmallButton(m_cancel_button_text.data()))
 			{

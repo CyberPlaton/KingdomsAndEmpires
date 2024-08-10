@@ -32,6 +32,7 @@ namespace engine
 		void unload();
 
 		inline const sconfig& config() const { return m_cfg; }
+		inline sconfig& config() { return m_cfg; }
 		inline string_t error() const { return m_library.get_error_string().data(); }
 		types_t types() const;
 		props_t props() const;

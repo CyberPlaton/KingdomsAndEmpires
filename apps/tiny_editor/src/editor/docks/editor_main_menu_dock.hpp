@@ -22,6 +22,10 @@ namespace editor
 	private:
 		celement_stack_system m_elements_stack;
 		layer_ref_t m_material_editor;
+
+	private:
+		void show_create_project_dialog(bool* open);
+		void show_project_settings(bool *open);
 	};
 
 } //- editor

@@ -9,9 +9,11 @@ namespace editor
 	namespace
 	{
 		constexpr stringview_t C_CREATE_PROJECT_DIALOG_ID = "##createProjectDialog";
+		constexpr stringview_t C_PROJECT_SETTINGS_WINDOW_ID = "##projectSettingsWindow";
 		static string_t S_PROJECT_NAME_TEXT_BUFFER;
 		static string_t S_PROJECT_PATH_TEXT_BUFFER;
 		static bool S_CREATE_PROJECT_WINDOW = false;
+		static bool S_PROJECT_SETTINGS_WINDOW = false;
 		static const char* C_PROJECT_EXTENSION[] = {".project"};
 
 	} //- unnamed
@@ -82,7 +84,7 @@ namespace editor
 			{
 				if (const auto new_scope = imgui::cmenu_scope("New"))
 				{
-					imgui::cmenu_item("Project", &S_CREATE_PROJECT_WINDOW, true);
+					imgui::cmenu_item("Project", &S_CREATE_PROJECT_WINDOW);
 				}
 				if (const auto pref_cope = imgui::cmenu_scope("Preferences"))
 				{
@@ -96,7 +98,7 @@ namespace editor
 			//- Project specific section
 			if (const auto project_scope = imgui::cmenu_scope("Project"))
 			{
-
+				imgui::cmenu_item("Settings", &S_PROJECT_SETTINGS_WINDOW);
 			}
 			//- Tools section
 			if (const auto tools_scope = imgui::cmenu_scope("Tools"))
@@ -119,10 +121,33 @@ namespace editor
 		}
 		ImGui::EndMainMenuBar();
 
-		//- Create a new project dialog. Might be useful to extend this to a 'create file' dialog or something...
-		ui::cdialog dialog(C_CREATE_PROJECT_DIALOG_ID, &S_CREATE_PROJECT_WINDOW, ImGuiWindowFlags_None);
+		show_create_project_dialog(&S_CREATE_PROJECT_WINDOW);
+		show_project_settings(&S_PROJECT_SETTINGS_WINDOW);
 
-		if (S_CREATE_PROJECT_WINDOW && dialog
+		//- Showing common demo UIs
+		if (ctx().m_implot_demo)
+		{
+			ImPlot::ShowDemoWindow(&ctx().m_implot_demo);
+		}
+		if (ctx().m_imgui_demo)
+		{
+			ImGui::ShowDemoWindow(&ctx().m_imgui_demo);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmain_menu::on_world_render()
+	{
+		m_elements_stack.on_world_render();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmain_menu::show_create_project_dialog(bool* open)
+	{
+		//- Create a new project dialog. Might be useful to extend this to a 'create file' dialog or something...
+		ui::cdialog dialog(open, C_CREATE_PROJECT_DIALOG_ID, ImGuiWindowFlags_None);
+
+		if (*open && dialog
 			.title("Create Project...")
 			.icon(ICON_FA_DIAGRAM_PROJECT)
 			.tooltip("Create Project...")
@@ -156,10 +181,10 @@ namespace editor
 			.confirm_button("Confirm", []()
 				{
 				})
-			.cancel_button("Cancel", []()
-				{
-				})
-			.draw())
+					.cancel_button("Cancel", []()
+						{
+						})
+					.draw())
 		{
 			//- Verify specified data is correct
 			auto verified = true;
@@ -187,22 +212,12 @@ namespace editor
 					imgui::notification_type_error);
 			}
 		}
-
-		//- Showing common demo UIs
-		if (ctx().m_implot_demo)
-		{
-			ImPlot::ShowDemoWindow(&ctx().m_implot_demo);
-		}
-		if (ctx().m_imgui_demo)
-		{
-			ImGui::ShowDemoWindow(&ctx().m_imgui_demo);
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmain_menu::on_world_render()
+	void cmain_menu::show_project_settings(bool* open)
 	{
-		m_elements_stack.on_world_render();
+
 	}
 
 } //- editor
