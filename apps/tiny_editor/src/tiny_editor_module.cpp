@@ -105,8 +105,197 @@ RTTR_REGISTRATION
 }
 
 //------------------------------------------------------------------------------------------------------------------------
+void std_string_test_run(int object_count)
+{
+	//- Use a small and a big const char for testing
+	const char* C_SMALL_STRING = "Hello World!";
+	const char* C_BIG_STRING =
+		"object_access_time_cumulative += access_timer.microsecs();"
+		"auto* object = core::iallocator::construct<Object>((Object*)memory);"
+		"void* memory = allocator.allocate(sizeof(Object), alignof(Object));"
+		"auto* object = core::iallocator::construct<Object>((Object*)memory);"
+		;
+
+	//- Use a small and a big string for testing
+	std::string SMALL_STRING(C_SMALL_STRING);
+	std::string BIG_STRING(C_BIG_STRING);
+
+	constexpr auto C_RANGE_START = 3;
+	constexpr auto C_RANGE_END = 9;
+
+	core::ctimer timer;
+	core::ctimer timer_empty_string;
+	float time_empty_string = 0.0f;
+	core::ctimer timer_const_char;
+	float time_const_char = 0.0f;
+	core::ctimer timer_substring;
+	float time_substring = 0.0f;
+	core::ctimer timer_copy_ctor;
+	float time_copy_ctor = 0.0f;
+	core::ctimer timer_access;
+	float time_access = 0.0f;
+
+	timer.start();
+
+	for (auto i = 0; i < object_count; ++i)
+	{
+		//- Create empty string
+		{
+			timer_empty_string.start();
+			std::string s;
+			time_empty_string += timer_empty_string.microsecs();
+		}
+
+		//- Create string from const char*
+		{
+			timer_const_char.start();
+			std::string sma(C_SMALL_STRING);
+			std::string big(C_BIG_STRING);
+			time_const_char += timer_const_char.microsecs();
+		}
+
+		//- Create string from substring
+		{
+			timer_substring.start();
+			std::string sma_sub(SMALL_STRING, C_RANGE_START, C_RANGE_END);
+			std::string big_sub(BIG_STRING, C_RANGE_START, C_RANGE_END);
+			time_substring += timer_substring.microsecs();
+		}
+
+		//- Copy construct string
+		{
+			timer_copy_ctor.start();
+			std::string sma_copy = SMALL_STRING;
+			std::string big_copy = BIG_STRING;
+			time_copy_ctor += timer_copy_ctor.microsecs();
+		}
+
+		//- Access and print the string
+		{
+			timer_access.start();
+			auto c = SMALL_STRING.c_str();
+			auto cc = BIG_STRING.c_str();
+			time_access += timer_access.microsecs();
+		}
+	}
+
+	const auto ms = timer.millisecs();
+
+	log_warn("Testing std::string----------------------------------------------------------------------");
+	log_warn("-----------------------------------------------------------------------------------------");
+	log_debug(fmt::format("Object Count: '{}'", object_count));
+	log_debug(fmt::format("Total Time: '{}ms'", ms));
+	log_debug(fmt::format("Empty String Time: '{}us' (Total), '{}us' (Per Object)", time_empty_string, time_empty_string / object_count));
+	log_debug(fmt::format("Create String from const char*: '{}us' (Total), '{}us' (Per Object)", time_const_char, time_const_char / object_count));
+	log_debug(fmt::format("Create String from substring: '{}us' (Total), '{}us' (Per Object)", time_substring, time_substring / object_count));
+	log_debug(fmt::format("Copy construct String: '{}us' (Total), '{}us' (Per Object)", time_copy_ctor, time_copy_ctor / object_count));
+	log_debug(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)", time_access, time_access / object_count));
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+void core_string_test_run(int object_count)
+{
+	//- Use a small and a big const char for testing
+	const char* C_SMALL_STRING = "Hello World!";
+	const char* C_BIG_STRING =
+		"object_access_time_cumulative += access_timer.microsecs();"
+		"auto* object = core::iallocator::construct<Object>((Object*)memory);"
+		"void* memory = allocator.allocate(sizeof(Object), alignof(Object));"
+		"auto* object = core::iallocator::construct<Object>((Object*)memory);"
+		;
+
+	//- Use a small and a big string for testing
+	core::cstring SMALL_STRING(C_SMALL_STRING);
+	core::cstring BIG_STRING(C_BIG_STRING);
+
+	constexpr auto C_RANGE_START = 3;
+	constexpr auto C_RANGE_END = 9;
+
+	core::ctimer timer;
+	core::ctimer timer_empty_string;
+	float time_empty_string = 0.0f;
+	core::ctimer timer_const_char;
+	float time_const_char = 0.0f;
+	core::ctimer timer_substring;
+	float time_substring = 0.0f;
+	core::ctimer timer_copy_ctor;
+	float time_copy_ctor = 0.0f;
+	core::ctimer timer_access;
+	float time_access = 0.0f;
+
+	timer.start();
+
+	for(auto i = 0; i < object_count; ++i)
+	{
+		//- Create empty string
+		{
+			timer_empty_string.start();
+			core::cstring s;
+			time_empty_string += timer_empty_string.microsecs();
+		}
+
+		//- Create string from const char*
+		{
+			timer_const_char.start();
+			core::cstring sma(C_SMALL_STRING);
+			core::cstring big(C_BIG_STRING);
+			time_const_char += timer_const_char.microsecs();
+		}
+
+		//- Create string from substring
+		{
+			timer_substring.start();
+			core::cstring sma_sub(SMALL_STRING, C_RANGE_START, C_RANGE_END);
+			core::cstring big_sub(BIG_STRING, C_RANGE_START, C_RANGE_END);
+			time_substring += timer_substring.microsecs();
+		}
+
+		//- Copy construct string
+		{
+			timer_copy_ctor.start();
+			core::cstring sma_copy = SMALL_STRING;
+			core::cstring big_copy = BIG_STRING;
+			time_copy_ctor += timer_copy_ctor.microsecs();
+		}
+
+		//- Access and print the string
+		{
+			timer_access.start();
+			auto c = SMALL_STRING.c_str();
+			auto cc = BIG_STRING.c_str();
+			time_access += timer_access.microsecs();
+		}
+	}
+
+	const auto ms = timer.millisecs();
+
+	log_warn("Testing core::cstring--------------------------------------------------------------------");
+	log_warn("-----------------------------------------------------------------------------------------");
+	log_debug(fmt::format("Object Count: '{}'", object_count));
+	log_debug(fmt::format("Total Time: '{}ms'", ms));
+	log_debug(fmt::format("Empty String Time: '{}us' (Total), '{}us' (Per Object)", time_empty_string, time_empty_string / object_count));
+	log_debug(fmt::format("Create String from const char*: '{}us' (Total), '{}us' (Per Object)", time_const_char, time_const_char / object_count));
+	log_debug(fmt::format("Create String from substring: '{}us' (Total), '{}us' (Per Object)", time_substring, time_substring / object_count));
+	log_debug(fmt::format("Copy construct String: '{}us' (Total), '{}us' (Per Object)", time_copy_ctor, time_copy_ctor / object_count));
+	log_debug(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)", time_access, time_access / object_count));
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+int strings_test_run(int object_count)
+{
+	std_string_test_run(object_count);
+	core_string_test_run(object_count);
+	return 0;
+}
+
+//------------------------------------------------------------------------------------------------------------------------
 int __real_main(int argc, char* argv[])
 {
+#if PROFILE_ENABLE
+	engine::cprofiler_service::init();
+#endif
+	core::sentry::init();
+
 	ZoneScoped;
 
 	AllocConsole();
@@ -115,6 +304,10 @@ int __real_main(int argc, char* argv[])
 
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
+
+	auto r = strings_test_run(1000000);
+
+	return r;
 
 	engine::cengine::sconfig cfg;
 
@@ -146,7 +339,7 @@ int __real_main(int argc, char* argv[])
 	sm::run();
 
 	logging::clog::instance().shutdown();
-
+	core::sentry::shutdown();
 	return 0;
 }
 
@@ -155,22 +348,22 @@ int __real_main(int argc, char* argv[])
 //------------------------------------------------------------------------------------------------------------------------
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-#if PROFILE_ENABLE
-	engine::cprofiler_service::init();
-#endif
-
 	//- FIXME: just for decoy, use any type of class so that they wont get optimized out for not being used...
 	{
 		editor::ceditor editor_decoy;
 		cgame game_decoy;
 	}
-
 	return __real_main(0, nullptr);
 }
 #else
 //------------------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-	return __real_main(argc, argv);
+	//- FIXME: just for decoy, use any type of class so that they wont get optimized out for not being used...
+	{
+		editor::ceditor editor_decoy;
+		cgame game_decoy;
+	}
+	return __real_main(0, nullptr);
 }
 #endif

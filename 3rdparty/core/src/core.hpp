@@ -241,11 +241,48 @@ ANONYMOUS_VARIABLE(cpu_profile_function)									\
 
 namespace core
 {
-	class iallocator;
-	class clinear_allocator;
-	class cstring;
 	class cstringview;
 	class cmemory;
+
+	//- Interface class for an allocator implementation.
+	//------------------------------------------------------------------------------------------------------------------------
+	class CORE_NO_VTABLE iallocator
+	{
+	public:
+		static constexpr uint64_t C_ALIGNMENT = 8;
+
+		//- in-place construct an object. Should be used for allocated objects that need additional construction.
+		template<typename TObjectType, typename... ARGS>
+		static TObjectType* construct(TObjectType* pointer, ARGS&&... args)
+		{
+			return new(SCAST(void*, pointer)) TObjectType(std::forward<ARGS>(args)...);
+		}
+
+		//- destruct object that requires destruction.
+		template<typename TObjectType>
+		static void destroy(TObjectType* pointer)
+		{
+			CORE_ASSERT(pointer, "Invalid operation. Pointer must be a valid object!");
+			pointer->~TObjectType();
+		}
+
+		virtual ~iallocator() = 0;
+		virtual void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) = 0;
+		virtual void deallocate(void* ptr) = 0;
+
+		uint64_t capacity() const;
+		uint64_t used() const;
+		uint64_t peak_used() const;
+
+	protected:
+		uint64_t m_total_size = 0;		//- amount of available memory
+		uint64_t m_used_size = 0;		//- current bytes in use
+		uint64_t m_peak_used_size = 0;	//- biggeest amount of memory used
+
+	protected:
+		void init(uint64_t size);
+		void track_allocation(int64_t allocation_size, uint64_t padding = 0);
+	};
 
 } //- core
 
@@ -365,11 +402,7 @@ namespace rttr
 
 namespace core
 {
-	//- forward declarations
-	class cuuid;
-	struct srect;
-
-	//- common enums etc.
+	//- Common enums etc.
 	//------------------------------------------------------------------------------------------------------------------------
 	enum launch_context : uint8_t
 	{
@@ -525,6 +558,16 @@ namespace core
 		static string_t architecture();
 		static string_t compiler();
 		static string_t configuration();
+	};
+
+	//- Structure to retrieve central structures and helpers etc.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sentry
+	{
+		static void init();
+		static void shutdown();
+
+		static iallocator* get_allocator();
 	};
 
 	//- RTTR aware replacement for std::pair<>
@@ -1029,6 +1072,8 @@ namespace rttr
 namespace core
 {
 	constexpr uint64_t C_LINKED_TREE_DEFAULT_CAPACITY = 512;
+	constexpr uint64_t C_STRING_SSO_ALIGNMENT = 16;
+	constexpr uint64_t C_STRING_SSO_SIZE_DEFAULT = 16;
 
 	namespace io
 	{
@@ -1206,6 +1251,240 @@ namespace core
 		};
 
 	} //- detail
+
+	//- Allocator also known as an 'Arena'. Performs allocations in a linear manner in a contiguous region of memory.
+	//- Note that it does not deallocate anything, it will free all used memory once out of scope.
+	//------------------------------------------------------------------------------------------------------------------------
+	class clinear_allocator final : public iallocator
+	{
+	public:
+		clinear_allocator(uint64_t size);
+		~clinear_allocator();
+
+		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
+		void deallocate(void* ptr) override final;
+
+	private:
+		uint64_t m_offset;
+		void* m_memory;
+	};
+
+	//- Allocator allowing for push and pop operations. Performs allocations in a linear manner in a contiguous region of memory.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cstack_allocator final : public iallocator
+	{
+	public:
+		cstack_allocator(uint64_t size);
+		~cstack_allocator();
+
+		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
+		void deallocate(void* ptr) override final;
+
+	private:
+		struct sheader
+		{
+			uint8_t m_padding = 0;
+			uint64_t m_size = 0;
+		};
+
+		uint64_t m_offset;
+		void* m_memory;
+	};
+
+	//- Allocator managing a pool of fixed-size memory blocks.
+	//- Note: does not use alignment and size for allocation, they are left for compatability.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	class cpool_allocator final : public iallocator
+	{
+	public:
+		cpool_allocator(uint64_t object_count);
+		~cpool_allocator();
+
+		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
+		void deallocate(void* ptr) override final;
+
+		TType* allocate_object();
+
+		template<typename... ARGS>
+		TType* allocate_object_with(ARGS&&... args);
+
+		void deallocate(TType* object);
+
+	private:
+		stack_t<void*> m_free_list;
+		int64_t m_type_size;
+		void* m_memory;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	template<typename... ARGS>
+	TType* core::cpool_allocator<TType>::allocate_object_with(ARGS&&... args)
+	{
+		TType* object = (TType*)allocate(0);
+
+		return iallocator::construct(object, std::forward<ARGS>(args)...);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	void core::cpool_allocator<TType>::deallocate(TType* object)
+	{
+		iallocator::destroy(object);
+
+		deallocate((void*)object);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	TType* core::cpool_allocator<TType>::allocate_object()
+	{
+		TType* object = (TType*)allocate(0);
+
+		return iallocator::construct(object);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	core::cpool_allocator<TType>::cpool_allocator(uint64_t object_count) :
+		m_memory(nullptr), m_type_size(SCAST(unsigned, sizeof(TType)))
+	{
+		const auto size = m_type_size * object_count;
+
+		//- real allocation
+		m_memory = CORE_MALLOC(size);
+
+		init(size);
+
+		//- divide mapped memory up into usable blocks of memory chunks
+		for (uint64_t i = 0; i < object_count; ++i)
+		{
+			uint64_t p = RCAST(uint64_t, m_memory) + i * m_type_size;
+
+			void* pointer = RCAST(void*, p);
+
+			m_free_list.push(pointer);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	core::cpool_allocator<TType>::~cpool_allocator()
+	{
+		//- real deallocation
+		CORE_ASSERT(m_used_size == 0, "Invalid operation. Objects were not deallocated and are still in use!");
+
+		CORE_FREE(m_memory);
+
+		m_memory = nullptr;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	void* core::cpool_allocator<TType>::allocate(uint64_t /*size*/, uint64_t /*alignment*/ /*= iallocator::C_ALIGNMENT*/)
+	{
+		void* pointer = nullptr;
+
+		if (!m_free_list.empty())
+		{
+			pointer = m_free_list.top();
+
+			m_free_list.pop();
+
+			track_allocation(m_type_size, 0);
+		}
+
+		return pointer;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TType>
+	void core::cpool_allocator<TType>::deallocate(void* ptr)
+	{
+		m_free_list.push(ptr);
+
+		track_allocation(-m_type_size, 0);
+	}
+
+	//- General-purpose allocator utilizing CORE_MALLOC. Capacity and size stay always the same; Requires some overhead
+	//- in memory and CPU time for management.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cgeneral_allocator final : public iallocator
+	{
+	public:
+		cgeneral_allocator();
+		~cgeneral_allocator();
+
+		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
+		void deallocate(void* ptr) override final;
+
+	private:
+		umap_t<uint64_t, uint64_t> m_pointers;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename uint64_t SSO>
+	class
+#if CORE_PLATFORM_WINDOWS
+		__declspec(align(C_STRING_SSO_ALIGNMENT))
+#else
+		__attribute__((aligned(C_STRING_SSO_ALIGNMENT)))
+#endif
+	istring
+	{
+	public:
+		virtual ~istring() = default;
+	};
+
+	std::string;
+
+	//- Class replacing std::string inspired by https://github.com/RobloxResearch/SIMDString
+	//------------------------------------------------------------------------------------------------------------------------
+	class cstring final : public istring<C_STRING_SSO_SIZE_DEFAULT>
+	{
+	public:
+		static constexpr auto npos = MAX(unsigned);
+
+		cstring();
+		~cstring();
+
+		cstring(const cstring& other);
+		cstring& operator=(const cstring& other);
+
+		cstring(cstring&& other);
+		cstring& operator=(cstring&& other);
+
+		//- Initialize string with given size and fill with given character
+		explicit cstring(unsigned n, char c = '\0');
+
+		//- Initialize string from given string or a substring there of
+		explicit cstring(const cstring& string, unsigned offset = 0, unsigned count = npos);
+		explicit cstring(const char* string, unsigned offset = 0, unsigned count = npos);
+
+		const char* c_str() const noexcept;
+		const char* data() const noexcept;
+		const char* data() noexcept;
+
+		inline unsigned length() const { return m_length; }
+		inline unsigned size() const { return length(); }
+		inline unsigned capacity() const { return m_capacity; }
+
+	private:
+		static_assert(C_STRING_SSO_SIZE_DEFAULT % C_STRING_SSO_ALIGNMENT == 0, "Invalid operation. SSO Size must be a multiple of SSO alignment!");
+
+		char m_buffer[C_STRING_SSO_SIZE_DEFAULT] = {'\0'};	//- Stack memory string for smaller sized strings
+		char* m_pointer = nullptr;							//- Empty unless stack memory is not enough and we allocated extra memory for string
+		unsigned m_length = 0;								//- Length without trailing '\0'
+		unsigned m_capacity = 0;							//- Reserved memory when allocated extra memory or zero if not
+
+	private:
+		void init(const char* source, unsigned offset, unsigned count);
+		void copy_shallow(const cstring& other);
+		void copy_deep(cstring& other);
+		char* allocate_chars(unsigned n);
+		void free_chars(char* pointer);
+	};
 
 	template<typename>
 	class cfunction;
@@ -1679,6 +1958,7 @@ namespace core
 		float secs() const;
 		float millisecs() const;
 		float microsecs() const;
+		double nanosecs() const;
 
 	private:
 		std::chrono::time_point<std::chrono::high_resolution_clock> m_timepoint;
@@ -2500,201 +2780,6 @@ namespace core
 		core::cscope_mutex m(m_mutex);
 
 		m_listeners[rttr::type::get<TEvent>()].emplace_back(std::move(callback));
-	}
-
-	//- Interface class for an allocator implementation.
-	//------------------------------------------------------------------------------------------------------------------------
-	class CORE_NO_VTABLE iallocator
-	{
-	public:
-		static constexpr uint64_t C_ALIGNMENT = 8;
-
-		//- in-place construct an object. Should be used for allocated objects that need additional construction.
-		template<typename TObjectType, typename... ARGS>
-		static TObjectType* construct(TObjectType* pointer, ARGS&&... args)
-		{
-			return new(SCAST(void*, pointer)) TObjectType(std::forward<ARGS>(args)...);
-		}
-
-		//- destruct object that requires destruction.
-		template<typename TObjectType>
-		static void destroy(TObjectType* pointer)
-		{
-			CORE_ASSERT(pointer, "Invalid operation. Pointer must be a valid object!");
-			pointer->~TObjectType();
-		}
-
-		virtual ~iallocator() = 0;
-		virtual void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) = 0;
-		virtual void deallocate(void* ptr) = 0;
-
-		uint64_t capacity() const;
-		uint64_t used() const;
-		uint64_t peak_used() const;
-
-	protected:
-		uint64_t m_total_size = 0;		//- amount of available memory
-		uint64_t m_used_size = 0;		//- current bytes in use
-		uint64_t m_peak_used_size = 0;	//- biggeest amount of memory used
-
-	protected:
-		void init(uint64_t size);
-		void track_allocation(int64_t allocation_size, uint64_t padding = 0);
-	};
-
-	//- Allocator also known as an 'Arena'. Performs allocations in a linear manner in a contiguous region of memory.
-	//- Note that it does not deallocate anything, it will free all used memory once out of scope.
-	//------------------------------------------------------------------------------------------------------------------------
-	class clinear_allocator final : public iallocator
-	{
-	public:
-		clinear_allocator(uint64_t size);
-		~clinear_allocator();
-
-		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
-		void deallocate(void* ptr) override final;
-
-	private:
-		uint64_t m_offset;
-		void* m_memory;
-	};
-
-	//- Allocator allowing for push and pop operations. Performs allocations in a linear manner in a contiguous region of memory.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cstack_allocator final : public iallocator
-	{
-	public:
-		cstack_allocator(uint64_t size);
-		~cstack_allocator();
-
-		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
-		void deallocate(void* ptr) override final;
-
-	private:
-		struct sheader
-		{
-			uint8_t m_padding = 0;
-			uint64_t m_size = 0;
-		};
-
-		uint64_t m_offset;
-		void* m_memory;
-	};
-
-	//- Allocator managing a pool of fixed-size memory blocks.
-	//- Note: does not use alignment and size for allocation, they are left for compatability.
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	class cpool_allocator final : public iallocator
-	{
-	public:
-		cpool_allocator(uint64_t object_count);
-		~cpool_allocator();
-
-		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
-		void deallocate(void* ptr) override final;
-
-		TType* allocate_object();
-
-		template<typename... ARGS>
-		TType* allocate_object_with(ARGS&&... args);
-
-		void deallocate(TType* object);
-
-	private:
-		stack_t<void*> m_free_list;
-		int64_t m_type_size;
-		void* m_memory;
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	template<typename... ARGS>
-	TType* core::cpool_allocator<TType>::allocate_object_with(ARGS&&... args)
-	{
-		TType* object = (TType*)allocate(0);
-
-		return iallocator::construct(object, std::forward<ARGS>(args)...);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	void core::cpool_allocator<TType>::deallocate(TType* object)
-	{
-		iallocator::destroy(object);
-
-		deallocate((void*)object);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	TType* core::cpool_allocator<TType>::allocate_object()
-	{
-		TType* object = (TType*)allocate(0);
-
-		return iallocator::construct(object);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	core::cpool_allocator<TType>::cpool_allocator(uint64_t object_count) :
-		m_memory(nullptr), m_type_size(SCAST(unsigned, sizeof(TType)))
-	{
-		const auto size = m_type_size * object_count;
-
-		//- real allocation
-		m_memory = CORE_MALLOC(size);
-
-		init(size);
-
-		//- divide mapped memory up into usable blocks of memory chunks
-		for (uint64_t i = 0; i < object_count; ++i)
-		{
-			uint64_t p = RCAST(uint64_t, m_memory) + i * m_type_size;
-
-			void* pointer = RCAST(void*, p);
-
-			m_free_list.push(pointer);
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	core::cpool_allocator<TType>::~cpool_allocator()
-	{
-		//- real deallocation
-		CORE_ASSERT(m_used_size == 0, "Invalid operation. Objects were not deallocated and are still in use!");
-
-		CORE_FREE(m_memory);
-
-		m_memory = nullptr;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	void* core::cpool_allocator<TType>::allocate(uint64_t /*size*/, uint64_t /*alignment*/ /*= iallocator::C_ALIGNMENT*/)
-	{
-		void* pointer = nullptr;
-
-		if (!m_free_list.empty())
-		{
-			pointer = m_free_list.top();
-
-			m_free_list.pop();
-
-			track_allocation(m_type_size, 0);
-		}
-
-		return pointer;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	void core::cpool_allocator<TType>::deallocate(void* ptr)
-	{
-		m_free_list.push(ptr);
-
-		track_allocation(-m_type_size, 0);
 	}
 
 	//- Implementation of a virtual filesystem inspired by

@@ -87,6 +87,7 @@ namespace core
 		constexpr stringview_t C_EMPTY_STRING					= "";
 		constexpr auto C_FILESYSTEMS_RESERVE_COUNT				= 16;
 		constexpr auto C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT	= 256;
+		static cgeneral_allocator S_GENERAL_ALLOCATOR;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool is_path_directory(stringview_t path)
@@ -1064,6 +1065,199 @@ namespace core
 	const core::cuuid cuuid::C_INVALID_UUID = { C_INVALID_DATA };
 
 	//------------------------------------------------------------------------------------------------------------------------
+	cgeneral_allocator::cgeneral_allocator()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cgeneral_allocator::~cgeneral_allocator()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void* cgeneral_allocator::allocate(uint64_t size, uint64_t alignment /*= iallocator::C_ALIGNMENT*/)
+	{
+		if(CORE_LIKELY(const auto mem = CORE_MALLOC(size); mem))
+		{
+			track_allocation(size);
+			m_pointers[reinterpret_cast<uint64_t>(mem)] = size;
+			return mem;
+		}
+		return nullptr;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cgeneral_allocator::deallocate(void* ptr)
+	{
+		CORE_FREE(ptr);
+
+		track_allocation(-SCAST(int64_t, reinterpret_cast<uint64_t>(ptr)));
+		m_pointers.erase(reinterpret_cast<uint64_t>(ptr));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void sentry::init()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void sentry::shutdown()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::iallocator* sentry::get_allocator()
+	{
+		return &S_GENERAL_ALLOCATOR;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::~cstring()
+	{
+		if (capacity() > 16)
+		{
+			free_chars(m_pointer);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(const cstring& other)
+	{
+		copy_shallow(other);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(cstring&& other)
+	{
+		copy_deep(other);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(const cstring& string, unsigned offset /*= 0*/, unsigned count /*= npos*/)
+	{
+		init(string.c_str(), offset, count);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring() :
+		m_pointer(&m_buffer[0])
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring& cstring::operator=(cstring&& other)
+	{
+		copy_deep(other);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring& cstring::operator=(const cstring& other)
+	{
+		copy_shallow(other);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::copy_shallow(const cstring& other)
+	{
+		//- Shallow copy data from other string without taking ownership
+		m_pointer = other.m_pointer;
+		m_length = other.m_length;
+
+		//- Note: this is important, capacity indicates whether we must free memory or not
+		m_capacity = 0;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::copy_deep(cstring& other)
+	{
+		//- Take ownership of data from other string
+		m_pointer = other.m_pointer;
+		m_length = other.m_length;
+		m_capacity = other.m_capacity;
+		other.m_pointer = nullptr;
+		other.m_length = 0;
+		other.m_capacity = 0;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	char* cstring::allocate_chars(unsigned n)
+	{
+		return (char*)sentry::get_allocator()->allocate(n * sizeof(char));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::free_chars(char* pointer)
+	{
+		sentry::get_allocator()->deallocate(pointer);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(unsigned n, char c /*= '\0'*/) :
+		m_pointer(&m_buffer[0])
+	{
+		if (n > C_STRING_SSO_SIZE_DEFAULT)
+		{
+			m_pointer = allocate_chars(n);
+			m_length = n;
+			m_capacity = n;
+
+			std::memset(m_pointer, SCAST(int, c), m_length * sizeof(char));
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cstring::cstring(const char* string, unsigned offset /*= 0*/, unsigned count /*= npos*/)
+	{
+		init(string, offset, count);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::init(const char* source, unsigned offset, unsigned count)
+	{
+		//- Compute number of characters to be copied
+		const auto string_length = SCAST(unsigned, strlen(source));
+		const auto copy_length = count == npos ? string_length : count;
+		const auto chars_to_copy = (copy_length) -offset;
+		const char* start_location = source + offset * sizeof(char);
+
+		//- Decide whether to use allocation or not
+		if (chars_to_copy > C_STRING_SSO_SIZE_DEFAULT)
+		{
+			m_pointer = allocate_chars(chars_to_copy);
+			m_length = chars_to_copy;
+			m_capacity = chars_to_copy;
+		}
+		else
+		{
+			m_pointer = &m_buffer[0];
+			m_length = chars_to_copy;
+			m_capacity = 0; //- Note: capacity stays zero to indicate that no allocation was made
+		}
+
+		std::memcpy(m_pointer, start_location, chars_to_copy * sizeof(char));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const char* cstring::c_str() const noexcept
+	{
+		return m_pointer;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const char* cstring::data() const noexcept
+	{
+		return m_pointer;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const char* cstring::data() noexcept
+	{
+		return m_pointer;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	string_t sinfo::platform()
 	{
 #if CORE_PLATFORM_WINDOWS
@@ -1991,12 +2185,23 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	float ctimer::microsecs() const
 	{
-		ASSERT(started(), "Invalid operation. Timer must be started before it can be used");
+		CORE_ASSERT(started(), "Invalid operation. Timer must be started before it can be used");
 
 		auto now = std::chrono::high_resolution_clock::now();
 
 		return SCAST(float, std::chrono::time_point_cast<std::chrono::microseconds>(now).time_since_epoch().count() -
 			std::chrono::time_point_cast<std::chrono::microseconds>(m_timepoint).time_since_epoch().count());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	double ctimer::nanosecs() const
+	{
+		CORE_ASSERT(started(), "Invalid operation. Timer must be started before it can be used");
+
+		auto now = std::chrono::high_resolution_clock::now();
+
+		return SCAST(double, std::chrono::time_point_cast<std::chrono::nanoseconds>(now).time_since_epoch().count() -
+			std::chrono::time_point_cast<std::chrono::nanoseconds>(m_timepoint).time_since_epoch().count());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
