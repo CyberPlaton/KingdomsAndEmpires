@@ -241,7 +241,6 @@ ANONYMOUS_VARIABLE(cpu_profile_function)									\
 
 namespace core
 {
-	class cstringview;
 	class cmemory;
 
 	//- Interface class for an allocator implementation.
@@ -1074,6 +1073,8 @@ namespace core
 	constexpr uint64_t C_LINKED_TREE_DEFAULT_CAPACITY = 512;
 	constexpr uint64_t C_STRING_SSO_ALIGNMENT = 16;
 	constexpr uint64_t C_STRING_SSO_SIZE_DEFAULT = 16;
+	constexpr bool C_STRING_USE_SIMD = true;
+	constexpr auto C_STRING_CAPACITY_INCREASE_RATIO = 3;
 
 	namespace io
 	{
@@ -1440,6 +1441,7 @@ namespace core
 	std::string;
 
 	//- Class replacing std::string inspired by https://github.com/RobloxResearch/SIMDString
+	//- 1. SSO (Small String Optimization). Does not require memory allocations for smaller sized strings
 	//------------------------------------------------------------------------------------------------------------------------
 	class cstring final : public istring<C_STRING_SSO_SIZE_DEFAULT>
 	{
@@ -1470,13 +1472,17 @@ namespace core
 		inline unsigned size() const { return length(); }
 		inline unsigned capacity() const { return m_capacity; }
 
+		//- Modifying operations
+		void push_back(const char c);
+		char pop_back();
+
 	private:
 		static_assert(C_STRING_SSO_SIZE_DEFAULT % C_STRING_SSO_ALIGNMENT == 0, "Invalid operation. SSO Size must be a multiple of SSO alignment!");
 
-		char m_buffer[C_STRING_SSO_SIZE_DEFAULT] = {'\0'};	//- Stack memory string for smaller sized strings
-		char* m_pointer = nullptr;							//- Empty unless stack memory is not enough and we allocated extra memory for string
-		unsigned m_length = 0;								//- Length without trailing '\0'
-		unsigned m_capacity = 0;							//- Reserved memory when allocated extra memory or zero if not
+		char m_buffer[C_STRING_SSO_SIZE_DEFAULT + 1] = {'\0'};	//- Stack memory string for smaller sized strings
+		char* m_pointer = nullptr;								//- Empty unless stack memory is not enough and we allocated extra memory for string
+		unsigned m_length = 0;									//- Length without trailing '\0'
+		unsigned m_capacity = 0;								//- Reserved memory when allocated extra memory or zero if not
 
 	private:
 		void init(const char* source, unsigned offset, unsigned count);
@@ -1484,6 +1490,21 @@ namespace core
 		void copy_deep(cstring& other);
 		char* allocate_chars(unsigned n);
 		void free_chars(char* pointer);
+		void memory_set(void* dest, int value, uint64_t size);
+		void memory_copy(void* dest, const void* source, uint64_t size);
+		void increase_capacity(unsigned newsize);
+
+		bool is_shared() const;
+		uint16_t reference_count(uint64_t p) const;
+	};
+
+	//- Read-only access to a cstring object.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cstringview final
+	{
+	public:
+
+	private:
 	};
 
 	template<typename>

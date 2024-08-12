@@ -105,7 +105,7 @@ RTTR_REGISTRATION
 }
 
 //------------------------------------------------------------------------------------------------------------------------
-void std_string_test_run(int object_count)
+void std_string_test_run(int object_count, int modifying_operations_count)
 {
 	//- Use a small and a big const char for testing
 	const char* C_SMALL_STRING = "Hello World!";
@@ -134,6 +134,10 @@ void std_string_test_run(int object_count)
 	float time_copy_ctor = 0.0f;
 	core::ctimer timer_access;
 	float time_access = 0.0f;
+	core::ctimer timer_push;
+	float time_push = 0.0f;
+	core::ctimer timer_pop;
+	float time_pop = 0.0f;
 
 	timer.start();
 
@@ -177,6 +181,34 @@ void std_string_test_run(int object_count)
 			auto cc = BIG_STRING.c_str();
 			time_access += timer_access.microsecs();
 		}
+
+		//- Basic modification, push and pop
+		{
+			for (auto i = 0; i < modifying_operations_count; ++i)
+			{
+				timer_push.start();
+				SMALL_STRING.push_back('X');
+				time_push += timer_push.microsecs();
+			}
+			for (auto i = 0; i < modifying_operations_count; ++i)
+			{
+				timer_pop.start();
+				SMALL_STRING.pop_back();
+				time_pop += timer_pop.microsecs();
+			}
+			for (auto i = 0; i < modifying_operations_count; ++i)
+			{
+				timer_push.start();
+				BIG_STRING.push_back('X');
+				time_push += timer_push.microsecs();
+			}
+			for (auto i = 0; i < modifying_operations_count; ++i)
+			{
+				timer_pop.start();
+				BIG_STRING.pop_back();
+				time_pop += timer_pop.microsecs();
+			}
+		}
 	}
 
 	const auto ms = timer.millisecs();
@@ -190,10 +222,13 @@ void std_string_test_run(int object_count)
 	log_debug(fmt::format("Create String from substring: '{}us' (Total), '{}us' (Per Object)", time_substring, time_substring / object_count));
 	log_debug(fmt::format("Copy construct String: '{}us' (Total), '{}us' (Per Object)", time_copy_ctor, time_copy_ctor / object_count));
 	log_debug(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)", time_access, time_access / object_count));
+	log_debug(fmt::format("Modifying Operations Count: '{}'", modifying_operations_count));
+	log_debug(fmt::format("'push_back' Time: '{}us' (Total), '{}us' (Per OP)", time_push, time_push / modifying_operations_count));
+	log_debug(fmt::format("'pop_back' Time: '{}us' (Total), '{}us' (Per OP)", time_pop, time_pop / modifying_operations_count));
 }
 
 //------------------------------------------------------------------------------------------------------------------------
-void core_string_test_run(int object_count)
+void core_string_test_run(int object_count, int modifying_operations_count)
 {
 	//- Use a small and a big const char for testing
 	const char* C_SMALL_STRING = "Hello World!";
@@ -222,6 +257,10 @@ void core_string_test_run(int object_count)
 	float time_copy_ctor = 0.0f;
 	core::ctimer timer_access;
 	float time_access = 0.0f;
+	core::ctimer timer_push;
+	float time_push = 0.0f;
+	core::ctimer timer_pop;
+	float time_pop = 0.0f;
 
 	timer.start();
 
@@ -265,6 +304,34 @@ void core_string_test_run(int object_count)
 			auto cc = BIG_STRING.c_str();
 			time_access += timer_access.microsecs();
 		}
+
+		//- Basic modification, push and pop
+		{
+			for (auto i = 0; i < modifying_operations_count; ++i)
+			{
+				timer_push.start();
+				SMALL_STRING.push_back('X');
+				time_push += timer_push.microsecs();
+			}
+			for (auto i = 0; i < modifying_operations_count; ++i)
+			{
+				timer_pop.start();
+				SMALL_STRING.pop_back();
+				time_pop += timer_pop.microsecs();
+			}
+			for (auto i = 0; i < modifying_operations_count; ++i)
+			{
+				timer_push.start();
+				BIG_STRING.push_back('X');
+				time_push += timer_push.microsecs();
+			}
+			for (auto i = 0; i < modifying_operations_count; ++i)
+			{
+				timer_pop.start();
+				BIG_STRING.pop_back();
+				time_pop += timer_pop.microsecs();
+			}
+		}
 	}
 
 	const auto ms = timer.millisecs();
@@ -278,13 +345,16 @@ void core_string_test_run(int object_count)
 	log_debug(fmt::format("Create String from substring: '{}us' (Total), '{}us' (Per Object)", time_substring, time_substring / object_count));
 	log_debug(fmt::format("Copy construct String: '{}us' (Total), '{}us' (Per Object)", time_copy_ctor, time_copy_ctor / object_count));
 	log_debug(fmt::format("Access Time: '{}us' (Total), '{}us' (Per Object)", time_access, time_access / object_count));
+	log_debug(fmt::format("Modifying Operations Count: '{}'", modifying_operations_count));
+	log_debug(fmt::format("'push_back' Time: '{}us' (Total), '{}us' (Per OP)", time_push, time_push / modifying_operations_count));
+	log_debug(fmt::format("'pop_back' Time: '{}us' (Total), '{}us' (Per OP)", time_pop, time_pop / modifying_operations_count));
 }
 
 //------------------------------------------------------------------------------------------------------------------------
-int strings_test_run(int object_count)
+int strings_test_run(int object_count, int modifying_operations_count)
 {
-	std_string_test_run(object_count);
-	core_string_test_run(object_count);
+	std_string_test_run(object_count, modifying_operations_count);
+	core_string_test_run(object_count, modifying_operations_count);
 	return 0;
 }
 
@@ -305,9 +375,9 @@ int __real_main(int argc, char* argv[])
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
 
-	auto r = strings_test_run(1000000);
+	strings_test_run(50000, 100);
 
-	return r;
+	return 0;
 
 	engine::cengine::sconfig cfg;
 

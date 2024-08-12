@@ -1,6 +1,16 @@
 #include "core.hpp"
 #include <sstream>
 
+#if defined(__i386__) || defined(_M_IX86) || defined(__x86_64__) || defined(_M_X64)
+	#define SSEx64 1
+	#include <immintrin.h>
+	using m128i_t = __m128i;
+#elif defined(__ARM_NEON) || defined(__arm__) || defined(_M_ARM)
+	#define SSEx64 0
+	#include <arm_neon.h>
+	using m128i_t = uint64x2_t;
+#endif
+
 namespace algorithm
 {
 	//------------------------------------------------------------------------------------------------------------------------
@@ -88,6 +98,7 @@ namespace core
 		constexpr auto C_FILESYSTEMS_RESERVE_COUNT				= 16;
 		constexpr auto C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT	= 256;
 		static cgeneral_allocator S_GENERAL_ALLOCATOR;
+		static umap_t<uint64_t, std::atomic<uint16_t>> S_STRING_REFERENCE_COUNT;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool is_path_directory(stringview_t path)
@@ -1079,6 +1090,7 @@ namespace core
 	{
 		if(CORE_LIKELY(const auto mem = CORE_MALLOC(size); mem))
 		{
+			std::memset(mem, 0, size);
 			track_allocation(size);
 			m_pointers[reinterpret_cast<uint64_t>(mem)] = size;
 			return mem;
@@ -1203,7 +1215,7 @@ namespace core
 			m_length = n;
 			m_capacity = n;
 
-			std::memset(m_pointer, SCAST(int, c), m_length * sizeof(char));
+			memory_set(m_pointer, SCAST(int, c), m_length * sizeof(char));
 		}
 	}
 
@@ -1228,15 +1240,15 @@ namespace core
 			m_pointer = allocate_chars(chars_to_copy);
 			m_length = chars_to_copy;
 			m_capacity = chars_to_copy;
+			memory_copy(m_pointer, start_location, chars_to_copy * sizeof(char));
 		}
 		else
 		{
 			m_pointer = &m_buffer[0];
 			m_length = chars_to_copy;
 			m_capacity = 0; //- Note: capacity stays zero to indicate that no allocation was made
+			std::memcpy(m_pointer, start_location, chars_to_copy * sizeof(char));
 		}
-
-		std::memcpy(m_pointer, start_location, chars_to_copy * sizeof(char));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1255,6 +1267,124 @@ namespace core
 	const char* cstring::data() noexcept
 	{
 		return m_pointer;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::push_back(const char c)
+	{
+		//- If a shared copy, then create a private first
+		if (is_shared() > 0)
+		{
+			const auto* source = m_pointer;
+
+			m_pointer = allocate_chars(m_length);
+
+			memory_copy(m_pointer, source, m_length);
+		}
+
+		//- Double capacity if we reached end or stack memory is not enough
+		if(m_length == m_capacity)
+		{
+			increase_capacity(m_capacity * C_STRING_CAPACITY_INCREASE_RATIO);
+		}
+		else if (m_length == C_STRING_SSO_SIZE_DEFAULT)
+		{
+			increase_capacity(C_STRING_SSO_SIZE_DEFAULT * C_STRING_CAPACITY_INCREASE_RATIO);
+		}
+
+		//- Finally, append the character
+		m_pointer[m_length++] = c;
+		m_pointer[m_length] = '\0';
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	char cstring::pop_back()
+	{
+		auto c = m_pointer[m_length];
+
+		m_pointer[m_length--] = '\0';
+
+		return c;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::memory_set(void* dest, int value, uint64_t size)
+	{
+		std::memset(dest, value, size);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::memory_copy(void* dest, const void* source, uint64_t size)
+	{
+		if constexpr (C_STRING_USE_SIMD)
+		{
+			auto* p = reinterpret_cast<m128i_t*>(dest);
+#if SSEx64
+			const auto* s = reinterpret_cast<const m128i_t*>(source);
+#else
+			const auto* s = reinterpret_cast<const uint64_t*>(source);
+#endif
+
+			uint64_t i = size / C_STRING_SSO_SIZE_DEFAULT;
+
+			CORE_ASSERT(i, "Invalid operation. Either size to copy or SSO size is invalid!");
+
+			while(i--)
+			{
+#if SSEx64
+				p[i] = _mm_stream_load_si128(s + i);
+#else
+				p[i] = vld1q_u64(s + (i * 2));
+#endif
+			}
+		}
+		else
+		{
+			std::memcpy(dest, source, size);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	uint16_t cstring::reference_count(uint64_t p) const
+	{
+		if(const auto it = S_STRING_REFERENCE_COUNT.find(p); it != S_STRING_REFERENCE_COUNT.end())
+		{
+			return it->second.load();
+		}
+		return 0;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cstring::is_shared() const
+	{
+		return (uint64_t)m_pointer == (uint64_t)m_buffer ? false : reference_count((uint64_t)m_pointer);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::increase_capacity(unsigned newsize)
+	{
+		const auto chars_to_copy = m_length;
+		auto* p = m_pointer;
+
+		m_pointer = allocate_chars(newsize);
+		m_length = chars_to_copy;
+		m_capacity = newsize;
+
+		//- Copy data from old memory to new one
+		if (chars_to_copy > C_STRING_SSO_SIZE_DEFAULT)
+		{
+			memory_copy(m_pointer, p, chars_to_copy * sizeof(char));
+		}
+		else
+		{
+			std::memcpy(m_pointer, p, chars_to_copy * sizeof(char));
+		}
+
+		//- Free old memory if required and we are responsible for it
+		if (is_shared() && reference_count((uint64_t)p) == 0)
+		{
+			free_chars(p);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
