@@ -10,8 +10,6 @@ namespace imgui
 {
 	namespace detail
 	{
-		static ImPlotContext*			S_IMPLOT_CONTEXT = nullptr;
-		static ImNodes::EditorContext*	S_IMNODES_CONTEXT = nullptr;
 		static ImGuiContext*			S_IMGUI_CONTEXT = nullptr;
 
 	} //- detail
@@ -20,26 +18,6 @@ namespace imgui
 	void shutdown();
 	void begin();
 	void end();
-
-	//------------------------------------------------------------------------------------------------------------------------
-	static ImPlotContext* implot_ctx()
-	{
-		if (!detail::S_IMPLOT_CONTEXT)
-		{
-			detail::S_IMPLOT_CONTEXT = ImPlot::GetCurrentContext();
-		}
-		return detail::S_IMPLOT_CONTEXT;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	static ImNodes::EditorContext* imnodes_ctx()
-	{
-		if (!detail::S_IMNODES_CONTEXT)
-		{
-			detail::S_IMNODES_CONTEXT = ImNodes::GetCurrentEditor();
-		}
-		return detail::S_IMNODES_CONTEXT;
-	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	static ImGuiContext* imgui_ctx()

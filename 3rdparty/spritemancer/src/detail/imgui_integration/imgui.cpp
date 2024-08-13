@@ -16,9 +16,7 @@ namespace imgui
 	bool init()
 	{
 		//- init imgui and create icon font from ICON_FA data
-		detail::S_IMGUI_CONTEXT = ImGui::CreateContext(nullptr);
-		detail::S_IMNODES_CONTEXT = ImNodes::CreateEditor(nullptr);
-		detail::S_IMPLOT_CONTEXT = ImPlot::CreateContext();
+		detail::S_IMGUI_CONTEXT = ImGui::CreateContext();
 		rlImGuiSetup(true);
 
 		//- setup default style
@@ -47,8 +45,6 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void shutdown()
 	{
-		ImPlot::DestroyContext(detail::S_IMPLOT_CONTEXT);
-		ImNodes::DestroyEditor(detail::S_IMNODES_CONTEXT);
 		rlImGuiShutdown();
 		ImGui::DestroyContext(detail::S_IMGUI_CONTEXT);
 	}

@@ -1231,7 +1231,7 @@ namespace core
 		//- Compute number of characters to be copied
 		const auto string_length = SCAST(unsigned, strlen(source));
 		const auto copy_length = count == npos ? string_length : count;
-		const auto chars_to_copy = (copy_length) -offset;
+		const auto chars_to_copy = (copy_length)-offset;
 		const char* start_location = source + offset * sizeof(char);
 
 		//- Decide whether to use allocation or not
@@ -1283,7 +1283,7 @@ namespace core
 		}
 
 		//- Double capacity if we reached end or stack memory is not enough
-		if(m_length == m_capacity)
+		if (m_length == m_capacity)
 		{
 			increase_capacity(m_capacity * C_STRING_CAPACITY_INCREASE_RATIO);
 		}
@@ -1329,7 +1329,7 @@ namespace core
 
 			CORE_ASSERT(i, "Invalid operation. Either size to copy or SSO size is invalid!");
 
-			while(i--)
+			while (i--)
 			{
 #if SSEx64
 				p[i] = _mm_stream_load_si128(s + i);
@@ -1347,7 +1347,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	uint16_t cstring::reference_count(uint64_t p) const
 	{
-		if(const auto it = S_STRING_REFERENCE_COUNT.find(p); it != S_STRING_REFERENCE_COUNT.end())
+		if (const auto it = S_STRING_REFERENCE_COUNT.find(p); it != S_STRING_REFERENCE_COUNT.end())
 		{
 			return it->second.load();
 		}

@@ -21,6 +21,7 @@ namespace stl = std;
 #include <../src/tracy.hpp>
 #define ASIO_NO_EXCEPTIONS
 #include <asio.h>
+#include "SIMDString.h" //- For testing only
 namespace miniz
 {
 #include <../src/miniz.hpp>
@@ -1438,8 +1439,6 @@ namespace core
 		virtual ~istring() = default;
 	};
 
-	std::string;
-
 	//- Class replacing std::string inspired by https://github.com/RobloxResearch/SIMDString
 	//- 1. SSO (Small String Optimization). Does not require memory allocations for smaller sized strings
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1477,9 +1476,9 @@ namespace core
 		char pop_back();
 
 	private:
-		static_assert(C_STRING_SSO_SIZE_DEFAULT % C_STRING_SSO_ALIGNMENT == 0, "Invalid operation. SSO Size must be a multiple of SSO alignment!");
+		static_assert(C_STRING_SSO_SIZE_DEFAULT% C_STRING_SSO_ALIGNMENT == 0, "Invalid operation. SSO Size must be a multiple of SSO alignment!");
 
-		char m_buffer[C_STRING_SSO_SIZE_DEFAULT + 1] = {'\0'};	//- Stack memory string for smaller sized strings
+		char m_buffer[C_STRING_SSO_SIZE_DEFAULT + 1] = { '\0' };	//- Stack memory string for smaller sized strings
 		char* m_pointer = nullptr;								//- Empty unless stack memory is not enough and we allocated extra memory for string
 		unsigned m_length = 0;									//- Length without trailing '\0'
 		unsigned m_capacity = 0;								//- Reserved memory when allocated extra memory or zero if not

@@ -29,18 +29,13 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmain_menu::shutdown()
 	{
-
+		m_elements_stack.shutdown();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmain_menu::on_update(float dt)
 	{
-		if (!m_material_editor)
-		{
-			m_material_editor = detail::create_ui_element<cmaterial_editor>(ctx());
-
-			m_material_editor->init();
-		}
+		m_elements_stack.on_update(dt);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -103,7 +98,10 @@ namespace editor
 			//- Tools section
 			if (const auto tools_scope = imgui::cmenu_scope("Tools"))
 			{
-
+				if (imgui::cmenu_item("Material Editor"))
+				{
+					m_elements_stack.push<cmaterial_editor>(ctx());
+				}
 			}
 
 			//- Developer and debug section
@@ -133,6 +131,8 @@ namespace editor
 		{
 			ImGui::ShowDemoWindow(&ctx().m_imgui_demo);
 		}
+
+		m_elements_stack.on_ui_render();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

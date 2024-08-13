@@ -9,7 +9,7 @@ namespace editor
 	class cmaterial_editor final : public clayer_base
 	{
 	public:
-		cmaterial_editor(scontext& ctx) : clayer_base("##material_editor", ctx) {};
+		cmaterial_editor(scontext& ctx);
 		~cmaterial_editor();
 
 		bool init() override final;
@@ -18,6 +18,7 @@ namespace editor
 		void on_ui_render() override final;
 
 	private:
+		ImNodes::EditorContext* m_editor;
 	};
 
 } //- editor
