@@ -1445,7 +1445,7 @@ namespace core
 	class cstring final : public istring<C_STRING_SSO_SIZE_DEFAULT>
 	{
 	public:
-		static constexpr auto npos = MAX(unsigned);
+		static constexpr auto npos = MAX(uint64_t);
 
 		cstring();
 		~cstring();
@@ -1457,44 +1457,43 @@ namespace core
 		cstring& operator=(cstring&& other);
 
 		//- Initialize string with given size and fill with given character
-		explicit cstring(unsigned n, char c = '\0');
+		explicit cstring(uint64_t n, char c = '\0');
 
 		//- Initialize string from given string or a substring there of
-		explicit cstring(const cstring& string, unsigned offset = 0, unsigned count = npos);
-		explicit cstring(const char* string, unsigned offset = 0, unsigned count = npos);
+		explicit cstring(const cstring& string, uint64_t offset = 0, uint64_t count = npos);
+		explicit cstring(const char* string, uint64_t offset = 0, uint64_t count = npos);
 
 		const char* c_str() const noexcept;
 		const char* data() const noexcept;
 		const char* data() noexcept;
 
-		inline unsigned length() const { return m_length; }
-		inline unsigned size() const { return length(); }
-		inline unsigned capacity() const { return m_capacity; }
+		uint64_t length() const;
+		uint64_t size() const { return length(); }
+		uint64_t capacity() const;
 
 		//- Modifying operations
+		void append(const char* first, const char* last);
+		void assign(const char* first, uint64_t count);
 		void push_back(const char c);
 		char pop_back();
+		void reserve(uint64_t count);
+		void resize(uint64_t count);
+		void clear();
 
 	private:
-		static_assert(C_STRING_SSO_SIZE_DEFAULT% C_STRING_SSO_ALIGNMENT == 0, "Invalid operation. SSO Size must be a multiple of SSO alignment!");
+		static_assert(C_STRING_SSO_SIZE_DEFAULT >= C_STRING_SSO_ALIGNMENT &&
+			C_STRING_SSO_SIZE_DEFAULT % C_STRING_SSO_ALIGNMENT == 0, "Invalid operation. SSO size must be a multiple of SSO alignment!");
 
-		char m_buffer[C_STRING_SSO_SIZE_DEFAULT + 1] = { '\0' };	//- Stack memory string for smaller sized strings
-		char* m_pointer = nullptr;								//- Empty unless stack memory is not enough and we allocated extra memory for string
-		unsigned m_length = 0;									//- Length without trailing '\0'
-		unsigned m_capacity = 0;								//- Reserved memory when allocated extra memory or zero if not
+		char m_buffer[C_STRING_SSO_SIZE_DEFAULT + 1] = { '\0' };//- Stack memory string for smaller sized strings
+		char* m_first = nullptr;								//- Empty unless stack memory is not enough and we allocated extra memory for string
+		char* m_last = nullptr;									//- 
+		uint64_t m_capacity = C_STRING_SSO_SIZE_DEFAULT;		//- Reserved memory when allocated extra memory or zero if not
 
 	private:
-		void init(const char* source, unsigned offset, unsigned count);
-		void copy_shallow(const cstring& other);
-		void copy_deep(cstring& other);
-		char* allocate_chars(unsigned n);
-		void free_chars(char* pointer);
-		void memory_set(void* dest, int value, uint64_t size);
-		void memory_copy(void* dest, const void* source, uint64_t size);
-		void increase_capacity(unsigned newsize);
+		inline bool in_heap() const { return m_capacity > C_STRING_SSO_SIZE_DEFAULT || m_first != &m_buffer[0]; }
 
-		bool is_shared() const;
-		uint16_t reference_count(uint64_t p) const;
+		void memcopy(void* dest, const void* source, uint64_t size);
+		void memset(void* dest, char value, uint64_t size);
 	};
 
 	//- Read-only access to a cstring object.

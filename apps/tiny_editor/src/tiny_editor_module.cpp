@@ -168,9 +168,17 @@ void std_string_test_run(int object_count, int modifying_operations_count)
 
 		//- Copy construct string
 		{
+			std::string small_string(C_SMALL_STRING);
+			std::string big_string(C_BIG_STRING);
+
 			timer_copy_ctor.start();
-			std::string sma_copy = SMALL_STRING;
-			std::string big_copy = BIG_STRING;
+			//- Shallow copy
+			std::string sma_copy = small_string;
+			std::string big_copy = big_string;
+
+			//- Deep Copy
+			std::string sma_deep_copy = std::move(small_string);
+			std::string big_deep_copy = std::move(big_string);
 			time_copy_ctor += timer_copy_ctor.microsecs();
 		}
 
@@ -290,9 +298,17 @@ void simd_string_test_run(int object_count, int modifying_operations_count)
 
 		//- Copy construct string
 		{
+			SIMDString small_string(C_SMALL_STRING);
+			SIMDString big_string(C_BIG_STRING);
+
 			timer_copy_ctor.start();
-			SIMDString sma_copy = SMALL_STRING;
-			SIMDString big_copy = BIG_STRING;
+			//- Shallow copy
+			SIMDString sma_copy = small_string;
+			SIMDString big_copy = big_string;
+
+			//- Deep Copy
+			SIMDString sma_deep_copy = std::move(small_string);
+			SIMDString big_deep_copy = std::move(big_string);
 			time_copy_ctor += timer_copy_ctor.microsecs();
 		}
 
@@ -412,9 +428,17 @@ void core_string_test_run(int object_count, int modifying_operations_count)
 
 		//- Copy construct string
 		{
+			core::cstring small_string(C_SMALL_STRING);
+			core::cstring big_string(C_BIG_STRING);
+
 			timer_copy_ctor.start();
-			core::cstring sma_copy = SMALL_STRING;
-			core::cstring big_copy = BIG_STRING;
+			//- Shallow copy
+			core::cstring sma_copy = small_string;
+			core::cstring big_copy = big_string;
+
+			//- Deep Copy
+			core::cstring sma_deep_copy = std::move(small_string);
+			core::cstring big_deep_copy = std::move(big_string);
 			time_copy_ctor += timer_copy_ctor.microsecs();
 		}
 
@@ -497,6 +521,10 @@ int __real_main(int argc, char* argv[])
 
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
+
+	const auto result = strings_test_run(100, 100);
+
+	return result;
 
 	engine::cengine::sconfig cfg;
 

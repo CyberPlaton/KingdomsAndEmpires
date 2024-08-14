@@ -98,7 +98,6 @@ namespace core
 		constexpr auto C_FILESYSTEMS_RESERVE_COUNT				= 16;
 		constexpr auto C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT	= 256;
 		static cgeneral_allocator S_GENERAL_ALLOCATOR;
-		static umap_t<uint64_t, std::atomic<uint16_t>> S_STRING_REFERENCE_COUNT;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool is_path_directory(stringview_t path)
@@ -1126,196 +1125,167 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	cstring::~cstring()
 	{
-		if (capacity() > 16)
+		if (capacity() > C_STRING_SSO_SIZE_DEFAULT)
 		{
-			free_chars(m_pointer);
+			sentry::get_allocator()->deallocate(m_first);
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(const cstring& other)
+	cstring::cstring(const cstring& other) :
+		m_first(other.m_first), m_last(other.m_last), m_capacity(other.m_capacity)
 	{
-		copy_shallow(other);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(cstring&& other)
+	cstring::cstring(cstring&& other) :
+		m_first(other.m_first), m_last(other.m_last), m_capacity(other.m_capacity)
 	{
-		copy_deep(other);
+		other.m_first = nullptr;
+		other.m_last = nullptr;
+		other.m_capacity = 0;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(const cstring& string, unsigned offset /*= 0*/, unsigned count /*= npos*/)
+	cstring::cstring(const cstring& string, uint64_t offset /*= 0*/, uint64_t count /*= npos*/) :
+		m_first(&m_buffer[0]), m_last(&m_buffer[C_STRING_SSO_SIZE_DEFAULT]), m_capacity(C_STRING_SSO_SIZE_DEFAULT)
 	{
-		init(string.c_str(), offset, count);
+		assign(string.c_str() + offset, count == npos ? string.length() : count);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cstring::cstring() :
-		m_pointer(&m_buffer[0])
+		m_first(&m_buffer[0]), m_last(&m_buffer[C_STRING_SSO_SIZE_DEFAULT]), m_capacity(C_STRING_SSO_SIZE_DEFAULT)
 	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::append(const char* first, const char* last)
+	{
+		const auto newsize = (uint64_t)((m_last - m_first) + (last - first) + 1);
+
+		if (newsize > m_capacity)
+		{
+			reserve((newsize * C_STRING_CAPACITY_INCREASE_RATIO) / 2);
+		}
+
+		for (; first != last; ++m_last, ++first)
+		{
+			*m_last = *first;
+		}
+		*m_last = '\0';
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::assign(const char* first, uint64_t count)
+	{
+		clear();
+		append(first, first + count);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::clear()
+	{
+		resize(0);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cstring& cstring::operator=(cstring&& other)
 	{
-		copy_deep(other);
+		m_first = other.m_first;
+		m_last = other.m_last;
+		m_capacity = other.m_capacity;
+		other.m_first = nullptr;
+		other.m_last = nullptr;
+		other.m_capacity = 0;
 		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cstring& cstring::operator=(const cstring& other)
 	{
-		copy_shallow(other);
+		m_first = other.m_first;
+		m_last = other.m_last;
+		m_capacity = other.m_capacity;
 		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::copy_shallow(const cstring& other)
+	cstring::cstring(uint64_t n, char c /*= '\0'*/) :
+		m_first(&m_buffer[0]), m_last(&m_buffer[C_STRING_SSO_SIZE_DEFAULT]), m_capacity(C_STRING_SSO_SIZE_DEFAULT)
 	{
-		//- Shallow copy data from other string without taking ownership
-		m_pointer = other.m_pointer;
-		m_length = other.m_length;
+		resize(n);
 
-		//- Note: this is important, capacity indicates whether we must free memory or not
-		m_capacity = 0;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::copy_deep(cstring& other)
-	{
-		//- Take ownership of data from other string
-		m_pointer = other.m_pointer;
-		m_length = other.m_length;
-		m_capacity = other.m_capacity;
-		other.m_pointer = nullptr;
-		other.m_length = 0;
-		other.m_capacity = 0;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	char* cstring::allocate_chars(unsigned n)
-	{
-		return (char*)sentry::get_allocator()->allocate(n * sizeof(char));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::free_chars(char* pointer)
-	{
-		sentry::get_allocator()->deallocate(pointer);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(unsigned n, char c /*= '\0'*/) :
-		m_pointer(&m_buffer[0])
-	{
-		if (n > C_STRING_SSO_SIZE_DEFAULT)
+		for(char* it = m_first; it != m_last; ++it)
 		{
-			m_pointer = allocate_chars(n);
-			m_length = n;
-			m_capacity = n;
-
-			memory_set(m_pointer, SCAST(int, c), m_length * sizeof(char));
+			*it = c;
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cstring::cstring(const char* string, unsigned offset /*= 0*/, unsigned count /*= npos*/)
+	cstring::cstring(const char* string, uint64_t offset /*= 0*/, uint64_t count /*= npos*/) :
+		m_first(&m_buffer[0]), m_last(&m_buffer[C_STRING_SSO_SIZE_DEFAULT]), m_capacity(C_STRING_SSO_SIZE_DEFAULT)
 	{
-		init(string, offset, count);
+		assign(string + offset, count == npos ? strlen(string) : count);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::init(const char* source, unsigned offset, unsigned count)
+	void cstring::reserve(uint64_t count)
 	{
-		//- Compute number of characters to be copied
-		const auto string_length = SCAST(unsigned, strlen(source));
-		const auto copy_length = count == npos ? string_length : count;
-		const auto chars_to_copy = (copy_length)-offset;
-		const char* start_location = source + offset * sizeof(char);
+		const auto heap = in_heap();
+		const auto size = length();
+		char* newmem = (char*)sentry::get_allocator()->allocate(count);
+		char* oldmem = m_first;
 
-		//- Decide whether to use allocation or not
-		if (chars_to_copy > C_STRING_SSO_SIZE_DEFAULT)
+		if(size > C_STRING_SSO_SIZE_DEFAULT)
 		{
-			m_pointer = allocate_chars(chars_to_copy);
-			m_length = chars_to_copy;
-			m_capacity = chars_to_copy;
-			memory_copy(m_pointer, start_location, chars_to_copy * sizeof(char));
+			memcopy(newmem, oldmem, size);
 		}
-		else
+		else if (size > 0)
 		{
-			m_pointer = &m_buffer[0];
-			m_length = chars_to_copy;
-			m_capacity = 0; //- Note: capacity stays zero to indicate that no allocation was made
-			std::memcpy(m_pointer, start_location, chars_to_copy * sizeof(char));
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	const char* cstring::c_str() const noexcept
-	{
-		return m_pointer;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	const char* cstring::data() const noexcept
-	{
-		return m_pointer;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	const char* cstring::data() noexcept
-	{
-		return m_pointer;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::push_back(const char c)
-	{
-		//- If a shared copy, then create a private first
-		if (is_shared() > 0)
-		{
-			const auto* source = m_pointer;
-
-			m_pointer = allocate_chars(m_length);
-
-			memory_copy(m_pointer, source, m_length);
+			std::memcpy(newmem, oldmem, size);
 		}
 
-		//- Double capacity if we reached end or stack memory is not enough
-		if (m_length == m_capacity)
+		m_first = newmem;
+		m_last = m_first + size;
+		m_capacity = count;
+
+		//- Free old memory used if we allocated anything
+		if (heap)
 		{
-			increase_capacity(m_capacity * C_STRING_CAPACITY_INCREASE_RATIO);
+			sentry::get_allocator()->deallocate(oldmem);
 		}
-		else if (m_length == C_STRING_SSO_SIZE_DEFAULT)
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::resize(uint64_t count)
+	{
+		const auto prevsize = length();
+
+		if(count > prevsize)
 		{
-			increase_capacity(C_STRING_SSO_SIZE_DEFAULT * C_STRING_CAPACITY_INCREASE_RATIO);
+			reserve(count);
+
+			const char* end = m_first + count + 1;
+
+			for (char* it = m_last; it < end; ++it)
+			{
+				*it = '\0';
+			}
+		}
+		else if(m_last != m_first)
+		{
+			m_first[count] = '\0';
 		}
 
-		//- Finally, append the character
-		m_pointer[m_length++] = c;
-		m_pointer[m_length] = '\0';
+		m_last = m_first + count;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	char cstring::pop_back()
+	void cstring::memcopy(void* dest, const void* source, uint64_t size)
 	{
-		auto c = m_pointer[m_length];
+		CORE_ASSERT(size > 0, "Invalid operation. Size must not be zero!");
 
-		m_pointer[m_length--] = '\0';
-
-		return c;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::memory_set(void* dest, int value, uint64_t size)
-	{
-		std::memset(dest, value, size);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::memory_copy(void* dest, const void* source, uint64_t size)
-	{
 		if constexpr (C_STRING_USE_SIMD)
 		{
 			auto* p = reinterpret_cast<m128i_t*>(dest);
@@ -1345,46 +1315,66 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	uint16_t cstring::reference_count(uint64_t p) const
+	void cstring::memset(void* dest, char value, uint64_t size)
 	{
-		if (const auto it = S_STRING_REFERENCE_COUNT.find(p); it != S_STRING_REFERENCE_COUNT.end())
-		{
-			return it->second.load();
-		}
-		return 0;
+		std::memset(dest, SCAST(int, value), size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cstring::is_shared() const
+	const char* cstring::c_str() const noexcept
 	{
-		return (uint64_t)m_pointer == (uint64_t)m_buffer ? false : reference_count((uint64_t)m_pointer);
+		return m_first;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cstring::increase_capacity(unsigned newsize)
+	const char* cstring::data() const noexcept
 	{
-		const auto chars_to_copy = m_length;
-		auto* p = m_pointer;
+		return m_first;
+	}
 
-		m_pointer = allocate_chars(newsize);
-		m_length = chars_to_copy;
-		m_capacity = newsize;
+	//------------------------------------------------------------------------------------------------------------------------
+	const char* cstring::data() noexcept
+	{
+		return m_first;
+	}
 
-		//- Copy data from old memory to new one
-		if (chars_to_copy > C_STRING_SSO_SIZE_DEFAULT)
+	//------------------------------------------------------------------------------------------------------------------------
+	uint64_t cstring::length() const
+	{
+		return m_last - m_first;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	uint64_t cstring::capacity() const
+	{
+		return m_capacity;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cstring::push_back(const char c)
+	{
+		const auto newsize = length() + 1;
+
+		if(newsize > m_capacity)
 		{
-			memory_copy(m_pointer, p, chars_to_copy * sizeof(char));
-		}
-		else
-		{
-			std::memcpy(m_pointer, p, chars_to_copy * sizeof(char));
+			reserve(m_capacity * C_STRING_CAPACITY_INCREASE_RATIO);
 		}
 
-		//- Free old memory if required and we are responsible for it
-		if (is_shared() && reference_count((uint64_t)p) == 0)
-		{
-			free_chars(p);
-		}
+		*m_last = c;
+
+		++m_last;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	char cstring::pop_back()
+	{
+		const auto c = *m_last;
+
+		*m_last = '\0';
+
+		--m_last;
+
+		return c;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
