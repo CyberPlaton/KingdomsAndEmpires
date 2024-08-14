@@ -1087,7 +1087,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	void* cgeneral_allocator::allocate(uint64_t size, uint64_t alignment /*= iallocator::C_ALIGNMENT*/)
 	{
-		if(CORE_LIKELY(const auto mem = CORE_MALLOC(size); mem))
+		if(CORE_LIKELY(const auto mem = CORE_MALLOCA(size, alignment); mem))
 		{
 			std::memset(mem, 0, size);
 			track_allocation(size);
