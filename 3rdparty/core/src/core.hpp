@@ -251,6 +251,7 @@ namespace core
 	class CORE_NO_VTABLE iallocator
 	{
 	public:
+		static constexpr const char* C_DEFAULT_ALLOCATOR_NAME = "core::iallocator";
 		static constexpr uint64_t C_ALIGNMENT = 8;
 
 		//- in-place construct an object. Should be used for allocated objects that need additional construction.
@@ -268,6 +269,7 @@ namespace core
 			pointer->~TObjectType();
 		}
 
+		iallocator(const char* name = C_DEFAULT_ALLOCATOR_NAME);
 		virtual ~iallocator() = 0;
 		virtual void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) = 0;
 		virtual void deallocate(void* ptr) = 0;
@@ -275,11 +277,13 @@ namespace core
 		uint64_t capacity() const;
 		uint64_t used() const;
 		uint64_t peak_used() const;
+		const char* name() const;
 
 	protected:
 		uint64_t m_total_size = 0;		//- amount of available memory
 		uint64_t m_used_size = 0;		//- current bytes in use
 		uint64_t m_peak_used_size = 0;	//- biggeest amount of memory used
+		const char* m_name = nullptr;	//- allocator name used for debug purposes
 
 	protected:
 		void init(uint64_t size);
@@ -1417,14 +1421,19 @@ namespace core
 	class cgeneral_allocator final : public iallocator
 	{
 	public:
-		cgeneral_allocator();
+		cgeneral_allocator(const char* name = iallocator::C_DEFAULT_ALLOCATOR_NAME);
 		~cgeneral_allocator();
 
 		void* allocate(uint64_t size, uint64_t alignment = iallocator::C_ALIGNMENT) override final;
 		void deallocate(void* ptr) override final;
 
+		uint64_t allocations_count() { return m_allocations; }
+		uint64_t deallocations_count() { return m_deallocations; }
+
 	private:
 		umap_t<uint64_t, uint64_t> m_pointers;
+		uint64_t m_allocations;
+		uint64_t m_deallocations;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1448,6 +1457,11 @@ namespace core
 	{
 	public:
 		static constexpr auto npos = MAX(uint64_t);
+
+		static uint64_t memory_used();
+		static uint64_t peak_memory_used();
+		static uint64_t allocations_count();
+		static uint64_t deallocations_count();
 
 		cstring();
 		~cstring();

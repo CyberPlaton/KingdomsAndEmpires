@@ -73,19 +73,19 @@ namespace algorithm
 	//------------------------------------------------------------------------------------------------------------------------
 	float bytes_to_kilobytes(unsigned b)
 	{
-		return SCAST(float, b) / 1000.0f;
+		return SCAST(float, b) / 1024.0f;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	float bytes_to_megabytes(unsigned b)
 	{
-		return bytes_to_kilobytes(b) / 1000.0f;
+		return bytes_to_kilobytes(b) / 1024.0f;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	float bytes_to_gigabytes(unsigned b)
 	{
-		return bytes_to_megabytes(b) / 1000.0f;
+		return bytes_to_megabytes(b) / 1024.0f;
 	}
 
 } //- algorithm
@@ -98,6 +98,7 @@ namespace core
 		constexpr auto C_FILESYSTEMS_RESERVE_COUNT				= 16;
 		constexpr auto C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT	= 256;
 		static cgeneral_allocator S_GENERAL_ALLOCATOR;
+		static cgeneral_allocator S_STRING_ALLOCATOR("string_allocator");
 
 		//------------------------------------------------------------------------------------------------------------------------
 		static bool is_path_directory(stringview_t path)
@@ -1075,7 +1076,8 @@ namespace core
 	const core::cuuid cuuid::C_INVALID_UUID = { C_INVALID_DATA };
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cgeneral_allocator::cgeneral_allocator()
+	cgeneral_allocator::cgeneral_allocator(const char* name /*= iallocator::C_DEFAULT_ALLOCATOR_NAME*/) :
+		iallocator(name), m_allocations(0), m_deallocations(0)
 	{
 	}
 
@@ -1087,11 +1089,12 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	void* cgeneral_allocator::allocate(uint64_t size, uint64_t alignment /*= iallocator::C_ALIGNMENT*/)
 	{
-		if(CORE_LIKELY(const auto mem = CORE_MALLOCA(size, alignment); mem))
+		if(CORE_LIKELY(const auto mem = CORE_MALLOC(size); mem))
 		{
 			std::memset(mem, 0, size);
 			track_allocation(size);
 			m_pointers[reinterpret_cast<uint64_t>(mem)] = size;
+			++m_allocations;
 			return mem;
 		}
 		return nullptr;
@@ -1102,8 +1105,9 @@ namespace core
 	{
 		CORE_FREE(ptr);
 
-		track_allocation(-SCAST(int64_t, reinterpret_cast<uint64_t>(ptr)));
+		track_allocation(-SCAST(int64_t, m_pointers.at(reinterpret_cast<uint64_t>(ptr))));
 		m_pointers.erase(reinterpret_cast<uint64_t>(ptr));
+		++m_deallocations;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1127,8 +1131,32 @@ namespace core
 	{
 		if (capacity() > C_STRING_SSO_SIZE_DEFAULT)
 		{
-			sentry::get_allocator()->deallocate(m_first);
+			S_STRING_ALLOCATOR.deallocate(m_first);
 		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	uint64_t cstring::memory_used()
+	{
+		return S_STRING_ALLOCATOR.used();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	uint64_t cstring::peak_memory_used()
+	{
+		return S_STRING_ALLOCATOR.peak_used();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	uint64_t cstring::allocations_count()
+	{
+		return S_STRING_ALLOCATOR.allocations_count();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	uint64_t cstring::deallocations_count()
+	{
+		return S_STRING_ALLOCATOR.deallocations_count();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1233,7 +1261,7 @@ namespace core
 	{
 		const auto heap = in_heap();
 		const auto size = length();
-		char* newmem = (char*)sentry::get_allocator()->allocate(count);
+		char* newmem = (char*)S_STRING_ALLOCATOR.allocate(count);
 		char* oldmem = m_first;
 
 		if(size > C_STRING_SSO_SIZE_DEFAULT)
@@ -1252,7 +1280,7 @@ namespace core
 		//- Free old memory used if we allocated anything
 		if (heap)
 		{
-			sentry::get_allocator()->deallocate(oldmem);
+			S_STRING_ALLOCATOR.deallocate(oldmem);
 		}
 	}
 
@@ -2542,6 +2570,18 @@ namespace core
 	{
 		m_used_size += (allocation_size + padding);
 		m_peak_used_size = glm::max(m_peak_used_size, m_used_size);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	iallocator::iallocator(const char* name /*= C_DEFAULT_ALLOCATOR_NAME*/) :
+		m_name(name)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	const char* iallocator::name() const
+	{
+		return m_name;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

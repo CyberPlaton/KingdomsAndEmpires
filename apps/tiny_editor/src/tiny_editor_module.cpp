@@ -485,6 +485,11 @@ void core_string_test_run(int object_count, int modifying_operations_count)
 	log_warn("-----------------------------------------------------------------------------------------");
 	log_debug(fmt::format("Object Count: '{}', Modifying Operations Count: '{}'", object_count, modifying_operations_count));
 	log_debug(fmt::format("Total Time: '{}ms'", ms));
+	log_debug(fmt::format("Memory: '{}/{}KiB'(used/peak). Allocations: '{}/{}'(allocs/frees)",
+		algorithm::bytes_to_kilobytes(core::cstring::memory_used()),
+		algorithm::bytes_to_kilobytes(core::cstring::peak_memory_used()),
+		core::cstring::allocations_count(),
+		core::cstring::deallocations_count()));
 	log_debug(fmt::format("Empty String Time: '{}us' (Total), '{}us' (Per Object)", time_empty_string, time_empty_string / object_count));
 	log_debug(fmt::format("Create String from const char*: '{}us' (Total), '{}us' (Per Object)", time_const_char, time_const_char / object_count));
 	log_debug(fmt::format("Create String from substring: '{}us' (Total), '{}us' (Per Object)", time_substring, time_substring / object_count));
@@ -522,7 +527,7 @@ int __real_main(int argc, char* argv[])
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
 
-	const auto result = strings_test_run(1000000, 100);
+	const auto result = strings_test_run(100000, 10);
 
 	return result;
 
