@@ -436,7 +436,7 @@ void core_string_test_run(int object_count, int modifying_operations_count)
 			core::cstring sma_copy = small_string;
 			core::cstring big_copy = big_string;
 
-			//- Deep Copy
+			//- Deep copy
 			core::cstring sma_deep_copy = std::move(small_string);
 			core::cstring big_deep_copy = std::move(big_string);
 			time_copy_ctor += timer_copy_ctor.microsecs();
@@ -522,7 +522,7 @@ int __real_main(int argc, char* argv[])
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
 
-	const auto result = strings_test_run(100, 100);
+	const auto result = strings_test_run(1000000, 100);
 
 	return result;
 

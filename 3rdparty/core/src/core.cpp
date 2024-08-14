@@ -1133,17 +1133,16 @@ namespace core
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cstring::cstring(const cstring& other) :
-		m_first(other.m_first), m_last(other.m_last), m_capacity(other.m_capacity)
+		m_first(&m_buffer[0]), m_last(&m_buffer[C_STRING_SSO_SIZE_DEFAULT]), m_capacity(C_STRING_SSO_SIZE_DEFAULT)
 	{
+		assign(other.m_first, other.length());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cstring::cstring(cstring&& other) :
-		m_first(other.m_first), m_last(other.m_last), m_capacity(other.m_capacity)
+		m_first(&m_buffer[0]), m_last(&m_buffer[C_STRING_SSO_SIZE_DEFAULT]), m_capacity(C_STRING_SSO_SIZE_DEFAULT)
 	{
-		other.m_first = nullptr;
-		other.m_last = nullptr;
-		other.m_capacity = 0;
+		assign(other.m_first, other.length());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
