@@ -1089,15 +1089,15 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	void* cgeneral_allocator::allocate(uint64_t size, uint64_t alignment /*= iallocator::C_ALIGNMENT*/)
 	{
-		if(CORE_LIKELY(const auto mem = CORE_MALLOC(size); mem))
-		{
-			std::memset(mem, 0, size);
-			track_allocation(size);
-			m_pointers[reinterpret_cast<uint64_t>(mem)] = size;
-			++m_allocations;
-			return mem;
-		}
-		return nullptr;
+		const auto mem = CORE_MALLOC(size);
+
+#if PROFILE_ENABLE
+		track_allocation(size);
+		m_pointers[reinterpret_cast<uint64_t>(mem)] = size;
+		++m_allocations;
+#endif
+
+		return mem;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1105,9 +1105,11 @@ namespace core
 	{
 		CORE_FREE(ptr);
 
+#if PROFILE_ENABLE
 		track_allocation(-SCAST(int64_t, m_pointers.at(reinterpret_cast<uint64_t>(ptr))));
 		m_pointers.erase(reinterpret_cast<uint64_t>(ptr));
 		++m_deallocations;
+#endif
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1217,23 +1219,16 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cstring& cstring::operator=(cstring&& other)
+	cstring& cstring::operator=(cstring&& other) noexcept
 	{
-		m_first = other.m_first;
-		m_last = other.m_last;
-		m_capacity = other.m_capacity;
-		other.m_first = nullptr;
-		other.m_last = nullptr;
-		other.m_capacity = 0;
+		append(other.m_first, other.m_first + other.length());
 		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cstring& cstring::operator=(const cstring& other)
+	cstring& cstring::operator=(const cstring& other) noexcept
 	{
-		m_first = other.m_first;
-		m_last = other.m_last;
-		m_capacity = other.m_capacity;
+		append(other.m_first, other.m_first + other.length());
 		return *this;
 	}
 

@@ -1,6 +1,6 @@
 IS_TRACY_ENABLED	= false
 IS_MIMALLOC_ENABLED = true
-IS_PROFILE_ENABLED	= true
+IS_PROFILE_ENABLED	= false
 IS_LOGGING_ENABLED	= true
 
 ------------------------------------------------------------------------------------------------------------------------

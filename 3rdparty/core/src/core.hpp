@@ -1431,7 +1431,9 @@ namespace core
 		uint64_t deallocations_count() { return m_deallocations; }
 
 	private:
+#if PROFILE_ENABLE
 		umap_t<uint64_t, uint64_t> m_pointers;
+#endif
 		uint64_t m_allocations;
 		uint64_t m_deallocations;
 	};
@@ -1467,10 +1469,10 @@ namespace core
 		~cstring();
 
 		cstring(const cstring& other);
-		cstring& operator=(const cstring& other);
+		cstring& operator=(const cstring& other) noexcept;
 
 		cstring(cstring&& other);
-		cstring& operator=(cstring&& other);
+		cstring& operator=(cstring&& other) noexcept;
 
 		//- Initialize string with given size and fill with given character
 		explicit cstring(uint64_t n, char c = '\0');

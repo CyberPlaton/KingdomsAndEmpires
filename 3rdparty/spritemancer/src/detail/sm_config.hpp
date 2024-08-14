@@ -23,6 +23,9 @@ ANONYMOUS_VARIABLE(gpu_profile_function)	\
 	static_cast<uint64_t>(vertices),		\
 	name									\
 )
+#else
+#define SM_DRAW_CALL(vertices)
+#define SM_NAMED_DRAW_CALL(vertices, name)
 #endif
 
 namespace sm
