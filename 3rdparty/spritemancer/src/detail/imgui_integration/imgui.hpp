@@ -3,6 +3,10 @@
 #include <imgui.h>
 #include "imgui/rlImGui.h"
 #include "imgui_scopes.hpp"
+#include "imnodes_scopes.hpp"
+#include "imnodes_node.hpp"
+#include "imnodes_link.hpp"
+#include "imnodes_pin.hpp"
 
 namespace ImNodes = ax::NodeEditor;
 

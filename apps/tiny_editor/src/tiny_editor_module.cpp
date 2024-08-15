@@ -527,10 +527,6 @@ int __real_main(int argc, char* argv[])
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
 
-	const auto result = strings_test_run(100000, 10);
-
-	return result;
-
 	engine::cengine::sconfig cfg;
 
 	cfg.m_mode = core::launch_context_editor;

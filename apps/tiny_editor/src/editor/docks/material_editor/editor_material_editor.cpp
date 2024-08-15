@@ -56,35 +56,33 @@ namespace editor
 
 			ImNodes::Begin("Node Editor");
 
-			for (auto i = 0; i < 10; ++i)
+			for (auto i = 1; i < 15; ++i)
 			{
 				ImNodes::BeginNode(i);
 
 				ImGui::Text(fmt::format("Node '{}'", i).data());
 
 				//- Inputs
-				ImNodes::BeginPin(calcPinId(i, 0), ImNodes::PinKind::Input);
+				imnodes::cpin in_pin(calcPinId(i, 0));
+				in_pin.type(imnodes::cpin::pin_type_input).begin();
 				ImGui::Text(fmt::format("Input Pin '{}'", calcPinId(i, 0)).data());
-				ImNodes::EndPin();
-
+				in_pin.end();
+				
 				//- Outputs
-				ImNodes::BeginPin(calcPinId(i, 1), ImNodes::PinKind::Output);
-				ImGui::Text(fmt::format("Output Pin '{}'", calcPinId(i, 1)).data());
-				ImNodes::EndPin();
+				imnodes::cpin out_pin(calcPinId(i, 1));
+				out_pin.type(imnodes::cpin::pin_type_output).begin();
+				ImGui::Text(fmt::format("Output Pin '{}'", calcPinId(i, 0)).data());
+				out_pin.end();
 
 				ImNodes::EndNode();
 			}
 
-			for (auto i = 0; i < 10; ++i)
+			for (auto i = 1; i < 15; ++i)
 			{
-				if (i < 5)
-				{
-					ImNodes::Link(i, calcPinId(i + 1, 1), calcPinId(i, 0));
-				}
-				else
-				{
-					ImNodes::Flow(i);
-				}
+				imnodes::clink link(i, calcPinId(i + 1, 1), calcPinId(i, 0));
+				link.flow(imnodes::clink::link_flow_direction_backward, i < 5)
+					.flow_style(imnodes::clink::link_flow_duration, 1.0f)
+					.draw();
 			}
 
 

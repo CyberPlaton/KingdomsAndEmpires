@@ -3,7 +3,8 @@
 namespace imnodes
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	cnode::cnode(const ImNodes::NodeId& id)
+	cnode::cnode(const ImNodes::NodeId& id) :
+		m_id(id)
 	{
 		ImNodes::BeginNode(id);
 	}

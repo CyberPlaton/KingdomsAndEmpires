@@ -40,7 +40,7 @@ namespace imnodes
 		cstyle_scope& clear();
 
 	private:
-		uint8_t m_vars;
+		unsigned m_vars;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ namespace imnodes
 		ccolor_scope& clear();
 
 	private:
-		uint8_t m_vars;
+		unsigned m_vars;
 	};
 
 } //- imnodes
