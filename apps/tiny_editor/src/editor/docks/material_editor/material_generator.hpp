@@ -20,7 +20,7 @@ namespace editor
 			stage_nodes_t m_header_stage_nodes;
 			stage_nodes_t m_decls_stage_nodes;
 			stage_nodes_t m_code_stage_nodes;
-			queue_t<id_t> m_entry_nodes;	//- To be sorted by topsort
+			vector_t<id_t> m_entry_nodes;	//- To be sorted by topsort
 			material_generation_stage m_stage;
 		};
 
@@ -33,7 +33,7 @@ namespace editor
 
 	private:
 		memory_ref_t generate(core::cstring_buffer& buffer, sstage& stage);
-		stage_nodes_t topsort(queue_t<id_t>& nodes);
+		stage_nodes_t topsort(vector_t<id_t>& nodes);
 	};
 
 } //- editor

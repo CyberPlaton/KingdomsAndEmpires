@@ -17,11 +17,8 @@ namespace editor
 
 		void create_link(const id_t id, const id_t from_node_id, const id_t to_node_id, const id_t from_slot_id, const id_t to_slot_id);
 
-		const node_ref_t& node_at(id_t id) const;
-		node_ref_t& node_at(id_t id);
-
-		const slink& link_at(id_t id) const;
-		slink& link_at(id_t id);
+		node_ref_t node_at(id_t id);
+		slink link_at(id_t id);
 
 		inline const vector_t<node_ref_t>& nodes() const { return m_nodes; }
 		inline vector_t<node_ref_t>& nodes() { return m_nodes; }

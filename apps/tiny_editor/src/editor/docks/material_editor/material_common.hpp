@@ -17,6 +17,8 @@ namespace editor
 {
 	using id_t = unsigned;
 
+	constexpr id_t C_INVALID_ID = MAX(id_t);
+
 	//------------------------------------------------------------------------------------------------------------------------
 	enum material_generation_stage : uint8_t
 	{
@@ -38,11 +40,11 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	struct slink final
 	{
-		id_t m_id;
-		id_t m_from_slot;
-		id_t m_from_node;
-		id_t m_to_slot;
-		id_t m_to_node;
+		id_t m_id			= C_INVALID_ID;
+		id_t m_from_slot	= C_INVALID_ID;
+		id_t m_from_node	= C_INVALID_ID;
+		id_t m_to_slot		= C_INVALID_ID;
+		id_t m_to_node		= C_INVALID_ID;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -54,9 +56,9 @@ namespace editor
 		rttr::variant m_value;
 		rttr::variant m_value_default;
 		rttr::type m_expected_value_type;
-		id_t m_id;
-		id_t m_link_id;
-		slot_type m_type;
+		id_t m_id			= C_INVALID_ID;
+		id_t m_link_id		= C_INVALID_ID;
+		slot_type m_type	=slot_type_none;
 	};
 
 	//- Interface class for a node that generates a self-contained code snippet to be used in the shader.

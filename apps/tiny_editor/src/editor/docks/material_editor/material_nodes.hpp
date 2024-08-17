@@ -19,7 +19,7 @@ namespace editor
 			if (stage == material_generation_stage_pixel_code ||
 				stage == material_generation_stage_vertex_code)
 			{
-				out.write(fmt::format("float {} = {}",
+				out.write(fmt::format("float {} = {};\n",
 					output_at(0).m_name,
 					output_at(0).m_value.get_value<float>()));
 
@@ -47,7 +47,7 @@ namespace editor
 			if (stage == material_generation_stage_pixel_code ||
 				stage == material_generation_stage_vertex_code)
 			{
-				out.write(fmt::format("float {} = {} + {}",
+				out.write(fmt::format("float {} = {} + {};\n",
 					output_at(0).m_name,
 					input_at(0).m_value.get_value<float>(),
 					input_at(1).m_value.get_value<float>()));
