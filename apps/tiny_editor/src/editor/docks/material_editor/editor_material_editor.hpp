@@ -1,6 +1,8 @@
 #pragma once
 #include "../editor_dock_base.hpp"
-/*#include "../../nodes/editor_nodes_context.hpp"*/
+#include "material_graph.hpp"
+#include "material_generator.hpp"
+#include "material_nodes.hpp"
 
 namespace editor
 {
@@ -18,6 +20,7 @@ namespace editor
 		void on_ui_render() override final;
 
 	private:
+		material_graph_ref_t m_graph;
 		ImNodes::EditorContext* m_editor;
 	};
 

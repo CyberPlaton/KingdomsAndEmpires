@@ -22,6 +22,15 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmaterial_editor::init()
 	{
+		m_graph = std::make_shared<cmaterial_graph>();
+
+		auto add = m_graph->create_node<cadd_node>(1);
+		auto constant_a = m_graph->create_node<cconstant_node>(2);
+		auto constant_b = m_graph->create_node<cconstant_node>(3);
+
+		m_graph->create_link(1, constant_a->id(), add->id(), 0, 0);
+		m_graph->create_link(2, constant_b->id(), add->id(), 0, 1);
+
 		return true;
 	}
 
@@ -50,41 +59,72 @@ namespace editor
 
 		if (ImGui::Begin("##MaterialEditor"))
 		{
+			if (ImGui::Button("Generate"))
+			{
+				cmaterial_generator generator(m_graph);
+
+				generator.generate();
+			}
+
 			CORE_ASSERT(m_editor, "Invalid operation. Node editor context was not created!");
 
 			ImNodes::SetCurrentEditor(m_editor);
 
 			ImNodes::Begin("Node Editor");
 
-			for (auto i = 1; i < 15; ++i)
+			for (auto& node : m_graph->nodes())
 			{
-				ImNodes::BeginNode(i);
-
-				ImGui::Text(fmt::format("Node '{}'", i).data());
+				ImNodes::BeginNode(node->id());
+				ImGui::TextUnformatted(fmt::format("Node {}", node->id()).data());
 
 				//- Inputs
-				imnodes::cpin in_pin(calcPinId(i, 0));
-				in_pin.type(imnodes::cpin::pin_type_input).begin();
-				ImGui::Text(fmt::format("Input Pin '{}'", calcPinId(i, 0)).data());
-				in_pin.end();
-				
+				for (auto& in : node->inputs())
+				{
+					imnodes::cpin pin(in.m_id);
+				}
+
 				//- Outputs
-				imnodes::cpin out_pin(calcPinId(i, 1));
-				out_pin.type(imnodes::cpin::pin_type_output).begin();
-				ImGui::Text(fmt::format("Output Pin '{}'", calcPinId(i, 0)).data());
-				out_pin.end();
+				for (auto& out : node->outputs())
+				{
+					imnodes::cpin pin(out.m_id);
+				}
 
 				ImNodes::EndNode();
 			}
 
-			for (auto i = 1; i < 15; ++i)
+			for (auto& link : m_graph->links())
 			{
-				imnodes::clink link(i, calcPinId(i + 1, 1), calcPinId(i, 0));
-				link.flow(imnodes::clink::link_flow_direction_backward, i < 5)
-					.flow_style(imnodes::clink::link_flow_duration, 1.0f)
-					.draw();
+				imnodes::clink l(link.m_id, link.m_from_slot, link.m_to_slot);
 			}
 
+// 			for (auto i = 1; i < 15; ++i)
+// 			{
+// 				ImNodes::BeginNode(i);
+// 
+// 				ImGui::Text(fmt::format("Node '{}'", i).data());
+// 
+// 				//- Inputs
+// 				imnodes::cpin in_pin(calcPinId(i, 0));
+// 				in_pin.type(imnodes::cpin::pin_type_input).begin();
+// 				ImGui::Text(fmt::format("Input Pin '{}'", calcPinId(i, 0)).data());
+// 				in_pin.end();
+// 				
+// 				//- Outputs
+// 				imnodes::cpin out_pin(calcPinId(i, 1));
+// 				out_pin.type(imnodes::cpin::pin_type_output).begin();
+// 				ImGui::Text(fmt::format("Output Pin '{}'", calcPinId(i, 0)).data());
+// 				out_pin.end();
+// 
+// 				ImNodes::EndNode();
+// 			}
+// 
+// 			for (auto i = 1; i < 15; ++i)
+// 			{
+// 				imnodes::clink link(i, calcPinId(i + 1, 1), calcPinId(i, 0));
+// 				link.flow(imnodes::clink::link_flow_direction_forward, i < 5)
+// 					.flow_style(imnodes::clink::link_flow_duration, 1.0f)
+// 					.draw();
+// 			}
 
 			ImNodes::End();
 		}

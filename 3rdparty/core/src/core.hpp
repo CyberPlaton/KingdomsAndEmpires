@@ -1082,6 +1082,7 @@ namespace core
 	constexpr uint64_t C_STRING_SSO_SIZE_DEFAULT = 16;
 	constexpr bool C_STRING_USE_SIMD = true;
 	constexpr auto C_STRING_CAPACITY_INCREASE_RATIO = 3;
+	constexpr auto C_STRING_BUFFER_SIZE_DEFAULT = 32;
 
 	namespace io
 	{
@@ -1522,6 +1523,48 @@ namespace core
 
 	private:
 	};
+
+	//- Class wrapping fmt memory buffer. Useful for constructing big strings.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cstring_buffer final
+	{
+	public:
+		cstring_buffer(const uint64_t n);
+		cstring_buffer() = default;
+		~cstring_buffer();
+
+		cstring_buffer& write(const char* text);
+
+		cstring_buffer& write(stringview_t text);
+
+		cstring_buffer& write(const string_t& text);
+
+		template<typename... ARGS>
+		cstring_buffer& write(const char* text, ARGS&&... args);
+
+		void reserve(uint64_t n);
+		void resize(uint64_t n);
+		uint64_t size() const;
+		bool empty() const;
+		void clear();
+		const char* data() const;
+		const char* c_str();
+		string_t string();
+
+		inline auto begin() noexcept { return m_buffer.begin(); }
+		inline auto end() noexcept { return m_buffer.end(); }
+
+	private:
+		fmt::basic_memory_buffer<char, C_STRING_BUFFER_SIZE_DEFAULT> m_buffer;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... ARGS>
+	cstring_buffer& core::cstring_buffer::write(const char* text, ARGS&&... args)
+	{
+		fmt::detail::vformat_to(m_buffer, fmt::detail::to_string_view(text), fmt::make_format_args(args...));
+		return *this;
+	}
 
 	template<typename>
 	class cfunction;
