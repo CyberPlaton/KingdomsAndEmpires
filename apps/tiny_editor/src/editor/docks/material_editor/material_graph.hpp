@@ -14,11 +14,11 @@ namespace editor
 
 		template<typename T, typename... ARGS>
 		node_ref_t create_node(const id_t id, ARGS&&... args);
-
 		void create_link(const id_t id, const id_t from_node_id, const id_t to_node_id, const id_t from_slot_id, const id_t to_slot_id);
-
 		node_ref_t node_at(id_t id);
 		slink link_at(id_t id);
+		node_ref_t destination_node_at(const sslot& slot);
+		node_ref_t source_node_at(const sslot& slot);
 
 		inline const vector_t<node_ref_t>& nodes() const { return m_nodes; }
 		inline vector_t<node_ref_t>& nodes() { return m_nodes; }
@@ -39,7 +39,7 @@ namespace editor
 	template<typename T, typename... ARGS>
 	node_ref_t cmaterial_graph::create_node(const id_t id, ARGS&&... args)
 	{
-		auto node = std::make_shared<T>(id, std::forward<ARGS>(args)...);
+		auto node = std::make_shared<T>(id, this, std::forward<ARGS>(args)...);
 
 		auto idx = SCAST(unsigned, m_nodes.size());
 

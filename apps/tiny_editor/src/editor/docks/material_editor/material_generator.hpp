@@ -24,12 +24,9 @@ namespace editor
 			material_generation_stage m_stage;
 		};
 
-		core::cstring_buffer m_vertex_buffer;
-		core::cstring_buffer m_pixel_buffer;
+		core::cstring_buffer m_code_buffer;
 		material_graph_ref_t m_material_graph;
-
-		sstage m_vertex_stage;
-		sstage m_pixel_stage;
+		sstage m_stage;
 
 	private:
 		memory_ref_t generate(core::cstring_buffer& buffer, sstage& stage);

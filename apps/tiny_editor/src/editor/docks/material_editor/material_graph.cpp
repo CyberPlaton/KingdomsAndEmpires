@@ -48,6 +48,26 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	node_ref_t cmaterial_graph::destination_node_at(const sslot& slot)
+	{
+		if (const auto& link = link_at(slot.m_link_id); link.m_id != C_INVALID_ID)
+		{
+			return node_at(link.m_to_node);
+		}
+		return nullptr;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	node_ref_t cmaterial_graph::source_node_at(const sslot& slot)
+	{
+		if (const auto& link = link_at(slot.m_link_id); link.m_id != C_INVALID_ID)
+		{
+			return node_at(link.m_from_node);
+		}
+		return nullptr;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	slink cmaterial_graph::link_at(id_t id)
 	{
 		if (const auto it = m_links_lookup_table.find(id); it != m_links_lookup_table.end())

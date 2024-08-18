@@ -25,8 +25,8 @@ namespace editor
 		m_graph = std::make_shared<cmaterial_graph>();
 
 		auto add = m_graph->create_node<cadd_node>(1);
-		auto constant_a = m_graph->create_node<cconstant_node>(2);
-		auto constant_b = m_graph->create_node<cconstant_node>(3);
+		auto constant_a = m_graph->create_node<cnode_constant, float>(2, material_generation_stage_main_code, "A", 1.0f);
+		auto constant_b = m_graph->create_node<cnode_constant, float>(3, material_generation_stage_main_code, "B", 1.0f);
 
 		m_graph->create_link(1, constant_a->id(), add->id(), 0, 0);
 		m_graph->create_link(2, constant_b->id(), add->id(), 0, 1);

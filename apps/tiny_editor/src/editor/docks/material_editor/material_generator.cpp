@@ -16,61 +16,35 @@ namespace editor
 	{
 		const auto& nodes = m_material_graph->nodes();
 
-		m_vertex_stage.m_stage = material_generation_stage_vertex_code;
-		m_pixel_stage.m_stage = material_generation_stage_pixel_code;
-
 		for (const auto& node : nodes)
 		{
 			auto id = node->id();
 
-			if (algorithm::bit_check(node->stage(), material_generation_stage_pixel_code))
+			if (algorithm::bit_check(node->stage(), material_generation_stage_main_code))
 			{
-				m_vertex_stage.m_code_stage_nodes.push_back(id);
+				m_stage.m_code_stage_nodes.push_back(id);
 
 				if (algorithm::bit_check(node->stage(), material_generation_stage_header))
 				{
-					m_vertex_stage.m_header_stage_nodes.push_back(node->id());
+					m_stage.m_header_stage_nodes.push_back(node->id());
 				}
 				if (algorithm::bit_check(node->stage(), material_generation_stage_declarations))
 				{
-					m_vertex_stage.m_decls_stage_nodes.push_back(node->id());
+					m_stage.m_decls_stage_nodes.push_back(node->id());
 				}
 
 				//- Store potential entry node for later sorting
 				if (node->input_count() == 0)
 				{
-					m_vertex_stage.m_entry_nodes.push_back(id);
-				}
-			}
-			if (algorithm::bit_check(node->stage(), material_generation_stage_vertex_code))
-			{
-				m_pixel_stage.m_code_stage_nodes.push_back(id);
-
-				if (algorithm::bit_check(node->stage(), material_generation_stage_header))
-				{
-					m_vertex_stage.m_header_stage_nodes.push_back(node->id());
-				}
-				if (algorithm::bit_check(node->stage(), material_generation_stage_declarations))
-				{
-					m_vertex_stage.m_decls_stage_nodes.push_back(node->id());
-				}
-
-				//- Store potential entry node for later sorting
-				if (node->input_count() == 0)
-				{
-					m_pixel_stage.m_entry_nodes.push_back(id);
+					m_stage.m_entry_nodes.push_back(id);
 				}
 			}
 		}
 
-		generate(m_vertex_buffer, m_vertex_stage);
-		generate(m_pixel_buffer, m_pixel_stage);
+		generate(m_code_buffer, m_stage);
 
 		//- Output vertex shader data to file
-		log_debug(fmt::format("Vertex shader:\n'{}'", m_vertex_buffer.c_str()));
-
-		//- Output pixel shader data to file
-		log_debug(fmt::format("Pixel shader:\n'{}'", m_pixel_buffer.c_str()));
+		log_debug(fmt::format("Shader:\n'{}'", m_code_buffer.c_str()));
 
 		return {};
 	}
@@ -131,10 +105,8 @@ namespace editor
 		const auto nodes_count = nodes.size();
 
 		//- Initialize nodes with their in degree
-		for (const auto& id: nodes)
+		for (const auto& node: m_material_graph->nodes())
 		{
-			const auto node = m_material_graph->node_at(id);
-
 			indegrees[node->id()] = node->input_count();
 		}
 

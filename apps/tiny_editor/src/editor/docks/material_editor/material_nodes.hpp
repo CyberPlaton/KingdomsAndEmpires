@@ -3,59 +3,38 @@
 
 namespace editor
 {
+	//- A constant node generally has no inputs and one (or more) outputs with a constant value.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cconstant_node final : public cnode
+	class cnode_constant final : public cnode
 	{
 	public:
-		cconstant_node(const id_t id) : cnode(id)
-		{
-			m_stage |= material_generation_stage_vertex_code;
-			m_stage |= material_generation_stage_pixel_code;
-			push_slot<float>("output", slot_type_output, 0.0f);
-		}
+		template<typename TValueType>
+		cnode_constant(const id_t id, cmaterial_graph* graph, const int stage, stringview_t name, const TValueType default = (TValueType)0);
+		~cnode_constant() = default;
 
-		bool emit(core::cstring_buffer& out, material_generation_stage stage) override final
-		{
-			if (stage == material_generation_stage_pixel_code ||
-				stage == material_generation_stage_vertex_code)
-			{
-				out.write(fmt::format("float {} = {};\n",
-					output_at(0).m_name,
-					output_at(0).m_value.get_value<float>()));
-
-				return true;
-			}
-			return false;
-		}
+		bool emit(core::cstring_buffer& out, material_generation_stage generation_stage) override final;
 	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TValueType>
+	cnode_constant::cnode_constant(const id_t id, cmaterial_graph* graph, const int stage, stringview_t name,
+		const TValueType default /*= (TValueType)0*/) : cnode(id, graph, stage)
+	{
+		push_slot<TValueType>(name, slot_type_output, default);
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	class cadd_node final : public cnode
 	{
 	public:
-		cadd_node(const id_t id) : cnode(id)
+		cadd_node(const id_t id, cmaterial_graph* graph) : cnode(id, graph, material_generation_stage_main_code)
 		{
-			m_stage |= material_generation_stage_vertex_code;
-			m_stage |= material_generation_stage_pixel_code;
 			push_slot<float>("a", slot_type_input, 0.0f);
 			push_slot<float>("b", slot_type_input, 0.0f);
 			push_slot<float>("output", slot_type_output, 0.0f);
 		}
 
-		bool emit(core::cstring_buffer& out, material_generation_stage stage) override final
-		{
-			if (stage == material_generation_stage_pixel_code ||
-				stage == material_generation_stage_vertex_code)
-			{
-				out.write(fmt::format("float {} = {} + {};\n",
-					output_at(0).m_name,
-					input_at(0).m_value.get_value<float>(),
-					input_at(1).m_value.get_value<float>()));
-
-				return true;
-			}
-			return false;
-		}
+		bool emit(core::cstring_buffer& out, material_generation_stage generation_stage) override final;
 	};
 
 } //- editor

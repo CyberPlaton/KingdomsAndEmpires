@@ -25,8 +25,7 @@ namespace editor
 		material_generation_stage_none			= 0,
 		material_generation_stage_header		= BIT(1),
 		material_generation_stage_declarations	= BIT(2),
-		material_generation_stage_vertex_code	= BIT(3),
-		material_generation_stage_pixel_code	= BIT(4),
+		material_generation_stage_main_code		= BIT(3),
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -66,7 +65,7 @@ namespace editor
 	class inode
 	{
 	public:
-		virtual bool emit(core::cstring_buffer& out, material_generation_stage stage) = 0;
+		virtual bool emit(core::cstring_buffer& out, material_generation_stage generation_stage) = 0;
 		virtual vector_t<sslot>& inputs() = 0;
 		virtual vector_t<sslot>& outputs() = 0;
 		virtual sslot& find_input_slot(stringview_t name) = 0;
@@ -78,6 +77,7 @@ namespace editor
 
 		virtual int stage() const = 0;
 		virtual id_t id() const = 0;
+		virtual cmaterial_graph* graph() const = 0;
 	};
 
 	//- 
@@ -85,7 +85,8 @@ namespace editor
 	class cnode : public inode
 	{
 	public:
-		cnode(const id_t id) : m_id(id), m_stage(0)
+		cnode(const id_t id, cmaterial_graph* graph, const int stage = 0) :
+			m_id(id), m_stage(stage), m_graph(graph)
 		{
 		}
 
@@ -105,6 +106,7 @@ namespace editor
 
 		int stage() const override final { return m_stage; }
 		id_t id() const override final { return m_id; }
+		cmaterial_graph* graph() const override final { return m_graph; }
 
 	public:
 		int m_stage;
@@ -114,6 +116,7 @@ namespace editor
 		umap_t<string_t, unsigned> m_slot_lookup_table;
 		vector_t<sslot> m_inputs;
 		vector_t<sslot> m_outputs;
+		cmaterial_graph* m_graph;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -127,7 +130,7 @@ namespace editor
 		slot.m_id = SCAST(unsigned, m_inputs.size());
 		slot.m_type = type;
 		slot.m_value_default = rttr::variant(default_value);
-		slot.m_value = slot.m_value_default;
+		/*slot.m_value = slot.m_value_default;*/
 
 		if (type == slot_type_input)
 		{
