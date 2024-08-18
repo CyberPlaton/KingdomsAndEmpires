@@ -32,18 +32,24 @@ namespace editor
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
+	stringview_t cnode_constant::output_name() const
+	{
+		return m_output_name;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	bool cnode_constant::emit(core::cstring_buffer& out, material_generation_stage generation_stage)
 	{
 		if (algorithm::bit_check(stage(), generation_stage))
 		{
-			const auto& slot = output_at(0);
+			const auto& slot = output_at_idx(0);
 
 			//- Get value of constant or default value if nothing is set
 			rttr::variant v = slot.m_value.is_valid() ? slot.m_value : slot.m_value_default;
 
 			auto s = fmt::format("{} {} = {};\n",
 				slot.m_expected_value_type.get_name().data(),
-				fmt::format("constant_{}", id()).data(),
+				output_name().data(),
 				variant_to_string(v, slot.m_expected_value_type));
 
 			out.write(s);
@@ -58,23 +64,32 @@ namespace editor
 	{
 		if (algorithm::bit_check(stage(), generation_stage))
 		{
-			auto& output = output_at(0);
-			auto& in0 = input_at(0);
-			auto& in1 = input_at(1);
+			auto& output = output_at_idx(0);
+			auto& in0 = input_at_idx(0);
+			auto& in1 = input_at_idx(1);
 
-			//- Get value of constant or default value if nothing is set
-			rttr::variant v0 = in0.m_value.is_valid() ? in0.m_value : in0.m_value_default;
-			rttr::variant v1 = in1.m_value.is_valid() ? in1.m_value : in1.m_value_default;
+			//- TODO: If an input slot is not assigned to anything, we ought to use
+			//- the default values provided
+			auto source0 = graph()->source_node_at(in0);
+			auto source1 = graph()->source_node_at(in1);
 
-			out.write(fmt::format("{} {} = {} + {};\n",
+			auto s = fmt::format("{} {} = {} + {};\n",
 				output.m_expected_value_type.get_name().data(),
-				output.m_name,
-				variant_to_string(v0, in0.m_expected_value_type),
-				variant_to_string(v1, in1.m_expected_value_type)));
+				output_name().data(),
+				source0->output_name().data(),
+				source1->output_name().data());
+
+			out.write(s);
 
 			return true;
 		}
 		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	stringview_t cadd_node::output_name() const
+	{
+		return m_output_name;
 	}
 
 } //- editor

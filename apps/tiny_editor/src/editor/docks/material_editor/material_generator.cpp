@@ -123,7 +123,7 @@ namespace editor
 
 			for (auto idx = 0; idx < node->output_count(); ++idx)
 			{
-				auto& out_slot = node->output_at(idx);
+				auto& out_slot = node->output_at_idx(idx);
 
 				if (const auto link = m_material_graph->link_at(out_slot.m_link_id); link.m_id != C_INVALID_ID)
 				{
