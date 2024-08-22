@@ -16,18 +16,14 @@ using node_ref_t = ref_t<editor::inode>;
 namespace editor
 {
 	using id_t = unsigned;
-	using idx_t = unsigned;
+	using slot_idx_t = uint8_t;
 
 	constexpr id_t C_INVALID_ID = MAX(id_t);
 
-	//------------------------------------------------------------------------------------------------------------------------
-	enum material_generation_stage : uint8_t
+	namespace detail
 	{
-		material_generation_stage_none			= 0,
-		material_generation_stage_header		= BIT(1),
-		material_generation_stage_declarations	= BIT(2),
-		material_generation_stage_main_code		= BIT(3),
-	};
+		string_t variant_to_string(rttr::variant& var, rttr::type expected);
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum slot_type : uint8_t
@@ -37,21 +33,52 @@ namespace editor
 		slot_type_output
 	};
 
+	//- Settings for generating a material. Can be platform or language dependent etc. and are used by nodes to generate
+	//- code in a special way.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cid_generator final
+	struct sgeneration_settings final
+	{
+
+	};
+
+	//- Responsible for providing contextual data during code generation that is required for most nodes.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cgeneration_context final :
+		private core::cnon_copyable,
+		private core::cnon_movable
 	{
 	public:
-		static id_t retrieve_slot_id(const id_t node_id, slot_type type, unsigned idx);
+		class cclosure final
+		{
+		public:
+			cclosure(core::cstring_buffer& root);
+			~cclosure() = default;
 
-		cid_generator(const id_t node_seed = 0, const id_t link_seed = 0);
-		~cid_generator();
+			core::cstring_buffer& code();
+			cclosure& push();
+			cclosure& pop(const bool should_combine_hint = true);
+			string_t string();
+			inline bool empty() const { return m_stack.empty(); }
 
-		id_t generate_node_id();
-		id_t generate_link_id();
+		private:
+			core::stack_t<core::cstring_buffer> m_stack;
+			core::cstring_buffer& m_root_scope;
+		};
+
+
+		explicit cgeneration_context(cmaterial_graph* graph, core::cstring_buffer& buffer, const sgeneration_settings& settings);
+		~cgeneration_context() = default;
+
+
+		inline cclosure& closure() { return m_closure; }
+		inline cmaterial_graph* graph() const { return m_graph; }
+		inline const sgeneration_settings& settings() const { return m_settings; }
 
 	private:
-		id_t m_next_node_id;
-		id_t m_next_link_id;
+		cclosure m_closure;
+		sgeneration_settings m_settings;
+		core::cstring_buffer& m_code_buffer;
+		cmaterial_graph* m_graph;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -69,13 +96,12 @@ namespace editor
 	{
 		sslot(rttr::type type) : m_expected_value_type(type) {}
 
-		string_t m_name; //- Display name, dont confuse with generated variable name
-		rttr::variant m_value;
+		string_t m_name;
 		rttr::variant m_value_default;
 		rttr::type m_expected_value_type;
-		id_t m_id			= C_INVALID_ID;
-		id_t m_link_id		= C_INVALID_ID;
-		slot_type m_type	=slot_type_none;
+		id_t m_id = C_INVALID_ID;
+		id_t m_link_id = C_INVALID_ID;
+		slot_type m_type = slot_type_none;
 	};
 
 	//- Interface class for a node that generates a self-contained code snippet to be used in the shader.
@@ -83,7 +109,8 @@ namespace editor
 	class inode
 	{
 	public:
-		virtual bool emit(core::cstring_buffer& out, material_generation_stage generation_stage) = 0;
+		virtual bool emit(cgeneration_context& ctx, const slot_idx_t idx) = 0;
+
 		virtual vector_t<sslot>& inputs() = 0;
 		virtual vector_t<sslot>& outputs() = 0;
 		virtual sslot& find_input_slot(stringview_t name) = 0;
@@ -94,11 +121,9 @@ namespace editor
 		virtual sslot& output_at(id_t id) = 0;
 		virtual unsigned input_count() const = 0;
 		virtual unsigned output_count() const = 0;
+		virtual string_t input_slot_value_at_idx(cgeneration_context& ctx, const slot_idx_t idx) = 0;
 
-		virtual int stage() const = 0;
 		virtual id_t id() const = 0;
-		virtual cmaterial_graph* graph() const = 0;
-		virtual stringview_t output_name() const = 0;
 	};
 
 	//- 
@@ -106,15 +131,16 @@ namespace editor
 	class cnode : public inode
 	{
 	public:
-		cnode(const id_t node_id, cmaterial_graph* graph, const int stage = 0) :
-			m_id(node_id), m_stage(stage), m_graph(graph)
+		cnode(const id_t id, cmaterial_graph* graph) :
+			m_id(id), m_graph(graph)
 		{
 		}
 
 		virtual ~cnode() = default;
 
 		template<typename TValueType>
-		cnode& push_slot(const id_t id, stringview_t name, slot_type type, TValueType default_value);
+		cnode& create_slot(stringview_t name, slot_type type, TValueType default_value);
+		cnode& create_slot(stringview_t name, slot_type type, rttr::type value_type, rttr::variant default_value);
 
 		vector_t<sslot>& inputs() override final { return m_inputs; }
 		vector_t<sslot>& outputs() override final { return m_outputs; }
@@ -126,10 +152,10 @@ namespace editor
 		sslot& output_at(id_t id) override final;
 		unsigned input_count() const override final;
 		unsigned output_count() const override final;
+		string_t input_slot_value_at_idx(cgeneration_context& ctx, const slot_idx_t idx) override final;
 
-		int stage() const override final { return m_stage; }
 		id_t id() const override final { return m_id; }
-		cmaterial_graph* graph() const override final { return m_graph; }
+		inline cmaterial_graph* graph() const { return m_graph; }
 
 	public:
 		int m_stage;
@@ -145,32 +171,9 @@ namespace editor
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TValueType>
-	cnode& cnode::push_slot(const id_t id, stringview_t name, slot_type type, TValueType default_value)
+	cnode& cnode::create_slot(stringview_t name, slot_type type, TValueType default_value)
 	{
-		sslot slot(rttr::type::get<TValueType>());
-
-		slot.m_name.assign(name.data());
-		slot.m_id = id;
-		slot.m_type = type;
-		slot.m_value_default = rttr::variant(default_value);
-		auto idx = 0;
-		/*slot.m_value = slot.m_value_default;*/
-
-		if (type == slot_type_input)
-		{
-			idx = m_inputs.size();
-			m_inputs.push_back(slot);
-		}
-		else
-		{
-			idx = m_outputs.size();
-			m_outputs.push_back(slot);
-		}
-
-		m_slot_name_lookup_table[name.data()] = idx;
-		m_slot_id_lookup_table[id] = idx;
-
-		return *this;
+		return create_slot(name, type, rttr::type::get<TValueType>(), rttr::variant(default_value));
 	}
 
 } //- editor

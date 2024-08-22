@@ -9,42 +9,48 @@ namespace editor
 	{
 	public:
 		template<typename TValueType>
-		cnode_constant(const id_t node_id, cmaterial_graph* graph, const int stage, stringview_t name, const TValueType default = (TValueType)0);
+		cnode_constant(const id_t id, cmaterial_graph* graph, stringview_t name, const TValueType default = (TValueType)0);
 		~cnode_constant() = default;
 
-		bool emit(core::cstring_buffer& out, material_generation_stage generation_stage) override final;
-		stringview_t output_name() const override final;
+		bool emit(cgeneration_context& ctx, const slot_idx_t idx) override final;
 
 	private:
-		string_t m_output_name;
+		core::cany m_value;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TValueType>
-	cnode_constant::cnode_constant(const id_t node_id, cmaterial_graph* graph, const int stage, stringview_t name,
-		const TValueType default /*= (TValueType)0*/) : cnode(node_id, graph, stage)
+	cnode_constant::cnode_constant(const id_t id, cmaterial_graph* graph, stringview_t name,
+		const TValueType default /*= (TValueType)0*/) : cnode(id, graph)
 	{
-		push_slot<TValueType>(cid_generator::retrieve_slot_id(id(), slot_type_output, 0), name, slot_type_output, default);
-		m_output_name = fmt::format("constant_{}", id());
+		create_slot<TValueType>(name, slot_type_output, default);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cadd_node final : public cnode
+	class cnode_function final : public cnode
 	{
 	public:
-		cadd_node(const id_t node_id, cmaterial_graph* graph) : cnode(node_id, graph, material_generation_stage_main_code)
+		enum function_type : uint8_t
 		{
-			push_slot<float>(cid_generator::retrieve_slot_id(id(), slot_type_input, 0), "a", slot_type_input, 0.0f);
-			push_slot<float>(cid_generator::retrieve_slot_id(id(), slot_type_input, 1), "b", slot_type_input, 0.0f);
-			push_slot<float>(cid_generator::retrieve_slot_id(id(), slot_type_output, 0), "output", slot_type_output, 0.0f);
-			m_output_name = fmt::format("add_result_{}", id());
-		}
+			function_type_none = 0,
+			function_type_binary_operation,
+			function_type_function_call,
+		};
 
-		bool emit(core::cstring_buffer& out, material_generation_stage generation_stage) override final;
-		stringview_t output_name() const override final;
+		struct sfunction_data
+		{
+			vector_t<string_t> m_function_operands;
+			string_t m_function_name;
+			string_t m_function_output_type;
+			function_type m_function_type = function_type_none;
+		};
+
+		cnode_function(const id_t id, cmaterial_graph* graph, const sfunction_data& data);
+
+		bool emit(cgeneration_context& ctx, const slot_idx_t idx) override final;
 
 	private:
-		string_t m_output_name;
+		sfunction_data m_data;
 	};
 
 } //- editor

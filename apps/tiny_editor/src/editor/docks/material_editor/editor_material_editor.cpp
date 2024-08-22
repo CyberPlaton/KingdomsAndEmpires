@@ -5,6 +5,14 @@ namespace editor
 {
 	namespace
 	{
+		static const cnode_function::sfunction_data C_ADD_FUNCTION_DATA = 
+		{
+			{"float", "float"},
+			"+",
+			"float",
+			cnode_function::function_type_binary_operation
+		};
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -24,9 +32,9 @@ namespace editor
 	{
 		m_graph = std::make_shared<cmaterial_graph>();
 
-		auto add = m_graph->create_node<cadd_node>();
-		auto constant_a = m_graph->create_node<cnode_constant, float>(material_generation_stage_main_code, "A", 1.0f);
-		auto constant_b = m_graph->create_node<cnode_constant, float>(material_generation_stage_main_code, "B", 1.0f);
+		auto add = m_graph->create_node<cnode_function>(1, C_ADD_FUNCTION_DATA);
+		auto constant_a = m_graph->create_node<cnode_constant, float>(2, material_generation_stage_main_code, "A", 1.0f);
+		auto constant_b = m_graph->create_node<cnode_constant, float>(3, material_generation_stage_main_code, "B", 1.0f);
 
 		m_graph->create_link(constant_a->id(), add->id(), 0, 0);
 		m_graph->create_link(constant_b->id(), add->id(), 0, 1);

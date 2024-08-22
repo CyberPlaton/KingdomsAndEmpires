@@ -5,84 +5,104 @@ namespace editor
 {
 	namespace
 	{
-		//------------------------------------------------------------------------------------------------------------------------
-		string_t variant_to_string(rttr::variant& var, rttr::type expected)
-		{
-			if (rttr::type::get<float>() == expected) return fmt::to_string(var.get_value<float>());
-			else if (rttr::type::get<double>() == expected) return fmt::to_string(var.get_value<double>());
-			else if (rttr::type::get<int64_t>() == expected) return fmt::to_string(var.get_value<int64_t>());
-			else if (rttr::type::get<int32_t>() == expected) return fmt::to_string(var.get_value<int32_t>());
-			else if (rttr::type::get<int16_t>() == expected) return fmt::to_string(var.get_value<int16_t>());
-			else if (rttr::type::get<int8_t>() == expected) return fmt::to_string(var.get_value<int8_t>());
-			else if (rttr::type::get<uint64_t>() == expected) return fmt::to_string(var.get_value<uint64_t>());
-			else if (rttr::type::get<uint32_t>() == expected) return fmt::to_string(var.get_value<uint32_t>());
-			else if (rttr::type::get<uint16_t>() == expected) return fmt::to_string(var.get_value<uint16_t>());
-			else if (rttr::type::get<uint8_t>() == expected) return fmt::to_string(var.get_value<uint8_t>());
-			else if (rttr::type::get<char>() == expected) return fmt::to_string(var.get_value<char>());
-			else if (rttr::type::get<unsigned char>() == expected) return fmt::to_string(var.get_value<unsigned char>());
-			else if (rttr::type::get<bool>() == expected) return fmt::to_string(var.get_value<bool>());
-			else if (rttr::type::get<string_t>() == expected) return var.get_value<string_t>();
-			else if (rttr::type::get<stringview_t>() == expected) return var.get_value<stringview_t>().data();
-			else if (rttr::type::get<const char*>() == expected) return var.get_value<const char*>();
-
-			CORE_ASSERT(false, "Invalid operation. Unknown shader value variant type!");
-			return {};
-		}
-
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	stringview_t cnode_constant::output_name() const
+	bool cnode_constant::emit(cgeneration_context& ctx, const slot_idx_t idx)
 	{
-		return m_output_name;
+		const auto& slot = output_at(0);
+
+		//- Get value of constant or default value if nothing is set
+		rttr::variant v = !m_value.empty()? m_value.data() : slot.m_value_default;
+
+		auto s = fmt::format("{} {} = {};\n",
+			slot.m_expected_value_type.get_name().data(),
+			fmt::format("constant_{}", id()).data(),
+			detail::variant_to_string(v, slot.m_expected_value_type));
+
+		ctx.closure().code().write(s);
+
+		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnode_constant::emit(core::cstring_buffer& out, material_generation_stage generation_stage)
+	cnode_function::cnode_function(const id_t id, cmaterial_graph* graph, const sfunction_data& data) :
+		cnode(id, graph), m_data(data)
 	{
-		if (algorithm::bit_check(stage(), generation_stage))
+		//- Automatic setup according to data, first create input slots
+		for (auto i = 0; i < m_data.m_function_operands.size(); ++i)
 		{
-			const auto& slot = output_at_idx(0);
+			const auto& operand_type_name = m_data.m_function_operands[i];
+			auto operand_type = rttr::type::get_by_name(operand_type_name.data());
 
-			//- Get value of constant or default value if nothing is set
-			rttr::variant v = slot.m_value.is_valid() ? slot.m_value : slot.m_value_default;
-
-			auto s = fmt::format("{} {} = {};\n",
-				slot.m_expected_value_type.get_name().data(),
-				output_name().data(),
-				variant_to_string(v, slot.m_expected_value_type));
-
-			out.write(s);
-
-			return true;
+			create_slot(fmt::to_string(i), slot_type_input, operand_type, operand_type.create({}));
 		}
-		return false;
+
+		//- Create output slots
+		auto output_type = rttr::type::get_by_name(m_data.m_function_output_type.data());
+		create_slot("out", slot_type_output, output_type, output_type.create({}));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cadd_node::emit(core::cstring_buffer& out, material_generation_stage generation_stage)
+	bool cnode_function::emit(cgeneration_context& ctx, const slot_idx_t idx)
 	{
-		if (algorithm::bit_check(stage(), generation_stage))
+		string_t s;
+		auto& output = output_at(0);
+
+		switch (m_data.m_function_type)
 		{
-			auto& output = output_at_idx(0);
-			auto& in0 = input_at_idx(0);
-			auto& in1 = input_at_idx(1);
+		case function_type_none:
+		default:
+		{
+			return false;
+		}
+		case function_type_binary_operation:
+		{
+			//- 
+			auto in0 = input_slot_value_at_idx(ctx, 0);
+			auto in1 = input_slot_value_at_idx(ctx, 1);
 
-			//- TODO: If an input slot is not assigned to anything, we ought to use
-			//- the default values provided
-			auto source0 = graph()->source_node_at(in0);
-			auto source1 = graph()->source_node_at(in1);
-
-			auto s = fmt::format("{} {} = {} + {};\n",
+			s = fmt::format("{} {} = {} {} {};\n",
 				output.m_expected_value_type.get_name().data(),
-				output_name().data(),
-				source0->output_name().data(),
-				source1->output_name().data());
+				output.m_name,
+				in0,
+				m_data.m_function_name,
+				in1);
+			break;
+		}
+		case function_type_function_call:
+		{
+			//- Starting of closure
+			s = fmt::format("{} {} = {}(",
+				output.m_expected_value_type.get_name().data(),
+				output.m_name,
+				m_data.m_function_name);
 
-			out.write(s);
+			//- Write first parameter
+			auto in0 = input_slot_value_at_idx(ctx, 0);
 
+			s = fmt::format("{} {}", s, in0);
+
+			//- Write rest of parameters if there are any left
+			for (auto i = 1; i < m_data.m_function_operands.size(); ++i)
+			{
+				auto ini = input_slot_value_at_idx(ctx, i);
+
+				s = fmt::format("{}, {}", s, ini);
+			}
+
+			//- Ending of closure
+			s = fmt::format("{});\n", s);
+			break;
+		}
+		}
+
+		if (!s.empty())
+		{
+			ctx.closure().code().write(s);
 			return true;
 		}
+
 		return false;
 	}
 

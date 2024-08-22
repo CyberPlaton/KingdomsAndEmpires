@@ -98,7 +98,7 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial_generator::stage_nodes_t cmaterial_generator::topsort(vector_t<id_t>& nodes)
+	cmaterial_generator::stage_nodes_t cmaterial_generator::topsort(stage_nodes_t& nodes)
 	{
 		umap_t<id_t, unsigned> indegrees;
 		stage_nodes_t sorted;

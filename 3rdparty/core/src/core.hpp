@@ -2064,6 +2064,7 @@ namespace core
 		inline rttr::type::type_id type() const { return m_data.get_type().get_id(); }
 		inline stringview_t type_name() const { return m_data.get_type().get_name().data(); }
 		inline bool empty() const { return !m_data.is_valid(); }
+		inline const rttr::variant& data() const { return m_data; }
 
 		template<typename TType>
 		inline bool is() const
@@ -2074,7 +2075,7 @@ namespace core
 		template<typename TType>
 		TType copy()
 		{
-			ASSERT(is<TType>(), "Casting to another data type is not allowed");
+			ASSERT(is<TType>(), "Invalid operation. Typecast to another data type is not allowed!");
 
 			return m_data.get_value<TType>();
 		}
@@ -2082,7 +2083,7 @@ namespace core
 		template<typename TType>
 		TType& get()
 		{
-			ASSERT(is<TType>(), "Casting to another data type is not allowed");
+			ASSERT(is<TType>(), "Invalid operation. Typecast to another data type is not allowed!");
 
 			return m_data.get_value<TType>();
 		}
@@ -2090,7 +2091,7 @@ namespace core
 		template<typename TType>
 		const TType& get() const
 		{
-			ASSERT(is<TType>(), "Casting to another data type is not allowed");
+			ASSERT(is<TType>(), "Invalid operation. Typecast to another data type is not allowed!");
 
 			return m_data.get_value<TType>();
 		}

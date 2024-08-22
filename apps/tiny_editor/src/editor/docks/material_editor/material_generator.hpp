@@ -30,7 +30,7 @@ namespace editor
 
 	private:
 		memory_ref_t generate(core::cstring_buffer& buffer, sstage& stage);
-		stage_nodes_t topsort(vector_t<id_t>& nodes);
+		stage_nodes_t topsort(stage_nodes_t& nodes);
 	};
 
 } //- editor
