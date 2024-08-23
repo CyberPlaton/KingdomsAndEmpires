@@ -77,7 +77,6 @@ namespace slang
 #define SLANG_CPU_ZONE ZoneScoped
 #define SLANG_NAMED_CPU_ZONE(name) ZoneScopedN(name)
 #elif PROFILE_ENABLE && SLANG_CUSTOM_PROFILE
-//- Leaving defines blank to be filled with yours, define the following:
 //- SLANG_CPU_ZONE
 //- SLANG_NAMED_CPU_ZONE(name)
 #elif PROFILE_ENABLE
@@ -86,6 +85,13 @@ namespace slang
 #else
 #define SLANG_CPU_ZONE
 #define SLANG_NAMED_CPU_ZONE(name)
+#endif
+
+//------------------------------------------------------------------------------------------------------------------------
+#if CORE_PLATFORM_WINDOWS
+	#define SLANG_NO_VTABLE __declspec(novtable)
+#else
+	#define SLANG_NO_VTABLE
 #endif
 
 #define STATIC_INSTANCE(__class) static __class& instance() { static __class S_INSTANCE; return S_INSTANCE; }
@@ -97,7 +103,7 @@ namespace slang
 	//- Class responsible for allocating and freeing memory. Function names are defines as malloc and free
 	//- for compatability with tinystl.
 	//------------------------------------------------------------------------------------------------------------------------
-	class __declspec(novtable) iallocator
+	class SLANG_NO_VTABLE iallocator
 	{
 	public:
 		virtual void* malloc(size_t) = 0;
@@ -283,18 +289,6 @@ namespace slang
 
 			umap_t<string_t, svalue> m_values;
 			ref_t<sscope> m_parent = nullptr;
-		};
-
-		//- Code chunk, holding compiled instructions and his constants. Basically the intermediate representation for slang
-		//------------------------------------------------------------------------------------------------------------------------
-		struct schunk
-		{
-			void write_opcode(byte_t byte, uint32_t line);
-			void write_value(svalue&& value);
-
-			vector_t<svalue> m_constants;
-			vector_t<byte_t> m_code;
-			vector_t<uint32_t> m_lines;
 		};
 
 	} //- detail

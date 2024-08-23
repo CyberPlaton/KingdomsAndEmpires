@@ -1,5 +1,6 @@
 #pragma once
-#include "slang_types.hpp"
+#include "slang_config.hpp"
+#include "slang_core.hpp"
 
 namespace slang
 {
@@ -30,7 +31,7 @@ namespace slang
 
 			inline scursor& cursor() { return m_cursor; }
 			inline stoken_stream& stream() { return m_stream; }
-			inline [[nodiscard]] detail::stoken_stream&& take_stream() { return std::move(m_stream); }
+			[[nodiscard]] stoken_stream&& take_stream() { return std::move(m_stream); }
 			inline sconfig& cfg() { return m_cfg; }
 			inline stringview_t& code() { return m_code; }
 			inline compile_result& result() { return m_result; }
@@ -57,7 +58,7 @@ namespace slang
 
 		bool scan();
 
-		[[nodiscard]] detail::stoken_stream&& stream() { return m_ctx.take_stream(); }
+		[[nodiscard]] stoken_stream&& stream() { return m_ctx.take_stream(); }
 
 	private:
 		detail::cscanning_context m_ctx;
