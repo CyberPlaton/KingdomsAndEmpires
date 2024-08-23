@@ -10,6 +10,10 @@
 #include <memory>
 #include <functional>
 #include <limits>
+#include <array>
+#define FMT_HEADER_ONLY
+#include "3rdparty/fmt/format.h"
+#include <rttr.h>
 
 //- If overriding STL classes define the namespace they are coming from same as below
 //------------------------------------------------------------------------------------------------------------------------
@@ -24,13 +28,15 @@ namespace slang
 } //- slang
 #endif
 
-//- Note: to use custom allocators define SLANG_CUSTOM_ALLOCATOR, SLANG_MALLOC() and SLANG_FREE()
 //------------------------------------------------------------------------------------------------------------------------
 #ifndef SLANG_CUSTOM_ALLOCATOR
 #include "3rdparty/dlmalloc/malloc.h"
-	//- TODO: reconsider memory management and allocation
-	#define SLANG_MALLOC(s)	dlmalloc(s)
-	#define SLANG_FREE(p)	dlfree(p)
+	#define SLANG_MALLOC(s)			dlmalloc(s)
+	#define SLANG_FREE(p)			dlfree(p)
+	#define SLANG_CALLOC(n, size)	dlcalloc(n, size)
+	#define SLANG_REALLOC(p, size)	dlrealloc(p, size)
+	#define SLANG_MALLOCA(size, a)	dlmemalign(a, size)
+	#define SLANG_FREEN(p, n)		SLANG_FREE(p)
 #endif
 
 //- @reference: imgui_inernal.h 303 or https://github.com/scottt/debugbreak
@@ -62,44 +68,65 @@ namespace slang
 #endif
 
 //------------------------------------------------------------------------------------------------------------------------
-#ifndef SLANG_NO_TRACY
+#if TRACY_ENABLE
 #include <Tracy.h>
 #endif
 
+//------------------------------------------------------------------------------------------------------------------------
+#if PROFILE_ENABLE && TRACY_ENABLE
+#define SLANG_CPU_ZONE ZoneScoped
+#define SLANG_NAMED_CPU_ZONE(name) ZoneScopedN(name)
+#elif PROFILE_ENABLE && SLANG_CUSTOM_PROFILE
+//- Leaving defines blank to be filled with yours, define the following:
+//- SLANG_CPU_ZONE
+//- SLANG_NAMED_CPU_ZONE(name)
+#elif PROFILE_ENABLE
+#define SLANG_CPU_ZONE
+#define SLANG_NAMED_CPU_ZONE(name)
+#else
+#define SLANG_CPU_ZONE
+#define SLANG_NAMED_CPU_ZONE(name)
+#endif
+
+#define STATIC_INSTANCE(__class) static __class& instance() { static __class S_INSTANCE; return S_INSTANCE; }
+
 namespace slang
 {
-	typedef
-	void(*slang_logger_t)(uint8_t, const char*);
+	typedef void(*slang_logger_t)(uint8_t, const char*);
 
-	struct sobject;
-
-	namespace detail
+	//- Class responsible for allocating and freeing memory. Function names are defines as malloc and free
+	//- for compatability with tinystl.
+	//------------------------------------------------------------------------------------------------------------------------
+	class __declspec(novtable) iallocator
 	{
-		struct sallocator;
+	public:
+		virtual void* malloc(size_t) = 0;
+		virtual void free(void*, size_t) = 0;
+	};
 
-	} //- detail
+	//------------------------------------------------------------------------------------------------------------------------
+	class callocator final : public iallocator
+	{
+	public:
+		void* malloc(size_t n) override final;
+		void free(void* p, size_t n) override final;
+	};
 
-
-	template<typename T, typename TAllocator = detail::sallocator>
-	using vector_t = stl::vector<T, TAllocator>;
-
-	template<typename TKey, typename TValue, typename TAllocator = detail::sallocator>
-	using umap_t = stl::unordered_map<TKey, TValue, TAllocator>;
-
-	using string_t = stl::basic_string<detail::sallocator>;
-
-	using stringview_t = stl::string_view;
-
+	template<typename T, typename TAllocator = callocator>
+	using vector_t		= stl::vector<T, TAllocator>;
+	template<typename TKey, typename TValue, typename TAllocator = callocator>
+	using umap_t		= stl::unordered_map<TKey, TValue, TAllocator>;
+	template<typename TType, size_t SIZE>
+	using array_t		= std::array<TType, SIZE>;
+	using string_t		= stl::basic_string<callocator>;
+	using stringview_t	= stl::string_view;
 	template<typename... TTypes>
-	using variant_t = std::variant<TTypes...>;
-
+	using variant_t		= std::variant<TTypes...>;
 	template<typename T>
-	using ptr_t = std::unique_ptr<T>;
-
+	using ptr_t			= std::unique_ptr<T>;
 	template<typename T>
-	using ref_t = std::shared_ptr<T>;
-
-	using byte_t = uint8_t;
+	using ref_t			= std::shared_ptr<T>;
+	using byte_t		= uint8_t;
 
 	//- Result of compilation from source code to intermediate representation
 	//------------------------------------------------------------------------------------------------------------------------
@@ -117,198 +144,127 @@ namespace slang
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum value_type : uint8_t
-	{
-		value_type_null = 0,
-		value_type_number,
-		value_type_boolean,
-		value_type_object,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
 	enum object_type : uint8_t
 	{
 		object_type_none = 0,
+
+		//- primitive object types
 		object_type_null,
+		object_type_number,
+		object_type_boolean,
+
+		//- composite or non-primitive object types
 		object_type_string,
 		object_type_function,
 		object_type_struct
 	};
 
-	//- Struct holding one of possible primitive value types
-	//------------------------------------------------------------------------------------------------------------------------
-	struct svalue
+	//- Instructions to be executed by the VM
+		//------------------------------------------------------------------------------------------------------------------------
+	enum opcode : uint8_t
 	{
-		template<typename TValue>
-		static svalue create(TValue value, value_type type);
+		opcode_noop = 0,
+		opcode_return,
 
-		template<typename TType>
-		bool is() const;
+		opcode_add,
+		opcode_subtract,
+		opcode_multiply,
+		opcode_divide,
 
-		template<typename TType>
-		TType& get();
+		opcode_not,
+		opcode_negate,
+		opcode_equal,
+		opcode_greater,
+		opcode_smaller,
+		opcode_smallerequal,
+		opcode_greaterequal,
 
-		template<typename TType>
-		const TType& get() const;
-
-		variant_t<int, float, bool, sobject*> as;
-		value_type m_type;
+		opcode_variable,
+		opcode_constant,
+		opcode_true,
+		opcode_false,
+		opcode_null,
 	};
 
-	//- Base of a language construct
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sobject
+	enum token_type : uint8_t
 	{
-		sobject() : m_marked(false), m_type(object_type_none) {}
-		sobject(object_type type) : m_marked(false), m_type(type) {}
+		token_type_none = 0,
+		token_type_eof,
+		token_type_error,
 
-		template<typename TObject>
-		TObject* as();
+		token_type_identifier,		//- i.e. variable, function, class names etc.
+		token_type_number,			//- i.e. 1.2, 0, 0.25
+		token_type_string,			//- i.e. "Hello World"
+		token_type_equal,			//- =
+		token_type_exclamation,		//- !
+		token_type_colon,			//- :
+		token_type_semicolon,		//- ;
+		token_type_comma,			//- ,
+		token_type_dot,				//- .
+		token_type_left_bracket,	//- [
+		token_type_right_bracket,	//- ]
+		token_type_left_brace,		//- {
+		token_type_right_brace,		//- }
+		token_type_left_paren,		//- (
+		token_type_right_paren,		//- )
 
-		template<typename TObject>
-		const TObject* as() const;
+		token_type_minus,			//- -
+		token_type_plus,			//- +
+		token_type_star,			//- *
+		token_type_slash,			//- /
 
-		bool m_marked;
-		object_type m_type;
+		token_type_smaller,			//- <
+		token_type_greater,			//- >
+		token_type_equality,		//- ==
+		token_type_not_equality,	//- !=
+		token_type_smaller_equal,	//- <=
+		token_type_greater_equal,	//- >=
+
+		//- keywords
+		token_type_true,			//- true
+		token_type_false,			//- false
+		token_type_null,			//- null
+		token_type_class,			//- class
+		token_type_def,				//- def
+		token_type_var,				//- var (variable declaration)
+		token_type_this,			//- this
+		token_type_return,			//- return
+
+		token_type_count = token_type_return + 1,
+	};
+
+	//- Precedence ordered from lowest to highest
+	//------------------------------------------------------------------------------------------------------------------------
+	enum precedence_type : uint8_t
+	{
+		precedence_type_none = 0,
+		precedence_type_assignment,	//- =
+		precedence_type_or,			//- or
+		precedence_type_and,		//- and
+		precedence_type_equality,	//- == !=
+		precedence_type_comparison,	//- < > <= >=
+		precedence_type_term,		//- + -
+		precedence_type_factor,		//- * /
+		precedence_type_unary,		//- ! -
+		precedence_type_call,		//- . ()
+		precedence_type_primary,	//-
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum log_level : int8_t
+	{
+		log_level_none = -1,
+		log_level_trace = 0,
+		log_level_debug,
+		log_level_info,
+		log_level_warn,
+		log_level_error,
+		log_level_critical,
 	};
 
 	namespace detail
 	{
-		//- Instructions to be executed by the VM
-		//------------------------------------------------------------------------------------------------------------------------
-		enum opcode : uint8_t
-		{
-			opcode_noop = 0,
-			opcode_return,
-
-			opcode_add,
-			opcode_subtract,
-			opcode_multiply,
-			opcode_divide,
-
-			opcode_not,
-			opcode_negate,
-			opcode_equal,
-			opcode_greater,
-			opcode_smaller,
-			opcode_smallerequal,
-			opcode_greaterequal,
-
-			opcode_variable,
-			opcode_constant,
-			opcode_true,
-			opcode_false,
-			opcode_null,
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		enum token_type : uint8_t
-		{
-			token_type_none = 0,
-			token_type_eof,
-			token_type_error,
-
-			token_type_identifier,		//- i.e. variable, function, class names etc.
-			token_type_number,			//- i.e. 1.2, 0, 0.25
-			token_type_string,			//- i.e. "Hello World"
-			token_type_equal,			//- =
-			token_type_exclamation,		//- !
-			token_type_colon,			//- :
-			token_type_semicolon,		//- ;
-			token_type_comma,			//- ,
-			token_type_dot,				//- .
-			token_type_left_bracket,	//- [
-			token_type_right_bracket,	//- ]
-			token_type_left_brace,		//- {
-			token_type_right_brace,		//- }
-			token_type_left_paren,		//- (
-			token_type_right_paren,		//- )
-
-			token_type_minus,			//- -
-			token_type_plus,			//- +
-			token_type_star,			//- *
-			token_type_slash,			//- /
-
-			token_type_smaller,			//- <
-			token_type_greater,			//- >
-			token_type_equality,		//- ==
-			token_type_not_equality,	//- !=
-			token_type_smaller_equal,	//- <=
-			token_type_greater_equal,	//- >=
-
-			//- keywords
-			token_type_true,			//- true
-			token_type_false,			//- false
-			token_type_null,			//- null
-			token_type_class,			//- class
-			token_type_def,				//- def
-			token_type_var,				//- var (variable declaration)
-			token_type_this,			//- this
-			token_type_return,			//- return
-		};
-
-		//- Precedence ordered from lowest to highest
-		//------------------------------------------------------------------------------------------------------------------------
-		enum precedence_type : uint8_t
-		{
-			precedence_type_none = 0,
-			precedence_type_assignment,	//- =
-			precedence_type_or,			//- or
-			precedence_type_and,		//- and
-			precedence_type_equality,	//- == !=
-			precedence_type_comparison,	//- < > <= >=
-			precedence_type_term,		//- + -
-			precedence_type_factor,		//- * /
-			precedence_type_unary,		//- ! -
-			precedence_type_call,		//- . ()
-			precedence_type_primary,	//-
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		enum log_level : int8_t
-		{
-			log_level_none = -1,
-			log_level_trace = 0,
-			log_level_debug,
-			log_level_info,
-			log_level_warn,
-			log_level_error,
-			log_level_critical,
-		};
-
-		//- Note: when creating objects make sure to use static_new and static_delete,
-		//- otherwise their constructor/destructor will not be invoked
-		//------------------------------------------------------------------------------------------------------------------------
-		struct sallocator
-		{
-			static void* malloc(std::size_t s);
-			static void free(void* p, std::size_t /*bytes*/);
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		struct slogger
-		{
-			void init(slang_logger_t callback, log_level level = log_level_warn);
-
-			slang_logger_t m_log = nullptr;
-			log_level m_level = log_level_none;
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		struct stoken
-		{
-			uint32_t m_line = 0;
-			string_t m_text;
-			token_type m_type = token_type_null;
-		};
-
-		//- Sequenced array of tokens, in order of their encounter or declaration
-		//------------------------------------------------------------------------------------------------------------------------
-		struct stoken_stream
-		{
-			vector_t<stoken> m_stream;
-		};
-
 		//- Scoped variables. Mapped to their declared names.
 		//------------------------------------------------------------------------------------------------------------------------
 		struct sscope
@@ -372,52 +328,5 @@ namespace slang
 		ptr_t<detail::ccompiler> m_compiler;
 		ptr_t<detail::cvm> m_vm;
 	};
-
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	const TType& svalue::get() const
-	{
-		SLANG_ASSERT(!as.valueless_by_exception(), "Invalid operation. Value does not hold any data");
-		SLANG_ASSERT(is<TType>(), "Invalid operation. Value does not have requested type");
-		return std::get<TType>(as);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	TType& svalue::get()
-	{
-		SLANG_ASSERT(!as.valueless_by_exception(), "Invalid operation. Value does not hold any data");
-		SLANG_ASSERT(is<TType>(), "Invalid operation. Value does not have requested type");
-		return std::get<TType>(as);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	bool svalue::is() const
-	{
-		return std::holds_alternative<TType>(as);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TValue>
-	svalue svalue::create(TValue value, value_type type)
-	{
-		return { value, type };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TObject>
-	TObject* sobject::as()
-	{
-		return static_cast<TObject*>(this);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TObject>
-	const TObject* sobject::as() const
-	{
-		return static_cast<const TObject*>(this);
-	}
 
 } //- slang

@@ -252,7 +252,7 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		detail::stoken ccompiler::sscanner::next_token()
 		{
-			ZoneScopedN("ccompiler::next_token");
+			SLANG_NAMED_CPU_ZONE("ccompiler::next_token");
 
 			m_cursor.m_text.clear();
 
@@ -492,7 +492,7 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		slang::compile_result ccompiler::sscanner::scan(stringview_t code)
 		{
-			ZoneScopedN("ccompiler::sscanner::scan");
+			SLANG_NAMED_CPU_ZONE("ccompiler::sscanner::scan");
 
 			m_code = code;
 
@@ -520,7 +520,7 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		compile_result ccompiler::compile(stringview_t code)
 		{
-			ZoneScopedN("ccompiler::compile");
+			SLANG_NAMED_CPU_ZONE("ccompiler::compile");
 
 			reset();
 
@@ -535,7 +535,7 @@ namespace slang
 		//------------------------------------------------------------------------------------------------------------------------
 		slang::compile_result ccompiler::scompiler::compile(stoken_stream&& stream)
 		{
-			ZoneScopedN("ccompiler::scompiler::compile");
+			SLANG_NAMED_CPU_ZONE("ccompiler::scompiler::compile");
 
 			m_cursor.m_stream = std::move(stream);
 

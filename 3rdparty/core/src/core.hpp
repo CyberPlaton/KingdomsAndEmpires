@@ -213,7 +213,6 @@ void operator delete(void* p) { CORE_FREE(p); }
 #if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 #define CORE_ZONE ZoneScoped
 #define CORE_NAMED_ZONE(name) ZoneScopedN(name)
-#define CORE_NAME_ZONE_
 #elif PROFILE_ENABLE
 //- TODO: Currently we have no way of setting the category of a function
 //------------------------------------------------------------------------------------------------------------------------

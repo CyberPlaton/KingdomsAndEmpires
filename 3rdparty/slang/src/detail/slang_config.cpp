@@ -22,18 +22,20 @@ namespace slang
 
 	} //- unnamed
 
+	//------------------------------------------------------------------------------------------------------------------------
+	void* callocator::malloc(size_t n)
+	{
+		return SLANG_MALLOC(n);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void callocator::free(void* p, size_t n)
+	{
+		SLANG_FREE(p);
+	}
+
 	namespace detail
 	{
-		//------------------------------------------------------------------------------------------------------------------------
-		void slogger::init(slang_logger_t callback, log_level level /*= log_level_warn*/)
-		{
-			if (level > log_level_none)
-			{
-				m_log = std::move(callback);
-				m_level = level;
-			}
-		}
-
 		//------------------------------------------------------------------------------------------------------------------------
 		bool sscope::lookup(stringview_t name)
 		{

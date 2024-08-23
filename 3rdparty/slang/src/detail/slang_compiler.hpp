@@ -6,10 +6,9 @@ namespace slang
 {
 	namespace detail
 	{
-		//- Scanner and bytecode generator. Takes code text and creates an intermediate representation ready to be run on a VM.
-		//- Scanner and compiler part are separated internally, but not visible to outside
+		//- Responsible for generating an  intermediate representation ready to be run on a VM.
 		//------------------------------------------------------------------------------------------------------------------------
-		class ccompiler
+		class ccompiler final
 		{
 		public:
 			ccompiler() = default;

@@ -1,15 +1,13 @@
 include (path.join(SCRIPTS_DIR, "utility.lua"))
 
 function slang()
-	add_target_static_library("slang",
+	add_target_library("slang",
 					{},
 					{"slang_EXPORTS"},
 					{},
-					{},
+					{"rttr"},
+					false,
 					"c++",
-					{}, -- plugin_headeronly_deps
-					{"Tracy"}, -- thirdparty_headeronly_deps
-					{} -- additional_includes
-					)
+					{"../rttr/rttr/src"})
 end
 slang()

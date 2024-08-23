@@ -1,7 +1,5 @@
 #pragma once
 #include "slang_os_api.hpp"
-#define FMT_HEADER_ONLY
-#include "3rdparty/fmt/format.h"
 
 namespace slang
 {
