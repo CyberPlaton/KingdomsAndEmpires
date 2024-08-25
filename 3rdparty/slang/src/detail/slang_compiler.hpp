@@ -30,16 +30,21 @@ namespace slang
 
 			inline cchunk& chunk() { return m_chunk; }
 			inline scursor& cursor() { return m_cursor; }
+			inline const scursor& cursor() const { return m_cursor; }
 			inline sconfig& cfg() { return m_cfg; }
 			inline compile_result& result() { return m_result; }
 			inline stoken_stream& stream() { return cursor().m_stream; }
 			inline vector_t<stoken>& tokens() { return cursor().m_stream.m_tokens; }
+			inline const vector_t<stoken>& tokens() const { return cursor().m_stream.m_tokens; }
 			[[nodiscard]] cchunk&& take_chunk() { return std::move(m_chunk); }
 
 			void process_token();
 			stoken& advance();
-			stoken& peek(unsigned lookahead = 0);
+			const stoken& peek(unsigned lookahead = 0) const;
 			bool consume(token_type expected);
+
+			bool match_token_type(token_type type);
+			bool check_token_type(token_type type) const;
 
 		private:
 			cchunk m_chunk;

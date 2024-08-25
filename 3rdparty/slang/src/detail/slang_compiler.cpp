@@ -47,6 +47,199 @@ namespace slang
 			emit_byte(make_constant<T>(ctx, std::move(value)), line);
 		}
 
+		namespace expressions
+		{
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void primary(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void call(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void unary(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void factor(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void term(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void comparison(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void equality(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void logacal_and(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void logical_or(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void assignment(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void expression(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+		} //- expressions
+
+		namespace statements
+		{
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void statement_expression(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void statement_for(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void statement_print(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void statement_return(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void statement_if(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void statement_while(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void block(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void statement(detail::ccompiling_context& ctx)
+			{
+				if (ctx.match_token_type(token_type_print))
+				{
+
+				}
+				else if (ctx.match_token_type(token_type_for))
+				{
+
+				}
+				else if (ctx.match_token_type(token_type_if))
+				{
+
+				}
+				else if (ctx.match_token_type(token_type_return))
+				{
+
+				}
+				else if (ctx.match_token_type(token_type_identifier))
+				{
+
+				}
+				else if (ctx.match_token_type(token_type_left_brace))
+				{
+
+				}
+				else
+				{
+					statement_expression(ctx);
+				}
+			}
+
+		} //- statements
+
+		namespace rules
+		{
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void declaration_class(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void declaration_function(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void declaration_variable(detail::ccompiling_context& ctx)
+			{
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static void declaration(detail::ccompiling_context& ctx)
+			{
+				if (ctx.match_token_type(token_type_class))
+				{
+					declaration_class(ctx);
+				}
+				else if (ctx.match_token_type(token_type_def))
+				{
+					declaration_class(ctx);
+				}
+				else if (ctx.match_token_type(token_type_var))
+				{
+					declaration_class(ctx);
+				}
+				else
+				{
+					statements::statement(ctx);
+				}
+			}
+
+		} //- rules
+
+
 	}; //- unnamed
 
 	namespace detail
@@ -107,7 +300,7 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		stoken& ccompiling_context::peek(unsigned lookahead /*= 0*/)
+		const stoken& ccompiling_context::peek(unsigned lookahead /*= 0*/) const
 		{
 			SLANG_ASSERT(cursor().m_current + lookahead < tokens().size() + 1, "Invalid operation. Index out of bound");
 
@@ -122,6 +315,23 @@ namespace slang
 				++cursor().m_current; return true;
 			}
 			return false;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiling_context::match_token_type(token_type type)
+		{
+			if (!match_token_type(type))
+			{
+				return false;
+			}
+			advance();
+			return true;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiling_context::check_token_type(token_type type) const
+		{
+			return peek().m_type == type;
 		}
 
 		//- compiler expects a null terminated string
