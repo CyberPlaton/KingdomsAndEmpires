@@ -1,6 +1,8 @@
 #pragma once
 #include "slang_types.hpp"
 #include "slang_object.hpp"
+#include "slang_chunk.hpp"
+#include "slang_scanner.hpp"
 
 namespace slang
 {
@@ -15,45 +17,9 @@ namespace slang
 			~ccompiler() = default;
 
 			compile_result compile(stringview_t code);
-			[[nodiscard]] inline schunk& chunk() { SLANG_ASSERT(m_result == compile_result_ok, "Invalid operation. Compilation was invalid"); return m_compiler.m_chunk;};
+			[[nodiscard]] inline cchunk& chunk() { SLANG_ASSERT(m_result == compile_result_ok, "Invalid operation. Compilation was invalid"); return m_compiler.m_chunk;};
 
 		private:
-			//- scanning part
-			struct sscanner
-			{
-				struct scursor
-				{
-					string_t m_text;
-					uint32_t m_current = 0;
-					uint32_t m_line = 0;
-				};
-
-				scursor m_cursor;
-				stoken_stream m_token_stream;
-				stringview_t m_code;
-				compile_result m_result = compile_result_ok;
-
-				compile_result scan(stringview_t code);
-				stoken next_token();
-				void process_token(stoken&& token);
-				char peek(uint32_t lookahead = 0) const;
-				inline char advance() { return m_code[++m_cursor.m_current]; }
-
-				bool is_identifier(char c) const;
-				bool is_eof(char c) const;
-				bool is_digit(char c) const;
-				bool is_whitespace(char c) const;
-				bool is_newline(char c) const;
-				bool is_comment(char c) const;
-				bool is_keyword(stringview_t text, token_type type) const;
-
-				stoken make_identifier();
-				stoken make_number();
-				stoken make_string();
-				stoken make_error(stringview_t text);
-				[[nodiscard]] inline stoken make_token(uint32_t line, stringview_t text, token_type type) { return { line, text.data(), type }; }
-			};
-
 			//- compiling part
 			struct scompiler
 			{
@@ -115,7 +81,6 @@ namespace slang
 				byte_t make_constant(T&& value);
 			};
 
-			sscanner m_scanner;
 			scompiler m_compiler;
 			compile_result m_result = compile_result_fail;
 
@@ -141,7 +106,7 @@ namespace slang
 
 			//- TODO: in case this becomes a problem, we need to find a way to encode an index
 			//- in 2 bytes or something similar
-			SLANG_ASSERT(index < std::numeric_limits<byte_t>::max(), "Invalid operation. Constant limit for chunk reached");
+			SLANG_ASSERT(index < std::numeric_limits<byte_t>::max(), "Invalid operation. 'Constant' limit for chunk reached");
 
 			return static_cast<byte_t>(index);
 		}

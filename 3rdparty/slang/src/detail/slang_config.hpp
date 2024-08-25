@@ -240,6 +240,20 @@ namespace slang
 		token_type_count = token_type_return + 1,
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	enum error_type : uint8_t
+	{
+		error_type_none = 0,
+		error_type_unrecognized_literal,
+		error_type_unterminated_string,
+		error_type_multiline_string,
+
+
+		error_type_missing_expected_eof,
+
+		error_type_count = error_type_missing_expected_eof + 1,
+	};
+
 	//- Precedence ordered from lowest to highest
 	//------------------------------------------------------------------------------------------------------------------------
 	enum precedence_type : uint8_t

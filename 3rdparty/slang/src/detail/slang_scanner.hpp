@@ -9,8 +9,8 @@ namespace slang
 		struct scursor
 		{
 			string_t m_text;
-			uint32_t m_current = 0;
-			uint32_t m_line = 0;
+			unsigned m_current = 0;
+			unsigned m_line = 0;
 		};
 
 		//- Responsible for providing context and commonly used structures to parts of scanning code. Moreover it allows
@@ -35,6 +35,11 @@ namespace slang
 			inline sconfig& cfg() { return m_cfg; }
 			inline stringview_t& code() { return m_code; }
 			inline compile_result& result() { return m_result; }
+
+			stoken next_token();
+			void process_token(stoken&& token);
+			char peek(unsigned lookahead = 0) const;
+			char advance();
 
 		private:
 			scursor m_cursor;
