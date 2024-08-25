@@ -8,6 +8,58 @@ namespace slang
 {
 	namespace detail
 	{
+		//------------------------------------------------------------------------------------------------------------------------
+		class ccompiling_context final :
+			private cnon_copyable,
+			private cnon_movable
+		{
+		public:
+			struct scursor
+			{
+				stoken_stream m_stream;
+				uint32_t m_current = 0;
+			};
+
+			struct sconfig
+			{
+
+			};
+
+			explicit ccompiling_context(stoken_stream&& stream, sconfig cfg = {});
+			~ccompiling_context() = default;
+
+			inline cchunk& chunk() { return m_chunk; }
+			inline scursor& cursor() { return m_cursor; }
+			inline compile_result& result() { return m_result; }
+			[[nodiscard]] cchunk&& take_chunk() { return std::move(m_chunk); }
+
+		private:
+			cchunk m_chunk;
+			scursor m_cursor;
+			compile_result m_result = compile_result_ok;
+		};
+
+	} //- detail
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccompiler final
+	{
+	public:
+		explicit ccompiler(stoken_stream&& stream, detail::ccompiling_context::sconfig cfg = {});
+		~ccompiler() = default;
+
+		bool compile();
+
+		[[nodiscard]] cchunk&& chunk() { return std::move(m_ctx.take_chunk()); }
+
+	private:
+		detail::ccompiling_context m_ctx;
+	};
+
+
+
+	namespace detail
+	{
 		//- Responsible for generating an  intermediate representation ready to be run on a VM.
 		//------------------------------------------------------------------------------------------------------------------------
 		class ccompiler final

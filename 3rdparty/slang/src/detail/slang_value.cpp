@@ -20,24 +20,4 @@ namespace slang
 
 	}
 
-	cvalue create_string_object()
-	{
-		return cvalue(object_type_string);
-	}
-
-	cvalue create_null_object()
-	{
-		return cvalue(object_type_null);
-	}
-
-	cvalue create_struct_object()
-	{
-		return cvalue(object_type_struct);
-	}
-
-	cvalue create_function_object()
-	{
-		return cvalue(object_type_function);
-	}
-
 } //- slang

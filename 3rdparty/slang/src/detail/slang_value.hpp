@@ -11,6 +11,8 @@ namespace slang
 	public:
 		cvalue();
 		cvalue(object_type type);
+		template<typename T>
+		cvalue(object_type type, T value);
 		~cvalue();
 
 		inline cany& data() { return m_data; }
@@ -23,9 +25,11 @@ namespace slang
 		bool m_marked;
 	};
 
-	cvalue create_string_object();
-	cvalue create_null_object();
-	cvalue create_struct_object();
-	cvalue create_function_object();
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename T>
+	cvalue::cvalue(object_type type, T value) :
+		m_type(type), m_data(value), m_marked(false)
+	{
+	}
 
 } //- slang

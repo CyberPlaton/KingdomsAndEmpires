@@ -244,14 +244,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	auto result = slang::slang_compile(state, code);
 	slang::slang_close(state);
 
-	slang::detail::schunk chunk;
-	chunk.m_constants.push_back(slang::svalue::create(1.2f, slang::value_type_number));
-	chunk.m_code.push_back(slang::detail::opcode_constant);
-	chunk.m_code.push_back(0);
+	slang::cchunk chunk;
+	chunk.write_value(slang::object_type_number, 1.23f);
+	chunk.write_opcode(slang::opcode_constant, 0);
+	chunk.write_opcode(0, 0);
 
 	auto p = slang::debug::print_chunk(chunk);
 
-	slang::slang_print(slang::detail::log_level_info, true, p.c_str());
+	slang::slang_print(slang::log_level_info, true, p.c_str());
 
 // 	logging::log_debug("Registered rttr types");
 // 	for (auto type : rttr::type::get_types())

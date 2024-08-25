@@ -2,6 +2,20 @@
 
 namespace slang
 {
+	namespace
+	{
+		constexpr auto C_CONSTANTS_COUNT_MAX = MAX(byte_t);
+
+	} //- unnamed
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cchunk::cchunk()
+	{
+		m_constants.reserve(C_CONSTANTS_COUNT_MAX);
+		m_code.reserve(C_CONSTANTS_COUNT_MAX);
+		m_lines.reserve(C_CONSTANTS_COUNT_MAX);
+	}
+
 	//------------------------------------------------------------------------------------------------------------------------
 	void cchunk::write_opcode(byte_t byte, unsigned line)
 	{

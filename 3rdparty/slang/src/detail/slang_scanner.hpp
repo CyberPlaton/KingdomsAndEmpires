@@ -6,21 +6,21 @@ namespace slang
 {
 	namespace detail
 	{
-		struct scursor
-		{
-			string_t m_text;
-			unsigned m_current = 0;
-			unsigned m_line = 0;
-		};
-
 		//- Responsible for providing context and commonly used structures to parts of scanning code. Moreover it allows
 		//- for customization and extensions through configuration.
 		//------------------------------------------------------------------------------------------------------------------------
-		class cscanning_context :
+		class cscanning_context final :
 			private cnon_copyable,
 			private cnon_movable
 		{
 		public:
+			struct scursor
+			{
+				string_t m_text;
+				unsigned m_current = 0;
+				unsigned m_line = 0;
+			};
+
 			struct sconfig
 			{
 

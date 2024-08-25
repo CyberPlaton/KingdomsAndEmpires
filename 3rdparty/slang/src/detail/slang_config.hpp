@@ -93,8 +93,10 @@ namespace slang
 #else
 	#define SLANG_NO_VTABLE
 #endif
-
 #define STATIC_INSTANCE(__class) static __class& instance() { static __class S_INSTANCE; return S_INSTANCE; }
+#define MAX(type) std::numeric_limits<type>().max()
+#define MIN(type) std::numeric_limits<type>().min()
+#define BIT(x) 1 << x
 
 namespace slang
 {
