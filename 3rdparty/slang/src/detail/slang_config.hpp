@@ -270,7 +270,7 @@ namespace slang
 		precedence_type_factor,		//- * /
 		precedence_type_unary,		//- ! -
 		precedence_type_call,		//- . ()
-		precedence_type_primary,	//-
+		precedence_type_primary,	//- STRING or NUMBER or "(" EXPRESSION ")" etc. for more see specs.slang Expressions
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

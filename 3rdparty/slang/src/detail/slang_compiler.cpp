@@ -1,25 +1,127 @@
 #include "slang_compiler.hpp"
+#include "slang_error.hpp"
 #include "slang_debug.hpp"
 #include <string.h> //- std::stoi and the like
 
 namespace slang
 {
-	namespace detail
+	namespace
 	{
-		namespace
+		//- Create a constant value for chunk. Function returns the index where the constant is stored in the vector.
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename T>
+		inline static byte_t make_constant(detail::ccompiling_context& ctx, T&& value)
 		{
-		}; //- unnamed
+			auto& constants = ctx.chunk().constants();
+			const auto idx = constants.size();
+
+			SLANG_ASSERT(idx < MAX(byte_t), "Invalid operation. 'Constant' limit for chunk reached");
+
+			constants.emplace_back(cvalue(object_type_number, std::move(value)));
+
+			return static_cast<byte_t>(idx);
+		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::reset()
+		inline static void emit_byte(detail::ccompiling_context& ctx, byte_t byte, unsigned line)
 		{
-			m_compiler.m_chunk.m_code.clear();
-			m_compiler.m_chunk.m_constants.clear();
-			m_scanner.m_cursor.m_current = 0;
-			m_scanner.m_cursor.m_text.clear();
-			m_scanner.m_cursor.m_line = 0;
-			m_scanner.m_token_stream.m_stream.clear();
-			m_scanner.m_result = compile_result_ok;
+			ctx.chunk().write_opcode(byte, line);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void emit_error(detail::ccompiling_context& ctx, stringview_t message)
+		{
+			if (slogger::instance().m_callback)
+			{
+				slogger::instance().m_callback(log_level_error, message.data());
+			}
+
+			ctx.result() = compile_result_fail;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename T>
+		inline static void emit_constant(detail::ccompiling_context& ctx, unsigned line, T&& value)
+		{
+			emit_byte(ctx, opcode_constant, line);
+			emit_byte(make_constant<T>(ctx, std::move(value)), line);
+		}
+
+	}; //- unnamed
+
+	namespace detail
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		ccompiling_context::ccompiling_context(stoken_stream&& stream, sconfig cfg /*= {}*/) :
+			m_cursor({ std::move(stream), 0}), m_cfg(cfg)
+		{
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void ccompiling_context::process_token()
+		{
+			const auto& token = peek();
+
+			switch (token.m_type)
+			{
+			case token_type_number:
+			{
+				number();
+				break;
+			}
+			case token_type_null:
+			case token_type_true:
+			case token_type_false:
+			{
+				literal_();
+				break;
+			}
+			//- prefix tokens
+			case token_type_left_bracket:
+			{
+				break;
+			}
+			case token_type_left_brace:
+			{
+				break;
+			}
+			case token_type_left_paren:
+			{
+				break;
+			}
+
+			default:
+			{
+				//- report unknown token type
+				break;
+			}
+			}
+
+			slang_print(log_level_debug, true, debug::print_chunk(m_chunk).c_str());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		stoken& ccompiling_context::advance()
+		{
+			return tokens()[++cursor().m_current];
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		stoken& ccompiling_context::peek(unsigned lookahead /*= 0*/)
+		{
+			SLANG_ASSERT(cursor().m_current + lookahead < tokens().size() + 1, "Invalid operation. Index out of bound");
+
+			return tokens()[cursor().m_current + lookahead];
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool ccompiling_context::consume(token_type expected)
+		{
+			if (const auto& token = peek(); token.m_type == expected)
+			{
+				++cursor().m_current; return true;
+			}
+			return false;
 		}
 
 		//- compiler expects a null terminated string
@@ -128,29 +230,6 @@ namespace slang
 				return;
 			}
 			emit_error(m_cursor.m_current, error_message);
-		}
-
-		//- Writes something into the opcode array, the next write will be on the next index
-		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::scompiler::emit_byte(byte_t byte, uint32_t line)
-		{
-			m_chunk.write_opcode(byte, line);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::scompiler::emit_error_at_current_token()
-		{
-			const auto& token = peek();
-
-			emit_error(token.m_line, token.m_text.c_str());
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void ccompiler::scompiler::emit_error(uint32_t line, stringview_t message)
-		{
-			slang_print(log_level_error, true,
-				fmt::format("Error at line {}: '{}'", line, message.data()).c_str());
-			m_result = compile_result_fail;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -319,5 +398,40 @@ namespace slang
 		}
 
 	} //- detail
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ccompiler::ccompiler(stoken_stream&& stream, detail::ccompiling_context::sconfig cfg /*= {}*/) :
+		m_ctx(detail::ccompiling_context{ std::move(stream), cfg })
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool ccompiler::compile()
+	{
+		SLANG_NAMED_CPU_ZONE("ccompiler::compile");
+
+		//- TODO: maybe reconsider how we should iterate, unsure at this point.
+		//- We do not need to process the last token, it is expected to be 'eof'
+		for (m_ctx.cursor().m_current = 0u; m_ctx.cursor().m_current < m_ctx.tokens().size() - 1; ++m_ctx.cursor().m_current)
+		{
+			if (m_ctx.peek().m_type == token_type_error)
+			{
+				/*emit_error_at_current_token();*/
+				break;
+			}
+
+			m_ctx.process_token();
+		}
+
+		//- Finalize compilation
+		if (!m_ctx.consume(token_type_eof))
+		{
+			emit_error(m_ctx, serrors::errors()[error_type_missing_expected_eof]);
+		}
+
+		emit_byte(m_ctx, opcode_return, m_ctx.tokens().back().m_line + 1);
+
+		return m_ctx.result() == compile_result_ok;
+	}
 
 } //- slang

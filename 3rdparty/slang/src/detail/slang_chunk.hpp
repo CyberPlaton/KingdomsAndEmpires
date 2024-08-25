@@ -17,6 +17,10 @@ namespace slang
 		void write_value(object_type type, T value);
 		void write_value(cvalue&& value);
 
+		inline vector_t<byte_t>& code() { return m_code; }
+		inline vector_t<cvalue>& constants() { return m_constants; }
+		inline vector_t<unsigned>& lines() { return m_lines; }
+
 	private:
 		vector_t<cvalue> m_constants;
 		vector_t<byte_t> m_code;
