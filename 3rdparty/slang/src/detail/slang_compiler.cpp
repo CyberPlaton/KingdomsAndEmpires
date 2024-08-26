@@ -128,13 +128,33 @@ namespace slang
 			//------------------------------------------------------------------------------------------------------------------------
 			inline static void statement_for(detail::ccompiling_context& ctx)
 			{
+				ctx.push_scope();
 
+				if (!ctx.consume(token_type_left_paren))
+				{
+
+				}
+
+
+				if (!ctx.consume(token_type_right_paren))
+				{
+
+				}
+
+				ctx.pop_scope();
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
 			inline static void statement_print(detail::ccompiling_context& ctx)
 			{
+				expressions::expression(ctx);
 
+				if (!ctx.consume(token_type_semicolon))
+				{
+
+				}
+
+				emit_byte(ctx, opcode_print, ctx.current_line());
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
@@ -315,6 +335,12 @@ namespace slang
 				++cursor().m_current; return true;
 			}
 			return false;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		unsigned ccompiling_context::current_line() const
+		{
+			return peek().m_line;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

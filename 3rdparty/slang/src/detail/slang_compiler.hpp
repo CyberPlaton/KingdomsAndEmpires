@@ -42,6 +42,7 @@ namespace slang
 			stoken& advance();
 			const stoken& peek(unsigned lookahead = 0) const;
 			bool consume(token_type expected);
+			unsigned current_line() const;
 
 			bool match_token_type(token_type type);
 			bool check_token_type(token_type type) const;

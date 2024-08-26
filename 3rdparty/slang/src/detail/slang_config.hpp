@@ -168,7 +168,7 @@ namespace slang
 	};
 
 	//- Instructions to be executed by the VM
-		//------------------------------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------------------------------
 	enum opcode : uint8_t
 	{
 		opcode_noop = 0,
@@ -192,6 +192,8 @@ namespace slang
 		opcode_true,
 		opcode_false,
 		opcode_null,
+
+		opcode_print,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -231,12 +233,17 @@ namespace slang
 
 		//- keywords
 		token_type_true,			//- true
+
 		token_type_false,			//- false
 		token_type_null,			//- null
 		token_type_class,			//- class
 		token_type_def,				//- def
 		token_type_var,				//- var (variable declaration)
 		token_type_this,			//- this
+		token_type_print,			//- special 'print' function call
+		token_type_for,
+		token_type_if,
+
 		token_type_return,			//- return
 
 		token_type_count = token_type_return + 1,
