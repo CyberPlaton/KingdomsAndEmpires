@@ -275,7 +275,10 @@ namespace slang
 					emit_error(ctx, "Cannot 'return' from top-level code");
 				}
 
+				if (ctx.match_token_type(token_type_semicolon))
+				{
 
+				}
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
