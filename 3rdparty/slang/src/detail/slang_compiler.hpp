@@ -8,6 +8,44 @@ namespace slang
 {
 	namespace detail
 	{
+		namespace expressions
+		{
+			void primary(detail::ccompiling_context& ctx);
+			void call(detail::ccompiling_context& ctx);
+			void unary(detail::ccompiling_context& ctx);
+			void factor(detail::ccompiling_context& ctx);
+			void term(detail::ccompiling_context& ctx);
+			void comparison(detail::ccompiling_context& ctx);
+			void equality(detail::ccompiling_context& ctx);
+			void logacal_and(detail::ccompiling_context& ctx);
+			void logical_or(detail::ccompiling_context& ctx);
+			void assignment(detail::ccompiling_context& ctx);
+			void expression(detail::ccompiling_context& ctx);
+
+		} //- expressions
+
+		namespace statements
+		{
+			void statement_expression(detail::ccompiling_context& ctx);
+			void statement_for(detail::ccompiling_context& ctx);
+			void statement_print(detail::ccompiling_context& ctx);
+			void statement_return(detail::ccompiling_context& ctx);
+			void statement_if(detail::ccompiling_context& ctx);
+			void statement_while(detail::ccompiling_context& ctx);
+			void block(detail::ccompiling_context& ctx);
+			void statement(detail::ccompiling_context& ctx);
+
+		} //- statements
+
+		namespace rules
+		{
+			void declaration_function(detail::ccompiling_context& ctx);
+			void declaration_variable(detail::ccompiling_context& ctx);
+			void declaration_class(detail::ccompiling_context& ctx);
+			void declaration(detail::ccompiling_context& ctx);
+
+		} //- rules
+
 		//------------------------------------------------------------------------------------------------------------------------
 		class ccompiling_context final :
 			private cnon_copyable,

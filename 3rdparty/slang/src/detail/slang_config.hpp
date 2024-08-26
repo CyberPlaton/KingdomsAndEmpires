@@ -194,6 +194,11 @@ namespace slang
 		opcode_null,
 
 		opcode_print,
+
+		opcode_loop,
+		opcode_jump,
+		opcode_jump_if_false,
+		opcode_pop,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -243,6 +248,7 @@ namespace slang
 		token_type_print,			//- special 'print' function call
 		token_type_for,
 		token_type_if,
+		token_type_else,
 
 		token_type_return,			//- return
 

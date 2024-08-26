@@ -23,9 +23,19 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static void emit_byte(detail::ccompiling_context& ctx, byte_t byte, unsigned line)
+		inline static void emit_byte(detail::ccompiling_context& ctx, byte_t byte)
 		{
-			ctx.chunk().write_opcode(byte, line);
+			ctx.chunk().write_opcode(byte, ctx.current_line());
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static byte_t emit_jump(detail::ccompiling_context& ctx, byte_t byte)
+		{
+			emit_byte(ctx, byte);
+			emit_byte(ctx, MAX(byte_t)); //- TODO: clarify what this is for
+			emit_byte(ctx, MAX(byte_t));
+
+			return static_cast<byte_t>(ctx.chunk().code().size()) - 2;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -40,77 +50,114 @@ namespace slang
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		template<typename T>
-		inline static void emit_constant(detail::ccompiling_context& ctx, unsigned line, T&& value)
+		inline static void emit_loop(detail::ccompiling_context& ctx, const int start)
 		{
+			emit_byte(ctx, opcode_loop);
+
+			const auto offset = static_cast<int>(ctx.chunk().code().size()) - start + 2;
+
+			if (offset > MAX(byte_t))
+			{
+				emit_error(ctx, "Looping body is too large");
+			}
+
+			emit_byte(ctx, (offset >> 8) & MAX(byte_t));
+			emit_byte(ctx, offset >> 8);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename T>
+		inline static void emit_constant(detail::ccompiling_context& ctx, T&& value)
+		{
+			const auto line = ctx.current_line();
 			emit_byte(ctx, opcode_constant, line);
 			emit_byte(make_constant<T>(ctx, std::move(value)), line);
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void patchup_jump(detail::ccompiling_context& ctx, const int offset)
+		{
+			const auto jump_count = static_cast<int>(ctx.chunk().code().size());
+
+			if (jump_count > MAX(byte_t))
+			{
+				emit_error(ctx, "Too long jump instruction!");
+			}
+
+			auto& code = ctx.chunk().code();
+
+			code[offset] = (jump_count >> 8) & MAX(byte_t);
+			code[offset + 1] = jump_count& MAX(byte_t);
+		}
+
+	}; //- unnamed
+
+	namespace detail
+	{
 		namespace expressions
 		{
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void primary(detail::ccompiling_context& ctx)
+			void primary(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void call(detail::ccompiling_context& ctx)
+			void call(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void unary(detail::ccompiling_context& ctx)
+			void unary(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void factor(detail::ccompiling_context& ctx)
+			void factor(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void term(detail::ccompiling_context& ctx)
+			void term(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void comparison(detail::ccompiling_context& ctx)
+			void comparison(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void equality(detail::ccompiling_context& ctx)
+			void equality(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void logacal_and(detail::ccompiling_context& ctx)
+			void logacal_and(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void logical_or(detail::ccompiling_context& ctx)
+			void logical_or(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void assignment(detail::ccompiling_context& ctx)
+			void assignment(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void expression(detail::ccompiling_context& ctx)
+			void expression(detail::ccompiling_context& ctx)
 			{
 
 			}
@@ -120,70 +167,166 @@ namespace slang
 		namespace statements
 		{
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void statement_expression(detail::ccompiling_context& ctx)
+			void statement_expression(detail::ccompiling_context& ctx)
 			{
+				expressions::expression(ctx);
 
+				if (!ctx.consume(token_type_semicolon))
+				{
+					emit_error(ctx, "Expected ';' after expression");
+				}
+
+				emit_byte(ctx, opcode_pop);
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void statement_for(detail::ccompiling_context& ctx)
+			void statement_for(detail::ccompiling_context& ctx)
 			{
 				ctx.push_scope();
 
 				if (!ctx.consume(token_type_left_paren))
 				{
-
+					emit_error(ctx, "Expected '(' after 'for' statement");
 				}
 
-
-
-				if (!ctx.consume(token_type_right_paren))
+				//- For loop initialization
+				if (ctx.consume(token_type_semicolon))
 				{
+				}
+				else if (ctx.consume(token_type_var))
+				{
+					//- Running variable declaration
+					rules::declaration_variable(ctx);
+				}
+				else
+				{
+					//- Running variable is declared for a statement
+					expressions::expression(ctx);
+				}
 
+				//- For loop exit condition
+				int loop_start = static_cast<int>(ctx.chunk().code().size());
+				auto exit_jump = MIN(byte_t);
+				if (!ctx.match_token_type(token_type_semicolon))
+				{
+					expressions::expression(ctx);
+
+					if (!ctx.consume(token_type_semicolon))
+					{
+						emit_error(ctx, "Expected ';' after 'for' loop condition");
+					}
+
+					//- Jump out of the for loop if the condition is false
+					exit_jump = emit_jump(ctx, opcode_jump_if_false);
+
+					emit_byte(ctx, opcode_pop);
+				}
+
+				//- For loop runner variable incrementation
+				if (!ctx.match_token_type(token_type_right_paren))
+				{
+					const auto body_jump = emit_jump(ctx, opcode_jump);
+					const auto increment_start = static_cast<int>(ctx.chunk().code().size());
+
+					expressions::expression(ctx);
+
+					emit_byte(ctx, opcode_pop);
+
+					if (!ctx.consume(token_type_right_paren))
+					{
+						emit_error(ctx, "Expected ')' after 'for' clauses");
+					}
+
+					loop_start = increment_start;
+
+					patchup_jump(ctx, body_jump);
+				}
+
+				statements::statement(ctx);
+				emit_loop(ctx, loop_start);
+
+				if (exit_jump != MIN(byte_t))
+				{
+					patchup_jump(ctx, exit_jump);
+					emit_byte(ctx, opcode_pop);
 				}
 
 				ctx.pop_scope();
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void statement_print(detail::ccompiling_context& ctx)
+			void statement_print(detail::ccompiling_context& ctx)
 			{
 				expressions::expression(ctx);
 
 				if (!ctx.consume(token_type_semicolon))
 				{
-
+					emit_error(ctx, "Expected ';' after argument for 'print'");
 				}
 
-				emit_byte(ctx, opcode_print, ctx.current_line());
+				emit_byte(ctx, opcode_print);
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void statement_return(detail::ccompiling_context& ctx)
+			void statement_return(detail::ccompiling_context& ctx)
+			{
+				if (ctx.closure().type() == closure_type_script)
+				{
+					emit_error(ctx, "Cannot 'return' from top-level code");
+				}
+
+
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			void statement_if(detail::ccompiling_context& ctx)
+			{
+				if (!ctx.consume(token_type_left_paren))
+				{
+					emit_error(ctx, "Expected '(' after 'if'");
+				}
+
+				expressions::expression(ctx);
+
+				if (!ctx.consume(token_type_right_paren))
+				{
+					emit_error(ctx, "Expected ')' after 'if' condition");
+				}
+
+				const auto then_jump = emit_jump(ctx, opcode_jump_if_false);
+
+				emit_byte(ctx, opcode_pop);
+
+				statements::statement(ctx);
+
+				const auto else_jump = emit_jump(ctx, opcode_jump);
+
+				patchup_jump(ctx, then_jump);
+
+				emit_byte(ctx, opcode_pop);
+
+				if (ctx.match_token_type(token_type_else))
+				{
+					statements::statement(ctx);
+				}
+
+				patchup_jump(ctx, else_jump);
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			void statement_while(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void statement_if(detail::ccompiling_context& ctx)
+			void block(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void statement_while(detail::ccompiling_context& ctx)
-			{
-
-			}
-
-			//------------------------------------------------------------------------------------------------------------------------
-			inline static void block(detail::ccompiling_context& ctx)
-			{
-
-			}
-
-			//------------------------------------------------------------------------------------------------------------------------
-			inline static void statement(detail::ccompiling_context& ctx)
+			void statement(detail::ccompiling_context& ctx)
 			{
 				if (ctx.match_token_type(token_type_print))
 				{
@@ -220,25 +363,25 @@ namespace slang
 		namespace rules
 		{
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void declaration_class(detail::ccompiling_context& ctx)
+			void declaration_class(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void declaration_function(detail::ccompiling_context& ctx)
+			void declaration_function(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void declaration_variable(detail::ccompiling_context& ctx)
+			void declaration_variable(detail::ccompiling_context& ctx)
 			{
 
 			}
 
 			//------------------------------------------------------------------------------------------------------------------------
-			inline static void declaration(detail::ccompiling_context& ctx)
+			void declaration(detail::ccompiling_context& ctx)
 			{
 				if (ctx.match_token_type(token_type_class))
 				{
@@ -260,11 +403,6 @@ namespace slang
 
 		} //- rules
 
-
-	}; //- unnamed
-
-	namespace detail
-	{
 		//------------------------------------------------------------------------------------------------------------------------
 		ccompiling_context::ccompiling_context(stoken_stream&& stream, sconfig cfg /*= {}*/) :
 			m_cursor({ std::move(stream), 0}), m_cfg(cfg)
