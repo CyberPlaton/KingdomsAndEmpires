@@ -5,10 +5,11 @@ namespace editor
 {
 	namespace
 	{
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnode_constant::emit(cgeneration_context& ctx, const slot_idx_t idx)
+	void cnode_constant::emit(cgeneration_context& ctx, const slot_idx_t idx)
 	{
 		const auto& slot = output_at(0);
 
@@ -21,8 +22,6 @@ namespace editor
 			detail::variant_to_string(v, slot.m_expected_value_type));
 
 		ctx.closure().code().write(s);
-
-		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -44,7 +43,7 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnode_function::emit(cgeneration_context& ctx, const slot_idx_t idx)
+	void cnode_function::emit(cgeneration_context& ctx, const slot_idx_t idx)
 	{
 		string_t s;
 		auto& output = output_at(0);
@@ -54,7 +53,6 @@ namespace editor
 		case function_type_none:
 		default:
 		{
-			return false;
 		}
 		case function_type_binary_operation:
 		{
@@ -100,16 +98,19 @@ namespace editor
 		if (!s.empty())
 		{
 			ctx.closure().code().write(s);
-			return true;
 		}
-
-		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	stringview_t cadd_node::output_name() const
+	cnode_master::cnode_master(const id_t id, cmaterial_graph* graph) :
+		cnode(id, graph)
 	{
-		return m_output_name;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cnode_master::emit(cgeneration_context& ctx, const slot_idx_t idx)
+	{
+
 	}
 
 } //- editor

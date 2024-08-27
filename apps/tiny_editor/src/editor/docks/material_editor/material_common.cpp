@@ -120,13 +120,13 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sslot& cnode::input_at_idx(idx_t idx)
+	sslot& cnode::input_at_idx(slot_idx_t idx)
 	{
 		return m_inputs[idx];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sslot& cnode::output_at_idx(idx_t idx)
+	sslot& cnode::output_at_idx(slot_idx_t idx)
 	{
 		return m_outputs[idx];
 	}

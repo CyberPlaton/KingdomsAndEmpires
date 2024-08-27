@@ -1,0 +1,85 @@
+//- VERTEX SHADER
+//------------------------------------------------------------------------------------------------------------------------
+#version 330 core
+
+// Input attributes from the vertex buffer
+layout(location = 0) in vec3 aPos;      // Vertex position
+layout(location = 1) in vec3 aNormal;   // Vertex normal
+layout(location = 2) in vec2 aTexCoord; // Texture coordinate
+
+// Uniforms for transformation matrices
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+// Varying variables to pass to the fragment shader
+out vec3 FragPos;
+out vec3 Normal;
+out vec2 TexCoord;
+
+void main()
+{
+    // Transform the vertex position to clip space
+    FragPos = vec3(model * vec4(aPos, 1.0));
+    gl_Position = projection * view * vec4(FragPos, 1.0);
+    
+    // Pass the normal and texture coordinates to the fragment shader
+    Normal = mat3(transpose(inverse(model))) * aNormal;
+    TexCoord = aTexCoord;
+}
+
+//- PIXEL SHADER
+//------------------------------------------------------------------------------------------------------------------------
+#version 330 core
+
+// Inputs from the vertex shader
+in vec3 FragPos;
+in vec3 Normal;
+in vec2 TexCoord;
+
+// Output color
+out vec4 FragColor;
+
+// Uniforms for lighting calculations
+uniform vec3 lightPos;
+uniform vec3 viewPos;
+uniform vec3 lightColor;
+uniform vec3 objectColor;
+
+// Uniform for texture sampling
+uniform sampler2D texture1;
+
+// Function to calculate diffuse lighting
+vec3 calculateDiffuse(vec3 norm, vec3 lightDir)
+{
+    float diff = max(dot(norm, lightDir), 0.0);
+    return diff * lightColor;
+}
+
+// Function to calculate specular lighting
+vec3 calculateSpecular(vec3 norm, vec3 lightDir, vec3 viewDir)
+{
+    float shininess = 32.0;
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    return spec * lightColor;
+}
+
+void main()
+{
+    // Normalize the input vectors
+    vec3 norm = normalize(Normal);
+    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 viewDir = normalize(viewPos - FragPos);
+
+    // Calculate the diffuse and specular components
+    vec3 diffuse = calculateDiffuse(norm, lightDir);
+    vec3 specular = calculateSpecular(norm, lightDir, viewDir);
+
+    // Sample the texture color
+    vec4 texColor = texture(texture1, TexCoord);
+
+    // Combine the results
+    vec3 result = (diffuse + specular) * texColor.rgb * objectColor;
+    FragColor = vec4(result, texColor.a);
+}

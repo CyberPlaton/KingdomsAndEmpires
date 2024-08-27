@@ -12,10 +12,13 @@ namespace editor
 		cnode_constant(const id_t id, cmaterial_graph* graph, stringview_t name, const TValueType default = (TValueType)0);
 		~cnode_constant() = default;
 
-		bool emit(cgeneration_context& ctx, const slot_idx_t idx) override final;
+		void emit(cgeneration_context& ctx, const slot_idx_t idx) override final;
+		stringview_t type() const override final { constexpr stringview_t C_TYPE = "constant"; return C_TYPE; }
 
 	private:
 		core::cany m_value;
+
+		DECLARE_NODE(cnode);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -47,10 +50,23 @@ namespace editor
 
 		cnode_function(const id_t id, cmaterial_graph* graph, const sfunction_data& data);
 
-		bool emit(cgeneration_context& ctx, const slot_idx_t idx) override final;
+		void emit(cgeneration_context& ctx, const slot_idx_t idx) override final;
+		stringview_t type() const override final { constexpr stringview_t C_TYPE = "function"; return C_TYPE; }
 
 	private:
 		sfunction_data m_data;
+
+		DECLARE_NODE(cnode);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cnode_master final : public cnode
+	{
+	public:
+		cnode_master(const id_t id, cmaterial_graph* graph);
+
+		void emit(cgeneration_context& ctx, const slot_idx_t idx) override final;
+		stringview_t type() const override final { constexpr stringview_t C_TYPE = "master_node"; return C_TYPE; };
 	};
 
 } //- editor

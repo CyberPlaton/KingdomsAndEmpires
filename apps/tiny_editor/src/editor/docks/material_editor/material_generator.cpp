@@ -14,34 +14,28 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	memory_ref_t cmaterial_generator::generate()
 	{
-		const auto& nodes = m_material_graph->nodes();
+		cgeneration_context ctx(m_material_graph.get(), m_code_buffer, m_settings);
 
-		for (const auto& node : nodes)
+		return generate(ctx);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	memory_ref_t cmaterial_generator::generate(cgeneration_context& ctx)
+	{
+		auto result = true;
+
+		//- Sort the stage nodes topologically
+		auto order = topsort(ctx.graph()->master_node());
+
+		for (const auto& id : order)
 		{
-			auto id = node->id();
+			auto& node = ctx.graph()->node_at(id);
 
-			if (algorithm::bit_check(node->stage(), material_generation_stage_main_code))
+			for (slot_idx_t idx = 0; idx < node->input_count(); ++idx)
 			{
-				m_stage.m_code_stage_nodes.push_back(id);
-
-				if (algorithm::bit_check(node->stage(), material_generation_stage_header))
-				{
-					m_stage.m_header_stage_nodes.push_back(node->id());
-				}
-				if (algorithm::bit_check(node->stage(), material_generation_stage_declarations))
-				{
-					m_stage.m_decls_stage_nodes.push_back(node->id());
-				}
-
-				//- Store potential entry node for later sorting
-				if (node->input_count() == 0)
-				{
-					m_stage.m_entry_nodes.push_back(id);
-				}
+				node->emit(ctx, idx);
 			}
 		}
-
-		generate(m_code_buffer, m_stage);
 
 		//- Output vertex shader data to file
 		log_debug(fmt::format("Shader:\n'{}'", m_code_buffer.c_str()));
@@ -50,67 +44,17 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	memory_ref_t cmaterial_generator::generate(core::cstring_buffer& buffer, sstage& stage)
-	{
-		core::cstring_buffer temp;
-
-		//- Sort the stage nodes topologically
-		auto order = topsort(stage.m_entry_nodes);
-
-		
-		for (const auto& id: order)
-		{
-			auto& node = m_material_graph->node_at(id);
-
-			if (node->emit(temp, material_generation_stage_header))
-			{
-				buffer.write(temp.c_str());
-			}
-
-			temp.clear();
-		}
-
-		for (const auto& id: order)
-		{
-			auto& node = m_material_graph->node_at(id);
-
-			if (node->emit(temp, material_generation_stage_declarations))
-			{
-				buffer.write(temp.c_str());
-			}
-
-			temp.clear();
-		}
-
-		for (const auto& id: order)
-		{
-			auto& node = m_material_graph->node_at(id);
-
-			if (node->emit(temp, stage.m_stage))
-			{
-				buffer.write(temp.c_str());
-			}
-
-			temp.clear();
-		}
-
-		return {};
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial_generator::stage_nodes_t cmaterial_generator::topsort(stage_nodes_t& nodes)
+	vector_t<id_t> cmaterial_generator::topsort(id_t entry)
 	{
 		umap_t<id_t, unsigned> indegrees;
-		stage_nodes_t sorted;
-		const auto nodes_count = nodes.size();
+		vector_t<id_t> sorted;
+		vector_t<id_t> nodes({entry});
 
 		//- Initialize nodes with their in degree
 		for (const auto& node: m_material_graph->nodes())
 		{
 			indegrees[node->id()] = node->input_count();
 		}
-
-		algorithm::reverse(nodes.begin(), nodes.end());
 
 		//- Execute algorithm
 		while (!nodes.empty())
@@ -138,12 +82,6 @@ namespace editor
 					}
 				}
 			}
-		}
-
-		//- Quick validate
-		if (sorted.size() != nodes_count)
-		{
-			log_error("Topological sorting algorithm failed! Abstain from using the resulting shader code!");
 		}
 		return sorted;
 	}

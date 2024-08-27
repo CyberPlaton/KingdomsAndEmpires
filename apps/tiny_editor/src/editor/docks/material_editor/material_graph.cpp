@@ -3,6 +3,24 @@
 namespace editor
 {
 	//------------------------------------------------------------------------------------------------------------------------
+	cid_generator::cid_generator(const id_t node_id_seed /*= 0*/, const id_t link_id_seed /*= 0*/) :
+		m_next_node_id(node_id_seed), m_next_link_id(link_id_seed)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	id_t cid_generator::next_node_id()
+	{
+		return ++m_next_node_id;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	id_t cid_generator::next_link_id()
+	{
+		return ++m_next_link_id;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cmaterial_graph::cmaterial_graph()
 	{
 
@@ -18,7 +36,7 @@ namespace editor
 	void cmaterial_graph::create_link(const id_t from_node_id,
 		const id_t to_node_id, unsigned from_slot_idx, unsigned to_slot_idx)
 	{
-		const auto next_link_id = m_generator.generate_link_id();
+		const auto next_link_id = m_generator.next_link_id();
 		auto& source_slot = node_at(from_node_id)->output_at_idx(from_slot_idx);
 		auto& dest_slot = node_at(to_node_id)->input_at_idx(to_slot_idx);
 

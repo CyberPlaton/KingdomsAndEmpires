@@ -3,6 +3,12 @@
 #include <spritemancer.h>
 #include <engine.h>
 
+//- Use macro to declare a node inherited from a number of base nodes
+//------------------------------------------------------------------------------------------------------------------------
+#define DECLARE_NODE(...) \
+RTTR_ENABLE(__VA_ARGS__); \
+RTTR_REGISTRATION_FRIEND;
+
 namespace editor
 {
 	class cmaterial_graph;
@@ -24,6 +30,11 @@ namespace editor
 	{
 		string_t variant_to_string(rttr::variant& var, rttr::type expected);
 	}
+
+	namespace scopes
+	{
+
+	} //- scopes
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum slot_type : uint8_t
@@ -109,14 +120,14 @@ namespace editor
 	class inode
 	{
 	public:
-		virtual bool emit(cgeneration_context& ctx, const slot_idx_t idx) = 0;
+		virtual void emit(cgeneration_context& ctx, const slot_idx_t idx) = 0;
 
 		virtual vector_t<sslot>& inputs() = 0;
 		virtual vector_t<sslot>& outputs() = 0;
 		virtual sslot& find_input_slot(stringview_t name) = 0;
 		virtual sslot& find_output_slot(stringview_t name) = 0;
-		virtual sslot& input_at_idx(idx_t idx) = 0;
-		virtual sslot& output_at_idx(idx_t idx) = 0;
+		virtual sslot& input_at_idx(slot_idx_t idx) = 0;
+		virtual sslot& output_at_idx(slot_idx_t idx) = 0;
 		virtual sslot& input_at(id_t id) = 0;
 		virtual sslot& output_at(id_t id) = 0;
 		virtual unsigned input_count() const = 0;
@@ -124,6 +135,9 @@ namespace editor
 		virtual string_t input_slot_value_at_idx(cgeneration_context& ctx, const slot_idx_t idx) = 0;
 
 		virtual id_t id() const = 0;
+		virtual stringview_t type() const = 0;
+
+		RTTR_ENABLE();
 	};
 
 	//- 
@@ -146,8 +160,8 @@ namespace editor
 		vector_t<sslot>& outputs() override final { return m_outputs; }
 		sslot& find_input_slot(stringview_t name) override final;
 		sslot& find_output_slot(stringview_t name) override final;
-		sslot& input_at_idx(idx_t idx) override final;
-		sslot& output_at_idx(idx_t idx) override final;
+		sslot& input_at_idx(slot_idx_t idx) override final;
+		sslot& output_at_idx(slot_idx_t idx) override final;
 		sslot& input_at(id_t id) override final;
 		sslot& output_at(id_t id) override final;
 		unsigned input_count() const override final;
@@ -155,6 +169,7 @@ namespace editor
 		string_t input_slot_value_at_idx(cgeneration_context& ctx, const slot_idx_t idx) override final;
 
 		id_t id() const override final { return m_id; }
+		virtual stringview_t type() const { return {}; }
 		inline cmaterial_graph* graph() const { return m_graph; }
 
 	public:
@@ -167,6 +182,8 @@ namespace editor
 		vector_t<sslot> m_inputs;
 		vector_t<sslot> m_outputs;
 		cmaterial_graph* m_graph;
+
+		DECLARE_NODE(inode);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
