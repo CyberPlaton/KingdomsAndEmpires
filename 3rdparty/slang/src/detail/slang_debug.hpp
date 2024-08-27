@@ -3,8 +3,8 @@
 
 namespace slang
 {
-	void slang_print(detail::log_level level, bool force, const char* fmt);
-	void slang_log(detail::log_level level, const char* fmt);
+	void slang_print(log_level level, bool force, const char* fmt);
+	void slang_log(log_level level, const char* fmt);
 
 	namespace detail
 	{

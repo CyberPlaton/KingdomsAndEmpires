@@ -186,15 +186,33 @@ namespace slang
 		static_assert(sizeof(void*) == sizeof function);
 	}
 
-	using slang_logger_t = cfunction<void(log_level, const char*)>;
-
 	//------------------------------------------------------------------------------------------------------------------------
 	struct slogger
 	{
-		STATIC_INSTANCE(slogger);
+		using callback_t = cfunction<void(log_level, const char*)>;
 
-		slang_logger_t m_callback = nullptr;
+		callback_t m_callback = nullptr;
 		log_level m_level = log_level_none;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cosapi final
+	{
+	public:
+		STATIC_INSTANCE(cosapi);
+
+		bool init();
+		void shutdown();
+
+		void set_logging_callback(slogger::callback_t&& callback);
+		void set_allocator(iallocator* allocator);
+
+		inline slogger& logger() { return m_logger; }
+		inline iallocator* allocator() { return m_allocator; }
+
+	private:
+		slogger m_logger;
+		iallocator* m_allocator;
 	};
 
 } //- slang

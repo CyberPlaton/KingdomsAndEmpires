@@ -112,6 +112,7 @@ namespace slang
 		virtual void free(void*, size_t) = 0;
 	};
 
+	//- Default allocator defined here for usage with STL.
 	//------------------------------------------------------------------------------------------------------------------------
 	class callocator final : public iallocator
 	{
@@ -298,30 +299,6 @@ namespace slang
 		log_level_critical,
 	};
 
-	namespace detail
-	{
-		//- Scoped variables. Mapped to their declared names.
-		//------------------------------------------------------------------------------------------------------------------------
-		struct sscope
-		{
-			//- Is variable declared in current or upward scope
-			bool lookup(stringview_t name);
-
-			//- Constant access to variable
-			const svalue& at(stringview_t name) const;
-
-			//- Get reference to variable if present in current or upward scope, otherwise emplace in current
-			svalue& edit(stringview_t name);
-
-			//- Insert variable in current scope
-			svalue& emplace(stringview_t name);
-
-			umap_t<string_t, svalue> m_values;
-			ref_t<sscope> m_parent = nullptr;
-		};
-
-	} //- detail
-
 	//- Forward declarations of types required by the state
 	//------------------------------------------------------------------------------------------------------------------------
 	namespace detail
@@ -331,9 +308,7 @@ namespace slang
 
 	} //- detail
 
-	//- Constructor and Destructor are implemented in slang.cpp
-	//- TODO: when we have an idea how to serialize runnable bytecode, we want to be able to load it from file
-	//- and run without compilation.
+	//- 
 	//------------------------------------------------------------------------------------------------------------------------
 	class cslang_state final
 	{

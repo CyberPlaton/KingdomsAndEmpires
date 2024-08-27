@@ -45,7 +45,7 @@ namespace slang
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void slang_print(detail::log_level level, bool force, const char* fmt)
+	void slang_print(log_level level, bool force, const char* fmt)
 	{
 		if (slang_logger().m_log && (slang_logger().m_level < level || force))
 		{
@@ -54,7 +54,7 @@ namespace slang
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void slang_log(detail::log_level level, const char* fmt)
+	void slang_log(log_level level, const char* fmt)
 	{
 		slang_print(level, false, fmt);
 	}

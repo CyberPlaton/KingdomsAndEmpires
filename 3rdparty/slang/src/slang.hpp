@@ -1,5 +1,4 @@
 #pragma once
-#include "detail/slang_os_api.hpp"
 #include "detail/slang_debug.hpp"
 #include "detail/slang_compiler.hpp"
 #include "detail/slang_vm.hpp"
