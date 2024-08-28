@@ -26,16 +26,6 @@ namespace editor
 
 	constexpr id_t C_INVALID_ID = MAX(id_t);
 
-	namespace detail
-	{
-		string_t variant_to_string(rttr::variant& var, rttr::type expected);
-	}
-
-	namespace scopes
-	{
-
-	} //- scopes
-
 	//------------------------------------------------------------------------------------------------------------------------
 	enum slot_type : uint8_t
 	{
@@ -43,6 +33,17 @@ namespace editor
 		slot_type_input,
 		slot_type_output
 	};
+
+	namespace detail
+	{
+		string_t variant_to_string(const rttr::variant& var, rttr::type expected);
+		id_t derive_slot_id(const editor::inode* node, slot_type type, const slot_idx_t idx);
+	}
+
+	namespace scopes
+	{
+
+	} //- scopes
 
 	//- Settings for generating a material. Can be platform or language dependent etc. and are used by nodes to generate
 	//- code in a special way.
@@ -86,9 +87,9 @@ namespace editor
 		inline const sgeneration_settings& settings() const { return m_settings; }
 
 	private:
+		core::cstring_buffer& m_code_buffer;
 		cclosure m_closure;
 		sgeneration_settings m_settings;
-		core::cstring_buffer& m_code_buffer;
 		cmaterial_graph* m_graph;
 	};
 

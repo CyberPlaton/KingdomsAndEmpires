@@ -1535,7 +1535,6 @@ namespace core
 	class cstring_buffer final
 	{
 	public:
-		cstring_buffer(const uint64_t n);
 		cstring_buffer() = default;
 		~cstring_buffer();
 

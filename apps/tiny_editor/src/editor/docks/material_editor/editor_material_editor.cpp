@@ -32,9 +32,10 @@ namespace editor
 	{
 		m_graph = std::make_shared<cmaterial_graph>();
 
-		auto add = m_graph->create_node<cnode_function>(1, C_ADD_FUNCTION_DATA);
-		auto constant_a = m_graph->create_node<cnode_constant, float>(2, material_generation_stage_main_code, "A", 1.0f);
-		auto constant_b = m_graph->create_node<cnode_constant, float>(3, material_generation_stage_main_code, "B", 1.0f);
+		auto add = m_graph->create_node<cnode_function>(C_ADD_FUNCTION_DATA);
+		auto constant_a = m_graph->create_node<cnode_constant>("A", 1.0f);
+		auto constant_b = m_graph->create_node<cnode_constant>("B", 1.0f);
+		auto master_node = m_graph->create_node<cnode_master>();
 
 		m_graph->create_link(constant_a->id(), add->id(), 0, 0);
 		m_graph->create_link(constant_b->id(), add->id(), 0, 1);
@@ -118,39 +119,8 @@ namespace editor
 
 			for (auto& link : m_graph->links())
 			{
-				imnodes::clink def(link.m_id, link.m_from_slot, link.m_to_slot);
-
-				def.draw();
+				imnodes::clink(link.m_id, link.m_from_slot, link.m_to_slot).draw();
 			}
-
-// 			for (auto i = 1; i < 15; ++i)
-// 			{
-// 				ImNodes::BeginNode(i);
-// 
-// 				ImGui::Text(fmt::format("Node '{}'", i).data());
-// 
-// 				//- Inputs
-// 				imnodes::cpin in_pin(calcPinId(i, 0));
-// 				in_pin.type(imnodes::cpin::pin_type_input).begin();
-// 				ImGui::Text(fmt::format("Input Pin '{}'", calcPinId(i, 0)).data());
-// 				in_pin.end();
-// 				
-// 				//- Outputs
-// 				imnodes::cpin out_pin(calcPinId(i, 1));
-// 				out_pin.type(imnodes::cpin::pin_type_output).begin();
-// 				ImGui::Text(fmt::format("Output Pin '{}'", calcPinId(i, 0)).data());
-// 				out_pin.end();
-// 
-// 				ImNodes::EndNode();
-// 			}
-// 
-// 			for (auto i = 1; i < 15; ++i)
-// 			{
-// 				imnodes::clink link(i, calcPinId(i + 1, 1), calcPinId(i, 0));
-// 				link.flow(imnodes::clink::link_flow_direction_forward, i < 5)
-// 					.flow_style(imnodes::clink::link_flow_duration, 1.0f)
-// 					.draw();
-// 			}
 
 			ImNodes::End();
 		}

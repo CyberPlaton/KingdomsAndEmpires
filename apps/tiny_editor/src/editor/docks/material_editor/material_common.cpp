@@ -5,7 +5,9 @@ namespace editor
 {
 	namespace
 	{
-		constexpr auto C_CLOSURE_BUFFER_SIZE = 256;
+		constexpr uint64_t C_CLOSURE_BUFFER_SIZE = 256;
+		constexpr int C_NODE_SLOT_INPUT_COUNT_MAX = 64;
+		constexpr int C_NODE_SLOT_OUTPUT_COUNT_MAX = 8;
 
 	} //- unnamed
 
@@ -35,6 +37,32 @@ namespace editor
 			return {};
 		}
 
+		//- The only function to be used for generation of a slot id.
+		//------------------------------------------------------------------------------------------------------------------------
+		id_t derive_slot_id(const editor::inode* node, slot_type type, const slot_idx_t idx)
+		{
+			CORE_ASSERT(type == slot_type_input ? idx < C_NODE_SLOT_INPUT_COUNT_MAX :
+				idx < C_NODE_SLOT_OUTPUT_COUNT_MAX, "Invalid operation. Index is out of bounds!");
+
+			auto b = node->id();
+
+			switch (type)
+			{
+			case slot_type_input:
+			{
+				b = b + (1 + idx);
+				break;
+			}
+			case slot_type_output:
+			{
+				b = b + C_NODE_SLOT_INPUT_COUNT_MAX + (1 + idx);
+				break;
+			}
+			default: return C_INVALID_ID;
+			}
+			return b;
+		}
+
 	} //- detail
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -42,9 +70,10 @@ namespace editor
 	{
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	cgeneration_context::cclosure& cgeneration_context::cclosure::push()
 	{
-		m_stack.push(C_CLOSURE_BUFFER_SIZE);
+		m_stack.emplace().resize(C_CLOSURE_BUFFER_SIZE);
 		return *this;
 	}
 
@@ -89,7 +118,10 @@ namespace editor
 	{
 		sslot slot(value_type);
 		slot.m_name.assign(name.data());
-		slot.m_id = SCAST(unsigned, m_inputs.size());
+
+		slot.m_id = type == slot_type_input ? detail::derive_slot_id(this, slot_type_input, SCAST(slot_idx_t, m_inputs.size())) :
+			detail::derive_slot_id(this, slot_type_output, SCAST(slot_idx_t, m_outputs.size()));
+
 		slot.m_type = type;
 		slot.m_value_default = default_value;
 
@@ -102,7 +134,7 @@ namespace editor
 			m_outputs.push_back(slot);
 		}
 
-		m_slot_lookup_table[name.data()] = slot.m_id;
+		m_slot_name_lookup_table[name.data()] = slot.m_id;
 
 		return *this;
 	}
@@ -179,13 +211,13 @@ namespace editor
 			{
 				ctx.closure().push();
 
-				const auto src_node_result = src_node->emit(ctx, idx);
+				src_node->emit(ctx, idx);
 
 				result = ctx.closure().string();
 
-				ctx.closure().pop(src_node_result);
+				ctx.closure().pop(!result.empty());
 
-				if (!src_node_result)
+				if (!result.empty())
 				{
 					//- When we fail to retrieve a value, we fallback to default one
 					ctx.closure().push();
@@ -204,7 +236,7 @@ namespace editor
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cgeneration_context::cgeneration_context(cmaterial_graph* graph, core::cstring_buffer& buffer, const sgeneration_settings& settings) :
-		m_graph(graph), m_code_buffer(buffer), m_settings(settings), m_closure(m_code_buffer)
+		m_code_buffer(buffer), m_closure({ m_code_buffer }), m_graph(graph), m_settings(settings)
 	{
 	}
 
