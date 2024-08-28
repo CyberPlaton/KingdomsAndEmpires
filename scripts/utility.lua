@@ -90,6 +90,68 @@ function set_include_path_to_engine()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+function set_bx_includes()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
+	if PLATFORM == "windows" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
+	elseif PLATFORM == "linux" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
+	elseif PLATFORM == "macosx" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
+	else
+		print("Unknown platform!")
+	end
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_bgfx_3rd_party_includes()
+
+	bgfx_3rd_party_dir = path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "3rdparty")
+
+	externalincludedirs{bgfx_3rd_party_dir,
+						path.join(bgfx_3rd_party_dir, "directx-headers/include"),
+						path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
+						path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
+
+						path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
+						path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
+
+						path.join(bgfx_3rd_party_dir, "glslang"),
+						
+						path.join(bgfx_3rd_party_dir, "spirv-cross"),
+						path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
+						path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
+						path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
+	}
+
+	includedirs{bgfx_3rd_party_dir,
+				path.join(bgfx_3rd_party_dir, "directx-headers/include"),
+				path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
+				path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
+				
+				path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
+				path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
+
+				path.join(bgfx_3rd_party_dir, "glslang"),
+
+				path.join(bgfx_3rd_party_dir, "spirv-cross"),
+				path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
+				path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
+				path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
+	}
+
+	-- some things required includes to files contained in src directory
+	externalincludedirs{path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx"),
+						path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "include")}
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_sdl_deps()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
+	links{"SDL2", "SDL2main"}
+end
+
+------------------------------------------------------------------------------------------------------------------------
 function link_with_engine()
 	links{"engine"}
 end
