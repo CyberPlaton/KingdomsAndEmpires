@@ -29,3 +29,6 @@
 [submodule "3rdparty/bgfx/bgfx"]
 	path = 3rdparty/bgfx/bgfx
 	url = https://github.com/bkaradzic/bgfx.git
+[submodule "3rdparty/glfw/GLFW"]
+	path = 3rdparty/glfw/GLFW
+	url = https://github.com/glfw/glfw.git

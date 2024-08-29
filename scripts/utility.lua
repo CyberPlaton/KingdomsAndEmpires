@@ -16,7 +16,7 @@ function set_basic_defines()
 		buildoptions{"/bigobj"}
 		editandcontinue "Off"
 		filter {"action:vs*"}
-			buildoptions{"/Zc:__cplusplus"}
+			buildoptions{"/Zc:__cplusplus", "/Zc:preprocessor"}
 		filter{}
 	elseif PLATFORM == "linux" then
 	elseif PLATFORM == "macosx" then
@@ -37,19 +37,18 @@ function set_basic_defines()
 	end
 
 	filter{"configurations:debug"}
-		defines{"DEBUG=1"}
+		defines{"DEBUG=1", "BX_CONFIG_DEBUG=1"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1"}
+		defines{"NDEBUG", "RELEASE=1", "BX_CONFIG_DEBUG=0"}
 	filter{"configurations:hybrid"}
-		defines{"NDEBUG", "HYBRID=1"}
+		defines{"NDEBUG", "HYBRID=1", "BX_CONFIG_DEBUG=0"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
 			"__STDC_FORMAT_MACROS",
 			"_CRT_SECURE_NO_DEPRECATE",
 			"RTTR_DLL",						-- RTTR
-			"BUILD_LIBTYPE_SHARED",			-- raylib
-			"GLAD_API_CALL_EXPORT",			-- raylib glad/glad_es2
+			"BUILD_LIBTYPE_SHARED",			-- GLFW
 			}
 end
 
