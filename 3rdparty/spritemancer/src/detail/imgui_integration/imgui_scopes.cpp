@@ -31,8 +31,8 @@ namespace imgui
 
 		if (p.x == 0 && p.y == 0)
 		{
-			p.x = SCAST(float, raylib::GetScreenWidth()) * 0.5f - glm::max(size_max.x, size_min.x) * 0.5f;
-			p.y = SCAST(float, raylib::GetScreenHeight()) * 0.5f - glm::max(size_max.y, size_min.y) * 0.5f;
+			//p.x = SCAST(float, raylib::GetScreenWidth()) * 0.5f - glm::max(size_max.x, size_min.x) * 0.5f;
+			//p.y = SCAST(float, raylib::GetScreenHeight()) * 0.5f - glm::max(size_max.y, size_min.y) * 0.5f;
 		}
 
 		ImGui::SetNextWindowPos({p.x, p.y}, ImGuiCond_Appearing);

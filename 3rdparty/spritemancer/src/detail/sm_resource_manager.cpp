@@ -37,9 +37,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::image_handle_t cimage_manager::load_sync(stringview_t name, image_type type, void* data, unsigned size)
+	sm::image_handle_t cimage_manager::load_sync(stringview_t name, void* data, unsigned size)
 	{
-		return load_of_sync<image_handle_t>(name, m_data, type, data, size);
+		return load_of_sync<image_handle_t>(name, m_data, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -49,9 +49,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::image_handle_t> cimage_manager::load_async(stringview_t name, image_type type, void* data, unsigned size)
+	core::cfuture_type<sm::image_handle_t> cimage_manager::load_async(stringview_t name, void* data, unsigned size)
 	{
-		return load_of_async<image_handle_t>(name, m_data, type, data, size);
+		return load_of_async<image_handle_t>(name, m_data, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -95,9 +95,10 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, image_type type, void* data, unsigned size)
+	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
+		bool mips, unsigned layers, texture_format format, uint64_t flags)
 	{
-		return load_of_sync<texture_handle_t>(name, m_data, type, data, size);
+		return load_of_sync<texture_handle_t>(name, m_data, data, size, w, h, depth, mips, layers, format, flags);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -113,9 +114,10 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, image_type type, void* data, unsigned size)
+	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
+		bool mips, unsigned layers, texture_format format, uint64_t flags)
 	{
-		return load_of_async<texture_handle_t>(name, m_data, type, data, size);
+		return load_of_async<texture_handle_t>(name, m_data, data, size, w, h, depth, mips, layers, format, flags);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -147,44 +149,39 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type,
-		stringview_t vertex_filepath, stringview_t fragment_filepath)
+	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, stringview_t path)
 	{
-		return load_of_sync<shader_handle_t>(name, m_data, type, vertex_filepath, fragment_filepath);
+		return load_of_sync<shader_handle_t>(name, m_data, path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type, const char* vs, const char* fs)
+	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, const char* text)
 	{
-		return load_of_sync<shader_handle_t>(name, m_data, type, vs, fs);
+		return load_of_sync<shader_handle_t>(name, m_data, text);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type,
-		const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size)
+	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, const uint8_t* data, unsigned size)
 	{
-		return load_of_sync<shader_handle_t>(name, m_data, type, vs, vs_size, fs, fs_size);
+		return load_of_sync<shader_handle_t>(name, m_data, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type,
-		stringview_t vertex_filepath, stringview_t fragment_filepath)
+	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, stringview_t path)
 	{
-		return load_of_async<shader_handle_t>(name, m_data, type, vertex_filepath, fragment_filepath);
+		return load_of_async<shader_handle_t>(name, m_data, path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type,
-		const char* vs, const char* fs)
+	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, const char* text)
 	{
-		return load_of_async<shader_handle_t>(name, m_data, type, vs, fs);
+		return load_of_async<shader_handle_t>(name, m_data, text);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type,
-		const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size)
+	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, const uint8_t* data, unsigned size)
 	{
-		return load_of_async<shader_handle_t>(name, m_data, type, vs, vs_size, fs, fs_size);
+		return load_of_async<shader_handle_t>(name, m_data, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

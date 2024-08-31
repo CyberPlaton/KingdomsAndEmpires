@@ -3,6 +3,15 @@
 #include "droidsans.ttf.h"
 #include "roboto_regular.ttf.h"
 #include "robotomono_regular.ttf.h"
+#include "icons_kenney.ttf.h"
+#include "icons_kenney.h"
+#include "icons_font_awesome.ttf.h"
+#include "icons_font_awesome.h"
+
+#include "vs_ocornut_imgui.bin.h"
+#include "fs_ocornut_imgui.bin.h"
+#include "vs_imgui_image.bin.h"
+#include "fs_imgui_image.bin.h"
 
 namespace
 {

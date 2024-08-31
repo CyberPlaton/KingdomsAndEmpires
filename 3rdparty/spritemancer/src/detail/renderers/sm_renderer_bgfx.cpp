@@ -2,6 +2,12 @@
 
 namespace sm
 {
+	namespace
+	{
+		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::prepare_device()
 	{
@@ -23,6 +29,8 @@ namespace sm
 
 		if (bgfx::init(config))
 		{
+			S_W = w;
+			S_H = h;
 			return opresult_ok;
 		}
 		return opresult_fail;
@@ -52,12 +60,10 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::update_viewport(const vec2_t& position, const vec2_t& size)
 	{
-		S_X = (uint16_t)/*position.x*/0;
-		S_Y = (uint16_t)/*position.y*/0;
-		S_W = (uint16_t)size.x;
-		S_H = (uint16_t)size.y;
-
-		S_CAMERA.offset = { S_W / 2.0f, S_H / 2.0f };
+		S_X = (unsigned)position.x;
+		S_Y = (unsigned)position.y;
+		S_W = (unsigned)size.x;
+		S_H = (unsigned)size.y;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -107,6 +113,7 @@ namespace sm
 	bool crenderer_bgfx::combine(const slayer& layer)
 	{
 		//- Draw the target texture from layer on top of previous target
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

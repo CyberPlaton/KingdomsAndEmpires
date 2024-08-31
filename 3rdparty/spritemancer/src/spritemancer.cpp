@@ -26,7 +26,7 @@ namespace sm
 		static bool S_RESIZE_REQUIRED = false;
 		static float S_DT = 0.0f;
 		static texture_handle_t S_PLACEHOLDER_TEXTURE = 0;
-		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
+		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha };
 		static srenderstate S_RENDERSTATE_DEFAULT = { S_BLEND_MODE_DEFAULT, 0 };
 		constexpr float C_ROTATION_DEFAULT = 0.0f;
 		constexpr vec2_t C_SCALE_DEFAULT = {1.0f, 1.0f};
@@ -45,7 +45,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void load_internal_resources()
 		{
-			S_DEFAULT_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment, shaders::sprite::C_VS, shaders::sprite::C_PS);
+			S_DEFAULT_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", nullptr, 0);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -169,10 +169,7 @@ namespace sm
 
 			//- create default placeholder texture
 			{
-				cimage solid([]() -> raylib::Image
-					{
-						return raylib::GenImageColor(256, 256, S_WHITE.cliteral<raylib::Color>());
-					});
+				cimage solid; solid.create_solid(1, 1, S_WHITE);
 
 				S_PLACEHOLDER_TEXTURE = core::cservice_manager::find<ctexture_manager>()->load_sync("placeholder", solid);
 
@@ -349,7 +346,7 @@ namespace sm
 
 		command.create([=]()
 			{
-				raylib::DrawLineEx({ start.x, start.y }, { end.x, end.y }, thick, to_cliteral(color));
+				/*raylib::DrawLineEx({ start.x, start.y }, { end.x, end.y }, thick, to_cliteral(color));*/
 			});
 	}
 
@@ -362,7 +359,7 @@ namespace sm
 
 		command.create([=]()
 			{
-				raylib::DrawCircle(center.x, center.y, radius, to_cliteral(color));
+				/*raylib::DrawCircle(center.x, center.y, radius, to_cliteral(color));*/
 			});
 	}
 
@@ -375,7 +372,7 @@ namespace sm
 
 		command.create([=]()
 			{
-				raylib::DrawRectangleV({ position.x, position.y }, { dimension.x, dimension.y }, to_cliteral(color));
+				/*raylib::DrawRectangleV({ position.x, position.y }, { dimension.x, dimension.y }, to_cliteral(color));*/
 			});
 	}
 
@@ -459,62 +456,62 @@ namespace sm
 					//- TODO: think of a better way to get actual shaders, textures etc. from resource managers,
 					//- Note: these command are executed on main thread, but other threads may still post load/unload
 					//- requests, so we have to account for that and make them thread-safe.
-					const auto& tm = *core::cservice_manager::find<ctexture_manager>();
-					const auto& sm = *core::cservice_manager::find<cshader_manager>();
-
-					//- texture and dimension
-					const auto& _texture = tm.at(texture);
-					const auto w = _texture.w();
-					const auto h = _texture.h();
-
-					//- construct rectangles for where to sample from and where to draw
-					raylib::Rectangle src = { source.x(), source.y(), source.w() * w, source.h() * h };
-					raylib::Rectangle dst = { position.x, position.y, scale.x * w, scale.y * h };
-					raylib::Vector2 orig = { origin.x, origin.y };
-
-					//- check some flags and do adjustments
-					if (algorithm::bit_check(state.m_flags, renderable_flag_origin_center))
-					{
-						orig = { w * 0.5f, h * 0.5f };
-					}
-					if (algorithm::bit_check(state.m_flags, renderable_flag_origin_custom))
-					{
-						orig = { origin.x, origin.y };
-					}
-					if (algorithm::bit_check(state.m_flags, renderable_flag_flipx))
-					{
-						src.width = -src.width;
-					}
-					if (algorithm::bit_check(state.m_flags, renderable_flag_flipy))
-					{
-						src.height = -src.height;
-					}
-
-					//- check if shader has changed since last draw command
-					if (shader != S_CURRENT_SHADER)
-					{
-						S_CURRENT_SHADER = shader;
-					}
-
-					//- setting shader is always enabled as we set default shader manually
-					const auto& _shader = sm.at(S_CURRENT_SHADER);
-					raylib::BeginShaderMode(_shader.shader());
-
-					//- check if renderstate has changed since last draw command
-					if (state != S_CURRENT_RENDERSTATE)
-					{
-						S_CURRENT_RENDERSTATE = state;
-					}
-
-					//- set blending mode only if enabled for this draw command
-					if (algorithm::bit_check(state.m_flags, renderable_flag_blending_custom))
-					{
-						raylib::rlSetBlendMode(S_CURRENT_RENDERSTATE.m_blending.m_mode);
-						raylib::rlSetBlendFactors(S_CURRENT_RENDERSTATE.m_blending.m_src_factor, S_CURRENT_RENDERSTATE.m_blending.m_dst_factor, S_CURRENT_RENDERSTATE.m_blending.m_equation);
-						raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
-					}
-
-					raylib::DrawTexturePro(_texture.texture(), src, dst, orig, rotation, tint.cliteral<raylib::Color>());
+// 					const auto& tm = *core::cservice_manager::find<ctexture_manager>();
+// 					const auto& sm = *core::cservice_manager::find<cshader_manager>();
+// 
+// 					//- texture and dimension
+// 					const auto& _texture = tm.at(texture);
+// 					const auto w = _texture.w();
+// 					const auto h = _texture.h();
+// 
+// 					//- construct rectangles for where to sample from and where to draw
+// 					raylib::Rectangle src = { source.x(), source.y(), source.w() * w, source.h() * h };
+// 					raylib::Rectangle dst = { position.x, position.y, scale.x * w, scale.y * h };
+// 					raylib::Vector2 orig = { origin.x, origin.y };
+// 
+// 					//- check some flags and do adjustments
+// 					if (algorithm::bit_check(state.m_flags, renderable_flag_origin_center))
+// 					{
+// 						orig = { w * 0.5f, h * 0.5f };
+// 					}
+// 					if (algorithm::bit_check(state.m_flags, renderable_flag_origin_custom))
+// 					{
+// 						orig = { origin.x, origin.y };
+// 					}
+// 					if (algorithm::bit_check(state.m_flags, renderable_flag_flipx))
+// 					{
+// 						src.width = -src.width;
+// 					}
+// 					if (algorithm::bit_check(state.m_flags, renderable_flag_flipy))
+// 					{
+// 						src.height = -src.height;
+// 					}
+// 
+// 					//- check if shader has changed since last draw command
+// 					if (shader != S_CURRENT_SHADER)
+// 					{
+// 						S_CURRENT_SHADER = shader;
+// 					}
+// 
+// 					//- setting shader is always enabled as we set default shader manually
+// 					const auto& _shader = sm.at(S_CURRENT_SHADER);
+// 					raylib::BeginShaderMode(_shader.shader());
+// 
+// 					//- check if renderstate has changed since last draw command
+// 					if (state != S_CURRENT_RENDERSTATE)
+// 					{
+// 						S_CURRENT_RENDERSTATE = state;
+// 					}
+// 
+// 					//- set blending mode only if enabled for this draw command
+// 					if (algorithm::bit_check(state.m_flags, renderable_flag_blending_custom))
+// 					{
+// 						raylib::rlSetBlendMode(S_CURRENT_RENDERSTATE.m_blending.m_mode);
+// 						raylib::rlSetBlendFactors(S_CURRENT_RENDERSTATE.m_blending.m_src_factor, S_CURRENT_RENDERSTATE.m_blending.m_dst_factor, S_CURRENT_RENDERSTATE.m_blending.m_equation);
+// 						raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
+// 					}
+// 
+// 					raylib::DrawTexturePro(_texture.texture(), src, dst, orig, rotation, tint.cliteral<raylib::Color>());
 				});
 		}
 	}
