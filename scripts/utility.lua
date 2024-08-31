@@ -218,6 +218,8 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
+		set_bx_includes()
+		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -274,6 +276,8 @@ function add_target_library(name, build_options, define_flags, thirdparty_header
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
+		set_bx_includes()
+		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #thirdparty_headeronly_deps do
@@ -322,6 +326,8 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		--set_libs_path()
+		set_bx_includes()
+		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -368,6 +374,8 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
+		set_bx_includes()
+		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -431,6 +439,8 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
 		set_basic_links()
+		set_bx_includes()
+		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do

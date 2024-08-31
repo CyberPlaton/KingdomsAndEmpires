@@ -537,13 +537,13 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	enum logging_verbosity : uint8_t
 	{
-		logging_verbosity_trace = SPDLOG_LEVEL_TRACE,	//- internal
-		logging_verbosity_debug = SPDLOG_LEVEL_DEBUG,	//- internal
-		logging_verbosity_info = SPDLOG_LEVEL_INFO,
-		logging_verbosity_warn = SPDLOG_LEVEL_WARN,
-		logging_verbosity_error = SPDLOG_LEVEL_ERROR,
-		logging_verbosity_critical = SPDLOG_LEVEL_CRITICAL,
-		logging_verbosity_off = SPDLOG_LEVEL_OFF,
+		logging_verbosity_trace		= SPDLOG_LEVEL_TRACE,	//- internal
+		logging_verbosity_debug		= SPDLOG_LEVEL_DEBUG,	//- internal
+		logging_verbosity_info		= SPDLOG_LEVEL_INFO,
+		logging_verbosity_warn		= SPDLOG_LEVEL_WARN,
+		logging_verbosity_error		= SPDLOG_LEVEL_ERROR,
+		logging_verbosity_critical	= SPDLOG_LEVEL_CRITICAL,
+		logging_verbosity_off		= SPDLOG_LEVEL_OFF,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -553,6 +553,154 @@ namespace core
 		module_status_unloaded,
 		module_status_loading,
 		module_status_ready,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum mouse_button : uint8_t
+	{
+		mouse_button_none = 0,
+		mouse_button_left,
+		mouse_button_middle,
+		mouse_button_right,
+
+		mouse_button_count
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum gamepad_axis : uint8_t
+	{
+		gamepad_axis_none = 0,
+		gamepad_axis_left_x,
+		gamepad_axis_left_y,
+		gamepad_axis_left_z,
+		gamepad_axis_right_x,
+		gamepad_axis_right_y,
+		gamepad_axis_right_z,
+
+		gamepad_axis_count
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum key_modifier : uint8_t
+	{
+		key_modifier_none			= 0,
+		key_modifier_left_alt		= BIT(0),
+		key_modifier_right_alt		= BIT(1),
+		key_modifier_left_ctrl		= BIT(2),
+		key_modifier_right_ctrl		= BIT(3),
+		key_modifier_left_shift		= BIT(4),
+		key_modifier_right_shift	= BIT(5),
+		key_modifier_left_meta		= BIT(6),
+		key_modifier_right_meta		= BIT(7),
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum key : uint8_t
+	{
+		key_none = 0,
+		key_esc,
+		key_return,
+		key_tab,
+		key_space,
+		key_backspace,
+		key_up,
+		key_down,
+		key_left,
+		key_right,
+		key_insert,
+		key_delete,
+		key_home,
+		key_end,
+		key_page_up,
+		key_page_down,
+		key_print,
+		key_plus,
+		key_minus,
+		key_leftBracket,
+		key_rightBracket,
+		key_semicolon,
+		key_quote,
+		key_comma,
+		key_period,
+		key_slash,
+		key_backslash,
+		key_tilde,
+		key_f1,
+		key_f2,
+		key_f3,
+		key_f4,
+		key_f5,
+		key_f6,
+		key_f7,
+		key_f8,
+		key_f9,
+		key_f10,
+		key_f11,
+		key_f12,
+		key_numPad0,
+		key_numPad1,
+		key_numPad2,
+		key_numPad3,
+		key_numPad4,
+		key_numPad5,
+		key_numPad6,
+		key_numPad7,
+		key_numPad8,
+		key_numPad9,
+		key_0,
+		key_1,
+		key_2,
+		key_3,
+		key_4,
+		key_5,
+		key_6,
+		key_7,
+		key_8,
+		key_9,
+		key_a,
+		key_b,
+		key_c,
+		key_d,
+		key_e,
+		key_f,
+		key_g,
+		key_h,
+		key_i,
+		key_j,
+		key_k,
+		key_l,
+		key_m,
+		key_n,
+		key_o,
+		key_p,
+		key_q,
+		key_r,
+		key_s,
+		key_t,
+		key_u,
+		key_v,
+		key_w,
+		key_x,
+		key_y,
+		key_z,
+
+		key_gamepad_a,
+		key_gamepad_b,
+		key_gamepad_x,
+		key_gamepad_y,
+		key_gamepad_thumb_L,
+		key_gamepad_thumb_R,
+		key_gamepad_shoulder_L,
+		key_gamepad_shoulder_R,
+		key_gamepad_up,
+		key_gamepad_down,
+		key_gamepad_left,
+		key_gamepad_right,
+		key_gamepad_back,
+		key_gamepad_start,
+		key_gamepad_guide,
+
+		key_count
 	};
 
 	//- Structure to retrieve underlying information about platform, configuration etc.
@@ -573,6 +721,39 @@ namespace core
 		static void shutdown();
 
 		static iallocator* get_allocator();
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct smouse_state final
+	{
+		smouse_state()
+		{
+			std::memset(&m_buttons, mouse_button_none, mouse_button_count * sizeof(uint8_t));
+		}
+
+		uint8_t m_buttons[mouse_button_count];
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sgamepad_state final
+	{
+		sgamepad_state()
+		{
+			std::memset(&m_axis, gamepad_axis_none, gamepad_axis_count * sizeof(int));
+		}
+
+		int m_axis[gamepad_axis_count];
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct skeyboard_state final
+	{
+		skeyboard_state()
+		{
+			std::memset(&m_keys, key_none, key_count * sizeof(uint8_t));
+		}
+
+		uint8_t m_keys[key_count];
 	};
 
 	//- RTTR aware replacement for std::pair<>

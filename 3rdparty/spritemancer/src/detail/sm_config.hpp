@@ -2,7 +2,7 @@
 #include "platform.hpp"
 #include <core.h>
 #include <argparse.h>
-#include "raylib_integration/raylib.hpp"
+#include "bgfx_integration/bgfx.hpp"
 #include "imgui_integration/imgui.hpp"
 #include "imgui_integration/imgui_scopes.hpp"
 
@@ -568,17 +568,27 @@ namespace sm
 		virtual opresult init() = 0;						//- create and init of client application
 		virtual opresult shutdown() = 0;					//- destroy and clean of client application
 
-		virtual opresult init_gfx(unsigned w, unsigned h,
+		virtual opresult init_gfx(int w, int h,
 			bool fullscreen, bool vsync) = 0;				//- create graphical context
 
 		virtual opresult init_mainwindow(stringview_t title,
-			unsigned w, unsigned h, bool fullscreen) = 0;	//- create application main window
+			int w, int h, bool fullscreen) = 0;				//- create application main window
 
 		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
-		virtual opresult optional_process_event() = 0;				//- process one hardware event
+		virtual opresult optional_process_event() = 0;		//- process one hardware event
 
-		virtual void main_window_position(unsigned* x, unsigned* y) = 0;
-		virtual void main_window_size(unsigned* x, unsigned* y) = 0;
+		virtual void main_window_position(int* x, int* y) = 0;
+		virtual void main_window_size(int* x, int* y) = 0;
+
+		virtual bool is_key_held(core::key k) = 0;
+		virtual bool is_key_pressed(core::key k) = 0;
+		virtual bool is_key_released(core::key k) = 0;
+
+		virtual bool is_mouse_button_held(core::mouse_button b) = 0;
+		virtual bool is_mouse_button_pressed(core::mouse_button b) = 0;
+		virtual bool is_mouse_button_released(core::mouse_button b) = 0;
+
+		virtual float gamepad_axis(core::gamepad_axis a) = 0;
 
 		RTTR_ENABLE();
 	};

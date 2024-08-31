@@ -1,6 +1,10 @@
 #pragma once
-#include "../bx/include/bx/bx.h"
-#include "../bx/include/bx/allocator.h"
-#include "../bx/include/bx/readerwriter.h"
-#include "../bx/include/bx/file.h"
-#include "../bx/include/bx/hash.h"
+#include <../bx/include/bx/bx.h>
+#include <../bx/include/bx/allocator.h>
+#include <../bx/include/bx/readerwriter.h>
+#include <../bx/include/bx/file.h>
+#include <../bx/include/bx/hash.h>
+#include <../bx/include/bx/timer.h>
+#include <../bx/include/bx/math.h>
+#include <../bx/include/bx/pixelformat.h>
+#include <../bx/include/bx/bounds.h>

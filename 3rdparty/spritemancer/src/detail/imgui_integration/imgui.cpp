@@ -1,4 +1,5 @@
 #include "imgui.hpp"
+#include "imgui/imgui_impl_bgfx.h"
 
 namespace imgui
 {
@@ -9,6 +10,17 @@ namespace imgui
 		static inline vector_t< snotification > S_NOTIFICATIONS;
 		static auto S_W = 0;
 		static auto S_H = 0;
+		static bx::DefaultAllocator S_ALLOCATOR;
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static ImTextureID bgfx_to_imgui_texture_id(bgfx::TextureHandle handle, uint8_t flags, uint8_t mip)
+		{
+			union { struct { bgfx::TextureHandle m_handle; uint8_t m_flags; uint8_t m_mip; } s; ImTextureID m_id; } tex;
+			tex.s.m_handle = handle;
+			tex.s.m_flags = flags;
+			tex.s.m_mip = mip;
+			return tex.m_id;
+		}
 
 	} //- unnamed
 
@@ -17,7 +29,9 @@ namespace imgui
 	{
 		//- init imgui and create icon font from ICON_FA data
 		detail::S_IMGUI_CONTEXT = ImGui::CreateContext();
-		rlImGuiSetup(true);
+
+		imgui::imguiCreate(18.0f, &S_ALLOCATOR);
+		/*rlImGuiSetup(true);*/
 
 		//- setup default style
 		ImGui::GetStyle().WindowRounding = 0;
@@ -45,20 +59,25 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void shutdown()
 	{
-		rlImGuiShutdown();
+		imgui::imguiDestroy();
+		/*rlImGuiShutdown();*/
 		ImGui::DestroyContext(detail::S_IMGUI_CONTEXT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void begin()
 	{
-		rlImGuiBegin();
+		imgui::imguiBeginFrame(0, 0, 0, 0, 0, 0, -1, 255);
+		ImGui::NewFrame();
+		/*rlImGuiBegin();*/
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void end()
 	{
-		rlImGuiEnd();
+		ImGui::Render();
+		imgui::imguiEndFrame();
+		/*rlImGuiEnd();*/
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -174,11 +193,11 @@ namespace imgui
 				// Try creating the file.
 				if (core::cfilesystem::create_file_in(directory.data(), file_name.data(), extension.data()))
 				{
-					cui::create_notification("Success", raylib::TextFormat("Success creating file \"%s\" at \"%s\"!", string_t(file_name + extension).c_str(), directory.c_str()), notification_type_success, snotification::s_success_lifetime);
+					cui::create_notification("Success", fmt::format("Success creating file \"%s\" at \"%s\"!", string_t(file_name + extension).c_str(), directory.c_str()), notification_type_success, snotification::s_success_lifetime);
 				}
 				else
 				{
-					cui::create_notification("Failure", raylib::TextFormat("Failed creating file \"%s\" at \"%s\"!", string_t(file_name + extension).c_str(), directory.c_str()), notification_type_error, snotification::s_error_lifetime);
+					cui::create_notification("Failure", fmt::format("Failed creating file \"%s\" at \"%s\"!", string_t(file_name + extension).c_str(), directory.c_str()), notification_type_error, snotification::s_error_lifetime);
 				}
 
 				// Reset the internal state.
@@ -226,11 +245,11 @@ namespace imgui
 				// Try creating folder with specified name at specified location.
 				if (core::cfilesystem::create_dir(core::cfilesystem::construct(directory.data(), folder_name.data()).view()))
 				{
-					cui::create_notification("Success", raylib::TextFormat("Success creating folder \"%s\" at \"%s\"!", folder_name.c_str(), directory.c_str()), notification_type_success, snotification::s_success_lifetime);
+					cui::create_notification("Success", fmt::format("Success creating folder \"%s\" at \"%s\"!", folder_name.c_str(), directory.c_str()), notification_type_success, snotification::s_success_lifetime);
 				}
 				else
 				{
-					cui::create_notification("Failure", raylib::TextFormat("Failed creating folder \"%s\" at \"%s\"!", folder_name.c_str(), directory.c_str()), notification_type_error, snotification::s_error_lifetime);
+					cui::create_notification("Failure", fmt::format("Failed creating folder \"%s\" at \"%s\"!", folder_name.c_str(), directory.c_str()), notification_type_error, snotification::s_error_lifetime);
 				}
 
 				// Reset the internal state.
@@ -264,11 +283,11 @@ namespace imgui
 		{
 			if (core::cfilesystem::remove(directory.data()))
 			{
-				cui::create_notification("Success", raylib::TextFormat("Success deleting folder \"%s\"!", directory.c_str()), notification_type_success, snotification::s_success_lifetime);
+				cui::create_notification("Success", fmt::format("Success deleting folder \"%s\"!", directory.c_str()), notification_type_success, snotification::s_success_lifetime);
 			}
 			else
 			{
-				cui::create_notification("Failure", raylib::TextFormat("Failed deleting folder \"%s\"!", directory.c_str()), notification_type_error, snotification::s_error_lifetime);
+				cui::create_notification("Failure", fmt::format("Failed deleting folder \"%s\"!", directory.c_str()), notification_type_error, snotification::s_error_lifetime);
 			}
 
 			// Reset the internal state.
@@ -287,7 +306,7 @@ namespace imgui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::image_button(const string_t& id, const raylib::Texture* texture, const vec2_t& size,
+	bool cui::image_button(const string_t& id, const bgfx::TextureHandle texture, const vec2_t& size,
 		const core::scolor& bg /*= BLACK*/, const core::scolor& tint /*= RAYWHITE*/)
 	{
 		auto bg4 = bg.normalize();
@@ -295,7 +314,7 @@ namespace imgui
 
 		ImGui::PushStyleColor(ImGuiCol_Button, { bg4.r, bg4.g, bg4.b, 0.0f });
 
-		bool result = ImGui::ImageButton(id.c_str(), (ImTextureID)texture, { size.x, size.y },
+		bool result = ImGui::ImageButton(id.c_str(), bgfx_to_imgui_texture_id(texture, 0, 0), {size.x, size.y},
 			{ 0.0f, 0.0f }, { 1.0f, 1.0f }, { bg4.r, bg4.g, bg4.b, bg4.a }, { tint4.r, tint4.g, tint4.b, tint4.a });
 
 		ImGui::PopStyleColor();
@@ -303,14 +322,14 @@ namespace imgui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::image(const raylib::Texture* texture, const vec2_t& size,
+	void cui::image(const bgfx::TextureHandle texture, const vec2_t& size,
 		const core::scolor& bg /*= BLACK*/, const core::scolor& tint /*= RAYWHITE*/)
 	{
 		image(texture, size, { 0.0f, 0.0f }, { 1.0f, 1.0f }, bg, tint);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::image(const raylib::Texture* texture, const vec2_t& size, const vec2_t& uv0, const vec2_t& uv1,
+	void cui::image(const bgfx::TextureHandle texture, const vec2_t& size, const vec2_t& uv0, const vec2_t& uv1,
 		const core::scolor& bg /*= { 0, 0, 0, 255 }*/, const core::scolor& tint /*= { 250, 250, 250, 255 }*/)
 	{
 		auto bg4 = bg.normalize();
@@ -318,7 +337,7 @@ namespace imgui
 
 		ImGui::PushStyleColor(ImGuiCol_Button, { bg4.r, bg4.g, bg4.b, 0.0f });
 
-		ImGui::Image((ImTextureID)texture, { size.x, size.y },
+		ImGui::Image(bgfx_to_imgui_texture_id(texture, 0, 0), { size.x, size.y },
 			{ uv0.x, uv0.y }, { uv1.x, uv1.y }, { bg4.r, bg4.g, bg4.b, bg4.a }, { tint4.r, tint4.g, tint4.b, tint4.a });
 
 		ImGui::PopStyleColor();
@@ -722,7 +741,7 @@ namespace imgui
 
 				float color[4] = { value.r / 255.0f, value.g / 255.0f, value.b / 255.0f, value.a / 255.0f };
 
-				if (ImGui::ColorEdit4(raylib::TextFormat("##%s_Color_Picker", field_text.c_str()), (float*)&color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar))
+				if (ImGui::ColorEdit4(fmt::format("##%s_Color_Picker", field_text).data(), (float*)&color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar))
 				{
 					prev[0] = color[0] * 255;
 					prev[1] = color[1] * 255;
@@ -833,7 +852,7 @@ namespace imgui
 
 				float color[4] = { value.m_r / 255.0f, value.m_g / 255.0f, value.m_b / 255.0f, value.m_a / 255.0f };
 
-				if (ImGui::ColorEdit4(raylib::TextFormat("##%s_Color_Picker", field_text.c_str()), (float*)&color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar))
+				if (ImGui::ColorEdit4(fmt::format("##%s_Color_Picker", field_text).data(), (float*)&color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar))
 				{
 					prev[0] = color[0] * 255;
 					prev[1] = color[1] * 255;

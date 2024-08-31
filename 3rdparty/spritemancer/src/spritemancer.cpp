@@ -1,8 +1,8 @@
 #include "spritemancer.hpp"
 #include "detail/os/sm_os_headless.hpp"
 #include "detail/renderers/sm_renderer_headless.hpp"
-#include "detail/renderers/sm_renderer_raylib.hpp"
-#include "detail/os/sm_os_raylib.hpp"
+#include "detail/renderers/sm_renderer_bgfx.hpp"
+#include "detail/os/sm_os_glfw.hpp"
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_embedded_shaders.hpp"
 
@@ -22,7 +22,7 @@ namespace sm
 		static std::atomic_bool S_RUNNING;
 		static bool S_FULLSCREEN = false;
 		static bool S_VSYNC = true;
-		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
+		static int S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
 		static bool S_RESIZE_REQUIRED = false;
 		static float S_DT = 0.0f;
 		static texture_handle_t S_PLACEHOLDER_TEXTURE = 0;
@@ -65,8 +65,8 @@ namespace sm
 		void engine_configure_platform_and_renderer(iapp* app)
 		{
 			entry::set_app(app);
-			entry::set_os(std::make_unique<cos_raylib>());
-			entry::set_renderer(std::make_unique<crenderer_raylib>());
+			entry::set_os(std::make_unique<cos_glfw>());
+			entry::set_renderer(std::make_unique<crenderer_bgfx>());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -314,7 +314,11 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	vec2_t window_size()
 	{
-		return vec2_t{ SCAST(float, raylib::GetScreenWidth()), SCAST(float, raylib::GetScreenHeight()) };
+		int w = 0, h = 0;
+
+		entry::get_os()->main_window_size(&w, &h);
+
+		return vec2_t{ SCAST(float, w), SCAST(float, h) };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
