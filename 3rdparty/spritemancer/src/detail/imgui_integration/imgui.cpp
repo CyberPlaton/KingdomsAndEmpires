@@ -68,14 +68,12 @@ namespace imgui
 	void begin()
 	{
 		imgui::imguiBeginFrame(0, 0, 0, 0, 0, 0, -1, 255);
-		ImGui::NewFrame();
 		/*rlImGuiBegin();*/
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void end()
 	{
-		ImGui::Render();
 		imgui::imguiEndFrame();
 		/*rlImGuiEnd();*/
 	}

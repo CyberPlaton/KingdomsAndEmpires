@@ -6,7 +6,7 @@ function kingdoms_and_empires()
 	add_target_app("kingdoms_and_empires",
 					{},
 					{},
-					{"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"},
+					{"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "imgui", "bx", "bimg", "bgfx", "glfw"},
 					{"plugin_module_example", "plugin_kingdoms_core", 
 					"plugin_camera_system", "plugin_race_human", "plugin_render_system",
 					"plugin_status_effects", "plugin_kingdoms_and_empires"},

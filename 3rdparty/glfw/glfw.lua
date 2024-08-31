@@ -3,7 +3,7 @@ include (path.join(SCRIPTS_DIR, "utility.lua"))
 function glfw()
 	name = "glfw"
 	build_options = {}
-	define_flags = {"GLFW_BUILD_SHARED_LIBRARY=1", "BUILD_LIBTYPE_SHARED", "GLAD_API_CALL_EXPORT", "GLAD_API_CALL_EXPORT_BUILD"}
+	define_flags = {"_GLFW_BUILD_DLL", "GLAD_API_CALL_EXPORT", "GLAD_API_CALL_EXPORT_BUILD"}
 	additional_includes = {"GLFW/src"}
 	glfw_path = "GLFW/src"
 	
@@ -13,6 +13,9 @@ function glfw()
 		targetname (name)
 
 		kind ("SharedLib")
+
+		-- must not define client side definition that is defined by default with basic defines
+		undefines {"GLFW_DLL"}
 
 		files{
 			path.join(glfw_path, "internal.h"),

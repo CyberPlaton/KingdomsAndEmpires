@@ -15,7 +15,7 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cdock_system::pop_front()
 	{
-		auto dock = m_docks.front();
+		const auto& dock = m_docks.front();
 
 		dock->shutdown();
 
@@ -37,7 +37,7 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cdock_system::on_world_render()
 	{
-		for (auto& d : cdock_system::instance().docks())
+		for (const auto& d : cdock_system::instance().docks())
 		{
 			d->on_world_render();
 		}
@@ -46,7 +46,7 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void cdock_system::on_ui_render()
 	{
-		for (auto& d : cdock_system::instance().docks())
+		for (const auto& d : cdock_system::instance().docks())
 		{
 			d->on_ui_render();
 		}
@@ -75,17 +75,14 @@ namespace editor
 		auto& context = ctx();
 
 		//- As of now there is only one main window, so just query directly
-		unsigned w = static_cast<unsigned>(raylib::GetScreenWidth());
-		unsigned h = static_cast<unsigned>(raylib::GetScreenHeight());
+		const auto size = sm::window_size();
 
-		if (w != context.m_window_width || h != context.m_window_height)
+		if (size.x != context.m_window_width || size.y != context.m_window_height)
 		{
-			imgui::cui::on_resize(w, h);
-			context.m_window_width = w;
-			context.m_window_height = h;
+			imgui::cui::on_resize(size.x, size.y);
+			context.m_window_width = size.x;
+			context.m_window_height = size.y;
 		}
-
-
 	}
 
 } //- editor

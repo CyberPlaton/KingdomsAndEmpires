@@ -5,7 +5,7 @@ function unittest_launcher()
 	add_target_app("unittest_launcher",
 					{},
 					{},
-					{"Lua", "spdlog", "core", "flecs", "slang", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"},
+					{"Lua", "spdlog", "core", "flecs", "slang", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "bx", "bimg", "bgfx", "glfw"},
 					{"plugin_kingdoms_core", "plugin_camera_system", "plugin_ai",
 					"plugin_status_effects", "plugin_kingdoms_and_empires", "plugin_race_human",
 					"plugin_render_system"},

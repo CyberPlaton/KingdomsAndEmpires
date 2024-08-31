@@ -1,11 +1,21 @@
-IS_TRACY_ENABLED	= false
-IS_MIMALLOC_ENABLED = true
-IS_PROFILE_ENABLED	= false
-IS_LOGGING_ENABLED	= true
+IS_TRACY_ENABLED				= false
+IS_MIMALLOC_ENABLED				= true
+IS_PROFILE_ENABLED				= false
+IS_LOGGING_ENABLED				= true
+IS_WARNING_AND_ERRORS_ENABLED	= false
 
 ------------------------------------------------------------------------------------------------------------------------
 function isempty(s)
 	return s == nil or s == ''
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_and_disable_common_warnings_errors()
+		filter {"action:vs*"}
+			buildoptions{"/wd4005"}						-- disable "macro redefined" warning
+		filter{"action:gmake*", "action:clang*"}
+			buildoptions{"-Wno-builtin-macro-redefined"}
+		filter{}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -48,8 +58,12 @@ function set_basic_defines()
 			"__STDC_FORMAT_MACROS",
 			"_CRT_SECURE_NO_DEPRECATE",
 			"RTTR_DLL",						-- RTTR
-			"BUILD_LIBTYPE_SHARED",			-- GLFW
+			"GLFW_DLL",						-- GLFW
 			}
+
+	if IS_WARNING_AND_ERRORS_ENABLED == false then
+		set_and_disable_common_warnings_errors()
+	end
 end
 
 ------------------------------------------------------------------------------------------------------------------------

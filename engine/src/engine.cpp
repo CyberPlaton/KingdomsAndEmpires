@@ -63,17 +63,16 @@ namespace engine
 		m_layers.on_update(dt);
 
 		m_layers.on_world_render();
-
-		//- Example on how rendering is possible from update function and from different threads
-		auto v = raylib::GetMousePosition();
-
-		sm::draw_placeholder(0, {v.x, v.y});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cengine::on_imgui()
 	{
+		imgui::begin();
+
 		m_layers.on_ui_render();
+
+		imgui::end();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

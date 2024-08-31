@@ -364,6 +364,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult ctexture::load_from_file(stringview_t filepath)
+	{
+		cimage image(filepath);
+
+		return load_from_image(image);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult ctexture::load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
 		bool mips, unsigned layers, texture_format format, uint64_t flags)
 	{

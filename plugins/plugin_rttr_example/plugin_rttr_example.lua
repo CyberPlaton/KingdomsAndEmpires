@@ -7,7 +7,7 @@ function plugin_rttr_example()
 	additional_includes = {"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"}
 	plugin_deps = {}
 	plugin_headeronly_deps = {}
-	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr", "raylib", "imgui"}
+	thirdparty_deps = {"spdlog", "core", "mimalloc", "hwinfo", "rttr", "imgui"}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse", "asio"}
 	depends_on_engine = true
 
