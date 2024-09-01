@@ -67,6 +67,15 @@ namespace sm
 	bool is_valid(const cspriteatlas& atlas);
 
 	//------------------------------------------------------------------------------------------------------------------------
+	enum vertex_type : uint8_t
+	{
+		vertex_type_none = 0,
+		vertex_type_transient,
+		vertex_type_dynamic,
+		vertex_type_static,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	enum window_flag : uint32_t
 	{
 		window_flag_none		= BIT(0),

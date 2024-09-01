@@ -29,6 +29,9 @@ namespace sm
 		void update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) override final;
 		void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) override final;
 
+	private:
+		bgfx::Caps* m_caps; //- Renderer capabilities and information
+
 		RTTR_ENABLE(irenderer);
 	};
 

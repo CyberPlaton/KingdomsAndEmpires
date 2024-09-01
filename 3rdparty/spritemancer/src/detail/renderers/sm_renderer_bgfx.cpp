@@ -1,10 +1,65 @@
 #include "sm_renderer_bgfx.hpp"
+#include "../sm_vertices.hpp"
 
 namespace sm
 {
 	namespace
 	{
 		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void screen_space_quad(bool _originBottomLeft, float _width = 1.0f, float _height = 1.0f)
+		{
+			if (3 == bgfx::getAvailTransientVertexBuffer(3, vertex_layouts::spostexcoord::S_LAYOUT))
+			{
+				bgfx::TransientVertexBuffer vb;
+				bgfx::allocTransientVertexBuffer(&vb, 3, vertex_layouts::spostexcoord::S_LAYOUT);
+				vertex_layouts::spostexcoord* vertex = (vertex_layouts::spostexcoord*)vb.data;
+
+				const float minx = -_width;
+				const float maxx = _width;
+				const float miny = 0.0f;
+				const float maxy = _height * 2.0f;
+
+				const float minu = -1.0f;
+				const float maxu = 1.0f;
+
+				const float zz = 0.0f;
+
+				float minv = 0.0f;
+				float maxv = 2.0f;
+
+				if (_originBottomLeft)
+				{
+					float temp = minv;
+					minv = maxv;
+					maxv = temp;
+
+					minv -= 1.0f;
+					maxv -= 1.0f;
+				}
+
+				vertex[0].m_position.x = minx;
+				vertex[0].m_position.y = miny;
+				vertex[0].m_position.z = zz;
+				vertex[0].m_uv.x = minu;
+				vertex[0].m_uv.y = minv;
+
+				vertex[1].m_position.x = maxx;
+				vertex[1].m_position.y = miny;
+				vertex[1].m_position.z = zz;
+				vertex[1].m_uv.x = maxu;
+				vertex[1].m_uv.y = minv;
+
+				vertex[2].m_position.x = maxx;
+				vertex[2].m_position.y = maxy;
+				vertex[2].m_position.z = zz;
+				vertex[2].m_uv.x = maxu;
+				vertex[2].m_uv.y = maxv;
+
+				bgfx::setVertexBuffer(0, &vb);
+			}
+		}
 
 	} //- unnamed
 
@@ -31,6 +86,9 @@ namespace sm
 		{
 			S_W = w;
 			S_H = h;
+
+			m_caps = const_cast<bgfx::Caps*>(bgfx::getCaps());
+
 			return opresult_ok;
 		}
 		return opresult_fail;
@@ -53,6 +111,10 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::display_frame()
 	{
+		//- Set default backbuffer and state and display it
+
+
+
 		//- Advance to next frame. Process submitted rendering primitives
 		bgfx::frame();
 	}
