@@ -47,6 +47,7 @@ namespace sm
 	class ios;
 	class iapp;
 	class cshader;
+	class cprogram;
 	class crendertarget;
 	class cimage;
 	class ctexture;
@@ -60,6 +61,7 @@ namespace sm
 	class crendertarget_manager;
 
 	bool is_valid(const cshader& shader);
+	bool is_valid(const cprogram& program);
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
 	bool is_valid(const crendertarget& target);
@@ -289,8 +291,30 @@ namespace sm
 		RTTR_ENABLE(core::cresource);
 	};
 
-	//- CPU resident image representation
 	//------------------------------------------------------------------------------------------------------------------------
+	class cprogram final : public core::cresource
+	{
+	public:
+		static void destroy(cprogram& program);
+
+		explicit cprogram(const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs);
+		explicit cprogram(const cshader& vs, const cshader& fs);
+		cprogram();
+		~cprogram();
+
+		opresult load_from_handles(const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs);
+		opresult load_from_shaders(const cshader& vs, const cshader& fs);
+
+		inline bgfx::ProgramHandle program() const { return m_program; }
+
+		cprogram& operator=(const cprogram& other);
+
+	private:
+		bgfx::ProgramHandle m_program;
+
+		RTTR_ENABLE(core::cresource);
+	};
+
 	//- CPU resident image representation. Can easily be copied around, as the data is managed elsewhere, as a
 	//- consequence, you have to manually call destroy to signal that an image is no longer needed,
 	//- otherwise the memory will not be freed.
@@ -514,7 +538,7 @@ namespace sm
 		crendertarget m_target;
 		vector_t<ccommand> m_commands;
 		ccamera m_camera;					//- optional: camera to be used when rendering
-		cshader m_shader;					//- optional: shader used to render the layer render texture on previous layers
+		cprogram m_program;					//- optional: shader used to render the layer render texture on previous layers
 		core::scolor m_combine_tint;		//- color put over layer render texture when drawing on previous layers
 		core::scolor m_clear_tint;			//- color used to clear the layer render texture before drawing
 		vec2_t m_position = { 0.0f, 0.0f }; //- optional: where to draw the render target when combining; by default we cover whole screen

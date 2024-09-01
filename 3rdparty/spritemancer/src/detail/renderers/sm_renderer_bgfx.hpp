@@ -1,5 +1,6 @@
 #pragma once
 #include "../sm_config.hpp"
+#include "../sm_view.hpp"
 
 namespace sm
 {
@@ -30,6 +31,7 @@ namespace sm
 		void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) override final;
 
 	private:
+		umap_t<unsigned, cview> m_views;
 		bgfx::Caps* m_caps; //- Renderer capabilities and information
 
 		RTTR_ENABLE(irenderer);

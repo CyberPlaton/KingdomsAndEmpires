@@ -228,6 +228,66 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cprogram::destroy(cprogram& program)
+	{
+		if (is_valid(program))
+		{
+			bgfx::destroy(program.program());
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram(const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs)
+	{
+		load_from_handles(vs, fs);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram(const cshader& vs, const cshader& fs)
+	{
+		load_from_shaders(vs, fs);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram() : m_program({ bgfx::kInvalidHandle })
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::~cprogram()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	opresult cprogram::load_from_shaders(const cshader& vs, const cshader& fs)
+	{
+		return load_from_handles(vs.shader(), fs.shader());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	opresult cprogram::load_from_handles(const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs)
+	{
+		if (m_program = bgfx::createProgram(vs, fs, false); !bgfx::isValid(m_program))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading program");
+			}
+
+			return opresult_fail;
+		}
+
+		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram& cprogram::operator=(const cprogram& other)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cimage::destroy(cimage& image)
 	{
 		if (is_valid(image))
@@ -397,6 +457,12 @@ namespace sm
 	bool is_valid(const cshader& shader)
 	{
 		return bgfx::isValid(shader.shader());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool is_valid(const cprogram& program)
+	{
+		return bgfx::isValid(program.program());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

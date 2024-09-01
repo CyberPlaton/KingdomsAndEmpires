@@ -39,6 +39,8 @@ namespace sm
 	} //- vertex_layouts
 
 	//- Responsible for storing vertices and operating on them.
+	//- Note: when having a static vertex buffer, then first bind call will create a buffer with the vertices already provided,
+	//- other types will update the dynamic vertex buffer or allocate a transient vertex buffer for pushed vertices.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TVertex>
 	class cvertices final
@@ -69,7 +71,10 @@ namespace sm
 	template<typename TVertex>
 	sm::cvertices<TVertex>::~cvertices()
 	{
-		bgfx::destroy(m_handle);
+		if (bgfx::isValid(m_handle))
+		{
+			bgfx::destroy(m_handle);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -92,7 +97,7 @@ namespace sm
 			{
 				if (!bgfx::isValid(m_handle))
 				{
-
+					CORE_ASSERT(size() > 0, "Invalid operation. Vertex buffer is empty on first submission!");
 
 					m_handle = bgfx::createVertexBuffer(bgfx::makeRef(m_vertices, size()), m_layout, m_flags);
 				}
@@ -114,6 +119,8 @@ namespace sm
 			{
 				if (count < bgfx::getAvailTransientVertexBuffer(count, m_layout))
 				{
+					bgfx::TransientVertexBuffer buffer;
+
 					bgfx::allocTransientVertexBuffer(&buffer, count, m_layout);
 
 					auto* verts = (TVertex*)buffer.data;

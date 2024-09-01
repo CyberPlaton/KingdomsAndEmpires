@@ -140,16 +140,37 @@ namespace sm
 
 	}
 
+	//- Set state, camera data and framebuffer defined in layer
 	//------------------------------------------------------------------------------------------------------------------------
 	bool crenderer_bgfx::begin(const slayer& layer)
 	{
 		if (is_valid(layer.m_target))
 		{
+			auto& view = m_views[layer.m_id];
+			view.id() = static_cast<uint16_t>(layer.m_id);
+			view.target() = layer.m_target;
+			view.camera() = layer.m_camera;
+			view.program() = layer.m_program;
+
+			bgfx::setViewClear(view.id(), view.camera().clear_state(),
+				view.camera().clearcolor().rgba());
+
+			const auto& rect = view.camera().viewport();
+
+			bgfx::setViewRect(view.id(), rect.m_x, rect.m_y, rect.m_w, rect.m_h);
+
+			bgfx::setViewFrameBuffer(view.id(), view.target().target());
+
 			//- Check some flags and do adjustments
 			if (algorithm::bit_check(layer.m_flags, layer_flags_2d))
 			{
-				//- Push orthogonal camera
+				//- Push orthogonal camera transform data
+				bgfx::setViewTransform(view.id(),
+					glm::value_ptr(view.camera().matrix_view()),
+					glm::value_ptr(view.camera().matrix_projection()));
 			}
+
+			bgfx::setState(view.camera().state(), view.camera().clearcolor().rgba());
 
 			return true;
 		}
@@ -165,16 +186,31 @@ namespace sm
 		}
 	}
 
+	//- Reset state, camera data and framebuffer
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::end(const slayer& layer)
 	{
+		auto& view = m_views[layer.m_id];
 
+		bgfx::setViewFrameBuffer(view.id(), { bgfx::kInvalidHandle });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool crenderer_bgfx::combine(const slayer& layer)
 	{
-		//- Draw the target texture from layer on top of previous target
+		auto& view = m_views[layer.m_id];
+
+		//- Draw the target texture from layer on top backbuffer
+		if (is_valid(view.target()))
+		{
+			screen_space_quad(m_caps->originBottomLeft, layer.m_scale.x, layer.m_scale.y);
+
+			bgfx::setTexture(0, view.target().uniform(), view.target().texture());
+
+			bgfx::submit(0, view.program().program());
+
+			return true;
+		}
 		return false;
 	}
 
