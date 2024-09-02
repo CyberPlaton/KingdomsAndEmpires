@@ -2,6 +2,8 @@
 #include "detail/os/sm_os_headless.hpp"
 #include "detail/renderers/sm_renderer_headless.hpp"
 #include "detail/renderers/sm_renderer_bgfx.hpp"
+#include "detail/sm_vertices.hpp"
+#include "detail/sm_view.hpp"
 #include "detail/os/sm_os_glfw.hpp"
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_embedded_shaders.hpp"
@@ -15,7 +17,7 @@ namespace sm
 		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
 		static core::cmutex S_MUTEX;
 
-		static shader_handle_t S_DEFAULT_SHADER = 0;
+		static program_handle_t S_DEFAULT_PROGRAM = 0;
 		static core::scolor S_WHITE = { 255, 255, 255, 255 };
 		static core::scolor S_BLACK = { 0, 0, 0, 0 };
 		static core::scolor S_BLANK = { 0, 0, 0, 255 };
@@ -36,7 +38,7 @@ namespace sm
 		//- current used rendering state data
 		static sblending S_CURRENT_BLEND_MODE = S_BLEND_MODE_DEFAULT;
 		static srenderstate S_CURRENT_RENDERSTATE = S_RENDERSTATE_DEFAULT;
-		static shader_handle_t S_CURRENT_SHADER = S_DEFAULT_SHADER;
+		static program_handle_t S_CURRENT_PROGRAM = S_DEFAULT_PROGRAM;
 
 		static void* S_CONFIG = nullptr;
 		static argparse::ArgumentParser S_ARGS;
@@ -45,7 +47,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void load_internal_resources()
 		{
-			S_DEFAULT_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", nullptr, 0);
+			S_DEFAULT_PROGRAM = core::cservice_manager::find<cprogram_manager>()->load_sync("sprite", {0}, {0});
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -411,35 +413,37 @@ namespace sm
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, S_DEFAULT_SHADER);
+		draw_texture(layer, position, texture, tint, rotation, scale, S_DEFAULT_PROGRAM);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader)
+		const vec2_t& scale, program_handle_t program)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, S_RENDERSTATE_DEFAULT);
+		draw_texture(layer, position, texture, tint, rotation, scale, program, S_RENDERSTATE_DEFAULT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state)
+		const vec2_t& scale, program_handle_t program, const srenderstate& state)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, C_ORIGIN_DEFAULT);
+		draw_texture(layer, position, texture, tint, rotation, scale, program, state, C_ORIGIN_DEFAULT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin)
+		const vec2_t& scale, program_handle_t program, const srenderstate& state, const vec2_t& origin)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, origin, C_SOURCE_DEFAULT);
+		draw_texture(layer, position, texture, tint, rotation, scale, program, state, origin, C_SOURCE_DEFAULT);
 	}
 
 	//- The actual rendering routine for a texture/sprite
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin, const core::srect& source)
+		const vec2_t& scale, program_handle_t program, const srenderstate& state, const vec2_t& origin, const core::srect& source)
 	{
+		using namespace vertex_layouts;
+
 		SM_DRAW_CALL(4);
 
 		if (algorithm::bit_check(state.m_flags, renderable_flag_invisible))
@@ -447,12 +451,58 @@ namespace sm
 			return;
 		}
 
-		//- create a sprite draw command
+		//- Create a sprite draw command
 		{
 			core::cscope_mutex m(S_MUTEX);
 
 			S_LAYERS[layer].m_commands.emplace_back().create([=]()
 				{
+					const auto& tm = *core::cservice_manager::find<ctexture_manager>();
+					const auto& pm = *core::cservice_manager::find<cprogram_manager>();
+					cvertices<spostexcoordcolor> vertices(vertex_type_transient, spostexcoordcolor::S_LAYOUT, spostexcoordcolor::S_HANDLE, 4, 0);
+
+					const auto& tex = tm.at(texture);
+					const auto& prog = pm.at(program);
+
+					const float width = source.w() * scale.x;
+					const float height = source.h() * scale.y;
+
+					//- Calculate the four corners of the quad.
+					vec2_t topLeft = { position.x - origin.x * scale.x, position.y - origin.y * scale.y };
+					vec2_t topRight = { topLeft.x + width, topLeft.y };
+					vec2_t bottomLeft = { topLeft.x, topLeft.y + height };
+					vec2_t bottomRight = { topLeft.x + width, topLeft.y + height };
+
+					//- Calculate rotation if required
+					if (rotation != 0.0f)
+					{
+						// Apply rotation here (requires some math to rotate the points)
+						// Assuming you have a `rotate_point` utility function:
+						topLeft = math::rotate_point_around_origin(topLeft, position, rotation);
+						topRight = math::rotate_point_around_origin(topRight, position, rotation);
+						bottomLeft = math::rotate_point_around_origin(bottomLeft, position, rotation);
+						bottomRight = math::rotate_point_around_origin(bottomRight, position, rotation);
+					}
+
+					//- Set up vertices in clockwise order
+					const auto c = tint.abgr();
+					vertices.push(spostexcoordcolor::make(topLeft.x, topLeft.y, source.x(), source.y(), c));
+					vertices.push(spostexcoordcolor::make(topRight.x, topRight.y, source.x() + source.w(), source.y(), c));
+					vertices.push(spostexcoordcolor::make(bottomLeft.x, bottomLeft.y, source.x(), source.y() + source.h(), c));
+					vertices.push(spostexcoordcolor::make(bottomRight.x, bottomRight.y, source.x() + source.w(), source.y() + source.h(), c));
+
+					//- Submit vertices to BGFX
+					vertices.bind();
+
+					//- Set the texture
+					bgfx::setTexture(0, tex.uniform(), tex.texture(), tex.flags());
+
+					// Apply render state
+					bgfx::setState(state.m_flags);
+
+					// Submit draw call
+					bgfx::submit(bgfx::ViewId{static_cast<uint16_t>(layer)}, prog.program());
+
 					//- TODO: think of a better way to get actual shaders, textures etc. from resource managers,
 					//- Note: these command are executed on main thread, but other threads may still post load/unload
 					//- requests, so we have to account for that and make them thread-safe.

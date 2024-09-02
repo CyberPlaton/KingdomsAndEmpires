@@ -33,12 +33,14 @@ namespace sm
 	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT			= 256;
 	constexpr auto C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT			= 512;
 	constexpr auto C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT			= 512;
+	constexpr auto C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT			= 256;
 	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT		= 128;
 	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT	= 64;
 
 	using image_handle_t		= uint16_t;
 	using texture_handle_t		= uint16_t;
 	using shader_handle_t		= uint16_t;
+	using program_handle_t		= uint16_t;
 	using spriteatlas_handle_t	= uint16_t;
 	using rendertarget_handle_t = uint16_t;
 
@@ -257,7 +259,7 @@ namespace sm
 
 		opresult create(stringview_t name, bgfx::UniformType::Enum type);
 
-		inline bgfx::UniformHandle handle() const { return m_handle; }
+		inline bgfx::UniformHandle uniform() const { return m_handle; }
 
 	private:
 		bgfx::UniformHandle m_handle;
@@ -473,7 +475,7 @@ namespace sm
 		void* m_window_handle;
 
 		RTTR_ENABLE();
-		RTTR_REGISTRATION_FRIEND
+		RTTR_REGISTRATION_FRIEND;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

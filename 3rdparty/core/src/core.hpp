@@ -3431,6 +3431,10 @@ namespace math
 	bool almost_equal(float a, float b, float e = C_ALMOST_EQUAL_EPSILON);
 	bool almost_equal(const vec2_t& a, const vec2_t& b, float e = C_ALMOST_EQUAL_EPSILON);
 
+	//- Rotates a point around given origin by amount of degrees.
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t rotate_point_around_origin(const vec2_t& point, const vec2_t& origin, const float degrees);
+
 	//- Transforms given position, scale, shear and rotation and returns world space transform matrix
 	//- TODO: shear
 	//------------------------------------------------------------------------------------------------------------------------

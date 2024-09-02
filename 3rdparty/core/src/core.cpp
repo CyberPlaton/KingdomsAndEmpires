@@ -3591,6 +3591,27 @@ namespace math
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t rotate_point_around_origin(const vec2_t& point, const vec2_t& origin, const float degrees)
+	{
+		const float rad = glm::radians(degrees);
+
+		//- Calculate the sine and cosine of the rotation angle
+		const float cos_theta = glm::cos(rad);
+		const float sin_theta = glm::sin(rad);
+
+		//- Translate point back to origin
+		const float translated_x = point.x - origin.x;
+		const float translated_y = point.y - origin.y;
+
+		//- Rotate point
+		const float rotated_x = translated_x * cos_theta - translated_y * sin_theta;
+		const float rotated_y = translated_x * sin_theta + translated_y * cos_theta;
+
+		//- Translate point back to its original position
+		return { rotated_x + origin.x, rotated_y + origin.y };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void transform(mat4_t& out, const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
 		float rotation, const mat4_t& parent /*= C_MAT4_ID*/)
 	{

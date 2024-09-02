@@ -50,21 +50,21 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader);
+		const vec2_t& scale, program_handle_t program);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state);
+		const vec2_t& scale, program_handle_t program, const srenderstate& state);
 
 	//- Note: origin is {0.0f, 0.0f} for top-left and {1.0f, 1.0f} for bottom-right
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin);
+		const vec2_t& scale, program_handle_t program, const srenderstate& state, const vec2_t& origin);
 
 	//- Note: source is ranging from 0.0f to 1.0f. To sample from complete texture define rectangle as {0.0f, 0.0f, 1.0f, 1.0f}
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin, const core::srect& source);
+		const vec2_t& scale, program_handle_t program, const srenderstate& state, const vec2_t& origin, const core::srect& source);
 
 #pragma endregion
 

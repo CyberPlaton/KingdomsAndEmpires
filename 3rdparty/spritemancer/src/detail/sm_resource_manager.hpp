@@ -79,6 +79,29 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
+	class cprogram_manager final :
+		public core::cservice,
+		public core::cresource_manager<cprogram>
+	{
+	public:
+		cprogram_manager(unsigned reserve = C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT);
+		~cprogram_manager();
+
+		bool on_start() override final;
+		void on_shutdown() override final;
+		void on_update(float) override final;
+
+		program_handle_t load_sync(stringview_t name, const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs);
+		program_handle_t load_sync(stringview_t name, const cshader& vs, const cshader& fs);
+
+		core::cfuture_type<program_handle_t> load_async(stringview_t name, const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs);
+		core::cfuture_type<program_handle_t> load_async(stringview_t name, const cshader& vs, const cshader& fs);
+
+	private:
+		RTTR_ENABLE(core::cservice, core::cresource_manager<cprogram>);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	class cspriteatlas_manager final :
 		public core::cservice,
 		public core::cresource_manager<cspriteatlas>

@@ -266,6 +266,58 @@ namespace sm
 		return load_of_async<rendertarget_handle_t>(name, m_data, w, h);
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram_manager::cprogram_manager(unsigned reserve /*= C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT*/)
+	{
+		m_data.reserve(reserve);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram_manager::~cprogram_manager()
+	{
+		destroy_all(m_data);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cprogram_manager::on_start()
+	{
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cprogram_manager::on_shutdown()
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cprogram_manager::on_update(float)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::program_handle_t cprogram_manager::load_sync(stringview_t name, const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs)
+	{
+		return load_of_sync<program_handle_t>(name, m_data, vs, fs);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::program_handle_t cprogram_manager::load_sync(stringview_t name, const cshader& vs, const cshader& fs)
+	{
+		return load_of_sync<program_handle_t>(name, m_data, vs, fs);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs)
+	{
+		return load_of_async<program_handle_t>(name, m_data, vs, fs);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, const cshader& vs, const cshader& fs)
+	{
+		return load_of_async<program_handle_t>(name, m_data, vs, fs);
+	}
+
 } //- sm
 
 RTTR_REGISTRATION
@@ -306,6 +358,14 @@ RTTR_REGISTRATION
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::registration::class_<cimage_manager>("cimage_manager")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+		)
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::registration::class_<cprogram_manager>("cprogram_manager")
 		.constructor<>()
 		(
 			rttr::policy::ctor::as_raw_ptr
