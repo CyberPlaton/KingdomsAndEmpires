@@ -145,6 +145,32 @@ namespace sm
 	} //- entry
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cuniform::destroy(cuniform& uniform)
+	{
+		if (is_valid(uniform))
+		{
+			bgfx::destroy(uniform.uniform());
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::cuniform(stringview_t name, bgfx::UniformType::Enum type)
+	{
+		create(name, type);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::cuniform() : m_handle({ bgfx::kInvalidHandle })
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::~cuniform()
+	{
+	}
+
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cshader::destroy(cshader& shader)
 	{
 		if (is_valid(shader))
@@ -450,6 +476,8 @@ namespace sm
 
 		bgfx::calcTextureSize(m_info, (uint16_t)w, (uint16_t)h, (uint16_t)depth, false, mips, (uint16_t)layers, format);
 
+		m_uniform.create(C_UNIFORM_TEXTURE0, bgfx::UniformType::Sampler);
+
 		return opresult_ok;
 	}
 
@@ -457,6 +485,12 @@ namespace sm
 	bool is_valid(const cshader& shader)
 	{
 		return bgfx::isValid(shader.shader());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool is_valid(const cuniform& uniform)
+	{
+		return bgfx::isValid(uniform.uniform());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

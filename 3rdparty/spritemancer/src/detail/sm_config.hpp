@@ -36,6 +36,14 @@ namespace sm
 	constexpr auto C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT			= 256;
 	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT		= 128;
 	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT	= 64;
+	constexpr stringview_t C_UNIFORM_TEXTURE0						= "texture0";
+	constexpr stringview_t C_UNIFORM_TEXTURE1						= "texture1";
+	constexpr stringview_t C_UNIFORM_TEXTURE2						= "texture2";
+	constexpr stringview_t C_UNIFORM_TEXTURE3						= "texture3";
+	constexpr stringview_t C_UNIFORM_TEXTURE4						= "texture4";
+	constexpr stringview_t C_UNIFORM_TEXTURE5						= "texture5";
+	constexpr stringview_t C_UNIFORM_TEXTURE6						= "texture6";
+	constexpr stringview_t C_UNIFORM_TEXTURE7						= "texture7";
 
 	using image_handle_t		= uint16_t;
 	using texture_handle_t		= uint16_t;
@@ -48,6 +56,7 @@ namespace sm
 	class iplatform;
 	class ios;
 	class iapp;
+	class cuniform;
 	class cshader;
 	class cprogram;
 	class crendertarget;
@@ -63,6 +72,7 @@ namespace sm
 	class crendertarget_manager;
 
 	bool is_valid(const cshader& shader);
+	bool is_valid(const cuniform& uniform);
 	bool is_valid(const cprogram& program);
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
@@ -368,10 +378,14 @@ namespace sm
 		inline unsigned w() const { return m_info.width; }
 		inline unsigned h() const { return m_info.height; }
 		inline bgfx::TextureHandle texture() const { return m_handle; }
+		inline const cuniform& uniform() const { return m_uniform; }
+		inline int flags() const { m_flags; }
 
 	private:
 		bgfx::TextureInfo m_info;
 		bgfx::TextureHandle m_handle;
+		cuniform m_uniform;
+		int m_flags = BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
 
 		RTTR_ENABLE(core::cresource);
 	};
@@ -394,10 +408,12 @@ namespace sm
 		inline bgfx::FrameBufferHandle target() const { return m_target; }
 		inline bgfx::TextureHandle texture() const { return bgfx::getTexture(target()); }
 		inline const bgfx::TextureInfo& info() const { return m_info; }
+		inline int flags() const { m_flags; }
 
 	private:
 		bgfx::TextureInfo m_info;
 		bgfx::FrameBufferHandle m_target;
+		int m_flags = BGFX_TEXTURE_RT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
 
 		RTTR_ENABLE(core::cresource);
 	};

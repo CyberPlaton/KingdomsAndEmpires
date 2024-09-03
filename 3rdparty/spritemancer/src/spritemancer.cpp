@@ -495,7 +495,7 @@ namespace sm
 					vertices.bind();
 
 					//- Set the texture
-					bgfx::setTexture(0, tex.uniform(), tex.texture(), tex.flags());
+					bgfx::setTexture(0, tex.uniform().uniform(), tex.texture(), tex.flags());
 
 					// Apply render state
 					bgfx::setState(state.m_flags);
