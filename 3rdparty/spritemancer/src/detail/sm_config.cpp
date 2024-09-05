@@ -169,6 +169,13 @@ namespace sm
 	{
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cuniform::create(stringview_t name, bgfx::UniformType::Enum type)
+	{
+		m_handle = bgfx::createUniform(name.data(), type, 1);
+
+		return bgfx::isValid(m_handle) ? opresult_ok : opresult_fail;
+	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cshader::destroy(cshader& shader)
@@ -310,7 +317,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	cprogram& cprogram::operator=(const cprogram& other)
 	{
-
+		m_program = other.m_program;
+		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -576,6 +584,8 @@ namespace sm
 
 		bgfx::calcTextureSize(m_info, w, h, 0, false, false, 0, bgfx::TextureFormat::RGBA8);
 
+		m_uniform.create(C_UNIFORM_TEXTURE0, bgfx::UniformType::Sampler);
+
 		return opresult_ok;
 	}
 
@@ -606,8 +616,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ccamera::ccamera()
+	ccamera::ccamera() :
+		m_translation({0}), m_rotation({0}), m_scale({1}),
+		m_viewport(0.0f, 0.0f, 1.0f, 1.0f), m_near(0.0001f), m_far(MAX(float)), m_zoom(1.0f),
+		m_clear_color(core::common_color_neutral1000), m_state(BGFX_STATE_BLEND_ALPHA | BGFX_STATE_DEFAULT),
+		m_clear_state(BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH), m_window_handle(nullptr)
 	{
+		matrix_view_update();
+		matrix_projection_update();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -730,37 +746,6 @@ namespace sm
 	bool sblending::operator==(const sblending& other) const
 	{
 		return m_mode == other.m_mode;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cuniform::destroy(cuniform& uniform)
-	{
-		bgfx::destroy(uniform.handle());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cuniform::cuniform(stringview_t name, bgfx::UniformType::Enum type)
-	{
-		create(name, type);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cuniform::cuniform() :
-		m_handle({ MAX(uint16_t) })
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cuniform::~cuniform()
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cuniform::create(stringview_t name, bgfx::UniformType::Enum type)
-	{
-		m_handle = bgfx::createUniform(name.data(), type, 1);
-
-		return bgfx::isValid(m_handle) ? opresult_ok : opresult_fail;
 	}
 
 	namespace profile::gpu

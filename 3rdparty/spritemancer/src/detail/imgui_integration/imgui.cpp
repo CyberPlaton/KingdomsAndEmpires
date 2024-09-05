@@ -1,4 +1,5 @@
 #include "imgui.hpp"
+#include "../sm_config.hpp"
 #include "imgui/imgui_impl_bgfx.h"
 
 namespace imgui
@@ -10,6 +11,8 @@ namespace imgui
 		static inline vector_t< snotification > S_NOTIFICATIONS;
 		static auto S_W = 0;
 		static auto S_H = 0;
+		static auto S_MX = 0;
+		static auto S_MY = 0;
 		static bx::DefaultAllocator S_ALLOCATOR;
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -53,6 +56,23 @@ namespace imgui
 				S_H = e.h;
 			});
 
+		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::skey_button>([](const rttr::variant& var)
+			{
+				const auto& e = var.convert<events::window::skey_button>();
+			});
+
+		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::smouse_button>([](const rttr::variant& var)
+			{
+				const auto& e = var.convert<events::window::smouse_button>();
+			});
+
+		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::scursor>([](const rttr::variant& var)
+			{
+				const auto& e = var.convert<events::window::scursor>();
+				S_MX = e.mx;
+				S_MY = e.my;
+			});
+
 		return true;
 	}
 
@@ -67,7 +87,10 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void begin()
 	{
-		imgui::imguiBeginFrame(0, 0, 0, 0, 0, 0, -1, 255);
+		if (auto os = sm::entry::get_os(); os)
+		{
+			imgui::imguiBeginFrame(S_MX, S_MY, 0, 0, S_W, S_H);
+		}
 		/*rlImGuiBegin();*/
 	}
 

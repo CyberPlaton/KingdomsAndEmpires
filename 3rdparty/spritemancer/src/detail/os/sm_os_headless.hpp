@@ -23,6 +23,7 @@ namespace sm
 		void main_window_position(int* x, int* y) override final {}
 		void main_window_size(int* x, int* y) override final {}
 
+		void mouse_position(double* x, double* y) {}
 		bool is_key_held(core::key k) override final { return false; }
 		bool is_key_pressed(core::key k) override final { return false; }
 		bool is_key_released(core::key k) override final { return false; }

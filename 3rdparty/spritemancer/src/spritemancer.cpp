@@ -164,6 +164,7 @@ namespace sm
 			core::cservice_manager::emplace<cimage_manager>();
 			core::cservice_manager::emplace<ctexture_manager>();
 			core::cservice_manager::emplace<cshader_manager>();
+			core::cservice_manager::emplace<cprogram_manager>();
 			core::cservice_manager::emplace<cspriteatlas_manager>();
 			core::cservice_manager::emplace<crendertarget_manager>();
 
@@ -198,7 +199,6 @@ namespace sm
 					const auto& e = var.convert<events::window::sresize>();
 					S_W = e.w;
 					S_H = e.h;
-
 					S_RESIZE_REQUIRED = true;
 				});
 		}
@@ -497,10 +497,9 @@ namespace sm
 					//- Set the texture
 					bgfx::setTexture(0, tex.uniform().uniform(), tex.texture(), tex.flags());
 
-					// Apply render state
+					//- Apply render state and submit draw call
 					bgfx::setState(state.m_flags);
 
-					// Submit draw call
 					bgfx::submit(bgfx::ViewId{static_cast<uint16_t>(layer)}, prog.program());
 
 					//- TODO: think of a better way to get actual shaders, textures etc. from resource managers,

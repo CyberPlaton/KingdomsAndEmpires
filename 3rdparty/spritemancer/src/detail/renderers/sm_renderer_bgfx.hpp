@@ -1,6 +1,7 @@
 #pragma once
 #include "../sm_config.hpp"
 #include "../sm_view.hpp"
+#include "../bgfx_integration/bgfx.hpp"
 
 namespace sm
 {

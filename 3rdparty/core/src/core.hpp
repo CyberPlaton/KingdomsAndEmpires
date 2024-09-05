@@ -3409,6 +3409,9 @@ namespace events
 	namespace window
 	{
 		struct sresize		{ int w = 0; int h = 0; };
+		struct scursor		{ double mx = 0; double my = 0; };
+		struct smouse_button{ int button = 0; int action = 0; int mods = 0; };
+		struct skey_button	{ int button = 0; int scancode = 0; int action = 0; int mods = 0; };
 		struct sminimize	{};
 		struct sunminimize	{};
 		struct shide		{};

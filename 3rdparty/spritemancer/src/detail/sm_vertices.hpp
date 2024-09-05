@@ -5,6 +5,12 @@
 
 namespace sm
 {
+	namespace detail
+	{
+		void vertices_release_function(void* p, void* user_data);
+
+	} //- detail
+
 	namespace vertex_layouts
 	{
 		//- Vertex with positions and texture coordinates
@@ -59,9 +65,9 @@ namespace sm
 		unsigned size() const { return static_cast<unsigned>(m_vertices.size()); }
 
 	private:
-		bgfx::VertexLayout& m_layout;
+		const bgfx::VertexLayout& m_layout;
 		vector_t<TVertex> m_vertices;
-		bgfx::VertexBufferHandle m_handle;
+		uint16_t m_handle;
 		bgfx::VertexLayoutHandle m_layout_handle;
 		unsigned m_flags;
 		vertex_type m_type;
@@ -71,9 +77,30 @@ namespace sm
 	template<typename TVertex>
 	sm::cvertices<TVertex>::~cvertices()
 	{
-		if (bgfx::isValid(m_handle))
+		switch (m_type)
 		{
-			bgfx::destroy(m_handle);
+		case vertex_type_dynamic:
+		{
+			const bgfx::DynamicVertexBufferHandle handle{ m_handle };
+
+			if (bgfx::isValid(handle))
+			{
+				bgfx::destroy(handle);
+			}
+			break;
+		}
+		case vertex_type_static:
+		{
+			const bgfx::VertexBufferHandle handle{ m_handle };
+
+			if (bgfx::isValid(handle))
+			{
+				bgfx::destroy(handle);
+			}
+			break;
+		}
+		default:
+			return;
 		}
 	}
 
@@ -95,23 +122,25 @@ namespace sm
 			//- For static and dynamic vertex buffers only set is required, creation is done somewhere else
 			case vertex_type_static:
 			{
-				if (!bgfx::isValid(m_handle))
+				if (!bgfx::isValid(bgfx::VertexBufferHandle{ m_handle }))
 				{
 					CORE_ASSERT(size() > 0, "Invalid operation. Vertex buffer is empty on first submission!");
 
-					m_handle = bgfx::createVertexBuffer(bgfx::makeRef(m_vertices, size()), m_layout, m_flags);
+					m_handle = bgfx::createVertexBuffer(bgfx::makeRef(m_vertices.data(), size(), detail::vertices_release_function), m_layout, m_flags).idx;
 				}
 				break;
 			}
 			case vertex_type_dynamic:
 			{
-				if (!bgfx::isValid(m_handle))
+				const bgfx::DynamicVertexBufferHandle handle{ m_handle };
+
+				if (!bgfx::isValid(handle))
 				{
-					m_handle = bgfx::createDynamicVertexBuffer(bgfx::makeRef(m_vertices, size()), m_layout, m_flags);
+					m_handle = bgfx::createDynamicVertexBuffer(bgfx::makeRef(m_vertices.data(), size(), detail::vertices_release_function), m_layout, m_flags).idx;
 				}
 				else
 				{
-					bgfx::update(m_handle, 0, bgfx::makeRef(m_vertices, size()));
+					bgfx::update(handle, 0, bgfx::makeRef(m_vertices.data(), size(), detail::vertices_release_function));
 				}
 				break;
 			}
@@ -127,13 +156,23 @@ namespace sm
 
 					bx::memCopy(verts, m_vertices.data(), count * sizeof(TVertex));
 
-					m_handle = buffer.handle;
+					m_handle = buffer.handle.idx;
 				}
 				break;
 			}
 			}
 
-			bgfx::setVertexBuffer(stream, m_handle, vertex_start, vertex_count, m_layout_handle);
+			switch (m_type)
+			{
+			case vertex_type_dynamic:
+				bgfx::setVertexBuffer(stream, bgfx::DynamicVertexBufferHandle{ m_handle }, vertex_start, vertex_count, m_layout_handle);
+				break;
+			default:
+			case vertex_type_static:
+			case vertex_type_transient:
+				bgfx::setVertexBuffer(stream, bgfx::VertexBufferHandle{ m_handle }, vertex_start, vertex_count, m_layout_handle);
+				break;
+			}
 		}
 	}
 

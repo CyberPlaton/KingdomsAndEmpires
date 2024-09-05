@@ -379,7 +379,7 @@ namespace sm
 		inline unsigned h() const { return m_info.height; }
 		inline bgfx::TextureHandle texture() const { return m_handle; }
 		inline const cuniform& uniform() const { return m_uniform; }
-		inline int flags() const { m_flags; }
+		inline int flags() const { return m_flags; }
 
 	private:
 		bgfx::TextureInfo m_info;
@@ -408,11 +408,13 @@ namespace sm
 		inline bgfx::FrameBufferHandle target() const { return m_target; }
 		inline bgfx::TextureHandle texture() const { return bgfx::getTexture(target()); }
 		inline const bgfx::TextureInfo& info() const { return m_info; }
+		inline const cuniform& uniform() const { return m_uniform; }
 		inline int flags() const { m_flags; }
 
 	private:
 		bgfx::TextureInfo m_info;
 		bgfx::FrameBufferHandle m_target;
+		cuniform m_uniform;
 		int m_flags = BGFX_TEXTURE_RT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
 
 		RTTR_ENABLE(core::cresource);
@@ -446,7 +448,7 @@ namespace sm
 	//- Cues: while in a camera region, some entities can activate/deactivate
 	//- their attraction/detraction behavior
 	//-
-	//- Camera class designed to be lighweight and copied around and to be a thin layer over raylib::Camera2D.
+	//-
 	//------------------------------------------------------------------------------------------------------------------------
 	class ccamera final
 	{
@@ -475,7 +477,7 @@ namespace sm
 
 		void* window_handle() { return m_window_handle; }
 
-	private:
+	public:
 		mat4_t m_view;
 		mat4_t m_projection;
 		vec3_t m_translation;
@@ -622,6 +624,7 @@ namespace sm
 		virtual bool is_key_pressed(core::key k) = 0;
 		virtual bool is_key_released(core::key k) = 0;
 
+		virtual void mouse_position(double* x, double* y) = 0;
 		virtual bool is_mouse_button_held(core::mouse_button b) = 0;
 		virtual bool is_mouse_button_pressed(core::mouse_button b) = 0;
 		virtual bool is_mouse_button_released(core::mouse_button b) = 0;

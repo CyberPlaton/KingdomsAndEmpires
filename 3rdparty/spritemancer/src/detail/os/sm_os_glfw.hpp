@@ -36,6 +36,7 @@ namespace sm
 		bool is_key_pressed(core::key k) override final;
 		bool is_key_released(core::key k) override final;
 
+		void mouse_position(double* x, double* y) override final;
 		bool is_mouse_button_held(core::mouse_button b) override final;
 		bool is_mouse_button_pressed(core::mouse_button b) override final;
 		bool is_mouse_button_released(core::mouse_button b) override final;
