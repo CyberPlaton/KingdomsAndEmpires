@@ -23,9 +23,9 @@ namespace sm
 		void main_window_position(int* x, int* y) override final {}
 		void main_window_size(int* x, int* y) override final {}
 
-		core::smouse_state mouse_state() const override final {}
-		core::skeyboard_state keyboard_state() const override final {}
-		core::sgamepad_state gamepad_state() const override final {}
+		core::smouse_state mouse_state() const override final { return {}; }
+		core::skeyboard_state keyboard_state() const override final { return {}; }
+		core::sgamepad_state gamepad_state() const override final { return {}; }
 
 		void on_window_resize_event(int width, int height) override final {}
 		void on_key_event(int key, int scancode, int action, int mods) override final {}
@@ -33,9 +33,10 @@ namespace sm
 		void on_cursor_event(double mx, double my) override final {}
 
 		void mouse_position(double* x, double* y) {}
-		bool is_key_held(core::key k) override final { return false; }
-		bool is_key_pressed(core::key k) override final { return false; }
-		bool is_key_released(core::key k) override final { return false; }
+		bool is_key_held(core::key k) const override final { return false; }
+		bool is_key_pressed(core::key k) const override final { return false; }
+		bool is_key_released(core::key k) const override final { return false; }
+		bool is_modifier_active(int modifiers) const override final { return false; }
 
 		bool is_mouse_button_held(core::mouse_button b) override final { return false; }
 		bool is_mouse_button_pressed(core::mouse_button b) override final { return false; }

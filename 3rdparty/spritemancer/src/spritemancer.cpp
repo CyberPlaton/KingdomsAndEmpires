@@ -16,6 +16,7 @@ namespace sm
 		static unsigned S_LAYER_COUNT = 0;
 		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
 		static core::cmutex S_MUTEX;
+		static queue_t<rttr::variant> S_EVENT_QUEUE;
 
 		static program_handle_t S_DEFAULT_PROGRAM = 0;
 		static core::scolor S_WHITE = { 255, 255, 255, 255 };
@@ -47,7 +48,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void load_internal_resources()
 		{
-			S_DEFAULT_PROGRAM = core::cservice_manager::find<cprogram_manager>()->load_sync("sprite", {0}, {0});
+			S_DEFAULT_PROGRAM = core::cservice_manager::find<cprogram_manager>()->load_sync("sprite", {bgfx::kInvalidHandle}, { bgfx::kInvalidHandle });
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -61,6 +62,65 @@ namespace sm
 		void update_window_viewport()
 		{
 			entry::get_renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void update_os_events()
+		{
+			while (!S_EVENT_QUEUE.empty())
+			{
+				const auto& event = S_EVENT_QUEUE.front();
+
+				if (event.is_type<events::window::sresize>())
+				{
+					const auto& e = event.convert<events::window::sresize>();
+					S_W = e.w;
+					S_H = e.h;
+					S_RESIZE_REQUIRED = true;
+					entry::get_os()->on_window_resize_event(e.w, e.h);
+				}
+				else if (event.is_type<events::window::scursor>())
+				{
+					const auto& e = event.convert<events::window::scursor>();
+					entry::get_os()->on_cursor_event(e.mx, e.my);
+				}
+				else if (event.is_type<events::window::smouse_button>())
+				{
+					const auto& e = event.convert<events::window::smouse_button>();
+					entry::get_os()->on_mouse_button_event(e.button, e.action, e.mods);
+				}
+				else if (event.is_type<events::window::skey_button>())
+				{
+					const auto& e = event.convert<events::window::skey_button>();
+					entry::get_os()->on_key_event(e.button, e.scancode, e.action, e.mods);
+				}
+				else if (event.is_type<events::window::sminimize>())
+				{
+					const auto& e = event.convert<events::window::sminimize>();
+				}
+				else if (event.is_type<events::window::sunminimize>())
+				{
+					const auto& e = event.convert<events::window::sunminimize>();
+				}
+				else if (event.is_type<events::window::shide>())
+				{
+					const auto& e = event.convert<events::window::shide>();
+				}
+				else if (event.is_type<events::window::sunhide>())
+				{
+					const auto& e = event.convert<events::window::sunhide>();
+				}
+				else if (event.is_type<events::window::sfocus>())
+				{
+					const auto& e = event.convert<events::window::sfocus>();
+				}
+				else if (event.is_type<events::window::sunfocus>())
+				{
+					const auto& e = event.convert<events::window::sunfocus>();
+				}
+
+				S_EVENT_QUEUE.pop();
+			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -97,6 +157,8 @@ namespace sm
 				S_RUNNING = false;
 			}
 
+			update_os_events();
+
 			//- check for resize of most basic layer. Other layers are not our responsibility
 			if (S_RESIZE_REQUIRED)
 			{
@@ -104,8 +166,6 @@ namespace sm
 
 				S_RESIZE_REQUIRED = false;
 			}
-
-			//- update HID state, such as keyboard and mouse
 
 			entry::get_app()->on_update(S_DT);
 
@@ -193,14 +253,19 @@ namespace sm
 			//- initialize imgui
 			imgui::init();
 
-			//- create internal event listeners
-			core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
-				{
-					const auto& e = var.convert<events::window::sresize>();
-					S_W = e.w;
-					S_H = e.h;
-					S_RESIZE_REQUIRED = true;
-				});
+			//- create internal event listeners to update our own state and redirect data to other
+			//- dependent systems such as ios.
+			auto* es = core::cservice_manager::find<core::cevent_service>();
+			es->emplace_listener<events::window::sresize>([](const rttr::variant& var){ S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::scursor>([](const rttr::variant& var){ S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::smouse_button>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::skey_button>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::sminimize>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::sunminimize>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::shide>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::sunhide>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::sfocus>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::sunfocus>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
 		}
 
 		//- Main engine thread where the update and rendering happens. Created from outside

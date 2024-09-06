@@ -4,17 +4,7 @@ namespace sm
 {
 	namespace
 	{
-		static double S_CURSOR_X = 0.0;
-		static double S_CURSOR_Y = 0.0;
-		static int S_MOUSE_BUTTON = 0;
-		static int S_MOUSE_ACTION = 0;
-		static int S_MOUSE_MODS = 0;
-		static int S_KEY_KEY = 0;
-		static int S_KEY_SCANCODE = 0;
-		static int S_KEY_ACTION = 0;
-		static int S_KEY_MODS = 0;
-		static int S_W = 0;
-		static int S_H = 0;
+		static GLFWcursor* S_CURSOR;
 
 		//- Redirecting error from glfw to reporter
 		//------------------------------------------------------------------------------------------------------------------------
@@ -30,41 +20,26 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void glfw_window_size_callback(GLFWwindow* window, int width, int height)
 		{
-			S_W = width;
-			S_H = height;
-
-			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::sresize>(S_W, S_H);
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::sresize>(width, height);
 		}
 
 		//- Redirecting glfw key strokes to main application
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
-			S_KEY_KEY = key;
-			S_KEY_SCANCODE = scancode;
-			S_KEY_ACTION = action;
-			S_KEY_MODS = mods;
-
-			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::skey_button>(S_KEY_KEY, S_KEY_SCANCODE, S_KEY_ACTION, S_KEY_MODS);
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::skey_button>(key, scancode, action, mods);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		{
-			S_MOUSE_BUTTON = button;
-			S_MOUSE_ACTION = action;
-			S_MOUSE_MODS = mods;
-
-			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::smouse_button>(S_MOUSE_BUTTON, S_MOUSE_ACTION, S_MOUSE_MODS);
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::smouse_button>(button, action, mods);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void glfw_cursor_callback(GLFWwindow* _window, double mx, double my)
 		{
-			S_CURSOR_X = mx;
-			S_CURSOR_Y = my;
-
-			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::scursor>(S_CURSOR_X, S_CURSOR_Y);
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::scursor>(mx, my);
 		}
 
 		//- Retrieve native window handle from GLFWindow
@@ -120,12 +95,16 @@ namespace sm
 
 		if (m_mainwindow = glfwCreateWindow(w, h, title.data(), nullptr, nullptr); m_mainwindow)
 		{
+			S_CURSOR = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+
+			glfwSetCursor(m_mainwindow, S_CURSOR);
+
 			glfwSetKeyCallback(m_mainwindow, glfw_key_callback);
 			glfwSetMouseButtonCallback(m_mainwindow, glfw_mouse_button_callback);
 			glfwSetCursorPosCallback(m_mainwindow, glfw_cursor_callback);
 			glfwSetWindowSizeCallback(m_mainwindow, glfw_window_size_callback);
-			S_W = w;
-			S_H = h;
+			m_mainwindow_width = w;
+			m_mainwindow_height = h;
 
 			return opresult_ok;
 		}
@@ -148,13 +127,18 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void cos_glfw::on_window_resize_event(int width, int height)
 	{
-		//- unused here
+		m_mainwindow_width = width;
+		m_mainwindow_height = height;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cos_glfw::on_key_event(int key, int scancode, int action, int mods)
 	{
-		m_keyboard.m_keys[static_cast<core::key>(key)] = scancode | action | mods;
+		const auto released = action == GLFW_RELEASE;
+		const auto pressed = action == GLFW_PRESS;
+		const auto held = action == GLFW_REPEAT;
+
+		m_keyboard.set_state((core::key)key, released, pressed, held, mods);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -162,13 +146,17 @@ namespace sm
 	{
 		//- Note: action specifies whether the key was pressed, released or is held, where
 		//- mods specifies whether a modifier key was active at that time, i.e. GLFW_MOD_SHIFT
-		m_mouse.m_buttons[static_cast<core::mouse_button>(button)] = action | mods;
+		const auto released = action == GLFW_RELEASE;
+		const auto pressed = action == GLFW_PRESS;
+		const auto held = action == GLFW_REPEAT;
+
+		m_mouse.set_state((core::mouse_button)(button + 1), released, pressed, held);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cos_glfw::on_cursor_event(double mx, double my)
 	{
-		//- unused here
+		m_mouse.set_cursor(mx, my);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -180,51 +168,57 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void cos_glfw::main_window_size(int* x, int* y)
 	{
-		*x = S_W;
-		*y = S_H;
+		*x = m_mainwindow_width;
+		*y = m_mainwindow_height;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cos_glfw::is_key_held(core::key k)
+	bool cos_glfw::is_key_held(core::key k) const
 	{
-		return false;
+		return m_keyboard.is_held(k);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cos_glfw::is_key_pressed(core::key k)
+	bool cos_glfw::is_key_pressed(core::key k) const
 	{
-		return false;
+		return m_keyboard.is_pressed(k);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cos_glfw::is_key_released(core::key k)
+	bool cos_glfw::is_key_released(core::key k) const
 	{
-		return false;
+		return m_keyboard.is_released(k);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cos_glfw::is_modifier_active(int modifiers) const
+	{
+		return m_keyboard.check_modifiers(modifiers);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cos_glfw::mouse_position(double* x, double* y)
 	{
-		*x = S_CURSOR_X;
-		*y = S_CURSOR_Y;
+		*x = m_mouse.m_x;
+		*y = m_mouse.m_y;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cos_glfw::is_mouse_button_held(core::mouse_button b)
 	{
-		return false;
+		return m_mouse.is_held(b);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cos_glfw::is_mouse_button_pressed(core::mouse_button b)
 	{
-		return false;
+		return m_mouse.is_pressed(b);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cos_glfw::is_mouse_button_released(core::mouse_button b)
 	{
-		return false;
+		return m_mouse.is_released(b);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

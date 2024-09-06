@@ -59,6 +59,7 @@ function set_basic_defines()
 			"_CRT_SECURE_NO_DEPRECATE",
 			"RTTR_DLL",						-- RTTR
 			"GLFW_DLL",						-- GLFW
+			"IMGUI_DISABLE_OBSOLETE_KEYIO", -- IMGUI
 			}
 
 	if IS_WARNING_AND_ERRORS_ENABLED == false then

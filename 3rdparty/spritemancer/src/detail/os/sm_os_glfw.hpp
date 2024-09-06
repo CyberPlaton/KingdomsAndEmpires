@@ -41,9 +41,10 @@ namespace sm
 		void main_window_position(int* x, int* y) override final;
 		void main_window_size(int* x, int* y) override final;
 
-		bool is_key_held(core::key k) override final;
-		bool is_key_pressed(core::key k) override final;
-		bool is_key_released(core::key k) override final;
+		bool is_key_held(core::key k) const override final;
+		bool is_key_pressed(core::key k) const override final;
+		bool is_key_released(core::key k) const override final;
+		bool is_modifier_active(int modifiers) const override final;
 
 		void mouse_position(double* x, double* y) override final;
 		bool is_mouse_button_held(core::mouse_button b) override final;
@@ -57,6 +58,8 @@ namespace sm
 		core::smouse_state m_mouse;
 		core::skeyboard_state m_keyboard;
 		GLFWwindow* m_mainwindow = nullptr;
+		int m_mainwindow_width;
+		int m_mainwindow_height;
 
 		RTTR_ENABLE(ios);
 	};

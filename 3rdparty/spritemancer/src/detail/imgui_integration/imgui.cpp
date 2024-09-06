@@ -9,8 +9,6 @@ namespace imgui
 		constexpr float C_EDIT_DRAG_FIELD_WIDTH = 150.0f;
 		constexpr float C_EDIT_SCALAR_FIELD_WIDTH = 250.0f;
 		static inline vector_t< snotification > S_NOTIFICATIONS;
-		static auto S_W = 0;
-		static auto S_H = 0;
 		static bx::DefaultAllocator S_ALLOCATOR;
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -132,6 +130,8 @@ namespace imgui
 				ImGuiKey_GamepadStart,
 			};
 
+
+
 			return S_MAP[k];
 		}
 
@@ -157,14 +157,6 @@ namespace imgui
 
 		auto& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
-
-		//- setup resize handler
-		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
-			{
-				const auto& e = var.convert<events::window::sresize>();
-				S_W = e.w;
-				S_H = e.h;
-			});
 		return true;
 	}
 
@@ -181,40 +173,44 @@ namespace imgui
 	{
 		if (auto os = sm::entry::get_os(); os)
 		{
+			static int64_t S_LAST = 0;
 			ImGuiIO& io = ImGui::GetIO();
-			double mouse_position_x = 0, mouse_position_y = 0;
-			auto mouse_state = os->mouse_state();
-			auto keyboard_state = os->keyboard_state();
-			os->mouse_position(&mouse_position_x, &mouse_position_y);
+			double mx = 0, my = 0;
+			os->mouse_position(&mx, &my);
+
+			const int64_t now = bx::getHPCounter();
+			const int64_t frameTime = now - S_LAST;
+			S_LAST = now;
+			const double freq = double(bx::getHPFrequency());
+			io.DeltaTime = float(frameTime / freq);
 
 			//- Provide mouse events to ImGui
-
+			io.AddMousePosEvent(SCAST(float, mx), SCAST(float, my));
+			io.AddMouseButtonEvent(ImGuiMouseButton_Left, os->is_mouse_button_pressed(core::mouse_button_left) ||
+				os->is_mouse_button_held(core::mouse_button_left));
+			io.AddMouseButtonEvent(ImGuiMouseButton_Middle, os->is_mouse_button_pressed(core::mouse_button_middle) ||
+				os->is_mouse_button_held(core::mouse_button_middle));
+			io.AddMouseButtonEvent(ImGuiMouseButton_Right, os->is_mouse_button_pressed(core::mouse_button_right) ||
+				os->is_mouse_button_held(core::mouse_button_right));
+			io.AddMouseWheelEvent(0.0f, 0.0f);
 
 			//- Provide keyboard events to ImGui
-			io.AddKeyEvent(ImGuiMod_Shift, algorithm::bit_check(keyboard_state.m_keys[core::key_none],
-				core::key_modifier_left_shift | core::key_modifier_right_shift));
-
-			io.AddKeyEvent(ImGuiMod_Ctrl, algorithm::bit_check(keyboard_state.m_keys[core::key_none],
-				core::key_modifier_left_ctrl | core::key_modifier_right_ctrl));
-
-			io.AddKeyEvent(ImGuiMod_Alt, algorithm::bit_check(keyboard_state.m_keys[core::key_none],
-				core::key_modifier_left_alt | core::key_modifier_right_alt));
-
-			io.AddKeyEvent(ImGuiMod_Super, algorithm::bit_check(keyboard_state.m_keys[core::key_none],
-				core::key_modifier_left_meta | core::key_modifier_right_meta));
+			io.AddInputCharacter(0);
+			io.AddKeyEvent(ImGuiMod_Shift, os->is_modifier_active(core::key_modifier_left_shift | core::key_modifier_right_shift));
+			io.AddKeyEvent(ImGuiMod_Ctrl, os->is_modifier_active(core::key_modifier_left_ctrl | core::key_modifier_right_ctrl));
+			io.AddKeyEvent(ImGuiMod_Ctrl, os->is_modifier_active(core::key_modifier_left_alt | core::key_modifier_right_alt));
+			io.AddKeyEvent(ImGuiMod_Ctrl, os->is_modifier_active(core::key_modifier_left_meta | core::key_modifier_right_meta));
 
 			for (auto i = 0u; i < (int)core::key::key_count; ++i)
 			{
-				io.AddKeyEvent(core_key_to_imgui((core::key)i), inputGetKeyState(entry::Key::Enum(ii)));
+				const auto pressed_or_held = os->is_key_held((core::key)i)
+					|| os->is_key_pressed((core::key)i);
+
+				io.AddKeyEvent(core_key_to_imgui((core::key)i), pressed_or_held);
+				io.SetKeyEventNativeData(core_key_to_imgui((core::key)i), 0, 0, (core::key)i);
 			}
 
-			uint8_t mouse_button_state = 0;
-
-			auto mouse_state = os->mouse_state();
-
-			if(mouse_state.m_buttons[core::mouse_button_left])
-
-			imgui::imguiBeginFrame(mouse_position_x, mouse_position_y, mouse_button_state, 0, S_W, S_H);
+			ImGui::NewFrame();
 		}
 		/*rlImGuiBegin();*/
 	}
@@ -229,8 +225,9 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void cui::on_resize(unsigned w, unsigned h)
 	{
-		S_W = w;
-		S_H = h;
+		ImGuiIO& io = ImGui::GetIO();
+		io.DisplaySize.x = float(w);
+		io.DisplaySize.y = float(h);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -284,7 +281,9 @@ namespace imgui
 			}
 		}
 
-		S_NOTIFICATIONS.emplace_back(snotification{ type, label, message, { S_W - size.x - 10.0f, S_H - size.y - 10.0f }, size, 1.0f / (SCAST(float, lifetime_seconds) * 100.0f), 1.0f });
+		ImGuiIO& io = ImGui::GetIO();
+
+		S_NOTIFICATIONS.emplace_back(snotification{ type, label, message, { io.DisplaySize.x - size.x - 10.0f, io.DisplaySize.y - size.y - 10.0f }, size, 1.0f / (SCAST(float, lifetime_seconds) * 100.0f), 1.0f });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1214,6 +1213,7 @@ namespace imgui
 	{
 		if (!S_NOTIFICATIONS.empty())
 		{
+			ImGuiIO& io = ImGui::GetIO();
 			vector_t< unsigned > to_be_removed;
 			unsigned max_index = 0;
 			float height_modifier = 0.0f;
@@ -1222,7 +1222,7 @@ namespace imgui
 
 
 			//- Compute max number of notifications we can display on the window.
-			max_index = glm::min(unsigned(S_H / S_NOTIFICATIONS[0].m_size.y), (unsigned)S_NOTIFICATIONS.size());
+			max_index = glm::min(unsigned(io.DisplaySize.y / S_NOTIFICATIONS[0].m_size.y), (unsigned)S_NOTIFICATIONS.size());
 
 			for (auto i = 0; i < max_index; i++)
 			{

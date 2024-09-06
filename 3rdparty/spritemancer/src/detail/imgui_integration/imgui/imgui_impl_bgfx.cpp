@@ -54,7 +54,6 @@ namespace
 		void create(float _fontSize, bx::AllocatorI* _allocator);
 		void destroy();
 		void setupStyle(const bool _dark);
-		void beginFrame(int _mx, int _my, uint8_t _button, int _scroll, int _width, int _height, int _inputChar, bgfx::ViewId _viewId);
 		void endFrame();
 
 		ImGuiContext* m_imgui;
@@ -446,49 +445,6 @@ namespace
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void simgui_context::beginFrame(int _mx, int _my, uint8_t _button, int _scroll,
-		int _width, int _height, int _inputChar, bgfx::ViewId _viewId)
-	{
-		m_viewId = _viewId;
-
-		ImGuiIO& io = ImGui::GetIO();
-		if (_inputChar >= 0)
-		{
-			io.AddInputCharacter(_inputChar);
-		}
-
-		io.DisplaySize = ImVec2((float)_width, (float)_height);
-
-		const int64_t now = bx::getHPCounter();
-		const int64_t frameTime = now - m_last;
-		m_last = now;
-		const double freq = double(bx::getHPFrequency());
-		io.DeltaTime = float(frameTime / freq);
-
-		io.AddMousePosEvent((float)_mx, (float)_my);
-		io.AddMouseButtonEvent(ImGuiMouseButton_Left, 0 != (_button & IMGUI_MBUT_LEFT));
-		io.AddMouseButtonEvent(ImGuiMouseButton_Right, 0 != (_button & IMGUI_MBUT_RIGHT));
-		io.AddMouseButtonEvent(ImGuiMouseButton_Middle, 0 != (_button & IMGUI_MBUT_MIDDLE));
-		io.AddMouseWheelEvent(0.0f, (float)(_scroll - m_lastScroll));
-		m_lastScroll = _scroll;
-
-#if USE_ENTRY
-		uint8_t modifiers = inputGetModifiersState();
-		io.AddKeyEvent(ImGuiMod_Shift, 0 != (modifiers & (entry::Modifier::LeftShift | entry::Modifier::RightShift)));
-		io.AddKeyEvent(ImGuiMod_Ctrl, 0 != (modifiers & (entry::Modifier::LeftCtrl | entry::Modifier::RightCtrl)));
-		io.AddKeyEvent(ImGuiMod_Alt, 0 != (modifiers & (entry::Modifier::LeftAlt | entry::Modifier::RightAlt)));
-		io.AddKeyEvent(ImGuiMod_Super, 0 != (modifiers & (entry::Modifier::LeftMeta | entry::Modifier::RightMeta)));
-		for (int32_t ii = 0; ii < (int32_t)entry::Key::Count; ++ii)
-		{
-			io.AddKeyEvent(m_keyMap[ii], inputGetKeyState(entry::Key::Enum(ii)));
-			io.SetKeyEventNativeData(m_keyMap[ii], 0, 0, ii);
-		}
-#endif // USE_ENTRY
-
-		ImGui::NewFrame();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	void simgui_context::endFrame()
 	{
 		ImGui::Render();
@@ -523,13 +479,6 @@ namespace imgui
 	void imguiDestroy()
 	{
 		S_CTX.destroy();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void imguiBeginFrame(int32_t _mx, int32_t _my, uint8_t _button, int32_t _scroll, uint16_t _width, uint16_t _height,
-		int _inputChar /*= -1*/, bgfx::ViewId _view /*= 255*/)
-	{
-		S_CTX.beginFrame(_mx, _my, _button, _scroll, _width, _height, _inputChar, _view);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

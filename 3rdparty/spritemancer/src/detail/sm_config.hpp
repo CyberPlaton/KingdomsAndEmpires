@@ -629,9 +629,10 @@ namespace sm
 		virtual void main_window_position(int* x, int* y) = 0;
 		virtual void main_window_size(int* x, int* y) = 0;
 
-		virtual bool is_key_held(core::key k) = 0;
-		virtual bool is_key_pressed(core::key k) = 0;
-		virtual bool is_key_released(core::key k) = 0;
+		virtual bool is_key_held(core::key k) const = 0;
+		virtual bool is_key_pressed(core::key k) const = 0;
+		virtual bool is_key_released(core::key k) const = 0;
+		virtual bool is_modifier_active(int modifiers) const = 0;
 
 		virtual void mouse_position(double* x, double* y) = 0;
 		virtual bool is_mouse_button_held(core::mouse_button b) = 0;
