@@ -11,8 +11,6 @@ namespace imgui
 		static inline vector_t< snotification > S_NOTIFICATIONS;
 		static auto S_W = 0;
 		static auto S_H = 0;
-		static auto S_MX = 0;
-		static auto S_MY = 0;
 		static bx::DefaultAllocator S_ALLOCATOR;
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -23,6 +21,118 @@ namespace imgui
 			tex.s.m_flags = flags;
 			tex.s.m_mip = mip;
 			return tex.m_id;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static ImGuiKey core_key_to_imgui(core::key k)
+		{
+			static const ImGuiKey S_MAP[core::key::key_count] =
+			{
+				ImGuiKey_None,
+				ImGuiKey_Escape,
+				ImGuiKey_Enter,
+				ImGuiKey_Tab,
+				ImGuiKey_Space,
+				ImGuiKey_Backspace,
+				ImGuiKey_UpArrow,
+				ImGuiKey_DownArrow,
+				ImGuiKey_LeftArrow,
+				ImGuiKey_RightArrow,
+				ImGuiKey_Insert,
+				ImGuiKey_Delete,
+				ImGuiKey_Home,
+				ImGuiKey_End,
+				ImGuiKey_PageUp,
+				ImGuiKey_PageDown,
+				ImGuiKey_PrintScreen,
+				ImGuiKey_Equal,
+				ImGuiKey_Minus,
+				ImGuiKey_LeftBracket,
+				ImGuiKey_RightBracket,
+				ImGuiKey_Semicolon,
+				ImGuiKey_Apostrophe,
+				ImGuiKey_Comma,
+				ImGuiKey_Period,
+				ImGuiKey_Slash,
+				ImGuiKey_Backslash,
+				ImGuiKey_GraveAccent,
+				ImGuiKey_F1,
+				ImGuiKey_F2,
+				ImGuiKey_F3,
+				ImGuiKey_F4,
+				ImGuiKey_F5,
+				ImGuiKey_F6,
+				ImGuiKey_F7,
+				ImGuiKey_F8,
+				ImGuiKey_F9,
+				ImGuiKey_F10,
+				ImGuiKey_F11,
+				ImGuiKey_F12,
+				ImGuiKey_Keypad0,
+				ImGuiKey_Keypad1,
+				ImGuiKey_Keypad2,
+				ImGuiKey_Keypad3,
+				ImGuiKey_Keypad4,
+				ImGuiKey_Keypad5,
+				ImGuiKey_Keypad6,
+				ImGuiKey_Keypad7,
+				ImGuiKey_Keypad8,
+				ImGuiKey_Keypad9,
+				ImGuiKey_0,
+				ImGuiKey_1,
+				ImGuiKey_2,
+				ImGuiKey_3,
+				ImGuiKey_4,
+				ImGuiKey_5,
+				ImGuiKey_6,
+				ImGuiKey_7,
+				ImGuiKey_8,
+				ImGuiKey_9,
+				ImGuiKey_A,
+				ImGuiKey_B,
+				ImGuiKey_C,
+				ImGuiKey_D,
+				ImGuiKey_E,
+				ImGuiKey_F,
+				ImGuiKey_G,
+				ImGuiKey_H,
+				ImGuiKey_I,
+				ImGuiKey_J,
+				ImGuiKey_K,
+				ImGuiKey_L,
+				ImGuiKey_M,
+				ImGuiKey_N,
+				ImGuiKey_O,
+				ImGuiKey_P,
+				ImGuiKey_Q,
+				ImGuiKey_R,
+				ImGuiKey_S,
+				ImGuiKey_T,
+				ImGuiKey_U,
+				ImGuiKey_V,
+				ImGuiKey_W,
+				ImGuiKey_X,
+				ImGuiKey_Y,
+				ImGuiKey_Z,
+
+				ImGuiKey_GamepadFaceDown,
+				ImGuiKey_GamepadFaceRight,
+				ImGuiKey_GamepadFaceLeft,
+				ImGuiKey_GamepadFaceUp,
+				ImGuiKey_GamepadL3,
+				ImGuiKey_GamepadR3,
+				ImGuiKey_GamepadL1,
+				ImGuiKey_GamepadR1,
+				ImGuiKey_GamepadDpadUp,
+				ImGuiKey_GamepadDpadDown,
+				ImGuiKey_GamepadDpadLeft,
+				ImGuiKey_GamepadDpadRight,
+				ImGuiKey_GamepadBack,
+				ImGuiKey_GamepadStart,
+				ImGuiKey_GamepadStart,
+			};
+
+			return S_MAP[k];
 		}
 
 	} //- unnamed
@@ -55,24 +165,6 @@ namespace imgui
 				S_W = e.w;
 				S_H = e.h;
 			});
-
-		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::skey_button>([](const rttr::variant& var)
-			{
-				const auto& e = var.convert<events::window::skey_button>();
-			});
-
-		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::smouse_button>([](const rttr::variant& var)
-			{
-				const auto& e = var.convert<events::window::smouse_button>();
-			});
-
-		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::scursor>([](const rttr::variant& var)
-			{
-				const auto& e = var.convert<events::window::scursor>();
-				S_MX = e.mx;
-				S_MY = e.my;
-			});
-
 		return true;
 	}
 
@@ -89,7 +181,40 @@ namespace imgui
 	{
 		if (auto os = sm::entry::get_os(); os)
 		{
-			imgui::imguiBeginFrame(S_MX, S_MY, 0, 0, S_W, S_H);
+			ImGuiIO& io = ImGui::GetIO();
+			double mouse_position_x = 0, mouse_position_y = 0;
+			auto mouse_state = os->mouse_state();
+			auto keyboard_state = os->keyboard_state();
+			os->mouse_position(&mouse_position_x, &mouse_position_y);
+
+			//- Provide mouse events to ImGui
+
+
+			//- Provide keyboard events to ImGui
+			io.AddKeyEvent(ImGuiMod_Shift, algorithm::bit_check(keyboard_state.m_keys[core::key_none],
+				core::key_modifier_left_shift | core::key_modifier_right_shift));
+
+			io.AddKeyEvent(ImGuiMod_Ctrl, algorithm::bit_check(keyboard_state.m_keys[core::key_none],
+				core::key_modifier_left_ctrl | core::key_modifier_right_ctrl));
+
+			io.AddKeyEvent(ImGuiMod_Alt, algorithm::bit_check(keyboard_state.m_keys[core::key_none],
+				core::key_modifier_left_alt | core::key_modifier_right_alt));
+
+			io.AddKeyEvent(ImGuiMod_Super, algorithm::bit_check(keyboard_state.m_keys[core::key_none],
+				core::key_modifier_left_meta | core::key_modifier_right_meta));
+
+			for (auto i = 0u; i < (int)core::key::key_count; ++i)
+			{
+				io.AddKeyEvent(core_key_to_imgui((core::key)i), inputGetKeyState(entry::Key::Enum(ii)));
+			}
+
+			uint8_t mouse_button_state = 0;
+
+			auto mouse_state = os->mouse_state();
+
+			if(mouse_state.m_buttons[core::mouse_button_left])
+
+			imgui::imguiBeginFrame(mouse_position_x, mouse_position_y, mouse_button_state, 0, S_W, S_H);
 		}
 		/*rlImGuiBegin();*/
 	}

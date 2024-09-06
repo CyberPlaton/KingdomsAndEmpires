@@ -617,6 +617,15 @@ namespace sm
 		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
 		virtual opresult optional_process_event() = 0;		//- process one hardware event
 
+		virtual void on_window_resize_event(int width, int height) = 0;				//- handle resizing of main window
+		virtual void on_key_event(int key, int scancode, int action, int mods) = 0;	//- handle any keyboard related event
+		virtual void on_mouse_button_event(int button, int action, int mods) = 0;	//- handle any mouse button related event
+		virtual void on_cursor_event(double mx, double my) = 0;						//- handle any mouse movement related event
+
+		virtual core::smouse_state mouse_state() const = 0;
+		virtual core::skeyboard_state keyboard_state() const = 0;
+		virtual core::sgamepad_state gamepad_state() const = 0;
+
 		virtual void main_window_position(int* x, int* y) = 0;
 		virtual void main_window_size(int* x, int* y) = 0;
 

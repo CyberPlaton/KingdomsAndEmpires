@@ -29,6 +29,15 @@ namespace sm
 		opresult optional_init_event_mainloop() override final;		//- process hardware events in a loop; use where required
 		opresult optional_process_event() override final;			//- process one hardware event
 
+		void on_window_resize_event(int width, int height) override final;
+		void on_key_event(int key, int scancode, int action, int mods) override final;
+		void on_mouse_button_event(int button, int action, int mods) override final;
+		void on_cursor_event(double mx, double my) override final;
+
+		core::smouse_state mouse_state() const override final { return m_mouse; }
+		core::skeyboard_state keyboard_state() const override final { return m_keyboard; }
+		core::sgamepad_state gamepad_state() const override final { return m_gamepad; }
+
 		void main_window_position(int* x, int* y) override final;
 		void main_window_size(int* x, int* y) override final;
 
@@ -44,6 +53,9 @@ namespace sm
 		float gamepad_axis(core::gamepad_axis a) override final;
 
 	private:
+		core::sgamepad_state m_gamepad;
+		core::smouse_state m_mouse;
+		core::skeyboard_state m_keyboard;
 		GLFWwindow* m_mainwindow = nullptr;
 
 		RTTR_ENABLE(ios);

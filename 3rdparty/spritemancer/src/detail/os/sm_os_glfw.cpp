@@ -49,7 +49,7 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static void glfw_mouse_button_callback(GLFWwindow* window, int32_t button, int32_t action, int32_t mods)
+		inline static void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		{
 			S_MOUSE_BUTTON = button;
 			S_MOUSE_ACTION = action;
@@ -143,6 +143,32 @@ namespace sm
 	{
 		glfwPollEvents();
 		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cos_glfw::on_window_resize_event(int width, int height)
+	{
+		//- unused here
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cos_glfw::on_key_event(int key, int scancode, int action, int mods)
+	{
+		m_keyboard.m_keys[static_cast<core::key>(key)] = scancode | action | mods;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cos_glfw::on_mouse_button_event(int button, int action, int mods)
+	{
+		//- Note: action specifies whether the key was pressed, released or is held, where
+		//- mods specifies whether a modifier key was active at that time, i.e. GLFW_MOD_SHIFT
+		m_mouse.m_buttons[static_cast<core::mouse_button>(button)] = action | mods;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cos_glfw::on_cursor_event(double mx, double my)
+	{
+		//- unused here
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

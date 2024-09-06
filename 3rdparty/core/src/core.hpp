@@ -728,10 +728,10 @@ namespace core
 	{
 		smouse_state()
 		{
-			std::memset(&m_buttons, mouse_button_none, mouse_button_count * sizeof(uint8_t));
+			std::memset(&m_buttons, mouse_button_none, mouse_button_count * sizeof(int));
 		}
 
-		uint8_t m_buttons[mouse_button_count];
+		int m_buttons[mouse_button_count];
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -750,10 +750,10 @@ namespace core
 	{
 		skeyboard_state()
 		{
-			std::memset(&m_keys, key_none, key_count * sizeof(uint8_t));
+			std::memset(&m_keys, key_none, key_count * sizeof(int));
 		}
 
-		uint8_t m_keys[key_count];
+		int m_keys[key_count];
 	};
 
 	//- RTTR aware replacement for std::pair<>
@@ -2971,7 +2971,7 @@ namespace core
 	}
 
 	//- Class for user defined events. Does not handle file change detection (see filewatcher), nor hardware events
-	//- i.e. keyboard input, mouse input, window resizing and the like (see sdl service for that).
+	//- i.e. keyboard input, mouse input, window resizing and the like (see sdl/glfw etc. service for that).
 	//-
 	//- struct ExampleEvent {
 	//-		float x = 0.0f, y = 0.0f;
