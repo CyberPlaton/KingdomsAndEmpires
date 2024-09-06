@@ -6,6 +6,115 @@ namespace sm
 	{
 		static GLFWcursor* S_CURSOR;
 
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static core::key glfw_key_to_core(int k)
+		{
+			switch (k)
+			{
+			case GLFW_KEY_ESCAPE:      return core::key_esc;
+			case GLFW_KEY_ENTER:       return core::key_return;
+			case GLFW_KEY_TAB:         return core::key_tab;
+			case GLFW_KEY_SPACE:       return core::key_space;
+			case GLFW_KEY_BACKSPACE:   return core::key_backspace;
+			case GLFW_KEY_UP:          return core::key_up;
+			case GLFW_KEY_DOWN:        return core::key_down;
+			case GLFW_KEY_LEFT:        return core::key_left;
+			case GLFW_KEY_RIGHT:       return core::key_right;
+			case GLFW_KEY_INSERT:      return core::key_insert;
+			case GLFW_KEY_DELETE:      return core::key_delete;
+			case GLFW_KEY_HOME:        return core::key_home;
+			case GLFW_KEY_END:         return core::key_end;
+			case GLFW_KEY_PAGE_UP:     return core::key_page_up;
+			case GLFW_KEY_PAGE_DOWN:   return core::key_page_down;
+			case GLFW_KEY_PRINT_SCREEN:return core::key_print;
+			case GLFW_KEY_KP_ADD:      return core::key_plus;
+			case GLFW_KEY_KP_SUBTRACT: return core::key_minus;
+			case GLFW_KEY_LEFT_BRACKET:return core::key_left_bracket;
+			case GLFW_KEY_RIGHT_BRACKET:return core::key_right_bracket;
+			case GLFW_KEY_SEMICOLON:   return core::key_semicolon;
+			case GLFW_KEY_APOSTROPHE:  return core::key_quote;
+			case GLFW_KEY_COMMA:       return core::key_comma;
+			case GLFW_KEY_PERIOD:      return core::key_period;
+			case GLFW_KEY_SLASH:       return core::key_slash;
+			case GLFW_KEY_BACKSLASH:   return core::key_backslash;
+			case GLFW_KEY_GRAVE_ACCENT:return core::key_tilde;
+			case GLFW_KEY_F1:          return core::key_f1;
+			case GLFW_KEY_F2:          return core::key_f2;
+			case GLFW_KEY_F3:          return core::key_f3;
+			case GLFW_KEY_F4:          return core::key_f4;
+			case GLFW_KEY_F5:          return core::key_f5;
+			case GLFW_KEY_F6:          return core::key_f6;
+			case GLFW_KEY_F7:          return core::key_f7;
+			case GLFW_KEY_F8:          return core::key_f8;
+			case GLFW_KEY_F9:          return core::key_f9;
+			case GLFW_KEY_F10:         return core::key_f10;
+			case GLFW_KEY_F11:         return core::key_f11;
+			case GLFW_KEY_F12:         return core::key_f12;
+			case GLFW_KEY_KP_0:        return core::key_numpad0;
+			case GLFW_KEY_KP_1:        return core::key_numpad1;
+			case GLFW_KEY_KP_2:        return core::key_numpad2;
+			case GLFW_KEY_KP_3:        return core::key_numpad3;
+			case GLFW_KEY_KP_4:        return core::key_numpad4;
+			case GLFW_KEY_KP_5:        return core::key_numpad5;
+			case GLFW_KEY_KP_6:        return core::key_numpad6;
+			case GLFW_KEY_KP_7:        return core::key_numpad7;
+			case GLFW_KEY_KP_8:        return core::key_numpad8;
+			case GLFW_KEY_KP_9:        return core::key_numpad9;
+			case GLFW_KEY_0:           return core::key_0;
+			case GLFW_KEY_1:           return core::key_1;
+			case GLFW_KEY_2:           return core::key_2;
+			case GLFW_KEY_3:           return core::key_3;
+			case GLFW_KEY_4:           return core::key_4;
+			case GLFW_KEY_5:           return core::key_5;
+			case GLFW_KEY_6:           return core::key_6;
+			case GLFW_KEY_7:           return core::key_7;
+			case GLFW_KEY_8:           return core::key_8;
+			case GLFW_KEY_9:           return core::key_9;
+			case GLFW_KEY_A:           return core::key_a;
+			case GLFW_KEY_B:           return core::key_b;
+			case GLFW_KEY_C:           return core::key_c;
+			case GLFW_KEY_D:           return core::key_d;
+			case GLFW_KEY_E:           return core::key_e;
+			case GLFW_KEY_F:           return core::key_f;
+			case GLFW_KEY_G:           return core::key_g;
+			case GLFW_KEY_H:           return core::key_h;
+			case GLFW_KEY_I:           return core::key_i;
+			case GLFW_KEY_J:           return core::key_j;
+			case GLFW_KEY_K:           return core::key_k;
+			case GLFW_KEY_L:           return core::key_l;
+			case GLFW_KEY_M:           return core::key_m;
+			case GLFW_KEY_N:           return core::key_n;
+			case GLFW_KEY_O:           return core::key_o;
+			case GLFW_KEY_P:           return core::key_p;
+			case GLFW_KEY_Q:           return core::key_q;
+			case GLFW_KEY_R:           return core::key_r;
+			case GLFW_KEY_S:           return core::key_s;
+			case GLFW_KEY_T:           return core::key_t;
+			case GLFW_KEY_U:           return core::key_u;
+			case GLFW_KEY_V:           return core::key_v;
+			case GLFW_KEY_W:           return core::key_w;
+			case GLFW_KEY_X:           return core::key_x;
+			case GLFW_KEY_Y:           return core::key_y;
+			case GLFW_KEY_Z:           return core::key_z;
+			case GLFW_GAMEPAD_BUTTON_A:            return core::key_gamepad_a;
+			case GLFW_GAMEPAD_BUTTON_B:            return core::key_gamepad_b;
+			case GLFW_GAMEPAD_BUTTON_X:            return core::key_gamepad_x;
+			case GLFW_GAMEPAD_BUTTON_Y:            return core::key_gamepad_y;
+			case GLFW_GAMEPAD_BUTTON_LEFT_BUMPER:  return core::key_gamepad_shoulder_L;
+			case GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER: return core::key_gamepad_shoulder_R;
+			case GLFW_GAMEPAD_BUTTON_BACK:         return core::key_gamepad_back;
+			case GLFW_GAMEPAD_BUTTON_START:        return core::key_gamepad_start;
+			case GLFW_GAMEPAD_BUTTON_GUIDE:        return core::key_gamepad_guide;
+			case GLFW_GAMEPAD_BUTTON_DPAD_UP:      return core::key_gamepad_up;
+			case GLFW_GAMEPAD_BUTTON_DPAD_DOWN:    return core::key_gamepad_down;
+			case GLFW_GAMEPAD_BUTTON_DPAD_LEFT:    return core::key_gamepad_left;
+			case GLFW_GAMEPAD_BUTTON_DPAD_RIGHT:   return core::key_gamepad_right;
+			case GLFW_GAMEPAD_BUTTON_LEFT_THUMB:   return core::key_gamepad_thumb_L;
+			case GLFW_GAMEPAD_BUTTON_RIGHT_THUMB:  return core::key_gamepad_thumb_R;
+			default: return core::key_none;
+			}
+		}
+
 		//- Redirecting error from glfw to reporter
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void glfw_error_callback(int error, const char* description)
@@ -27,7 +136,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
-			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::skey_button>(key, scancode, action, mods);
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::skey_button>(glfw_key_to_core(key), scancode, action, mods);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

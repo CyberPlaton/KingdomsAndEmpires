@@ -595,7 +595,7 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum key : uint8_t
+	enum key : int
 	{
 		key_none = 0,
 		key_esc,
@@ -616,8 +616,8 @@ namespace core
 		key_print,
 		key_plus,
 		key_minus,
-		key_leftBracket,
-		key_rightBracket,
+		key_left_bracket,
+		key_right_bracket,
 		key_semicolon,
 		key_quote,
 		key_comma,
@@ -637,16 +637,16 @@ namespace core
 		key_f10,
 		key_f11,
 		key_f12,
-		key_numPad0,
-		key_numPad1,
-		key_numPad2,
-		key_numPad3,
-		key_numPad4,
-		key_numPad5,
-		key_numPad6,
-		key_numPad7,
-		key_numPad8,
-		key_numPad9,
+		key_numpad0,
+		key_numpad1,
+		key_numpad2,
+		key_numpad3,
+		key_numpad4,
+		key_numpad5,
+		key_numpad6,
+		key_numpad7,
+		key_numpad8,
+		key_numpad9,
 		key_0,
 		key_1,
 		key_2,

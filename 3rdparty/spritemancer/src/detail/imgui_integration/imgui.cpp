@@ -24,115 +24,110 @@ namespace imgui
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static ImGuiKey core_key_to_imgui(core::key k)
 		{
-			static const ImGuiKey S_MAP[core::key::key_count] =
+			switch (k)
 			{
-				ImGuiKey_None,
-				ImGuiKey_Escape,
-				ImGuiKey_Enter,
-				ImGuiKey_Tab,
-				ImGuiKey_Space,
-				ImGuiKey_Backspace,
-				ImGuiKey_UpArrow,
-				ImGuiKey_DownArrow,
-				ImGuiKey_LeftArrow,
-				ImGuiKey_RightArrow,
-				ImGuiKey_Insert,
-				ImGuiKey_Delete,
-				ImGuiKey_Home,
-				ImGuiKey_End,
-				ImGuiKey_PageUp,
-				ImGuiKey_PageDown,
-				ImGuiKey_PrintScreen,
-				ImGuiKey_Equal,
-				ImGuiKey_Minus,
-				ImGuiKey_LeftBracket,
-				ImGuiKey_RightBracket,
-				ImGuiKey_Semicolon,
-				ImGuiKey_Apostrophe,
-				ImGuiKey_Comma,
-				ImGuiKey_Period,
-				ImGuiKey_Slash,
-				ImGuiKey_Backslash,
-				ImGuiKey_GraveAccent,
-				ImGuiKey_F1,
-				ImGuiKey_F2,
-				ImGuiKey_F3,
-				ImGuiKey_F4,
-				ImGuiKey_F5,
-				ImGuiKey_F6,
-				ImGuiKey_F7,
-				ImGuiKey_F8,
-				ImGuiKey_F9,
-				ImGuiKey_F10,
-				ImGuiKey_F11,
-				ImGuiKey_F12,
-				ImGuiKey_Keypad0,
-				ImGuiKey_Keypad1,
-				ImGuiKey_Keypad2,
-				ImGuiKey_Keypad3,
-				ImGuiKey_Keypad4,
-				ImGuiKey_Keypad5,
-				ImGuiKey_Keypad6,
-				ImGuiKey_Keypad7,
-				ImGuiKey_Keypad8,
-				ImGuiKey_Keypad9,
-				ImGuiKey_0,
-				ImGuiKey_1,
-				ImGuiKey_2,
-				ImGuiKey_3,
-				ImGuiKey_4,
-				ImGuiKey_5,
-				ImGuiKey_6,
-				ImGuiKey_7,
-				ImGuiKey_8,
-				ImGuiKey_9,
-				ImGuiKey_A,
-				ImGuiKey_B,
-				ImGuiKey_C,
-				ImGuiKey_D,
-				ImGuiKey_E,
-				ImGuiKey_F,
-				ImGuiKey_G,
-				ImGuiKey_H,
-				ImGuiKey_I,
-				ImGuiKey_J,
-				ImGuiKey_K,
-				ImGuiKey_L,
-				ImGuiKey_M,
-				ImGuiKey_N,
-				ImGuiKey_O,
-				ImGuiKey_P,
-				ImGuiKey_Q,
-				ImGuiKey_R,
-				ImGuiKey_S,
-				ImGuiKey_T,
-				ImGuiKey_U,
-				ImGuiKey_V,
-				ImGuiKey_W,
-				ImGuiKey_X,
-				ImGuiKey_Y,
-				ImGuiKey_Z,
-
-				ImGuiKey_GamepadFaceDown,
-				ImGuiKey_GamepadFaceRight,
-				ImGuiKey_GamepadFaceLeft,
-				ImGuiKey_GamepadFaceUp,
-				ImGuiKey_GamepadL3,
-				ImGuiKey_GamepadR3,
-				ImGuiKey_GamepadL1,
-				ImGuiKey_GamepadR1,
-				ImGuiKey_GamepadDpadUp,
-				ImGuiKey_GamepadDpadDown,
-				ImGuiKey_GamepadDpadLeft,
-				ImGuiKey_GamepadDpadRight,
-				ImGuiKey_GamepadBack,
-				ImGuiKey_GamepadStart,
-				ImGuiKey_GamepadStart,
-			};
-
-
-
-			return S_MAP[k];
+			default:
+			case core::key_none: return ImGuiKey_None;
+			case core::key_esc: return ImGuiKey_Escape;
+			case core::key_return: return ImGuiKey_Enter;
+			case core::key_tab: return ImGuiKey_Tab;
+			case core::key_space: return ImGuiKey_Space;
+			case core::key_backspace: return ImGuiKey_Backspace;
+			case core::key_up: return ImGuiKey_UpArrow;
+			case core::key_down: return ImGuiKey_DownArrow;
+			case core::key_left: return ImGuiKey_LeftArrow;
+			case core::key_right: return ImGuiKey_RightArrow;
+			case core::key_insert: return ImGuiKey_Insert;
+			case core::key_delete: return ImGuiKey_Delete;
+			case core::key_home: return ImGuiKey_Home;
+			case core::key_end: return ImGuiKey_End;
+			case core::key_page_up: return ImGuiKey_PageUp;
+			case core::key_page_down: return ImGuiKey_PageDown;
+			case core::key_print: return ImGuiKey_PrintScreen;
+			/*case core::key_plus: return ImGuiKey_Plus;*/
+			case core::key_minus: return ImGuiKey_Minus;
+			case core::key_left_bracket: return ImGuiKey_LeftBracket;
+			case core::key_right_bracket: return ImGuiKey_RightBracket;
+			case core::key_semicolon: return ImGuiKey_Semicolon;
+			case core::key_quote: return ImGuiKey_Apostrophe;
+			case core::key_comma: return ImGuiKey_Comma;
+			case core::key_period: return ImGuiKey_Period;
+			case core::key_slash: return ImGuiKey_Slash;
+			case core::key_backslash: return ImGuiKey_Backslash;
+			case core::key_tilde: return ImGuiKey_GraveAccent;
+			case core::key_f1: return ImGuiKey_F1;
+			case core::key_f2: return ImGuiKey_F2;
+			case core::key_f3: return ImGuiKey_F3;
+			case core::key_f4: return ImGuiKey_F4;
+			case core::key_f5: return ImGuiKey_F5;
+			case core::key_f6: return ImGuiKey_F6;
+			case core::key_f7: return ImGuiKey_F7;
+			case core::key_f8: return ImGuiKey_F8;
+			case core::key_f9: return ImGuiKey_F9;
+			case core::key_f10: return ImGuiKey_F10;
+			case core::key_f11: return ImGuiKey_F11;
+			case core::key_f12: return ImGuiKey_F12;
+			case core::key_numpad0: return ImGuiKey_Keypad0;
+			case core::key_numpad1: return ImGuiKey_Keypad1;
+			case core::key_numpad2: return ImGuiKey_Keypad2;
+			case core::key_numpad3: return ImGuiKey_Keypad3;
+			case core::key_numpad4: return ImGuiKey_Keypad4;
+			case core::key_numpad5: return ImGuiKey_Keypad5;
+			case core::key_numpad6: return ImGuiKey_Keypad6;
+			case core::key_numpad7: return ImGuiKey_Keypad7;
+			case core::key_numpad8: return ImGuiKey_Keypad8;
+			case core::key_numpad9: return ImGuiKey_Keypad9;
+			case core::key_0: return ImGuiKey_0;
+			case core::key_1: return ImGuiKey_1;
+			case core::key_2: return ImGuiKey_2;
+			case core::key_3: return ImGuiKey_3;
+			case core::key_4: return ImGuiKey_4;
+			case core::key_5: return ImGuiKey_5;
+			case core::key_6: return ImGuiKey_6;
+			case core::key_7: return ImGuiKey_7;
+			case core::key_8: return ImGuiKey_8;
+			case core::key_9: return ImGuiKey_9;
+			case core::key_a: return ImGuiKey_A;
+			case core::key_b: return ImGuiKey_B;
+			case core::key_c: return ImGuiKey_C;
+			case core::key_d: return ImGuiKey_D;
+			case core::key_e: return ImGuiKey_E;
+			case core::key_f: return ImGuiKey_F;
+			case core::key_g: return ImGuiKey_G;
+			case core::key_h: return ImGuiKey_H;
+			case core::key_i: return ImGuiKey_I;
+			case core::key_k: return ImGuiKey_K;
+			case core::key_l: return ImGuiKey_L;
+			case core::key_m: return ImGuiKey_M;
+			case core::key_n: return ImGuiKey_N;
+			case core::key_o: return ImGuiKey_O;
+			case core::key_p: return ImGuiKey_P;
+			case core::key_q: return ImGuiKey_Q;
+			case core::key_r: return ImGuiKey_R;
+			case core::key_s: return ImGuiKey_S;
+			case core::key_t: return ImGuiKey_T;
+			case core::key_u: return ImGuiKey_U;
+			case core::key_v: return ImGuiKey_V;
+			case core::key_w: return ImGuiKey_W;
+			case core::key_x: return ImGuiKey_X;
+			case core::key_y: return ImGuiKey_Y;
+			case core::key_z: return ImGuiKey_Z;
+			case core::key_gamepad_a: return ImGuiKey_GamepadFaceDown;
+			case core::key_gamepad_b: return ImGuiKey_GamepadFaceRight;
+			case core::key_gamepad_x: return ImGuiKey_GamepadFaceLeft;
+			case core::key_gamepad_y: return ImGuiKey_GamepadFaceUp;
+			case core::key_gamepad_thumb_L: return ImGuiKey_GamepadL3;
+			case core::key_gamepad_thumb_R: return ImGuiKey_GamepadR3;
+			case core::key_gamepad_shoulder_L: return ImGuiKey_GamepadL1;
+			case core::key_gamepad_shoulder_R: return ImGuiKey_GamepadR1;
+			case core::key_gamepad_up: return ImGuiKey_GamepadDpadUp;
+			case core::key_gamepad_down: return ImGuiKey_GamepadDpadDown;
+			case core::key_gamepad_left: return ImGuiKey_GamepadDpadLeft;
+			case core::key_gamepad_right: return ImGuiKey_GamepadDpadRight;
+			case core::key_gamepad_back: return ImGuiKey_GamepadBack;
+			case core::key_gamepad_start: return ImGuiKey_GamepadStart;
+			case core::key_gamepad_guide: return ImGuiKey_GamepadStart;
+			}
 		}
 
 	} //- unnamed
@@ -156,7 +151,11 @@ namespace imgui
 		ImGui::GetStyle().TabRounding = 0;
 
 		auto& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable
+			| ImGuiConfigFlags_ViewportsEnable
+			| ImGuiConfigFlags_NavEnableGamepad
+			| ImGuiConfigFlags_NavEnableKeyboard;
+
 		return true;
 	}
 
@@ -198,16 +197,15 @@ namespace imgui
 			io.AddInputCharacter(0);
 			io.AddKeyEvent(ImGuiMod_Shift, os->is_modifier_active(core::key_modifier_left_shift | core::key_modifier_right_shift));
 			io.AddKeyEvent(ImGuiMod_Ctrl, os->is_modifier_active(core::key_modifier_left_ctrl | core::key_modifier_right_ctrl));
-			io.AddKeyEvent(ImGuiMod_Ctrl, os->is_modifier_active(core::key_modifier_left_alt | core::key_modifier_right_alt));
-			io.AddKeyEvent(ImGuiMod_Ctrl, os->is_modifier_active(core::key_modifier_left_meta | core::key_modifier_right_meta));
+			io.AddKeyEvent(ImGuiMod_Alt, os->is_modifier_active(core::key_modifier_left_alt | core::key_modifier_right_alt));
+			io.AddKeyEvent(ImGuiMod_Super, os->is_modifier_active(core::key_modifier_left_meta | core::key_modifier_right_meta));
 
-			for (auto i = 0u; i < (int)core::key::key_count; ++i)
+			for (int i = 0; i < (int)core::key::key_count; ++i)
 			{
 				const auto pressed_or_held = os->is_key_held((core::key)i)
 					|| os->is_key_pressed((core::key)i);
 
 				io.AddKeyEvent(core_key_to_imgui((core::key)i), pressed_or_held);
-				io.SetKeyEventNativeData(core_key_to_imgui((core::key)i), 0, 0, (core::key)i);
 			}
 
 			ImGui::NewFrame();

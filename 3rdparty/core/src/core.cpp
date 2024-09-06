@@ -1860,7 +1860,7 @@ namespace core
 		const auto g = pressed ? 255 : 0;
 		const auto b = held ? 255 : 0;
 
-		m_buttons[mb] = ((r << 24) | (g << 16) | (b << 8) | 0);
+		m_buttons[(int)mb] = ((r << 24) | (g << 16) | (b << 8) | 0);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1873,19 +1873,19 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	bool smouse_state::is_released(core::mouse_button b) const
 	{
-		return algorithm::bit_check(m_buttons[b], C_MOUSE_RELEASED_MASK);
+		return algorithm::bit_check(m_buttons[(int)b], C_MOUSE_RELEASED_MASK);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool smouse_state::is_pressed(core::mouse_button b) const
 	{
-		return algorithm::bit_check(m_buttons[b], C_MOUSE_PRESSED_MASK);
+		return algorithm::bit_check(m_buttons[(int)b], C_MOUSE_PRESSED_MASK);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool smouse_state::is_held(core::mouse_button b) const
 	{
-		return algorithm::bit_check(m_buttons[b], C_MOUSE_HELD_MASK);
+		return algorithm::bit_check(m_buttons[(int)b], C_MOUSE_HELD_MASK);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -1896,26 +1896,26 @@ namespace core
 		const auto b = held ? 255 : 0;
 
 		//- Alpha channel is unused, the modifiers state is encoded separately in an integer
-		m_keys[key] = ((r << 24) | (g << 16) | (b << 8) | 0);
+		m_keys[(int)key] = ((r << 24) | (g << 16) | (b << 8) | 0);
 		m_modifiers = modifiers;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool skeyboard_state::is_released(core::key key) const
 	{
-		return algorithm::bit_check(m_keys[key], C_KEY_RELEASED_MASK);
+		return algorithm::bit_check(m_keys[(int)key], C_KEY_RELEASED_MASK);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool skeyboard_state::is_pressed(core::key key) const
 	{
-		return algorithm::bit_check(m_keys[key], C_KEY_PRESSED_MASK);
+		return algorithm::bit_check(m_keys[(int)key], C_KEY_PRESSED_MASK);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool skeyboard_state::is_held(core::key key) const
 	{
-		return algorithm::bit_check(m_keys[key], C_KEY_HELD_MASK);
+		return algorithm::bit_check(m_keys[(int)key], C_KEY_HELD_MASK);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
