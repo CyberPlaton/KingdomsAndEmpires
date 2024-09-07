@@ -8,3 +8,4 @@
 #include <../bx/include/bx/math.h>
 #include <../bx/include/bx/pixelformat.h>
 #include <../bx/include/bx/bounds.h>
+#include <../bx/include/bx/ringbuffer.h>

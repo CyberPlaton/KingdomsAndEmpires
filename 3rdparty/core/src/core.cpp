@@ -88,6 +88,37 @@ namespace algorithm
 		return bytes_to_megabytes(b) / 1024.0f;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	byte_t encode_utf8(byte_t out[4], unsigned scancode)
+	{
+		uint8_t length = 0;
+
+		if (scancode < 0x80)
+		{
+			out[length++] = (char)scancode;
+		}
+		else if (scancode < 0x800)
+		{
+			out[length++] = (scancode >> 6) | 0xc0;
+			out[length++] = (scancode & 0x3f) | 0x80;
+		}
+		else if (scancode < 0x10000)
+		{
+			out[length++] = (scancode >> 12) | 0xe0;
+			out[length++] = ((scancode >> 6) & 0x3f) | 0x80;
+			out[length++] = (scancode & 0x3f) | 0x80;
+		}
+		else if (scancode < 0x110000)
+		{
+			out[length++] = (scancode >> 18) | 0xf0;
+			out[length++] = ((scancode >> 12) & 0x3f) | 0x80;
+			out[length++] = ((scancode >> 6) & 0x3f) | 0x80;
+			out[length++] = (scancode & 0x3f) | 0x80;
+		}
+
+		return length;
+	}
+
 } //- algorithm
 
 namespace core

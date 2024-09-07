@@ -142,7 +142,7 @@ namespace sm
 		const auto os = entry::get_os();
 		double mx, my, sx, sy;
 		os->mouse_position(&mx, &my);
-		os->mouse_scroll(&sx, &sy);
+		os->mouse_scroll_dt(&sx, &sy);
 
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(0, 1, 0x0f, fmt::format("Window: '{}:{}:{}:{}'", S_X, S_Y, S_W, S_H).data());

@@ -176,13 +176,18 @@ namespace imgui
 			ImGuiIO& io = ImGui::GetIO();
 			double mx = 0.0, my = 0.0, sx = 0.0, sy = 0.0;
 			os->mouse_position(&mx, &my);
-			os->mouse_scroll(&sx, &sy);
+			os->mouse_scroll_dt(&sx, &sy);
 
 			const int64_t now = bx::getHPCounter();
 			const int64_t frameTime = now - S_LAST;
 			S_LAST = now;
 			const double freq = double(bx::getHPFrequency());
 			io.DeltaTime = float(frameTime / freq);
+
+			if (const auto c = os->read_input_character(); c != '\0')
+			{
+				io.AddInputCharacter((unsigned)c);
+			}
 
 			//- Provide mouse events to ImGui
 			io.AddMousePosEvent(SCAST(float, mx), SCAST(float, my));

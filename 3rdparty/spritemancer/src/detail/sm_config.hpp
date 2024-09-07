@@ -623,6 +623,8 @@ namespace sm
 		virtual core::skeyboard_state keyboard_state() const = 0;
 		virtual core::sgamepad_state gamepad_state() const = 0;
 
+		virtual unsigned read_input_character() = 0;
+
 		virtual void main_window_position(int* x, int* y) = 0;
 		virtual void main_window_size(int* x, int* y) = 0;
 
@@ -632,7 +634,7 @@ namespace sm
 		virtual bool is_modifier_active(int modifiers) const = 0;
 
 		virtual void mouse_position(double* x, double* y) = 0;
-		virtual void mouse_scroll(double* x, double* y) = 0;
+		virtual void mouse_scroll_dt(double* x, double* y) = 0;
 		virtual bool is_mouse_button_held(core::mouse_button b) = 0;
 		virtual bool is_mouse_button_pressed(core::mouse_button b) = 0;
 		virtual bool is_mouse_button_released(core::mouse_button b) = 0;

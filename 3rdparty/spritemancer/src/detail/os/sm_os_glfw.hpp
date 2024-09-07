@@ -16,7 +16,7 @@ namespace sm
 	class cos_glfw final : public ios
 	{
 	public:
-		cos_glfw() = default;
+		cos_glfw();
 		~cos_glfw() = default;
 		opresult init() override final;								//- create and init of client application
 		opresult shutdown() override final;							//- destroy and clean of client application
@@ -35,6 +35,8 @@ namespace sm
 		core::skeyboard_state keyboard_state() const override final { return m_keyboard; }
 		core::sgamepad_state gamepad_state() const override final { return m_gamepad; }
 
+		unsigned read_input_character() override final;
+
 		void main_window_position(int* x, int* y) override final;
 		void main_window_size(int* x, int* y) override final;
 
@@ -44,7 +46,7 @@ namespace sm
 		bool is_modifier_active(int modifiers) const override final;
 
 		void mouse_position(double* x, double* y) override final;
-		void mouse_scroll(double* x, double* y) override final;
+		void mouse_scroll_dt(double* x, double* y) override final;
 		bool is_mouse_button_held(core::mouse_button b) override final;
 		bool is_mouse_button_pressed(core::mouse_button b) override final;
 		bool is_mouse_button_released(core::mouse_button b) override final;
@@ -52,12 +54,17 @@ namespace sm
 		float gamepad_axis(core::gamepad_axis a) override final;
 
 	private:
-		core::sgamepad_state m_gamepad;
-		core::smouse_state m_mouse;
 		core::skeyboard_state m_keyboard;
+		char m_input_chars[256] = { '\0' };
+		core::smouse_state m_mouse;
+		core::sgamepad_state m_gamepad;
 		GLFWwindow* m_mainwindow = nullptr;
 		int m_mainwindow_width;
 		int m_mainwindow_height;
+		double m_scroll_dt_x = 0.0;
+		double m_scroll_dt_y = 0.0;
+		double m_previous_mouse_scroll_x = 0.0;
+		double m_previous_mouse_scroll_y = 0.0;
 
 		RTTR_ENABLE(ios);
 	};

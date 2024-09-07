@@ -5,6 +5,7 @@ namespace sm
 	namespace
 	{
 		static GLFWcursor* S_CURSOR;
+		static bx::RingBufferControl S_INPUT_CONTROL = { 256 };
 
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static core::key glfw_key_to_core(int k)
@@ -158,9 +159,9 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static void glfw_character_callback(GLFWwindow* window, int scancode)
+		inline static void glfw_character_callback(GLFWwindow* window, unsigned codepoint)
 		{
-			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::scharacter_input>(scancode);
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::scharacter_input>(codepoint);
 		}
 
 		//- Retrieve native window handle from GLFWindow
@@ -177,6 +178,9 @@ namespace sm
 		}
 
 	} //- unnamed
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cos_glfw::cos_glfw() = default;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cos_glfw::init()
@@ -224,6 +228,8 @@ namespace sm
 			glfwSetMouseButtonCallback(m_mainwindow, glfw_mouse_button_callback);
 			glfwSetCursorPosCallback(m_mainwindow, glfw_cursor_callback);
 			glfwSetWindowSizeCallback(m_mainwindow, glfw_window_size_callback);
+			glfwSetScrollCallback(m_mainwindow, glfw_scroll_callback);
+			glfwSetCharCallback(m_mainwindow, glfw_character_callback);
 			m_mainwindow_width = w;
 			m_mainwindow_height = h;
 
@@ -242,6 +248,9 @@ namespace sm
 	sm::opresult cos_glfw::optional_process_event()
 	{
 		glfwPollEvents();
+		m_scroll_dt_x = 0.0;
+		m_scroll_dt_y = 0.0;
+
 		return opresult_ok;
 	}
 
@@ -306,13 +315,47 @@ namespace sm
 		else if (event.is_type<events::window::smouse_scroll>())
 		{
 			const auto& e = event.convert<events::window::smouse_scroll>();
+
 			m_mouse.m_scroll_x += e.dx;
 			m_mouse.m_scroll_y += e.dy;
+
+			m_scroll_dt_x = m_mouse.m_scroll_x - m_previous_mouse_scroll_x;
+			m_scroll_dt_y = m_mouse.m_scroll_y - m_previous_mouse_scroll_y;
+
+			m_previous_mouse_scroll_x = m_mouse.m_scroll_x;
+			m_previous_mouse_scroll_y = m_mouse.m_scroll_y;
 		}
 		else if (event.is_type<events::window::scharacter_input>())
 		{
 			const auto& e = event.convert<events::window::scharacter_input>();
+
+			byte_t chars[4];
+			if (byte_t length = algorithm::encode_utf8(chars, e.codepoint); length > 0)
+			{
+				for (unsigned l = S_INPUT_CONTROL.reserve(4); l < length; l = S_INPUT_CONTROL.reserve(4))
+				{
+					if (S_INPUT_CONTROL.available() > 0)
+					{
+						S_INPUT_CONTROL.consume(4);
+					}
+				}
+
+				bx::memCopy(&m_input_chars[S_INPUT_CONTROL.m_current], chars, 4);
+				S_INPUT_CONTROL.commit(4);
+			}
 		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	unsigned cos_glfw::read_input_character()
+	{
+		if (S_INPUT_CONTROL.available() > 0)
+		{
+			const auto* utf8 = &m_input_chars[S_INPUT_CONTROL.m_read];
+			S_INPUT_CONTROL.consume(4);
+			return *utf8;
+		}
+		return (unsigned)'\0';
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -360,10 +403,10 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cos_glfw::mouse_scroll(double* x, double* y)
+	void cos_glfw::mouse_scroll_dt(double* x, double* y)
 	{
-		*x = m_mouse.m_scroll_x;
-		*y = m_mouse.m_scroll_y;
+		*x = m_scroll_dt_x;
+		*y = m_scroll_dt_y;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

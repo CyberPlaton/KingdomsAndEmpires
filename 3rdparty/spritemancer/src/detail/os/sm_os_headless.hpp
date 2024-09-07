@@ -29,9 +29,10 @@ namespace sm
 		core::skeyboard_state keyboard_state() const override final { return {}; }
 		core::sgamepad_state gamepad_state() const override final { return {}; }
 
+		unsigned read_input_character() override final { return (unsigned)'\0'; }
 
 		void mouse_position(double* x, double* y) override final {}
-		void mouse_scroll(double* x, double* y) override final {}
+		void mouse_scroll_dt(double* x, double* y) override final {}
 		bool is_key_held(core::key k) const override final { return false; }
 		bool is_key_pressed(core::key k) const override final { return false; }
 		bool is_key_released(core::key k) const override final { return false; }
