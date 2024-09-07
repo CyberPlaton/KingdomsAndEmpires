@@ -200,7 +200,6 @@ namespace imgui
 			io.AddMouseWheelEvent(sx, sy);
 
 			//- Provide keyboard events to ImGui
-			io.AddInputCharacter(0);
 			io.AddKeyEvent(ImGuiMod_Shift, os->is_modifier_active(core::key_modifier_left_shift | core::key_modifier_right_shift));
 			io.AddKeyEvent(ImGuiMod_Ctrl, os->is_modifier_active(core::key_modifier_left_ctrl | core::key_modifier_right_ctrl));
 			io.AddKeyEvent(ImGuiMod_Alt, os->is_modifier_active(core::key_modifier_left_alt | core::key_modifier_right_alt));

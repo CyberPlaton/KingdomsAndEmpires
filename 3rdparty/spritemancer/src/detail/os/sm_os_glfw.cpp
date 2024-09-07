@@ -286,7 +286,31 @@ namespace sm
 			const auto pressed = e.action == GLFW_PRESS;
 			const auto held = e.action == GLFW_REPEAT;
 
-			m_keyboard.set_state((core::key)e.button, released, pressed, held, e.mods);
+			//- Check modifier keys state
+			int mods = core::key_modifier_none;
+			if (algorithm::bit_check(e.mods, GLFW_MOD_SHIFT))
+			{
+				mods |= (core::key_modifier_left_shift | core::key_modifier_right_shift);
+			}
+			if (algorithm::bit_check(e.mods, GLFW_MOD_CONTROL))
+			{
+				mods |= (core::key_modifier_left_ctrl | core::key_modifier_right_ctrl);
+			}
+			if (algorithm::bit_check(e.mods, GLFW_MOD_ALT))
+			{
+				mods |= (core::key_modifier_left_alt | core::key_modifier_right_alt);
+			}
+			if (algorithm::bit_check(e.mods, GLFW_MOD_SUPER))
+			{
+				mods |= (core::key_modifier_left_meta | core::key_modifier_right_meta);
+			}
+			if (algorithm::bit_check(e.mods, GLFW_MOD_CAPS_LOCK) ||
+				algorithm::bit_check(e.mods, GLFW_MOD_NUM_LOCK))
+			{
+				//- currently both modifiers are ignored
+			}
+
+			m_keyboard.set_state((core::key)e.button, released, pressed, held, mods);
 		}
 		else if (event.is_type<events::window::sminimize>())
 		{
