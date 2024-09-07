@@ -20,6 +20,8 @@ namespace sm
 		opresult optional_init_event_mainloop() override final { return opresult_ok; }
 		opresult optional_process_event() override final { return opresult_ok; }
 
+		void on_event(const rttr::variant& event) override final {}
+
 		void main_window_position(int* x, int* y) override final {}
 		void main_window_size(int* x, int* y) override final {}
 
@@ -27,12 +29,9 @@ namespace sm
 		core::skeyboard_state keyboard_state() const override final { return {}; }
 		core::sgamepad_state gamepad_state() const override final { return {}; }
 
-		void on_window_resize_event(int width, int height) override final {}
-		void on_key_event(int key, int scancode, int action, int mods) override final {}
-		void on_mouse_button_event(int button, int action, int mods) override final {}
-		void on_cursor_event(double mx, double my) override final {}
 
-		void mouse_position(double* x, double* y) {}
+		void mouse_position(double* x, double* y) override final {}
+		void mouse_scroll(double* x, double* y) override final {}
 		bool is_key_held(core::key k) const override final { return false; }
 		bool is_key_pressed(core::key k) const override final { return false; }
 		bool is_key_released(core::key k) const override final { return false; }

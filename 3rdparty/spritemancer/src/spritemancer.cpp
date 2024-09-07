@@ -71,52 +71,14 @@ namespace sm
 			{
 				const auto& event = S_EVENT_QUEUE.front();
 
+				entry::get_os()->on_event(event);
+
 				if (event.is_type<events::window::sresize>())
 				{
 					const auto& e = event.convert<events::window::sresize>();
 					S_W = e.w;
 					S_H = e.h;
 					S_RESIZE_REQUIRED = true;
-					entry::get_os()->on_window_resize_event(e.w, e.h);
-				}
-				else if (event.is_type<events::window::scursor>())
-				{
-					const auto& e = event.convert<events::window::scursor>();
-					entry::get_os()->on_cursor_event(e.mx, e.my);
-				}
-				else if (event.is_type<events::window::smouse_button>())
-				{
-					const auto& e = event.convert<events::window::smouse_button>();
-					entry::get_os()->on_mouse_button_event(e.button, e.action, e.mods);
-				}
-				else if (event.is_type<events::window::skey_button>())
-				{
-					const auto& e = event.convert<events::window::skey_button>();
-					entry::get_os()->on_key_event(e.button, e.scancode, e.action, e.mods);
-				}
-				else if (event.is_type<events::window::sminimize>())
-				{
-					const auto& e = event.convert<events::window::sminimize>();
-				}
-				else if (event.is_type<events::window::sunminimize>())
-				{
-					const auto& e = event.convert<events::window::sunminimize>();
-				}
-				else if (event.is_type<events::window::shide>())
-				{
-					const auto& e = event.convert<events::window::shide>();
-				}
-				else if (event.is_type<events::window::sunhide>())
-				{
-					const auto& e = event.convert<events::window::sunhide>();
-				}
-				else if (event.is_type<events::window::sfocus>())
-				{
-					const auto& e = event.convert<events::window::sfocus>();
-				}
-				else if (event.is_type<events::window::sunfocus>())
-				{
-					const auto& e = event.convert<events::window::sunfocus>();
 				}
 
 				S_EVENT_QUEUE.pop();
@@ -266,6 +228,8 @@ namespace sm
 			es->emplace_listener<events::window::sunhide>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
 			es->emplace_listener<events::window::sfocus>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
 			es->emplace_listener<events::window::sunfocus>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::smouse_scroll>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
+			es->emplace_listener<events::window::scharacter_input>([](const rttr::variant& var) { S_EVENT_QUEUE.push(var); });
 		}
 
 		//- Main engine thread where the update and rendering happens. Created from outside

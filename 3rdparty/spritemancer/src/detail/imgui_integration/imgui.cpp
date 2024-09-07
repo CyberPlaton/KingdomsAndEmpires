@@ -174,8 +174,9 @@ namespace imgui
 		{
 			static int64_t S_LAST = 0;
 			ImGuiIO& io = ImGui::GetIO();
-			double mx = 0, my = 0;
+			double mx = 0.0, my = 0.0, sx = 0.0, sy = 0.0;
 			os->mouse_position(&mx, &my);
+			os->mouse_scroll(&sx, &sy);
 
 			const int64_t now = bx::getHPCounter();
 			const int64_t frameTime = now - S_LAST;
@@ -191,7 +192,7 @@ namespace imgui
 				os->is_mouse_button_held(core::mouse_button_middle));
 			io.AddMouseButtonEvent(ImGuiMouseButton_Right, os->is_mouse_button_pressed(core::mouse_button_right) ||
 				os->is_mouse_button_held(core::mouse_button_right));
-			io.AddMouseWheelEvent(0.0f, 0.0f);
+			io.AddMouseWheelEvent(sx, sy);
 
 			//- Provide keyboard events to ImGui
 			io.AddInputCharacter(0);

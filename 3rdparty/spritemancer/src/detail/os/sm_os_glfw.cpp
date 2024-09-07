@@ -146,9 +146,21 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		inline static void glfw_cursor_callback(GLFWwindow* _window, double mx, double my)
+		inline static void glfw_cursor_callback(GLFWwindow* window, double mx, double my)
 		{
 			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::scursor>(mx, my);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void glfw_scroll_callback(GLFWwindow* window, double dx, double dy)
+		{
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::smouse_scroll>(dx, dy);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void glfw_character_callback(GLFWwindow* window, int scancode)
+		{
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::scharacter_input>(scancode);
 		}
 
 		//- Retrieve native window handle from GLFWindow
@@ -234,38 +246,73 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cos_glfw::on_window_resize_event(int width, int height)
+	void cos_glfw::on_event(const rttr::variant& event)
 	{
-		m_mainwindow_width = width;
-		m_mainwindow_height = height;
-	}
+		if (event.is_type<events::window::sresize>())
+		{
+			const auto& e = event.convert<events::window::sresize>();
+			m_mainwindow_width = e.w;
+			m_mainwindow_height = e.h;
+		}
+		else if (event.is_type<events::window::scursor>())
+		{
+			const auto& e = event.convert<events::window::scursor>();
+			m_mouse.set_cursor(e.mx, e.my);
+		}
+		else if (event.is_type<events::window::smouse_button>())
+		{
+			const auto& e = event.convert<events::window::smouse_button>();
+			//- Note: action specifies whether the key was pressed, released or is held, where
+			//- mods specifies whether a modifier key was active at that time, i.e. GLFW_MOD_SHIFT
+			const auto released = e.action == GLFW_RELEASE;
+			const auto pressed = e.action == GLFW_PRESS;
+			const auto held = e.action == GLFW_REPEAT;
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void cos_glfw::on_key_event(int key, int scancode, int action, int mods)
-	{
-		const auto released = action == GLFW_RELEASE;
-		const auto pressed = action == GLFW_PRESS;
-		const auto held = action == GLFW_REPEAT;
+			m_mouse.set_state((core::mouse_button)(e.button + 1), released, pressed, held);
+		}
+		else if (event.is_type<events::window::skey_button>())
+		{
+			const auto& e = event.convert<events::window::skey_button>();
+			const auto released = e.action == GLFW_RELEASE;
+			const auto pressed = e.action == GLFW_PRESS;
+			const auto held = e.action == GLFW_REPEAT;
 
-		m_keyboard.set_state((core::key)key, released, pressed, held, mods);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cos_glfw::on_mouse_button_event(int button, int action, int mods)
-	{
-		//- Note: action specifies whether the key was pressed, released or is held, where
-		//- mods specifies whether a modifier key was active at that time, i.e. GLFW_MOD_SHIFT
-		const auto released = action == GLFW_RELEASE;
-		const auto pressed = action == GLFW_PRESS;
-		const auto held = action == GLFW_REPEAT;
-
-		m_mouse.set_state((core::mouse_button)(button + 1), released, pressed, held);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cos_glfw::on_cursor_event(double mx, double my)
-	{
-		m_mouse.set_cursor(mx, my);
+			m_keyboard.set_state((core::key)e.button, released, pressed, held, e.mods);
+		}
+		else if (event.is_type<events::window::sminimize>())
+		{
+			const auto& e = event.convert<events::window::sminimize>();
+		}
+		else if (event.is_type<events::window::sunminimize>())
+		{
+			const auto& e = event.convert<events::window::sunminimize>();
+		}
+		else if (event.is_type<events::window::shide>())
+		{
+			const auto& e = event.convert<events::window::shide>();
+		}
+		else if (event.is_type<events::window::sunhide>())
+		{
+			const auto& e = event.convert<events::window::sunhide>();
+		}
+		else if (event.is_type<events::window::sfocus>())
+		{
+			const auto& e = event.convert<events::window::sfocus>();
+		}
+		else if (event.is_type<events::window::sunfocus>())
+		{
+			const auto& e = event.convert<events::window::sunfocus>();
+		}
+		else if (event.is_type<events::window::smouse_scroll>())
+		{
+			const auto& e = event.convert<events::window::smouse_scroll>();
+			m_mouse.m_scroll_x += e.dx;
+			m_mouse.m_scroll_y += e.dy;
+		}
+		else if (event.is_type<events::window::scharacter_input>())
+		{
+			const auto& e = event.convert<events::window::scharacter_input>();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -310,6 +357,13 @@ namespace sm
 	{
 		*x = m_mouse.m_x;
 		*y = m_mouse.m_y;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cos_glfw::mouse_scroll(double* x, double* y)
+	{
+		*x = m_mouse.m_scroll_x;
+		*y = m_mouse.m_scroll_y;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -742,6 +742,8 @@ namespace core
 		bool is_pressed(core::mouse_button b) const;
 		bool is_held(core::mouse_button b) const;
 
+		double m_scroll_x;
+		double m_scroll_y;
 		double m_x;
 		double m_y;
 		int m_buttons[mouse_button_count];
@@ -3436,16 +3438,18 @@ namespace events
 {
 	namespace window
 	{
-		struct sresize		{ int w = 0; int h = 0; };
-		struct scursor		{ double mx = 0; double my = 0; };
-		struct smouse_button{ int button = 0; int action = 0; int mods = 0; };
-		struct skey_button	{ int button = 0; int scancode = 0; int action = 0; int mods = 0; };
-		struct sminimize	{};
-		struct sunminimize	{};
-		struct shide		{};
-		struct sunhide		{};
-		struct sfocus		{};
-		struct sunfocus		{};
+		struct sresize			{ int w = 0; int h = 0; };
+		struct scursor			{ double mx = 0; double my = 0; };
+		struct smouse_button	{ int button = 0; int action = 0; int mods = 0; };
+		struct skey_button		{ int button = 0; int scancode = 0; int action = 0; int mods = 0; };
+		struct smouse_scroll	{ double dx = 0.0; double dy = 0.0; };
+		struct scharacter_input	{ int scancode = 0; };
+		struct sminimize {};
+		struct sunminimize {};
+		struct shide {};
+		struct sunhide {};
+		struct sfocus {};
+		struct sunfocus {};
 
 	} //- window
 

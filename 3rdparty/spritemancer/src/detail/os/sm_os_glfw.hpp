@@ -29,10 +29,7 @@ namespace sm
 		opresult optional_init_event_mainloop() override final;		//- process hardware events in a loop; use where required
 		opresult optional_process_event() override final;			//- process one hardware event
 
-		void on_window_resize_event(int width, int height) override final;
-		void on_key_event(int key, int scancode, int action, int mods) override final;
-		void on_mouse_button_event(int button, int action, int mods) override final;
-		void on_cursor_event(double mx, double my) override final;
+		void on_event(const rttr::variant& event) override final;
 
 		core::smouse_state mouse_state() const override final { return m_mouse; }
 		core::skeyboard_state keyboard_state() const override final { return m_keyboard; }
@@ -47,6 +44,7 @@ namespace sm
 		bool is_modifier_active(int modifiers) const override final;
 
 		void mouse_position(double* x, double* y) override final;
+		void mouse_scroll(double* x, double* y) override final;
 		bool is_mouse_button_held(core::mouse_button b) override final;
 		bool is_mouse_button_pressed(core::mouse_button b) override final;
 		bool is_mouse_button_released(core::mouse_button b) override final;

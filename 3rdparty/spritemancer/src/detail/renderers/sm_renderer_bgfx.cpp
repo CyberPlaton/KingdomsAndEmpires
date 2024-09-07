@@ -140,14 +140,16 @@ namespace sm
 		bgfx::setDebug(BGFX_DEBUG_TEXT);
 		const bgfx::Stats* stats = bgfx::getStats();
 		const auto os = entry::get_os();
-		double mx, my;
+		double mx, my, sx, sy;
 		os->mouse_position(&mx, &my);
+		os->mouse_scroll(&sx, &sy);
 
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(0, 1, 0x0f, fmt::format("Window: '{}:{}:{}:{}'", S_X, S_Y, S_W, S_H).data());
-		bgfx::dbgTextPrintf(0, 1, 0x0f, fmt::format("Mouse: '{}:{}'", mx, my).data());
+		bgfx::dbgTextPrintf(0, 2, 0x0f, fmt::format("Mouse: '{}:{}'", mx, my).data());
+		bgfx::dbgTextPrintf(0, 3, 0x0f, fmt::format("Scroll: '{}:{}'", sx, sy).data());
 
-		bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels. CPU: %.4f ms          GPU: %.4f ms"
+		bgfx::dbgTextPrintf(0, 4, 0x0f, "Backbuffer %dW x %dH in pixels. CPU: %.4f ms          GPU: %.4f ms"
 			, stats->width
 			, stats->height
 			, double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq
