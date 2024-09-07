@@ -12,27 +12,14 @@ namespace ImNodes = ax::NodeEditor;
 
 namespace imgui
 {
-	namespace detail
-	{
-		static ImGuiContext*			S_IMGUI_CONTEXT = nullptr;
-
-	} //- detail
-
 	bool init();
 	void shutdown();
 	void begin();
 	void end();
 
-
 	//------------------------------------------------------------------------------------------------------------------------
-	static ImGuiContext* imgui_ctx()
-	{
-		if (!detail::S_IMGUI_CONTEXT)
-		{
-			detail::S_IMGUI_CONTEXT = ImGui::GetCurrentContext();
-		}
-		return detail::S_IMGUI_CONTEXT;
-	}
+	static ImGuiContext* imgui_ctx();
+	static ImPlotContext* implot_ctx();
 
 	//- Note: Below is a temporary solution for imgui UI, it is intended to be replaced part by part sooner or later.
 	//------------------------------------------------------------------------------------------------------------------------

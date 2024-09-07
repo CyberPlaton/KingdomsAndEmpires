@@ -10,6 +10,8 @@ namespace imgui
 		constexpr float C_EDIT_SCALAR_FIELD_WIDTH = 250.0f;
 		static inline vector_t< snotification > S_NOTIFICATIONS;
 		static bx::DefaultAllocator S_ALLOCATOR;
+		static ImGuiContext* S_IMGUI_CONTEXT = nullptr;
+		static ImPlotContext* S_IMPLOT_CONTEXT = nullptr;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static ImTextureID bgfx_to_imgui_texture_id(bgfx::TextureHandle handle, uint8_t flags, uint8_t mip)
@@ -135,12 +137,11 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	bool init()
 	{
-		//- init imgui and create icon font from ICON_FA data
-		detail::S_IMGUI_CONTEXT = ImGui::CreateContext();
-
+		imgui_ctx();
+		implot_ctx();
 		imgui::imguiCreate(18.0f, &S_ALLOCATOR);
-		/*rlImGuiSetup(true);*/
 
+		
 		//- setup default style
 		ImGui::GetStyle().WindowRounding = 0;
 		ImGui::GetStyle().ChildRounding = 0;
@@ -164,7 +165,8 @@ namespace imgui
 	{
 		imgui::imguiDestroy();
 		/*rlImGuiShutdown();*/
-		ImGui::DestroyContext(detail::S_IMGUI_CONTEXT);
+		ImPlot::DestroyContext(S_IMPLOT_CONTEXT);
+		ImGui::DestroyContext(S_IMGUI_CONTEXT);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -223,6 +225,26 @@ namespace imgui
 	{
 		imgui::imguiEndFrame();
 		/*rlImGuiEnd();*/
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ImGuiContext* imgui_ctx()
+	{
+		if (!S_IMGUI_CONTEXT)
+		{
+			S_IMGUI_CONTEXT = ImGui::CreateContext();
+		}
+		return S_IMGUI_CONTEXT;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ImPlotContext* implot_ctx()
+	{
+		if (!S_IMPLOT_CONTEXT)
+		{
+			S_IMPLOT_CONTEXT = ImPlot::CreateContext();
+		}
+		return S_IMPLOT_CONTEXT;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

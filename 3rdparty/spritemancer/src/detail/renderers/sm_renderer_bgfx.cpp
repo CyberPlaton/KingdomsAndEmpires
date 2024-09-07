@@ -74,7 +74,12 @@ namespace sm
 	sm::opresult crenderer_bgfx::init_device(void* nwh, unsigned w, unsigned h, bool fullscreen, bool vsync)
 	{
 		bgfx::Init config;
-		config.type = bgfx::RendererType::Vulkan;
+
+#if CORE_PLATFORM_WINDOWS
+		config.type = bgfx::RendererType::Direct3D11;
+#else
+		config.type = bgfx::RendererType::OpenGL;
+#endif
 		config.resolution.width = w;
 		config.resolution.height = h;
 		config.resolution.reset = (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE) |
