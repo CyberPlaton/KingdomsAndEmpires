@@ -51,6 +51,7 @@ namespace sm
 	using program_handle_t		= uint16_t;
 	using spriteatlas_handle_t	= uint16_t;
 	using rendertarget_handle_t = uint16_t;
+	using indices_t				= vector_t<uint16_t>;
 
 	class irenderer;
 	class iplatform;
@@ -253,6 +254,33 @@ namespace sm
 		bool operator!=(const sblending& other) const;
 
 		blending_mode m_mode;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cvertices final :
+		private core::cnon_copyable,
+		private core::cnon_movable
+	{
+	public:
+		explicit cvertices(const bgfx::VertexLayout& layout, uint64_t count);
+		~cvertices() = default;
+
+		cvertices& begin(uint64_t idx);
+		cvertices& position(const vec2_t& v);
+		cvertices& tex_coord(const vec2_t& v);
+		cvertices& color(const core::scolor& v);
+		cvertices& end();
+
+		inline const bgfx::VertexLayout& declaration() const { return m_vertex_layout; }
+		inline const byte_t* data() const { return m_data.data(); }
+		inline unsigned count() const { return SCAST(unsigned, m_data.size()); }
+		inline unsigned size() const { return m_vertex_layout.getSize(count()); }
+
+	private:
+		bgfx::VertexLayout m_vertex_layout;
+		vector_t<byte_t> m_data;
+		int m_idx = -1;
+		int m_vertex_attribute_flags = 0;
 	};
 
 	//- Lightweight class containing a shader uniform. Can easily be copied around and has to be manually destroyed when
@@ -579,6 +607,8 @@ namespace sm
 		virtual opresult init_device(void* nwh, unsigned w, unsigned h,
 			bool fullscreen, bool vsync) = 0;
 		virtual opresult shutdown_device() = 0;
+
+		virtual void on_event(const rttr::variant& event) = 0; //- handle a hardware event from glfw or SDL etc.
 
 		virtual void prepare_frame() = 0;
 		virtual void display_frame() = 0;

@@ -23,6 +23,8 @@ namespace sm
 #pragma endregion
 
 #pragma region primitive_rendering
+	void draw_primitives(unsigned layer, const cvertices& vertices, const indices_t& indices, program_handle_t program);
+
 	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color);
 
 	void draw_circle(unsigned layer, const vec2_t& center, float radius, const core::scolor& color);

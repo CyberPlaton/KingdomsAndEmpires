@@ -23,9 +23,6 @@ namespace sm
 		static core::scolor S_BLACK = { 0, 0, 0, 0 };
 		static core::scolor S_BLANK = { 0, 0, 0, 255 };
 		static std::atomic_bool S_RUNNING;
-		static bool S_FULLSCREEN = false;
-		static bool S_VSYNC = true;
-		static int S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
 		static bool S_RESIZE_REQUIRED = false;
 		static float S_DT = 0.0f;
 		static texture_handle_t S_PLACEHOLDER_TEXTURE = 0;
@@ -44,24 +41,23 @@ namespace sm
 		static void* S_CONFIG = nullptr;
 		static argparse::ArgumentParser S_ARGS;
 
+		//- 
+		//------------------------------------------------------------------------------------------------------------------------
+		struct scontext
+		{
+
+			//- Window related data
+			core::srect m_window_rect =  {0.0f, 0.0f, 0.0f, 0.0f};
+			int m_window_flags = 0;
+			void* m_window_handle = nullptr;
+		};
+
+
 		//- Load some default assets such as default shaders, images and textures etc.
 		//------------------------------------------------------------------------------------------------------------------------
 		void load_internal_resources()
 		{
 			S_DEFAULT_PROGRAM = core::cservice_manager::find<cprogram_manager>()->load_sync("sprite", {bgfx::kInvalidHandle}, { bgfx::kInvalidHandle });
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void update_window_size(unsigned w, unsigned h)
-		{
-			S_W = w;
-			S_H = h;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void update_window_viewport()
-		{
-			entry::get_renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -72,6 +68,7 @@ namespace sm
 				const auto& event = S_EVENT_QUEUE.front();
 
 				entry::get_os()->on_event(event);
+				entry::get_renderer()->on_event(event);
 
 				if (event.is_type<events::window::sresize>())
 				{
@@ -121,21 +118,9 @@ namespace sm
 
 			update_os_events();
 
-			//- check for resize of most basic layer. Other layers are not our responsibility
-			if (S_RESIZE_REQUIRED)
-			{
-				S_LAYERS[0].m_target.resize(S_W, S_H);
-
-				S_RESIZE_REQUIRED = false;
-			}
-
 			entry::get_app()->on_update(S_DT);
 
-			//- render frame
-			entry::get_renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
-
 			//- most basic layer, does always exist
-			S_LAYERS[0].m_show = true;
 			entry::get_renderer()->prepare_frame();
 			entry::get_renderer()->blendmode(S_BLEND_MODE_DEFAULT);
 
@@ -179,8 +164,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_prepare()
 		{
-			update_window_size(S_W, S_H);
-			update_window_viewport();
+			entry::get_renderer()->update_viewport({0.0f, 0.0f}, {S_W, S_H});
 
 			//- create resource managers
 			core::cservice_manager::emplace<cimage_manager>();
@@ -204,7 +188,7 @@ namespace sm
 			//- create default font
 
 			//- create default rendering layer
-			create_layer();
+			//create_layer();
 
 			//- sample time for custom frame timing
 		}
@@ -310,12 +294,7 @@ namespace sm
 
 		engine_prepare();
 
-		//- TODO: ignore return value for testing and development
 		entry::get_app()->on_init(S_CONFIG, S_ARGS);
-// 		if (entry::get_app()->on_init(S_CONFIG, S_ARGS))
-// 		{
-// 			return opresult_fail;
-// 		}
 
 		engine_finalize_init();
 
@@ -366,6 +345,26 @@ namespace sm
 			return S_LAYER_COUNT++;
 		}
 		return MAX(unsigned);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_primitives(unsigned layer, const cvertices& vertices, const indices_t& indices, program_handle_t program)
+	{
+		bgfx::TransientVertexBuffer tvb;
+		bgfx::allocTransientVertexBuffer(&tvb, vertices.count(), vertices.declaration());
+
+		bx::memCopy(&tvb, vertices.data(), vertices.size());
+
+		bgfx::TransientIndexBuffer tib;
+		bgfx::allocTransientIndexBuffer(&tib, SCAST(unsigned, indices.size()));
+
+		bgfx::setVertexBuffer(0, &tvb);
+		bgfx::setIndexBuffer(&tib);
+
+		//- set uniforms for textures
+
+		bgfx::setState(BGFX_STATE_DEFAULT, 0xffffffff);
+		bgfx::submit(bgfx::ViewId{ SCAST(uint16_t, layer) }, bgfx::ProgramHandle{ SCAST(uint16_t, program) });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

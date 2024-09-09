@@ -145,6 +145,82 @@ namespace sm
 	} //- entry
 
 	//------------------------------------------------------------------------------------------------------------------------
+	cvertices::cvertices(const bgfx::VertexLayout& layout, uint64_t count) :
+		m_vertex_layout(layout)
+	{
+		m_data.resize(m_vertex_layout.getSize(SCAST(unsigned, count)));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cvertices& cvertices::begin(uint64_t idx)
+	{
+		m_idx = SCAST(unsigned, idx);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cvertices& cvertices::position(const vec2_t& v)
+	{
+		CORE_ASSERT(m_idx != -1, "Invalid operation");
+
+		bgfx::vertexPack(&v.x, false, bgfx::Attrib::Position, m_vertex_layout, m_data.data(), m_idx);
+		m_vertex_attribute_flags |= BIT(bgfx::Attrib::Position);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cvertices& cvertices::tex_coord(const vec2_t& v)
+	{
+		CORE_ASSERT(m_idx != -1, "Invalid operation");
+
+		bgfx::vertexPack(&v.x, true, bgfx::Attrib::TexCoord0, m_vertex_layout, m_data.data(), m_idx);
+		m_vertex_attribute_flags |= BIT(bgfx::Attrib::TexCoord0);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cvertices& cvertices::color(const core::scolor& v)
+	{
+		CORE_ASSERT(m_idx != -1, "Invalid operation");
+
+		auto c = v.normalize();
+
+		bgfx::vertexPack(&c.x, true, bgfx::Attrib::Color0, m_vertex_layout, m_data.data(), m_idx);
+		m_vertex_attribute_flags |= BIT(bgfx::Attrib::Color0);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cvertices& cvertices::end()
+	{
+		CORE_ASSERT(m_idx != -1, "Invalid operation");
+
+		static constexpr const char* C_ATTRIBUTE_NAMES[bgfx::Attrib::Count] =
+		{
+			"Position", "Normal", "Tangent", "Bitangent", "Color0", "Color1", "Color2", "Color3", "Indices",
+			"Weight", "TexCoord0", "TexCoord1", "TexCoord2", "TexCoord3", "TexCoord4", "TexCoord5", "TexCoord6", "TexCoord7"
+		};
+
+		//- Validate correct declaration and usage
+		for (auto i = 0; i < (int)bgfx::Attrib::Count; ++i)
+		{
+			if (m_vertex_layout.has((bgfx::Attrib::Enum)i) &&
+				!algorithm::bit_check(m_vertex_attribute_flags, BIT((bgfx::Attrib::Enum)i)))
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(core::logging_verbosity_warn,
+						fmt::format("Incomplete vertices declaration! Missing attribute '{}' at index '{}'!",
+							C_ATTRIBUTE_NAMES[i], m_idx));
+				}
+			}
+		}
+
+		m_idx = -1;
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cuniform::destroy(cuniform& uniform)
 	{
 		if (is_valid(uniform))

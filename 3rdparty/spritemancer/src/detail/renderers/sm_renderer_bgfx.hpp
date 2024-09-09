@@ -17,6 +17,8 @@ namespace sm
 			bool fullscreen, bool vsync) override final;
 		opresult shutdown_device() override final;
 
+		void on_event(const rttr::variant& event) override final;
+
 		void prepare_frame() override final;
 		void display_frame() override final;
 		void update_viewport(const vec2_t& position, const vec2_t& size) override final;

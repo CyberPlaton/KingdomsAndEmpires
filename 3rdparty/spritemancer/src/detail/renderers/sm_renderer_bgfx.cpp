@@ -118,6 +118,18 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_bgfx::on_event(const rttr::variant& event)
+	{
+		if (event.is_type<events::window::sresize>())
+		{
+			const auto& e = event.convert<events::window::sresize>();
+
+			//- Main window was resized, so we can set position of backbuffer start at 0
+			update_viewport({0.0f, 0.0f}, {(float)e.w, (float)e.h});
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::prepare_frame()
 	{
 		//- This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0
