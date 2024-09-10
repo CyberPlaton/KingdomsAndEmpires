@@ -1,6 +1,7 @@
 #pragma once
 #include <core.h>
 #include <flecs.h>
+#include <spritemancer.h>
 
 namespace ecs
 {
@@ -120,24 +121,51 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		vec2_t m_position	= { 0.0f, 0.0f };	//- local space position. To get the final position use a transform function
-		vec2_t m_size		= { 0.0f, 0.0f };	//- size of object in pixels
-		float m_angles		= 0.0f;				//- rotation in radians
+		mat4_t m_matrix;
 
 		RTTR_ENABLE(icomponent);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct ssprite final : public icomponent
+	struct smesh final : public icomponent
 	{
-		DECLARE_COMPONENT(ssprite);
+		DECLARE_COMPONENT(smesh);
 
 		static void show_ui(flecs::entity e);
 
-		core::srect m_source_rectangle	= { 0.0f, 0.0f, 0.0f, 0.0f }; //- represents a rectangle in actual texture pixel size
-		core::scolor m_tint				= core::scolor(core::common_color_neutral1000);
-		int m_flags						= 0;
-		unsigned char m_layer			= 0;
+		sm::cvertices m_vertices;
+		sm::indices_t m_indices;
+
+		RTTR_ENABLE(icomponent);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	struct smaterial final : public icomponent
+	{
+		DECLARE_COMPONENT(smaterial);
+
+		static void show_ui(flecs::entity e);
+
+		sm::srenderstate m_renderstate;
+		sm::texture_handle_t m_texture;
+		sm::program_handle_t m_program;
+		sm::renderable_flag m_flags;
+
+		RTTR_ENABLE(icomponent);
+	};
+
+	//- Component contains data required to render a sprite specifically. Also, when adding this component to an entity
+	//- it will be rendered as a sprite.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct ssprite_renderer final : public icomponent
+	{
+		DECLARE_COMPONENT(ssprite_renderer);
+
+		static void show_ui(flecs::entity e);
+
+		core::srect m_source_rect	= { 0.0f, 0.0f, 0.0f, 0.0f };;
+		core::scolor m_tint			= core::scolor(core::common_color_neutral1000);;
+		unsigned m_layer			= 0;
 
 		RTTR_ENABLE(icomponent);
 	};

@@ -144,10 +144,51 @@ namespace sm
 
 	} //- entry
 
+	namespace vertex_layouts
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		bool spostexcoord::init()
+		{
+			S_LAYOUT.begin()
+				.add(bgfx::Attrib::Position,	3, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::TexCoord0,	2, bgfx::AttribType::Float)
+				.end();
+
+			S_HANDLE = bgfx::createVertexLayout(S_LAYOUT);
+
+			return bgfx::isValid(S_HANDLE);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool spostexcoordcolor::init()
+		{
+			S_LAYOUT.begin()
+				.add(bgfx::Attrib::Position,	3, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::TexCoord0,	2, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::Color0,		4, bgfx::AttribType::Uint8, true)
+				.end();
+
+			S_HANDLE = bgfx::createVertexLayout(S_LAYOUT);
+
+			return bgfx::isValid(S_HANDLE);
+		}
+
+	} //- vertex_layouts
+
 	//------------------------------------------------------------------------------------------------------------------------
 	cvertices::cvertices(const bgfx::VertexLayout& layout, uint64_t count) :
 		m_vertex_layout(layout)
 	{
+		m_data.resize(m_vertex_layout.getSize(SCAST(unsigned, count)));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cvertices::cvertices() = default;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cvertices::init(const bgfx::VertexLayout& layout, uint64_t count)
+	{
+		m_vertex_layout = layout;
 		m_data.resize(m_vertex_layout.getSize(SCAST(unsigned, count)));
 	}
 
@@ -159,7 +200,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::cvertices& cvertices::position(const vec2_t& v)
+	sm::cvertices& cvertices::position(const vec3_t& v)
 	{
 		CORE_ASSERT(m_idx != -1, "Invalid operation");
 
@@ -803,25 +844,13 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool srenderstate::operator==(const srenderstate& other) const
 	{
-		return m_blending == other.m_blending && m_flags == other.m_flags;
+		return m_blending == other.m_blending;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool srenderstate::operator!=(const srenderstate& other) const
 	{
 		return !this->operator==(other);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool sblending::operator!=(const sblending& other) const
-	{
-		return !this->operator==(other);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool sblending::operator==(const sblending& other) const
-	{
-		return m_mode == other.m_mode;
 	}
 
 	namespace profile::gpu

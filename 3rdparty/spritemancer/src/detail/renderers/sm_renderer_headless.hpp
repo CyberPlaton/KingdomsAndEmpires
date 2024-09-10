@@ -20,7 +20,7 @@ namespace sm
 		void prepare_frame() override final {}
 		void display_frame() override final {}
 		void update_viewport(const vec2_t& position, const vec2_t& size) override final {}
-		void blendmode(sblending mode) override final {}
+		void blendmode(blending_mode mode) override final {}
 
 		void clear(const slayer& layer, bool depth) override final {}
 		bool begin(const slayer& layer) override final { return false; }

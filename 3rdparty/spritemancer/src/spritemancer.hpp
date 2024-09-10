@@ -23,7 +23,11 @@ namespace sm
 #pragma endregion
 
 #pragma region primitive_rendering
-	void draw_primitives(unsigned layer, const cvertices& vertices, const indices_t& indices, program_handle_t program);
+	void draw_primitives(unsigned layer, const cvertices& vertices, const indices_t& indices, program_handle_t program,
+		const core::scolor& color, srenderstate state);
+
+	void draw_triangles(unsigned layer, const cvertices& vertices, const indices_t& indices, program_handle_t program,
+		const core::scolor& color, srenderstate state);
 
 	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color);
 

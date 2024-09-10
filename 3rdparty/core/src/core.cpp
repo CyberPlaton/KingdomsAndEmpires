@@ -3714,50 +3714,42 @@ namespace math
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void transform(mat4_t& out, const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
-		float rotation, const mat4_t& parent /*= C_MAT4_ID*/)
+	mat4_t transform(const vec2_t& translation, const vec2_t& scale, const vec2_t& shear, float rotation,
+		const mat4_t& parent /*= C_MAT4_ID*/)
 	{
-		static thread_local vec3_t S_POSITION = vec3_t(0.0f, 0.0f, 0.0f), S_DIMENSION = vec3_t(0.0f, 0.0f, 0.0f), S_Z_AXIS = vec3_t(0.0f, 0.0f, 1.0f);
-		static thread_local float S_ROTATION = 0.0f;
+		static constexpr vec3_t C_AXIS_Z = {0.0f, 0.0f, 1.0f};
 
-		S_POSITION.x = position.x;
-		S_POSITION.y = position.y;
-		S_DIMENSION.x = scale.x;
-		S_DIMENSION.y = scale.y;
-		S_ROTATION = rotation;
-
-		out = glm::translate(C_MAT4_ID, S_POSITION)
-			* glm::rotate(C_MAT4_ID, S_ROTATION, S_Z_AXIS)
-			* glm::scale(C_MAT4_ID, S_DIMENSION);
+		return glm::translate(C_MAT4_ID, vec3_t(translation, 0.0f))
+			* glm::rotate(C_MAT4_ID, rotation, C_AXIS_Z)
+			* glm::scale(C_MAT4_ID, vec3_t(scale, 1.0f));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	std::tuple<vec2_t, vec2_t, float> transform(const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
-		float rotation, const mat4_t& parent /*= C_MAT4_ID*/)
+	vec2_t extract_translation(const mat4_t& matrix)
 	{
-		CORE_NAMED_ZONE(math::transform);
+		return { matrix[3].x, matrix[3].y };
+	}
 
-		static thread_local vec3_t S_EULER_ANGLES = vec3_t(0.0f);
-		static thread_local mat4_t S_TRANSFORM = mat4_t(1.0f);
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t extract_scale(const mat4_t& matrix)
+	{
+		return { glm::length(matrix[0]) , glm::length(matrix[1]) };
+	}
 
-		transform(S_TRANSFORM, position, scale, shear, rotation, parent);
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t extract_shear(const mat4_t& matrix)
+	{
+		return {0.0f, 0.0f};
+	}
 
-		vec2_t p, s;
-		float r;
+	//------------------------------------------------------------------------------------------------------------------------
+	float extract_rotation(const mat4_t& matrix)
+	{
+		float x = 0.0f, y = 0.0f, z = 0.0f;
 
-		//- extract 2D position
-		p.x = S_TRANSFORM[3].x;
-		p.y = S_TRANSFORM[3].y;
+		glm::extractEulerAngleXYZ(matrix, x, y, z);
 
-		//- extract 2D scale
-		s.x = glm::length(S_TRANSFORM[0]);
-		s.y = glm::length(S_TRANSFORM[1]);
-
-		//- extract rotation around Z axis
-		glm::extractEulerAngleXYZ(S_TRANSFORM, S_EULER_ANGLES.x, S_EULER_ANGLES.y, S_EULER_ANGLES.z);
-		r = S_EULER_ANGLES.z;
-
-		return { p, s, glm::degrees(r) };
+		return glm::degrees(z);
 	}
 
 } //- math

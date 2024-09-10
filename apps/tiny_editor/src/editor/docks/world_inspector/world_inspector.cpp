@@ -100,10 +100,10 @@ namespace editor
 
 		state().m_layered_view.clear();
 
-		world.each([&](flecs::entity e, const ecs::ssprite& sprite, const ecs::sidentifier& identifier)
-			{
-				state().m_layered_view[sprite.m_layer].push_back(e);
-			});
+// 		world.each([&](flecs::entity e, const ecs::ssprite& sprite, const ecs::sidentifier& identifier)
+// 			{
+// 				state().m_layered_view[sprite.m_layer].push_back(e);
+// 			});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

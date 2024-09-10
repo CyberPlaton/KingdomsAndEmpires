@@ -247,26 +247,40 @@ namespace sm
 
 	} //- entry
 
-	//------------------------------------------------------------------------------------------------------------------------
-	struct sblending final
+	namespace vertex_layouts
 	{
-		bool operator==(const sblending& other) const;
-		bool operator!=(const sblending& other) const;
+		//------------------------------------------------------------------------------------------------------------------------
+		struct spostexcoord final
+		{
+			static bool init();
 
-		blending_mode m_mode;
-	};
+			inline static bgfx::VertexLayout S_LAYOUT;
+			inline static bgfx::VertexLayoutHandle S_HANDLE;
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		struct spostexcoordcolor final
+		{
+			static bool init();
+
+			inline static bgfx::VertexLayout S_LAYOUT;
+			inline static bgfx::VertexLayoutHandle S_HANDLE;
+		};
+
+	} //- vertex_layouts
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cvertices final :
-		private core::cnon_copyable,
-		private core::cnon_movable
+	class cvertices final
 	{
 	public:
 		explicit cvertices(const bgfx::VertexLayout& layout, uint64_t count);
+		cvertices();
 		~cvertices() = default;
 
+		void init(const bgfx::VertexLayout& layout, uint64_t count);
+
 		cvertices& begin(uint64_t idx);
-		cvertices& position(const vec2_t& v);
+		cvertices& position(const vec3_t& v);
 		cvertices& tex_coord(const vec2_t& v);
 		cvertices& color(const core::scolor& v);
 		cvertices& end();
@@ -557,8 +571,9 @@ namespace sm
 		bool operator ==(const srenderstate& other) const;
 		bool operator !=(const srenderstate& other) const;
 
-		sblending m_blending;
-		int m_flags = 0; //- bitwise concated renderable_flag
+		blending_mode m_blending= blending_mode_alpha;
+		int m_bgfx_state		= 0;
+		int m_renderable_flags	= 0; //- bitwise concated renderable_flag
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -613,7 +628,7 @@ namespace sm
 		virtual void prepare_frame() = 0;
 		virtual void display_frame() = 0;
 		virtual void update_viewport(const vec2_t& position, const vec2_t& size) = 0;
-		virtual void blendmode(sblending mode) = 0;
+		virtual void blendmode(blending_mode mode) = 0;
 
 		virtual void clear(const slayer& layer, bool depth) = 0;
 		virtual bool begin(const slayer& layer) = 0;

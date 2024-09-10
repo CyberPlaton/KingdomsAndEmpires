@@ -1,5 +1,4 @@
 #include "sm_renderer_bgfx.hpp"
-#include "../sm_vertices.hpp"
 
 namespace sm
 {
@@ -15,7 +14,6 @@ namespace sm
 			{
 				bgfx::TransientVertexBuffer vb;
 				bgfx::allocTransientVertexBuffer(&vb, 3, vertex_layouts::spostexcoord::S_LAYOUT);
-				vertex_layouts::spostexcoord* vertex = (vertex_layouts::spostexcoord*)vb.data;
 
 				const float minx = -_width;
 				const float maxx = _width;
@@ -40,23 +38,19 @@ namespace sm
 					maxv -= 1.0f;
 				}
 
-				vertex[0].m_position.x = minx;
-				vertex[0].m_position.y = miny;
-				vertex[0].m_position.z = zz;
-				vertex[0].m_uv.x = minu;
-				vertex[0].m_uv.y = minv;
-
-				vertex[1].m_position.x = maxx;
-				vertex[1].m_position.y = miny;
-				vertex[1].m_position.z = zz;
-				vertex[1].m_uv.x = maxu;
-				vertex[1].m_uv.y = minv;
-
-				vertex[2].m_position.x = maxx;
-				vertex[2].m_position.y = maxy;
-				vertex[2].m_position.z = zz;
-				vertex[2].m_uv.x = maxu;
-				vertex[2].m_uv.y = maxv;
+				cvertices vertices(vertex_layouts::spostexcoord::S_LAYOUT, 3);
+				vertices
+					.begin(0)
+					.position({ minx, miny, zz })
+					.tex_coord({ minu, minv })
+					.begin(1)
+					.position({ maxx, miny, zz })
+					.tex_coord({ maxu, minv })
+					.begin(2)
+					.position({ maxx, maxy, zz })
+					.tex_coord({ maxu, maxv })
+					.end()
+					;
 
 				bgfx::setVertexBuffer(0, &vb);
 			}
@@ -200,7 +194,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::blendmode(sblending mode)
+	void crenderer_bgfx::blendmode(blending_mode mode)
 	{
 
 	}

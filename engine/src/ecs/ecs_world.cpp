@@ -404,7 +404,8 @@ namespace ecs
 		const auto& proxy = m_proxies.at(e.id());
 		const auto& transform = *e.get<stransform>();
 
-		const auto [p, s, _] = math::transform(transform.m_position, transform.m_size, { 0.0f, 0.0f }, transform.m_angles);
+		const auto p = math::extract_translation(transform.m_matrix);
+		const auto s = math::extract_scale(transform.m_matrix);
 
 		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f), {0.0f, 0.0f});
 	}

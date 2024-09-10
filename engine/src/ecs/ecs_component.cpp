@@ -27,13 +27,25 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void ssprite::show_ui(flecs::entity e)
+	void scamera::show_ui(flecs::entity e)
 	{
 
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void scamera::show_ui(flecs::entity e)
+	void smesh::show_ui(flecs::entity e)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void smaterial::show_ui(flecs::entity e)
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void ssprite_renderer::show_ui(flecs::entity e)
 	{
 
 	}
@@ -82,18 +94,29 @@ RTTR_REGISTRATION
 		.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &sanimation::show_ui)
 		;
 
-	rttr::ccomponent<ssprite>("ssprite")
-		.prop("m_flags", &ssprite::m_flags)
-		.prop("m_layer", &ssprite::m_layer)
-		.prop("m_source_rectangle", &ssprite::m_source_rectangle)
-		.prop("m_tint", &ssprite::m_tint)
-		.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ssprite::show_ui)
+	rttr::ccomponent<smesh>("smesh")
+		.prop("m_vertices", &smesh::m_vertices)
+		.prop("m_indices", &smesh::m_indices)
+		.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &smesh::show_ui)
+		;
+
+	rttr::ccomponent<smaterial>("smaterial")
+		.prop("m_renderstate", &smaterial::m_renderstate)
+		.prop("m_texture", &smaterial::m_texture)
+		.prop("m_program", &smaterial::m_program)
+		.prop("m_flags", &smaterial::m_flags)
+		.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &smesh::show_ui)
+		;
+
+	rttr::ccomponent<ssprite_renderer>("ssprite_renderer")
+		.prop("m_source_rect", &ssprite_renderer::m_source_rect)
+		.prop("m_tint", &ssprite_renderer::m_tint)
+		.prop("m_layer", &ssprite_renderer::m_layer)
+		.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ssprite_renderer::show_ui)
 		;
 
 	rttr::ccomponent<stransform>("stransform")
-		.prop("m_position", &stransform::m_position)
-		.prop("m_size", &stransform::m_size)
-		.prop("m_angles", &stransform::m_angles)
+		.prop("m_matrix", &stransform::m_matrix)
 		.meth(detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &stransform::show_ui)
 		;
 

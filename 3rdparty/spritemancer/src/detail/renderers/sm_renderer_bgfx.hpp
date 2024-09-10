@@ -1,6 +1,5 @@
 #pragma once
 #include "../sm_config.hpp"
-#include "../sm_view.hpp"
 #include "../bgfx_integration/bgfx.hpp"
 
 namespace sm
@@ -22,7 +21,7 @@ namespace sm
 		void prepare_frame() override final;
 		void display_frame() override final;
 		void update_viewport(const vec2_t& position, const vec2_t& size) override final;
-		void blendmode(sblending mode) override final;
+		void blendmode(blending_mode mode) override final;
 
 		void clear(const slayer& layer, bool depth) override final;
 		bool begin(const slayer& layer) override final;
@@ -34,7 +33,6 @@ namespace sm
 		void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) override final;
 
 	private:
-		umap_t<unsigned, cview> m_views;
 		bgfx::Caps* m_caps; //- Renderer capabilities and information
 
 		RTTR_ENABLE(irenderer);

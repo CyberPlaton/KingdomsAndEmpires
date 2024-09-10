@@ -3471,17 +3471,20 @@ namespace math
 	//------------------------------------------------------------------------------------------------------------------------
 	vec2_t rotate_point_around_origin(const vec2_t& point, const vec2_t& origin, const float degrees);
 
-	//- Transforms given position, scale, shear and rotation and returns world space transform matrix
-	//- TODO: shear
 	//------------------------------------------------------------------------------------------------------------------------
-	void transform(mat4_t& out, const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
-		float rotation, const mat4_t& parent = C_MAT4_ID);
+	mat4_t transform(const vec2_t& translation, const vec2_t& scale, const vec2_t& shear, float rotation, const mat4_t& parent = C_MAT4_ID);
 
-	//- Transforms given position, scale, shear and rotation and returns final world space position, scale and rotation
-	//- ready to be used for rendering
 	//------------------------------------------------------------------------------------------------------------------------
-	std::tuple<vec2_t, vec2_t, float> transform(const vec2_t& position, const vec2_t& scale, const vec2_t& shear,
-		float rotation, const mat4_t& parent = C_MAT4_ID);
+	vec2_t extract_translation(const mat4_t& matrix);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t extract_scale(const mat4_t& matrix);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t extract_shear(const mat4_t& matrix);
+
+	//------------------------------------------------------------------------------------------------------------------------
+	float extract_rotation(const mat4_t& matrix);
 
 } //- math
 

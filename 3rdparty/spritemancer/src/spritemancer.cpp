@@ -2,8 +2,6 @@
 #include "detail/os/sm_os_headless.hpp"
 #include "detail/renderers/sm_renderer_headless.hpp"
 #include "detail/renderers/sm_renderer_bgfx.hpp"
-#include "detail/sm_vertices.hpp"
-#include "detail/sm_view.hpp"
 #include "detail/os/sm_os_glfw.hpp"
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_embedded_shaders.hpp"
@@ -26,7 +24,7 @@ namespace sm
 		static bool S_RESIZE_REQUIRED = false;
 		static float S_DT = 0.0f;
 		static texture_handle_t S_PLACEHOLDER_TEXTURE = 0;
-		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha };
+		static blending_mode S_BLEND_MODE_DEFAULT = { blending_mode_alpha };
 		static srenderstate S_RENDERSTATE_DEFAULT = { S_BLEND_MODE_DEFAULT, 0 };
 		constexpr float C_ROTATION_DEFAULT = 0.0f;
 		constexpr vec2_t C_SCALE_DEFAULT = {1.0f, 1.0f};
@@ -34,7 +32,7 @@ namespace sm
 		static inline const core::srect C_SOURCE_DEFAULT = {0.0f, 0.0f, 1.0f, 1.0f};
 
 		//- current used rendering state data
-		static sblending S_CURRENT_BLEND_MODE = S_BLEND_MODE_DEFAULT;
+		static blending_mode S_CURRENT_BLEND_MODE = S_BLEND_MODE_DEFAULT;
 		static srenderstate S_CURRENT_RENDERSTATE = S_RENDERSTATE_DEFAULT;
 		static program_handle_t S_CURRENT_PROGRAM = S_DEFAULT_PROGRAM;
 
@@ -69,14 +67,6 @@ namespace sm
 
 				entry::get_os()->on_event(event);
 				entry::get_renderer()->on_event(event);
-
-				if (event.is_type<events::window::sresize>())
-				{
-					const auto& e = event.convert<events::window::sresize>();
-					S_W = e.w;
-					S_H = e.h;
-					S_RESIZE_REQUIRED = true;
-				}
 
 				S_EVENT_QUEUE.pop();
 			}
@@ -162,9 +152,9 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void engine_prepare()
+		void engine_prepare(const int w, const int h)
 		{
-			entry::get_renderer()->update_viewport({0.0f, 0.0f}, {S_W, S_H});
+			entry::get_renderer()->update_viewport({0.0f, 0.0f}, {w, h});
 
 			//- create resource managers
 			core::cservice_manager::emplace<cimage_manager>();
@@ -280,19 +270,13 @@ namespace sm
 			return opresult_fail;
 		}
 
-		//- cache common data
-		entry::get_os()->main_window_position(&S_X, &S_Y);
-		entry::get_os()->main_window_size(&S_W, &S_H);
-		S_FULLSCREEN = fullscreen;
-		S_VSYNC = vsync;
-
 		//- starting up graphics and app
-		if (entry::get_os()->init_gfx(S_W, S_H, S_FULLSCREEN, S_VSYNC) != opresult_ok)
+		if (entry::get_os()->init_gfx(w, h, fullscreen, vsync) != opresult_ok)
 		{
 			return opresult_fail;
 		}
 
-		engine_prepare();
+		engine_prepare(w, h);
 
 		entry::get_app()->on_init(S_CONFIG, S_ARGS);
 
@@ -334,9 +318,11 @@ namespace sm
 		if (S_LAYER_COUNT < C_LAYER_COUNT_MAX)
 		{
 			auto& layer = S_LAYERS[S_LAYER_COUNT];
+			int w, h;
+			entry::get_os()->main_window_size(&w, &h);
 
 			//- create with reasonable defaults
-			layer.m_target.create(S_W, S_H);
+			layer.m_target.create(w, h);
 			layer.m_combine_tint = S_WHITE;
 			layer.m_clear_tint = S_WHITE;
 			layer.m_flags = 0;
@@ -348,7 +334,8 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void draw_primitives(unsigned layer, const cvertices& vertices, const indices_t& indices, program_handle_t program)
+	void draw_primitives(unsigned layer, const cvertices& vertices, const indices_t& indices, program_handle_t program,
+		const core::scolor& color, srenderstate state)
 	{
 		bgfx::TransientVertexBuffer tvb;
 		bgfx::allocTransientVertexBuffer(&tvb, vertices.count(), vertices.declaration());
@@ -361,10 +348,19 @@ namespace sm
 		bgfx::setVertexBuffer(0, &tvb);
 		bgfx::setIndexBuffer(&tib);
 
-		//- set uniforms for textures
+		//- TODO: set uniforms for textures and textures
 
-		bgfx::setState(BGFX_STATE_DEFAULT, 0xffffffff);
+		bgfx::setState(state.m_blending | state.m_bgfx_state, color.abgr());
 		bgfx::submit(bgfx::ViewId{ SCAST(uint16_t, layer) }, bgfx::ProgramHandle{ SCAST(uint16_t, program) });
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void draw_triangles(unsigned layer, const cvertices& vertices, const indices_t& indices, program_handle_t program,
+		const core::scolor& color, srenderstate state)
+	{
+		algorithm::bit_clear(state.m_bgfx_state, BGFX_STATE_PT_MASK);
+
+		draw_primitives(layer, vertices, indices, program, color, state);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -470,14 +466,7 @@ namespace sm
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, program_handle_t program, const srenderstate& state, const vec2_t& origin, const core::srect& source)
 	{
-		using namespace vertex_layouts;
-
 		SM_DRAW_CALL(4);
-
-		if (algorithm::bit_check(state.m_flags, renderable_flag_invisible))
-		{
-			return;
-		}
 
 		//- Create a sprite draw command
 		{
@@ -485,50 +474,50 @@ namespace sm
 
 			S_LAYERS[layer].m_commands.emplace_back().create([=]()
 				{
-					const auto& tm = *core::cservice_manager::find<ctexture_manager>();
-					const auto& pm = *core::cservice_manager::find<cprogram_manager>();
-					cvertices<spostexcoordcolor> vertices(vertex_type_transient, spostexcoordcolor::S_LAYOUT, spostexcoordcolor::S_HANDLE, 4, 0);
-
-					const auto& tex = tm.at(texture);
-					const auto& prog = pm.at(program);
-
-					const float width = source.w() * scale.x;
-					const float height = source.h() * scale.y;
-
-					//- Calculate the four corners of the quad.
-					vec2_t topLeft = { position.x - origin.x * scale.x, position.y - origin.y * scale.y };
-					vec2_t topRight = { topLeft.x + width, topLeft.y };
-					vec2_t bottomLeft = { topLeft.x, topLeft.y + height };
-					vec2_t bottomRight = { topLeft.x + width, topLeft.y + height };
-
-					//- Calculate rotation if required
-					if (rotation != 0.0f)
-					{
-						// Apply rotation here (requires some math to rotate the points)
-						// Assuming you have a `rotate_point` utility function:
-						topLeft = math::rotate_point_around_origin(topLeft, position, rotation);
-						topRight = math::rotate_point_around_origin(topRight, position, rotation);
-						bottomLeft = math::rotate_point_around_origin(bottomLeft, position, rotation);
-						bottomRight = math::rotate_point_around_origin(bottomRight, position, rotation);
-					}
-
-					//- Set up vertices in clockwise order
-					const auto c = tint.abgr();
-					vertices.push(spostexcoordcolor::make(topLeft.x, topLeft.y, source.x(), source.y(), c));
-					vertices.push(spostexcoordcolor::make(topRight.x, topRight.y, source.x() + source.w(), source.y(), c));
-					vertices.push(spostexcoordcolor::make(bottomLeft.x, bottomLeft.y, source.x(), source.y() + source.h(), c));
-					vertices.push(spostexcoordcolor::make(bottomRight.x, bottomRight.y, source.x() + source.w(), source.y() + source.h(), c));
-
-					//- Submit vertices to BGFX
-					vertices.bind();
-
-					//- Set the texture
-					bgfx::setTexture(0, tex.uniform().uniform(), tex.texture(), tex.flags());
-
-					//- Apply render state and submit draw call
-					bgfx::setState(state.m_flags);
-
-					bgfx::submit(bgfx::ViewId{static_cast<uint16_t>(layer)}, prog.program());
+// 					const auto& tm = *core::cservice_manager::find<ctexture_manager>();
+// 					const auto& pm = *core::cservice_manager::find<cprogram_manager>();
+// 					cvertices<spostexcoordcolor> vertices(vertex_type_transient, spostexcoordcolor::S_LAYOUT, spostexcoordcolor::S_HANDLE, 4, 0);
+// 
+// 					const auto& tex = tm.at(texture);
+// 					const auto& prog = pm.at(program);
+// 
+// 					const float width = source.w() * scale.x;
+// 					const float height = source.h() * scale.y;
+// 
+// 					//- Calculate the four corners of the quad.
+// 					vec2_t topLeft = { position.x - origin.x * scale.x, position.y - origin.y * scale.y };
+// 					vec2_t topRight = { topLeft.x + width, topLeft.y };
+// 					vec2_t bottomLeft = { topLeft.x, topLeft.y + height };
+// 					vec2_t bottomRight = { topLeft.x + width, topLeft.y + height };
+// 
+// 					//- Calculate rotation if required
+// 					if (rotation != 0.0f)
+// 					{
+// 						// Apply rotation here (requires some math to rotate the points)
+// 						// Assuming you have a `rotate_point` utility function:
+// 						topLeft = math::rotate_point_around_origin(topLeft, position, rotation);
+// 						topRight = math::rotate_point_around_origin(topRight, position, rotation);
+// 						bottomLeft = math::rotate_point_around_origin(bottomLeft, position, rotation);
+// 						bottomRight = math::rotate_point_around_origin(bottomRight, position, rotation);
+// 					}
+// 
+// 					//- Set up vertices in clockwise order
+// 					const auto c = tint.abgr();
+// 					vertices.push(spostexcoordcolor::make(topLeft.x, topLeft.y, source.x(), source.y(), c));
+// 					vertices.push(spostexcoordcolor::make(topRight.x, topRight.y, source.x() + source.w(), source.y(), c));
+// 					vertices.push(spostexcoordcolor::make(bottomLeft.x, bottomLeft.y, source.x(), source.y() + source.h(), c));
+// 					vertices.push(spostexcoordcolor::make(bottomRight.x, bottomRight.y, source.x() + source.w(), source.y() + source.h(), c));
+// 
+// 					//- Submit vertices to BGFX
+// 					vertices.bind();
+// 
+// 					//- Set the texture
+// 					bgfx::setTexture(0, tex.uniform().uniform(), tex.texture(), tex.flags());
+// 
+// 					//- Apply render state and submit draw call
+// 					bgfx::setState(state.m_flags);
+// 
+// 					bgfx::submit(bgfx::ViewId{static_cast<uint16_t>(layer)}, prog.program());
 
 					//- TODO: think of a better way to get actual shaders, textures etc. from resource managers,
 					//- Note: these command are executed on main thread, but other threads may still post load/unload
