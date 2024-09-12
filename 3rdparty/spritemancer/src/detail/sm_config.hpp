@@ -577,42 +577,6 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class ccommand final
-	{
-	public:
-		using render_callback_t = std::function<void()>;
-
-		explicit ccommand(render_callback_t&& callback);
-		ccommand() = default;
-		~ccommand() = default;
-
-		void create(render_callback_t&& callback);
-
-		void execute() const;
-
-	private:
-		render_callback_t m_callback;
-	};
-
-	//- Description of a rendering layer. Some of the data becomes only relevant when appropriate flags are set
-	//------------------------------------------------------------------------------------------------------------------------
-	struct slayer
-	{
-		crendertarget m_target;
-		vector_t<ccommand> m_commands;
-		ccamera m_camera;					//- optional: camera to be used when rendering
-		cprogram m_program;					//- optional: shader used to render the layer render texture on previous layers
-		core::scolor m_combine_tint;		//- color put over layer render texture when drawing on previous layers
-		core::scolor m_clear_tint;			//- color used to clear the layer render texture before drawing
-		vec2_t m_position = { 0.0f, 0.0f }; //- optional: where to draw the render target when combining; by default we cover whole screen
-		vec2_t m_scale = { 1.0f, 1.0f };	//- optional: scaling of the render target; by default normal scale
-		vec2_t m_origin = { 0.0f, 0.0f };	//- optional: origin of the render target; by default top-left
-		unsigned m_flags = 0;				//- bitwise concated layer_flags
-		bool m_show = false;
-		unsigned m_id = 0;
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
 	class irenderer
 	{
 	public:
@@ -623,19 +587,12 @@ namespace sm
 			bool fullscreen, bool vsync) = 0;
 		virtual opresult shutdown_device() = 0;
 
+		virtual void frame_begin() = 0;
+		virtual void frame_end() = 0;
+
 		virtual void on_event(const rttr::variant& event) = 0; //- handle a hardware event from glfw or SDL etc.
 
-		virtual void prepare_frame() = 0;
-		virtual void display_frame() = 0;
 		virtual void update_viewport(const vec2_t& position, const vec2_t& size) = 0;
-		virtual void blendmode(blending_mode mode) = 0;
-
-		virtual void clear(const slayer& layer, bool depth) = 0;
-		virtual bool begin(const slayer& layer) = 0;
-		virtual void draw(const slayer& layer) = 0;
-		virtual void end(const slayer& layer) = 0;
-		virtual bool combine(const slayer& layer) = 0;
-
 		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) = 0;
 		virtual void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) = 0;
 

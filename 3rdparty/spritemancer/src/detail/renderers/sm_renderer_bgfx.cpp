@@ -124,50 +124,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::prepare_frame()
-	{
-		//- This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0
-		bgfx::touch(0);
-
-		//- setup default view
-		S_CAMERA.matrix_view_update();
-
-		bgfx::setViewClear(0, S_CAMERA.clear_state(), S_CAMERA.clearcolor().rgba(), 1.0f, 0);
-		bgfx::setViewRect(0, S_CAMERA.viewport().x(), S_CAMERA.viewport().y(), S_CAMERA.viewport().w(), S_CAMERA.viewport().h());
-		bgfx::setViewTransform(0, glm::value_ptr(S_CAMERA.matrix_view()), glm::value_ptr(S_CAMERA.matrix_projection()));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::display_frame()
-	{
-		//- Set default backbuffer and state and display it
-
-#if CORE_DEBUG
-		bgfx::setDebug(BGFX_DEBUG_TEXT);
-		const bgfx::Stats* stats = bgfx::getStats();
-		const auto os = entry::get_os();
-		double mx, my, sx, sy;
-		os->mouse_position(&mx, &my);
-		os->mouse_scroll_dt(&sx, &sy);
-
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(0, 1, 0x0f, fmt::format("Window: '{}:{}:{}:{}'", S_X, S_Y, S_W, S_H).data());
-		bgfx::dbgTextPrintf(0, 2, 0x0f, fmt::format("Mouse: '{}:{}'", mx, my).data());
-		bgfx::dbgTextPrintf(0, 3, 0x0f, fmt::format("Scroll: '{}:{}'", sx, sy).data());
-
-		bgfx::dbgTextPrintf(0, 4, 0x0f, "Backbuffer %dW x %dH in pixels. CPU: %.4f ms          GPU: %.4f ms"
-			, stats->width
-			, stats->height
-			, double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq
-			, double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq
-		);
-#endif
-
-		// Advance to next frame. Process submitted rendering primitives
-		bgfx::frame();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::update_viewport(const vec2_t& position, const vec2_t& size)
 	{
 		const auto x = (unsigned)position.x;
@@ -193,90 +149,51 @@ namespace sm
 		}
 	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::blendmode(blending_mode mode)
-	{
-
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::clear(const slayer& layer, bool depth)
-	{
-
-	}
-
 	//- Set state, camera data and framebuffer defined in layer
 	//------------------------------------------------------------------------------------------------------------------------
-	bool crenderer_bgfx::begin(const slayer& layer)
+	void crenderer_bgfx::frame_begin()
 	{
-		if (is_valid(layer.m_target))
-		{
-			auto& view = m_views[layer.m_id];
-			view.id() = static_cast<uint16_t>(layer.m_id);
-			view.target() = layer.m_target;
-			view.camera() = layer.m_camera;
-			view.program() = layer.m_program;
+		//- This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0
+		bgfx::touch(0);
 
-			bgfx::setViewClear(view.id(), view.camera().clear_state(),
-				view.camera().clearcolor().rgba());
+		//- setup default view
+		S_CAMERA.matrix_view_update();
 
-			const auto& rect = view.camera().viewport();
-
-			bgfx::setViewRect(view.id(), rect.m_x, rect.m_y, rect.m_w, rect.m_h);
-
-			bgfx::setViewFrameBuffer(view.id(), view.target().target());
-
-			//- Check some flags and do adjustments
-			if (algorithm::bit_check(layer.m_flags, layer_flags_2d))
-			{
-				//- Push orthogonal camera transform data
-				bgfx::setViewTransform(view.id(),
-					glm::value_ptr(view.camera().matrix_view()),
-					glm::value_ptr(view.camera().matrix_projection()));
-			}
-
-			bgfx::setState(view.camera().state(), view.camera().clearcolor().rgba());
-
-			return true;
-		}
-		return false;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::draw(const slayer& layer)
-	{
-		for (const auto& command : layer.m_commands)
-		{
-			command.execute();
-		}
+		bgfx::setViewClear(0, S_CAMERA.clear_state(), S_CAMERA.clearcolor().rgba(), 1.0f, 0);
+		bgfx::setViewRect(0, S_CAMERA.viewport().x(), S_CAMERA.viewport().y(), S_CAMERA.viewport().w(), S_CAMERA.viewport().h());
+		bgfx::setViewTransform(0, glm::value_ptr(S_CAMERA.matrix_view()), glm::value_ptr(S_CAMERA.matrix_projection()));
 	}
 
 	//- Reset state, camera data and framebuffer
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_bgfx::end(const slayer& layer)
+	void crenderer_bgfx::frame_end()
 	{
-		auto& view = m_views[layer.m_id];
+		//- Set default backbuffer and state and display it
+		bgfx::setViewFrameBuffer(0, { bgfx::kInvalidHandle });
 
-		bgfx::setViewFrameBuffer(view.id(), { bgfx::kInvalidHandle });
-	}
+#if CORE_DEBUG
+		bgfx::setDebug(BGFX_DEBUG_TEXT);
+		const bgfx::Stats* stats = bgfx::getStats();
+		const auto os = entry::get_os();
+		double mx, my, sx, sy;
+		os->mouse_position(&mx, &my);
+		os->mouse_scroll_dt(&sx, &sy);
 
-	//------------------------------------------------------------------------------------------------------------------------
-	bool crenderer_bgfx::combine(const slayer& layer)
-	{
-		auto& view = m_views[layer.m_id];
+		bgfx::dbgTextClear();
+		bgfx::dbgTextPrintf(0, 1, 0x0f, fmt::format("Window: '{}:{}:{}:{}'", S_X, S_Y, S_W, S_H).data());
+		bgfx::dbgTextPrintf(0, 2, 0x0f, fmt::format("Mouse: '{}:{}'", mx, my).data());
+		bgfx::dbgTextPrintf(0, 3, 0x0f, fmt::format("Scroll: '{}:{}'", sx, sy).data());
 
-		//- Draw the target texture from layer on top backbuffer
-		if (is_valid(view.target()))
-		{
-			screen_space_quad(m_caps->originBottomLeft, layer.m_scale.x, layer.m_scale.y);
+		bgfx::dbgTextPrintf(0, 4, 0x0f, "Backbuffer %dW x %dH in pixels. CPU: %.4f ms          GPU: %.4f ms"
+			, stats->width
+			, stats->height
+			, double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq
+			, double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq
+		);
+#endif
 
-			bgfx::setTexture(0, view.target().uniform().uniform(), view.target().texture());
-
-			bgfx::submit(0, view.program().program());
-
-			return true;
-		}
-		return false;
+		// Advance to next frame. Process submitted rendering primitives
+		bgfx::frame();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
