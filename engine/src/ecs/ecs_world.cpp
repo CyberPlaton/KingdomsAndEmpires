@@ -49,7 +49,9 @@ namespace ecs
 					}
 				});
 
-		m_transform_change_tracker = world().query<const stransform>();
+		m_transform_change_tracker = world().query_builder<const stransform>()
+			.cached()
+			.build();
 
 		//- TODO: observer that observes any added or removed components seems problematic through queries
 	}

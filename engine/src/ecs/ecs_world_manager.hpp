@@ -10,7 +10,7 @@ namespace ecs
 	public:
 		STATIC_INSTANCE(cworld_manager, s_cworld_manager);
 
-		bool create(stringview_t name);
+		bool create(stringview_t name, const bool make_active = false);
 		bool set_active(stringview_t name);
 		void tick(float dt);
 		const cworld& active() const;

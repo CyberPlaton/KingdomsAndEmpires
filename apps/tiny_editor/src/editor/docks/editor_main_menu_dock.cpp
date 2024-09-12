@@ -9,10 +9,14 @@ namespace editor
 	namespace
 	{
 		constexpr stringview_t C_CREATE_PROJECT_DIALOG_ID = "##createProjectDialog";
+		constexpr stringview_t C_CREATE_WORLD_DIALOG_ID = "##createWorldDialog";
 		constexpr stringview_t C_PROJECT_SETTINGS_WINDOW_ID = "##projectSettingsWindow";
+		//- Note: when adding more strings for text input, dont forget to resize them
 		static string_t S_PROJECT_NAME_TEXT_BUFFER;
 		static string_t S_PROJECT_PATH_TEXT_BUFFER;
+		static string_t S_WORLD_NAME_TEXT_BUFFER;
 		static bool S_CREATE_PROJECT_WINDOW = false;
+		static bool S_CREATE_WORLD_WINDOW = false;
 		static bool S_PROJECT_SETTINGS_WINDOW = false;
 		static const char* C_PROJECT_EXTENSION[] = {".project"};
 
@@ -23,6 +27,7 @@ namespace editor
 	{
 		S_PROJECT_NAME_TEXT_BUFFER.resize(128);
 		S_PROJECT_PATH_TEXT_BUFFER.resize(256);
+		S_WORLD_NAME_TEXT_BUFFER.resize(128);
 		return true;
 	}
 
@@ -80,6 +85,7 @@ namespace editor
 				if (const auto new_scope = imgui::cmenu_scope("New"))
 				{
 					imgui::cmenu_item("Project", &S_CREATE_PROJECT_WINDOW);
+					imgui::cmenu_item("World", &S_CREATE_WORLD_WINDOW);
 				}
 				if (const auto pref_cope = imgui::cmenu_scope("Preferences"))
 				{
@@ -120,6 +126,7 @@ namespace editor
 		ImGui::EndMainMenuBar();
 
 		show_create_project_dialog(&S_CREATE_PROJECT_WINDOW);
+		show_create_world_dialog(&S_CREATE_WORLD_WINDOW);
 		show_project_settings(&S_PROJECT_SETTINGS_WINDOW);
 
 		//- Showing common demo UIs
@@ -151,7 +158,7 @@ namespace editor
 			.title("Create Project...")
 			.icon(ICON_FA_DIAGRAM_PROJECT)
 			.tooltip("Create Project...")
-			.callback([]()
+			.callback([&]()
 				{
 					ui::ctext_input input("##inputProjectName");
 					input
@@ -178,17 +185,10 @@ namespace editor
 						S_PROJECT_PATH_TEXT_BUFFER = pfd::select_folder("Select Project Path", pfd::path::home()).result();
 					}
 				})
-			.confirm_button("Confirm", []()
-				{
-				})
-					.cancel_button("Cancel", []()
-						{
-						})
-					.draw())
+			.draw())
 		{
-			//- Verify specified data is correct
 			auto verified = true;
-			auto result = true;
+			auto result = false;
 
 			verified &= !S_PROJECT_NAME_TEXT_BUFFER.empty();
 			verified &= !S_PROJECT_PATH_TEXT_BUFFER.empty();
@@ -209,6 +209,53 @@ namespace editor
 			else
 			{
 				imgui::cui::create_notification("Failure!", fmt::format("Failed to create project '{}' at path '{}'!", S_PROJECT_NAME_TEXT_BUFFER.data(), S_PROJECT_PATH_TEXT_BUFFER.data()),
+					imgui::notification_type_error);
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmain_menu::show_create_world_dialog(bool* open)
+	{
+		ui::cdialog dialog(open, C_CREATE_WORLD_DIALOG_ID, ImGuiWindowFlags_None);
+
+		if (*open && dialog
+			.title("Create World...")
+			.icon(ICON_FA_EARTH_EUROPE)
+			.tooltip("Create World...")
+			.callback([&]()
+				{
+					ui::ctext_input input("##inputWorldName");
+					input
+						.multiline(false)
+						.value(&S_WORLD_NAME_TEXT_BUFFER)
+						.tooltip(S_WORLD_NAME_TEXT_BUFFER)
+						.option(ui::ctext_input::options_allow_tab, true)
+						.hint("World Name")
+						.draw();
+				})
+			.draw())
+		{
+			auto verified = true;
+			auto result = false;
+
+			verified &= !S_WORLD_NAME_TEXT_BUFFER.empty();
+
+			if (verified)
+			{
+				result = ecs::cworld_manager::instance().create(S_WORLD_NAME_TEXT_BUFFER, !ecs::cworld_manager::instance().has_active());
+			}
+
+			if (result)
+			{
+				imgui::cui::create_notification("Success!", fmt::format("Successfully created world '{}'!", S_WORLD_NAME_TEXT_BUFFER.data()),
+					imgui::notification_type_success);
+
+				S_WORLD_NAME_TEXT_BUFFER.clear();
+			}
+			else
+			{
+				imgui::cui::create_notification("Failure!", fmt::format("Failed to create world '{}'!", S_WORLD_NAME_TEXT_BUFFER.data()),
 					imgui::notification_type_error);
 			}
 		}

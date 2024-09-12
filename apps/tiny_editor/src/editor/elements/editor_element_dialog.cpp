@@ -7,6 +7,8 @@ namespace editor::ui
 		constexpr ImGuiWindowFlags C_DIALOG_FLAGS = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking;
 		constexpr unsigned C_DIALOG_WIDTH = 350;
 		constexpr unsigned C_DIALOG_HEIGHT = 300;
+		constexpr stringview_t C_CONFIRM_TEXT_DEFAULT = "Confirm";
+		constexpr stringview_t C_CANCEL_TEXT_DEFAULT = "Cancel";
 
 	} //- unnamed
 
@@ -90,17 +92,19 @@ namespace editor::ui
 			m_callback();
 			ImGui::EndGroup();
 
-			if (ImGui::SmallButton(m_confirm_button_text.data()))
+			if (ImGui::SmallButton(m_confirm_button_text.data()? m_confirm_button_text.data() : C_CONFIRM_TEXT_DEFAULT.data()))
 			{
-				m_confirm_button();
+				if(m_confirm_button) m_confirm_button();
+
 				m_result = true;
 			}
 
 			ImGui::SameLine(C_DIALOG_WIDTH * 0.75f);
 
-			if (ImGui::SmallButton(m_cancel_button_text.data()))
+			if (ImGui::SmallButton(m_cancel_button_text.data()? m_cancel_button_text.data() : C_CANCEL_TEXT_DEFAULT.data()))
 			{
-				m_cancel_button();
+				if(m_cancel_button) m_cancel_button();
+
 				m_result = false;
 			}
 		}

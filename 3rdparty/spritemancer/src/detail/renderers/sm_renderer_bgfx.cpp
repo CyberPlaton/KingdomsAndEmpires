@@ -171,27 +171,6 @@ namespace sm
 		//- Set default backbuffer and state and display it
 		bgfx::setViewFrameBuffer(0, { bgfx::kInvalidHandle });
 
-#if CORE_DEBUG
-		bgfx::setDebug(BGFX_DEBUG_TEXT);
-		const bgfx::Stats* stats = bgfx::getStats();
-		const auto os = entry::get_os();
-		double mx, my, sx, sy;
-		os->mouse_position(&mx, &my);
-		os->mouse_scroll_dt(&sx, &sy);
-
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(0, 1, 0x0f, fmt::format("Window: '{}:{}:{}:{}'", S_X, S_Y, S_W, S_H).data());
-		bgfx::dbgTextPrintf(0, 2, 0x0f, fmt::format("Mouse: '{}:{}'", mx, my).data());
-		bgfx::dbgTextPrintf(0, 3, 0x0f, fmt::format("Scroll: '{}:{}'", sx, sy).data());
-
-		bgfx::dbgTextPrintf(0, 4, 0x0f, "Backbuffer %dW x %dH in pixels. CPU: %.4f ms          GPU: %.4f ms"
-			, stats->width
-			, stats->height
-			, double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq
-			, double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq
-		);
-#endif
-
 		// Advance to next frame. Process submitted rendering primitives
 		bgfx::frame();
 	}

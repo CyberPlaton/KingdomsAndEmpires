@@ -50,25 +50,6 @@ namespace editor
 		if (ecs::cworld_manager::instance().has_active())
 		{
 			const auto& world = ecs::cworld_manager::instance().active();
-			const auto& entities = world.em().entities();
-			auto e = entities[0];
-
-			if (ImGui::Begin("Component UI test"))
-			{
-				for (const auto& c : world.em().components(e))
-				{
-					if (ImGui::CollapsingHeader(c.c_str()))
-					{
-						auto type = rttr::type::get_by_name(c);
-
-						if (auto m = type.get_method(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME); m.is_valid())
-						{
-							m.invoke({}, e);
-						}
-					}
-				}
-			}
-			ImGui::End();
 		}
 	}
 

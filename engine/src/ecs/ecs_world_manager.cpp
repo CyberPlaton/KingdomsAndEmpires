@@ -32,14 +32,19 @@ namespace ecs
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cworld_manager::create(stringview_t name)
+	bool cworld_manager::create(stringview_t name, const bool make_active /*= false*/)
 	{
 		auto h = algorithm::hash(name);
 
 		if (m_worlds.find(h) == m_worlds.end())
 		{
 			m_worlds.emplace(h, name);
-			m_current = h;
+
+			if (make_active)
+			{
+				m_current = h;
+			}
+
 			return true;
 		}
 		return false;

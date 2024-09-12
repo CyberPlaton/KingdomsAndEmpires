@@ -15,6 +15,7 @@
 #include "services/project_service.hpp"
 #include "io/io_memory_filesystem.hpp"
 #include "io/io_native_filesystem.hpp"
+#include "render/render_scene_system.hpp"
 #include <argparse.h>
 
 namespace engine

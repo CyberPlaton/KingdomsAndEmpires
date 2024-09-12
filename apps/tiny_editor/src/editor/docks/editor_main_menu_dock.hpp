@@ -24,6 +24,7 @@ namespace editor
 
 	private:
 		void show_create_project_dialog(bool* open);
+		void show_create_world_dialog(bool *open);
 		void show_project_settings(bool *open);
 	};
 
