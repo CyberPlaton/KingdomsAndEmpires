@@ -509,6 +509,38 @@ int strings_test_run(int object_count, int modifying_operations_count)
 }
 
 //------------------------------------------------------------------------------------------------------------------------
+int text_filter_algorithms_test_run()
+{
+	string_t text = "Hello, my name is Bogdan Strohonov";
+	string_t pattern = "ogda";
+	vector_t<int> matches;
+
+	if (const auto result = algorithm::matching::direct(pattern, text, matches); result)
+	{
+		log_info(fmt::format("'Direct': Text: '{}'. Pattern: '{}'", text, pattern));
+
+		for (const auto& idx : matches)
+		{
+			log_info(fmt::format("\tMatch at index '{}' with word '{}'",
+				idx, text.substr(idx, pattern.length())));
+		}
+	}
+
+	matches.clear();
+	if (const auto result = algorithm::matching::fuzzy(pattern, text, matches); result)
+	{
+		log_info(fmt::format("'Fuzzy': Text: '{}'. Pattern: '{}'", text, pattern));
+
+		for (const auto& idx : matches)
+		{
+			log_info(fmt::format("\tMatch at index '{}' with word '{}'",
+				idx, text.substr(idx, pattern.length())));
+		}
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------------------------------------------------------
 int __real_main(int argc, char* argv[])
 {
 #if PROFILE_ENABLE
@@ -526,6 +558,9 @@ int __real_main(int argc, char* argv[])
 
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
+
+	const auto r = text_filter_algorithms_test_run();
+	return r;
 
 	engine::cengine::sconfig cfg;
 

@@ -838,6 +838,18 @@ namespace algorithm
 	float bytes_to_gigabytes(unsigned b);
 	byte_t encode_utf8(byte_t out[4], unsigned scancode);
 
+	namespace matching
+	{
+		//- Direct matching algorithm that matches any number of words and returns true if
+		//- there is at least one match.
+		//------------------------------------------------------------------------------------------------------------------------
+		bool direct(stringview_t pattern, stringview_t text, vector_t<int>& matches_out);
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool fuzzy(stringview_t pattern, stringview_t text, vector_t<int>& matches_out);
+
+	} //- matching
+
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename T>
 	void bit_set(int& byte, T bit)

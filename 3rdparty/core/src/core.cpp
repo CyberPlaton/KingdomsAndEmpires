@@ -119,6 +119,68 @@ namespace algorithm
 		return length;
 	}
 
+	namespace matching
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		bool direct(stringview_t pattern, stringview_t text, vector_t<int>& matches_out)
+		{
+			auto result = false;
+			const auto pattern_length = pattern.length();
+			const auto text_length = text.length();
+
+			if (pattern_length > text_length ||
+				pattern_length == 0 || text_length == 0)
+			{
+				return result;
+			}
+
+			//- initialize pattern mask to highest possible character in ASCII format
+			array_t<int, 256> mask; std::memset(&mask[0], -1, 256 * sizeof(int));
+
+			for (auto i = 0; i < pattern_length; ++i)
+			{
+				mask[(byte_t)pattern[i]] &= ~BIT(i);
+			}
+
+			auto state = ~1;
+
+			for (auto i = 0; i < text_length; ++i)
+			{
+				state |= mask[(byte_t)text[i]];
+				state <<= 1;
+
+				if ((state & (1 << pattern_length)) == 0)
+				{
+					matches_out.push_back(i - pattern_length + 1);
+					result = true;
+				}
+			}
+			return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool fuzzy(stringview_t pattern, stringview_t text, vector_t<int>& matches_out)
+		{
+			const char* pattern_string = pattern.data();
+			const char* text_string = text.data();
+			auto index = 0;
+
+			while (*pattern_string != '\0' && *text_string != '\0')
+			{
+				if (core::string_utils::to_lower(*pattern_string) == core::string_utils::to_lower(*text_string))
+				{
+					++pattern_string;
+					matches_out.push_back(index);
+				}
+				++text_string;
+				++index;
+			}
+
+			return *pattern_string == '\0' ? true : false;
+		}
+
+	} //- matching
+
 } //- algorithm
 
 namespace core
