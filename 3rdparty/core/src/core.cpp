@@ -149,7 +149,7 @@ namespace algorithm
 				state |= mask[(byte_t)text[i]];
 				state <<= 1;
 
-				if ((state & (1 << pattern_length)) == 0)
+				if (!algorithm::bit_check(state, BIT(pattern_length)))
 				{
 					matches_out.push_back(i - pattern_length + 1);
 					result = true;
@@ -161,13 +161,16 @@ namespace algorithm
 		//------------------------------------------------------------------------------------------------------------------------
 		bool fuzzy(stringview_t pattern, stringview_t text, vector_t<int>& matches_out)
 		{
+			static constexpr auto  C_STRING_DISTANCE_MAX = 2;
+
 			const char* pattern_string = pattern.data();
 			const char* text_string = text.data();
 			auto index = 0;
 
 			while (*pattern_string != '\0' && *text_string != '\0')
 			{
-				if (core::string_utils::to_lower(*pattern_string) == core::string_utils::to_lower(*text_string))
+				if (core::string_utils::to_lower(*pattern_string) == core::string_utils::to_lower(*text_string) &&
+					core::string_utils::distance_levenshtein(pattern_string, text_string) <= C_STRING_DISTANCE_MAX)
 				{
 					++pattern_string;
 					matches_out.push_back(index);
@@ -1017,6 +1020,63 @@ namespace core
 
 	namespace string_utils
 	{
+		//------------------------------------------------------------------------------------------------------------------------
+		unsigned distance(stringview_t first, stringview_t second)
+		{
+			if(first.length() <= second.length())
+			{
+				unsigned d = 0u;
+
+				for (auto i = 0u; i < first.length(); ++i)
+				{
+					if (first[i] != second[i]) ++d;
+				}
+
+				return d;
+			}
+
+			return distance(second, first);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		unsigned distance_levenshtein(stringview_t first, stringview_t second)
+		{
+			const auto first_length = first.length();
+			const auto second_length = second.length();
+
+			if(first_length == 0) return second_length;
+			if (second_length == 0) return first_length;
+
+			//- Resize the matrices to required sizes
+			vector_t<vector_t<int>> matrix(first_length + 1, vector_t<int>(second_length + 1));
+
+			for (auto i = 0; i < first_length; ++i)
+			{
+				matrix[i][0] = i;
+			}
+			for (auto i = 0; i < second_length; ++i)
+			{
+				matrix[0][i] = i;
+			}
+
+			for(auto i = 1; i < first_length; ++i)
+			{
+				for (auto j = 1; j < second_length; ++j)
+				{
+					const auto cost = second[j - 1] == first[i - 1] ? 0 : 1;
+
+					matrix[i][j] = std::min(
+						{
+							matrix[i - 1][j] + 1,		//- deletion
+							matrix[i][j - 1] + 1,		//- insertion
+							matrix[i - 1][j - 1] + cost //- substitution
+						});
+				}
+			}
+
+			return matrix[first_length][second_length];
+		}
+
 		//------------------------------------------------------------------------------------------------------------------------
 		void split(const string_t& string, char delimiter, stl::vector<string_t>& storage)
 		{

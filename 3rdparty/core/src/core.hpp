@@ -1362,6 +1362,8 @@ namespace core
 
 	namespace string_utils
 	{
+		unsigned distance(stringview_t first, stringview_t second);
+		unsigned distance_levenshtein(stringview_t first, stringview_t second);
 		void split(const string_t& string, char delimiter, stl::vector< string_t >& storage);
 		void insert(string_t& string, const string_t& to_insert_one, size_t index);
 		void push_front(string_t& string, const string_t& to_prepend_one);

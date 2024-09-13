@@ -559,9 +559,6 @@ int __real_main(int argc, char* argv[])
 	core::set_logger(core_io_error_function);
 	sm::set_logger(core_io_error_function);
 
-	const auto r = text_filter_algorithms_test_run();
-	return r;
-
 	engine::cengine::sconfig cfg;
 
 	cfg.m_mode = core::launch_context_editor;
