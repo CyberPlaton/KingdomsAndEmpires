@@ -18,6 +18,8 @@ namespace editor
 		void on_ui_render() override;
 
 	private:
+		using entity_id_t = flecs::id_t;
+
 		enum world_view_type
 		{
 			world_view_type_none = 0,
@@ -25,24 +27,33 @@ namespace editor
 			world_view_type_layered,
 		};
 
-		struct sentity
+		struct ssnapshot_entity
 		{
 			core::cuuid m_uuid;
-			std::string_view m_name;
+			string_t m_name;
+			vector_t<entity_id_t> m_children;
 			flecs::entity m_entity;
-			//- hashed uuids of parent and children
-			unsigned m_parent = MAX(unsigned);
-			vector_t<unsigned> m_children;
+			entity_id_t m_parent = MAX(entity_id_t);
+		};
+
+		struct slayered_view
+		{
+			map_t<unsigned, vector_t<unsigned>> m_view;
+		};
+
+		struct shierarchy_view
+		{
+			vector_t<unsigned> m_view;
 		};
 
 		struct sstate
 		{
-			vector_t<sentity> m_snapshot;
-			umap_t<unsigned, unsigned> m_lookup;
+			umap_t<entity_id_t, unsigned> m_lookup;
+			vector_t<ssnapshot_entity> m_snapshot;
 
-			//- TODO: contains array of indices into snapshot. Each entity in here is
-			//- guaranteed to have the 3 essential components: transform, identifier and hierarchy.
-			map_t<unsigned, vector_t<unsigned>> m_layered_view;
+			shierarchy_view m_hierarchy_view;
+			slayered_view m_layered_view;
+
 			world_view_type m_view_type = world_view_type_hierarchy;
 			bool m_dirty = true;
 		};
