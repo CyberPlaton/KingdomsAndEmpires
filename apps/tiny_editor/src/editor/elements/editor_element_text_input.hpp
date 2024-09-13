@@ -26,7 +26,7 @@ namespace editor::ui
 		};
 
 		ctext_input(stringview_t id = {}, bool* enabled = nullptr, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None);
-		~ctext_input();
+		~ctext_input() = default;
 
 		ctext_input& value(string_t* text);
 		ctext_input& hint(stringview_t text);

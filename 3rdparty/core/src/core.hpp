@@ -326,6 +326,9 @@ using bitset_t = stl::bitset<TSize>;
 template<typename T>
 using list_t = stl::list<T>;
 
+template<typename T>
+using set_t = stl::set<T>;
+
 namespace core
 {
 	template<typename T>

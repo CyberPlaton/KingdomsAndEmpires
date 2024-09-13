@@ -63,12 +63,7 @@ namespace editor::ui
 	//------------------------------------------------------------------------------------------------------------------------
 	ctext_input::ctext_input(stringview_t id /*= {}*/, bool* enabled /*= nullptr*/,
 		ImGuiInputTextFlags flags /*= ImGuiInputTextFlags_None*/) :
-		m_flags(flags), m_id(id.data()), m_enabled(enabled ? *enabled : true), m_value(nullptr), m_size(ImVec2(0, 0))
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ctext_input::~ctext_input()
+		m_flags(flags), m_id(id.data()), m_enabled(enabled ? *enabled : true), m_value(nullptr), m_size(ImVec2(0, 0)), m_result(false)
 	{
 	}
 
