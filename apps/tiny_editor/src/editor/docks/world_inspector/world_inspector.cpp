@@ -180,7 +180,7 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld_inspector::recreate_snapshot(const flecs::world& world)
+	void cworld_inspector::recreate_snapshot()
 	{
 		CORE_NAMED_ZONE("cworld_inspector::recreate_snapshot");
 
@@ -188,7 +188,7 @@ namespace editor
 		state().m_hierarchy_view.m_view.clear();
 		state().m_layered_view.m_view.clear();
 
-		world.each([&](flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
+		ecs::cworld_manager::instance().active().world().each([&](flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
 			{
 				store_in_snapshot(e, hierarchy, identifier);
 			});

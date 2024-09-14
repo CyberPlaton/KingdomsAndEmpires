@@ -70,7 +70,7 @@ namespace editor
 		void show_entity_hierarchy_recursive(const ssnapshot_entity& e, unsigned depth);
 
 		void create_entity_default();
-		void recreate_snapshot(const flecs::world& world);
+		void recreate_snapshot();
 		bool is_in_snapshot(const core::cuuid& uuid);
 		void store_in_snapshot(flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier);
 	};
