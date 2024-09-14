@@ -218,9 +218,6 @@ namespace editor
 			snap.m_children.push_back(c);
 		}
 
-		//- Store entity in snapshot
-		state().m_snapshot[snap.m_uuid] = std::move(snap);
-
 		//- Store in hierarchy view and/or layered view
 		if (e.has<ecs::ssprite_renderer>())
 		{
@@ -233,6 +230,9 @@ namespace editor
 		{
 			state().m_hierarchy_view.m_view.push_back(snap.m_uuid);
 		}
+
+		//- Store entity in snapshot
+		state().m_snapshot[snap.m_uuid] = std::move(snap);
 	}
 
 } //- editor

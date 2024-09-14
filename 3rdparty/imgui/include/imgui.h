@@ -8,10 +8,4 @@
 #include "../src/implot.h"
 #include "../src/imgui_node_editor.h"
 #include "../src/imgui_node_editor_internal.h"
-#include "../src/IconsFontAwesome6.h"
 #include "../src/TextEditor.h"
-namespace fontdata
-{
-#include "../src/FA6FreeSolidFontData.h"
-
-} //- fontdata

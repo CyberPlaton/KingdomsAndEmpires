@@ -2,6 +2,8 @@
 #include <core.h>
 #include <imgui.h>
 #include "../bgfx_integration/bgfx.hpp"
+#include "imgui/icons_kenney.h"
+#include "imgui/IconsFontAwesome6.h"
 #include "imgui_scopes.hpp"
 #include "imnodes_scopes.hpp"
 #include "imnodes_node.hpp"

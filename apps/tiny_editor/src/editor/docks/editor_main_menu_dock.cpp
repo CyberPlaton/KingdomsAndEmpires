@@ -156,7 +156,7 @@ namespace editor
 
 		if (*open && dialog
 			.title("Create Project...")
-			.icon(ICON_FA_DIAGRAM_PROJECT)
+			.icon(ICON_FA_ADDRESS_BOOK)
 			.tooltip("Create Project...")
 			.callback([&]()
 				{
@@ -180,7 +180,7 @@ namespace editor
 
 					ImGui::SameLine();
 
-					if (ImGui::SmallButton(ICON_FA_FOLDER_OPEN))
+					if (ImGui::SmallButton(ICON_KI_WRENCH))
 					{
 						S_PROJECT_PATH_TEXT_BUFFER = pfd::select_folder("Select Project Path", pfd::path::home()).result();
 					}
@@ -221,7 +221,7 @@ namespace editor
 
 		if (*open && dialog
 			.title("Create World...")
-			.icon(ICON_FA_EARTH_EUROPE)
+			.icon(ICON_KI_WRENCH)
 			.tooltip("Create World...")
 			.callback([&]()
 				{

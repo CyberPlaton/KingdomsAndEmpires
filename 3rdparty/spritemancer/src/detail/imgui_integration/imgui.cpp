@@ -139,7 +139,7 @@ namespace imgui
 	{
 		imgui_ctx();
 		implot_ctx();
-		imgui::imguiCreate(18.0f, &S_ALLOCATOR);
+		imgui::imguiCreate(16.0f, &S_ALLOCATOR);
 
 		
 		//- setup default style
@@ -1262,25 +1262,26 @@ namespace imgui
 				{
 				case notification_type_warn:
 				{
-					label = ICON_FA_CIRCLE_INFO;
+					label = ICON_KI_INFO;
+
 					color = snotification::s_warn_color;
 					break;
 				}
 				case notification_type_error:
 				{
-					label = ICON_FA_CIRCLE_EXCLAMATION;
+					label = ICON_KI_EXCLAMATION_CIRCLE;
 					color = snotification::s_error_color;
 					break;
 				}
 				case notification_type_critical:
 				{
-					label = ICON_FA_TRIANGLE_EXCLAMATION;
+					label = ICON_KI_EXCLAMATION_TRIANGLE;
 					color = snotification::s_critical_color;
 					break;
 				}
 				case notification_type_success:
 				{
-					label = ICON_FA_CIRCLE_CHECK;
+					label = ICON_KI_CHECK;
 					color = snotification::s_success_color;
 					break;
 				}
@@ -1288,7 +1289,7 @@ namespace imgui
 				case notification_type_none:
 				case notification_type_info:
 				{
-					label = ICON_FA_CIRCLE_INFO;
+					label = ICON_KI_INFO;
 					color = snotification::s_info_color;
 					break;
 				}

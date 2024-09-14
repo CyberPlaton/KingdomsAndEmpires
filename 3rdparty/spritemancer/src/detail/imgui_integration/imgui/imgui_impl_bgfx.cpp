@@ -5,8 +5,8 @@
 #include "robotomono_regular.ttf.h"
 #include "icons_kenney.ttf.h"
 #include "icons_kenney.h"
-#include "icons_font_awesome.ttf.h"
-#include "icons_font_awesome.h"
+#include "IconsFontAwesome6.h"
+#include "FA6FreeSolidFontData.h"
 
 #include "vs_ocornut_imgui.bin.h"
 #include "fs_ocornut_imgui.bin.h"
@@ -37,8 +37,7 @@ namespace
 	//------------------------------------------------------------------------------------------------------------------------
 	static FontRangeMerge s_fontRangeMerge[] =
 	{
-		{ s_iconsKenneyTtf,      sizeof(s_iconsKenneyTtf),      { ICON_MIN_KI, ICON_MAX_KI, 0 } },
-		{ s_iconsFontAwesomeTtf, sizeof(s_iconsFontAwesomeTtf), { ICON_MIN_FA, ICON_MAX_FA, 0 } },
+		{ s_iconsKenneyTtf,				sizeof(s_iconsKenneyTtf),				{ ICON_MIN_KI, ICON_MAX_KI, 0 } },
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -260,7 +259,6 @@ namespace
 			ImFontConfig config;
 			config.FontDataOwnedByAtlas = false;
 			config.MergeMode = false;
-			//			config.MergeGlyphCenterV = true;
 
 			const ImWchar* ranges = io.Fonts->GetGlyphRangesCyrillic();
 			m_font[ImGui::Font::Regular] = io.Fonts->AddFontFromMemoryTTF((void*)s_robotoRegularTtf, sizeof(s_robotoRegularTtf), _fontSize, &config, ranges);
@@ -280,6 +278,14 @@ namespace
 					, frm.ranges
 				);
 			}
+
+			//- Adding icons in compressed form
+			static const ImWchar compressed_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+			io.Fonts->AddFontFromMemoryCompressedTTF((void*)fa_solid_900_compressed_data
+				, fa_solid_900_compressed_size
+				, _fontSize - 3.0f
+				, &config
+				, compressed_ranges);
 		}
 
 		io.Fonts->GetTexDataAsRGBA32(&data, &width, &height);
@@ -293,6 +299,8 @@ namespace
 			, 0
 			, bgfx::copy(data, width * height * 4)
 		);
+
+		ImGui::SetCurrentFont(m_font[ImGui::Font::Regular]);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -351,6 +359,15 @@ namespace
 	}
 
 } //- unnamed
+
+namespace ImGui
+{
+	void PushFont(Font::Enum _font)
+	{
+		PushFont(S_CTX.m_font[_font]);
+	}
+
+} //- ImGui
 
 namespace imgui
 {
