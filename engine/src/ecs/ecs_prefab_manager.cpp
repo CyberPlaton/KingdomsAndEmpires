@@ -29,20 +29,32 @@ namespace ecs
 		m_prefabs.clear();
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	cprefab& cprefab_manager::create_prefab()
+	{
+		return create_prefab(core::cuuid{});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprefab& cprefab_manager::create_prefab(const core::cuuid& uuid)
+	{
+		return create_prefab(stringview_t(uuid.string()));
+	}
+
 	//- Create a new prefab entity with given name.
 	//------------------------------------------------------------------------------------------------------------------------
-	ecs::cprefab& cprefab_manager::create(stringview_t name)
+	ecs::cprefab& cprefab_manager::create_prefab(stringview_t uuid)
 	{
-		auto h = algorithm::hash(name);
+		auto h = algorithm::hash(uuid);
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
-			m_prefabs.try_emplace(h, string_t(name), world());
+			m_prefabs.try_emplace(h, string_t(uuid), world());
 		}
 		else
 		{
 			//- report warning
-			log_warn(fmt::format("Trying to create a prefab with a duplicate name '{}'", name));
+			log_warn(fmt::format("Trying to create a prefab with a duplicate name '{}'", uuid.data()));
 		}
 
 		return m_prefabs.at(h);

@@ -35,7 +35,9 @@ namespace editor
 
 		if (state().m_dirty)
 		{
-			recreate_snapshot(world_manager.active().world());
+			recreate_snapshot();
+
+			state().m_dirty = false;
 		}
 
 		ui::ctable table("##table");
@@ -95,8 +97,6 @@ namespace editor
 				if (ImGui::MenuItem("Empty Entity"))
 				{
 					create_entity_default();
-
-					state().m_dirty = true;
 				}
 				ImGui::EndMenu();
 			}
@@ -192,8 +192,6 @@ namespace editor
 			{
 				store_in_snapshot(e, hierarchy, identifier);
 			});
-
-		state().m_dirty = false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

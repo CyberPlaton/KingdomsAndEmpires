@@ -13,7 +13,9 @@ namespace ecs
 
 		void on_shutdown() override final;
 
-		cprefab& create(stringview_t name);
+		cprefab& create_prefab();
+		cprefab& create_prefab(stringview_t uuid);
+		cprefab& create_prefab(const core::cuuid& uuid);
 		cprefab& find(stringview_t name);
 		void destroy(stringview_t name);
 
