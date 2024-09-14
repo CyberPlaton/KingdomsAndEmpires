@@ -108,16 +108,9 @@ namespace editor::ui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ctext_input& ctext_input::option(options op, const bool value)
+	ctext_input& ctext_input::options(int op)
 	{
-		if (value)
-		{
-			algorithm::bit_set(m_flags, (ImGuiInputTextFlags)op);
-		}
-		else
-		{
-			algorithm::bit_clear(m_flags, (ImGuiInputTextFlags)op);
-		}
+		m_flags = op;
 		return *this;
 	}
 

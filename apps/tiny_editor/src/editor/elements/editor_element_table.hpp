@@ -25,6 +25,11 @@ namespace editor::ui
 			options_sizing_fixed_same					= ImGuiTableFlags_SizingFixedSame,
 			options_sizing_stretch_proportional_width	= ImGuiTableFlags_SizingStretchProp,
 			options_sizing_stretch_same_width			= ImGuiTableFlags_SizingStretchSame,
+
+			options_borders_all							= options_inner_horizontal_borders
+														| options_inner_vertical_borders
+														| options_outer_horizontal_borders
+														| options_outer_vertical_borders
 		};
 
 		ctable(stringview_t id = {}, bool* enabled = nullptr, ImGuiTableFlags flags = ImGuiTableFlags_None);
@@ -32,7 +37,7 @@ namespace editor::ui
 
 		ctable& size(const vec2_t& value);
 		ctable& tooltip(stringview_t text, const bool show = true);
-		ctable& option(options op, const bool value);
+		ctable& options(int op);
 
 		bool draw();
 

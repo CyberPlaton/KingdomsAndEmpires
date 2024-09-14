@@ -24,16 +24,9 @@ namespace editor::ui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ctable& ctable::option(options op, const bool value)
+	ctable& ctable::options(int op)
 	{
-		if (value)
-		{
-			algorithm::bit_set(m_flags, (ImGuiTableFlags)op);
-		}
-		else
-		{
-			algorithm::bit_clear(m_flags, (ImGuiTableFlags)op);
-		}
+		m_flags = op;
 		return *this;
 	}
 

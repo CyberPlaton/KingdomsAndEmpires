@@ -211,7 +211,7 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		core::cuuid m_parent;
+		core::cuuid m_parent = core::cuuid::C_INVALID_UUID;
 		vector_t<core::cuuid> m_children;
 
 		RTTR_ENABLE(icomponent);

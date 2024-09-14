@@ -18,8 +18,6 @@ namespace editor
 		void on_ui_render() override;
 
 	private:
-		using entity_id_t = flecs::id_t;
-
 		enum world_view_type
 		{
 			world_view_type_none = 0,
@@ -31,25 +29,24 @@ namespace editor
 		{
 			core::cuuid m_uuid;
 			string_t m_name;
-			vector_t<entity_id_t> m_children;
+			vector_t<core::cuuid> m_children;
 			flecs::entity m_entity;
-			entity_id_t m_parent = MAX(entity_id_t);
+			core::cuuid m_parent;
 		};
 
 		struct slayered_view
 		{
-			map_t<unsigned, vector_t<unsigned>> m_view;
+			map_t<unsigned, vector_t<core::cuuid>> m_view;
 		};
 
 		struct shierarchy_view
 		{
-			vector_t<unsigned> m_view;
+			vector_t<core::cuuid> m_view;
 		};
 
 		struct sstate
 		{
-			umap_t<entity_id_t, unsigned> m_lookup;
-			vector_t<ssnapshot_entity> m_snapshot;
+			umap_t<core::cuuid, ssnapshot_entity> m_snapshot;
 
 			shierarchy_view m_hierarchy_view;
 			slayered_view m_layered_view;
@@ -62,17 +59,20 @@ namespace editor
 		ref_t<centity_context_menu> m_context_menu;
 
 	private:
-		sstate& state() {return m_state;}
+		inline sstate& state() { return m_state; }
+		inline const sstate& state() const { return m_state; }
 		void show_menubar();
-		void show_rendering_layer_view(const flecs::world& world);
-		void show_world_hierarchy_view(const flecs::world& world);
-		void show_entity(const sentity& e, unsigned depth = 0);
-		void create_default_entity();
+		void show_view_layered();
+		void show_view_hierarchy();
 
-		const sentity& get(unsigned hash);
+		bool show_entity_ui(const ssnapshot_entity& e, unsigned depth);
+		void show_entity_hierarchy(const ssnapshot_entity& e);
+		void show_entity_hierarchy_recursive(const ssnapshot_entity& e, unsigned depth);
+
+		void create_entity_default();
 		void recreate_snapshot(const flecs::world& world);
-		bool present_in_snapshot(const core::cuuid& uuid);
-		void emplace_in_snapshot(flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier);
+		bool is_in_snapshot(const core::cuuid& uuid);
+		void store_in_snapshot(flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier);
 	};
 
 } //- editor

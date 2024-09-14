@@ -165,7 +165,7 @@ namespace editor
 						.multiline(false)
 						.value(&S_PROJECT_NAME_TEXT_BUFFER)
 						.tooltip(S_PROJECT_NAME_TEXT_BUFFER)
-						.option(ui::ctext_input::options_allow_tab, true)
+						.options(ui::ctext_input::options_allow_tab)
 						.hint("Project Name")
 						.draw();
 
@@ -230,7 +230,7 @@ namespace editor
 						.multiline(false)
 						.value(&S_WORLD_NAME_TEXT_BUFFER)
 						.tooltip(S_WORLD_NAME_TEXT_BUFFER)
-						.option(ui::ctext_input::options_allow_tab, true)
+						.options(ui::ctext_input::options_allow_tab)
 						.hint("World Name")
 						.draw();
 				})

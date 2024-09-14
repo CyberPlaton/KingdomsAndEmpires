@@ -1999,6 +1999,7 @@ namespace core
 		bool is_equal_to(const cuuid& uuid) const { return compare(uuid) == 0; }
 		bool is_smaller_as(const cuuid& uuid) const { return compare(uuid) < 0; }
 		bool is_higher_as(const cuuid& uuid) const { return compare(uuid) > 0; }
+		bool operator<(const cuuid& uuid) const { return is_smaller_as(uuid); }
 		bool operator==(const cuuid& other) const { return is_equal_to(other); }
 		bool operator!=(const cuuid& other) const { return !is_equal_to(other); };
 
@@ -3561,3 +3562,17 @@ namespace logging
 	};
 
 } //- logging
+
+namespace std
+{
+	//- Specializations for use with std template structures
+	//------------------------------------------------------------------------------------------------------------------------
+	template<>
+	struct hash<core::cuuid>
+	{
+		std::size_t operator()(const core::cuuid& uuid) const
+		{
+			return uuid.hash();
+		}
+	};
+}

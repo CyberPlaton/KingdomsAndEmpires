@@ -48,7 +48,7 @@ namespace editor::ui
 			.multiline(false)
 			.hint(C_TEXT_INPUT_HINT)
 			.size(C_TEXT_INPUT_SIZE)
-			.option(ctext_input::options_true_on_enter, true)
+			.options(ctext_input::options_true_on_enter)
 			.tooltip(C_TEXT_INPUT_TOOLTIP);
 
 		auto result = false;

@@ -1,4 +1,5 @@
 #include "world_inspector.hpp"
+#include "../../elements/editor_element_table.hpp"
 
 namespace editor
 {
@@ -30,8 +31,21 @@ namespace editor
 	{
 		auto& world_manager = ecs::cworld_manager::instance();
 
-		if(!world_manager.has_active())
-			return;
+		if(!world_manager.has_active()) return;
+
+		if (state().m_dirty)
+		{
+			recreate_snapshot(world_manager.active().world());
+		}
+
+		ui::ctable table("##table");
+
+		table
+			.size({ 100, 100 })
+			.tooltip("Tooltip")
+			.options(ui::ctable::options_borders_all | ui::ctable::options_sizing_stretch_same_width)
+			.draw();
+
 
 		//- TODO: it seems that the context menu only has to be one level above to work as expected.
 		m_context_menu->on_ui_render();
@@ -47,12 +61,12 @@ namespace editor
 		default:
 		case world_view_type_hierarchy:
 		{
-			show_world_hierarchy_view(world_manager.active().world());
+			show_view_hierarchy();
 			break;
 		}
 		case world_view_type_layered:
 		{
-			show_rendering_layer_view(world_manager.active().world());
+			show_view_layered();
 			break;
 		}
 		}
@@ -78,9 +92,9 @@ namespace editor
 			}
 			if (ImGui::BeginMenu("New"))
 			{
-				if (ImGui::MenuItem("Entity"))
+				if (ImGui::MenuItem("Empty Entity"))
 				{
-					create_default_entity();
+					create_entity_default();
 
 					state().m_dirty = true;
 				}
@@ -92,13 +106,11 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld_inspector::show_rendering_layer_view(const flecs::world& world)
+	void cworld_inspector::show_view_layered()
 	{
 		//- TODO: use cashing and recreate layered view only if something happened like a new layer added or removed
 		//- TODO: how and where do we query for the currently created layers? sm does not care about it, so it should be our
 		//- responsibility to create new ones and name them
-
-		state().m_layered_view.clear();
 
 // 		world.each([&](flecs::entity e, const ecs::ssprite& sprite, const ecs::sidentifier& identifier)
 // 			{
@@ -107,94 +119,120 @@ namespace editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld_inspector::show_world_hierarchy_view(const flecs::world& world)
+	void cworld_inspector::show_view_hierarchy()
 	{
-		//- TODO: use caching and recreate hierarchy view only if something happened
-		if (state().m_dirty)
+		for (const auto& uuid : state().m_hierarchy_view.m_view)
 		{
-			recreate_snapshot(world);
-		}
+			const auto& e = state().m_snapshot.at(uuid);
 
-		for (const auto& e : state().m_snapshot)
-		{
-			show_entity(e);
+			show_entity_hierarchy(e);
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld_inspector::show_entity(const sentity& e, unsigned depth /*= 0*/)
+	bool cworld_inspector::show_entity_ui(const ssnapshot_entity& e, unsigned depth)
 	{
+		if (ImGui::CollapsingHeader(e.m_name.data()))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld_inspector::create_default_entity()
+	void cworld_inspector::show_entity_hierarchy(const ssnapshot_entity& e)
+	{
+		if (show_entity_ui(e, 0))
+		{
+			for (const auto& uuid : e.m_children)
+			{
+				const auto& kid = state().m_snapshot.at(uuid);
+
+				show_entity_hierarchy_recursive(kid, 1);
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld_inspector::show_entity_hierarchy_recursive(const ssnapshot_entity& e, unsigned depth)
+	{
+		if (show_entity_ui(e, depth))
+		{
+			for (const auto& uuid : e.m_children)
+			{
+				const auto& kid = state().m_snapshot.at(uuid);
+
+				show_entity_hierarchy_recursive(kid, depth + 1);
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld_inspector::create_entity_default()
 	{
 		ecs::cworld_manager::instance().active().em().create_entity()
 			.add<ecs::stransform>()
 			.add<ecs::sidentifier>()
 			.add<ecs::shierarchy>()
 			;
-	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	const editor::cworld_inspector::sentity& cworld_inspector::get(unsigned hash)
-	{
-		return state().m_snapshot[state().m_lookup.at(hash)];
+		state().m_dirty = true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld_inspector::recreate_snapshot(const flecs::world& world)
 	{
-		{
-			CORE_NAMED_ZONE("World Inspector recreate snapshot");
+		CORE_NAMED_ZONE("cworld_inspector::recreate_snapshot");
 
-			state().m_snapshot.clear();
-			state().m_lookup.clear();
+		state().m_snapshot.clear();
+		state().m_hierarchy_view.m_view.clear();
+		state().m_layered_view.m_view.clear();
 
-			world.each([&](flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
-				{
-					if (!present_in_snapshot(identifier.m_uuid))
-					{
-						emplace_in_snapshot(e, hierarchy, identifier);
-					}
-				});
-
-			state().m_dirty = false;
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool cworld_inspector::present_in_snapshot(const core::cuuid& uuid)
-	{
-		auto h = uuid.hash();
-
-		return algorithm::find_if(state().m_lookup.begin(), state().m_lookup.end(),
-			[=](const auto& pair)
+		world.each([&](flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
 			{
-				return pair.first == h;
+				store_in_snapshot(e, hierarchy, identifier);
+			});
 
-			}) != state().m_lookup.end();
+		state().m_dirty = false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld_inspector::emplace_in_snapshot(flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
+	bool cworld_inspector::is_in_snapshot(const core::cuuid& uuid)
 	{
-		//- create entity for snapshot
-		sentity entity;
-		entity.m_uuid = identifier.m_uuid;
-		entity.m_name = identifier.m_name;
-		entity.m_entity = e;
-		entity.m_parent = identifier.m_uuid.hash();
-		for (const auto& uuid : hierarchy.m_children)
+		return state().m_snapshot.find(uuid) != state().m_snapshot.end();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld_inspector::store_in_snapshot(flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
+	{
+		//- Create snapshot entity from actual entity
+		ssnapshot_entity snap;
+		snap.m_uuid = identifier.m_uuid;
+		snap.m_name = identifier.m_name;
+		snap.m_entity = e;
+
+		//- Check whether entity has children and/or parent
+		snap.m_parent = hierarchy.m_parent;
+		for (const auto& c : hierarchy.m_children)
 		{
-			entity.m_children.push_back(uuid.hash());
+			snap.m_children.push_back(c);
 		}
 
-		//- store entity in snapshot
-		auto h = identifier.m_uuid.hash();
-		auto index = state().m_snapshot.size();
-		state().m_snapshot.emplace_back(std::move(entity));
-		state().m_lookup[h] = index;
+		//- Store entity in snapshot
+		state().m_snapshot[snap.m_uuid] = std::move(snap);
+
+		//- Store in hierarchy view and/or layered view
+		if (e.has<ecs::ssprite_renderer>())
+		{
+			const auto& sprite = e.get<ecs::ssprite_renderer>();
+
+			state().m_layered_view.m_view[sprite->m_layer].push_back(snap.m_uuid);
+		}
+
+		if (snap.m_parent == core::cuuid::C_INVALID_UUID)
+		{
+			state().m_hierarchy_view.m_view.push_back(snap.m_uuid);
+		}
 	}
 
 } //- editor
