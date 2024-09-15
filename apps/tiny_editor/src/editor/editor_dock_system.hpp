@@ -36,7 +36,7 @@ namespace editor
 		void pop_back();
 		void pop_front();
 
-		deque_t<layer_ref_t>& docks();
+		deque_t<layer_ref_t>& docks() { return m_docks; }
 
 	private:
 		scontext m_ctx; //- The real context structure distributed between context holders

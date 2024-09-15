@@ -15,6 +15,7 @@ namespace editor
 		bool m_docks_enabled		= true;
 		bool m_imgui_demo			= false;
 		bool m_implot_demo			= false;
+		core::cuuid m_inspected_entity_uuid = core::cuuid::C_INVALID_UUID;
 	};
 
 	//- Access to context.

@@ -140,9 +140,15 @@ namespace editor
 		//- Show entity name and type and react to context menu
 		{
 			m_table.begin_column(0);
-			if (ImGui::CollapsingHeader(e.m_name.data()))
+			if (ImGui::TreeNode(e.m_name.data()))
 			{
+				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				{
+					ctx().m_inspected_entity_uuid = e.m_uuid;
+				}
+
 				result = true;
+				ImGui::TreePop();
 			}
 		}
 
