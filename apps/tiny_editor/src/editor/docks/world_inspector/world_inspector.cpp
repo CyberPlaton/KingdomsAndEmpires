@@ -1,5 +1,4 @@
 #include "world_inspector.hpp"
-#include "../../elements/editor_element_table.hpp"
 
 namespace editor
 {
@@ -40,38 +39,41 @@ namespace editor
 			state().m_dirty = false;
 		}
 
-		ui::ctable table("##table");
-
-		table
-			.size({ 100, 100 })
-			.tooltip("Tooltip")
-			.options(ui::ctable::options_borders_all | ui::ctable::options_sizing_stretch_same_width)
-			.draw();
-
-
 		//- TODO: it seems that the context menu only has to be one level above to work as expected.
 		m_context_menu->on_ui_render();
-
-		//const auto& entities = world_manager.active().em().entities();
 
 		ImGui::BeginChild(C_BOTTOM_PANEL_ID.data(), {0.0f, 0.0f}, C_WORLD_INSPECTOR_CHILD_FLAGS, C_WORLD_INSPECTOR_FLAGS);
 
 		show_menubar();
 
-		switch (m_state.m_view_type)
 		{
-		default:
-		case world_view_type_hierarchy:
-		{
-			show_view_hierarchy();
-			break;
+			if (m_table
+				.options(ui::ctable::options_borders_all)
+				.begin(2,
+					{
+						{ImGuiTableColumnFlags_WidthStretch, 0.9f},
+						{ImGuiTableColumnFlags_WidthStretch, 0.1f}
+					}))
+			{
+				switch (state().m_view_type)
+				{
+				default:
+				case world_view_type_hierarchy:
+				{
+					show_view_hierarchy();
+					break;
+				}
+				case world_view_type_layered:
+				{
+					show_view_layered();
+					break;
+				}
+				}
+
+				m_table.end();
+			}
 		}
-		case world_view_type_layered:
-		{
-			show_view_layered();
-			break;
-		}
-		}
+
 		ImGui::EndChild();
 	}
 
@@ -132,11 +134,23 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cworld_inspector::show_entity_ui(const ssnapshot_entity& e, unsigned depth)
 	{
-		if (ImGui::CollapsingHeader(e.m_name.data()))
+		auto result = false;
+		m_table.begin_next_row();
+
+		//- Show entity name and type and react to context menu
 		{
-			return true;
+			m_table.begin_column(0);
+			if (ImGui::CollapsingHeader(e.m_name.data()))
+			{
+				result = true;
+			}
 		}
-		return false;
+
+		//- Show entity icons and settings for state changes
+		{
+			m_table.begin_column(1);
+		}
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

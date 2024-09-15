@@ -1,5 +1,6 @@
 #pragma once
 #include "../editor_dock_base.hpp"
+#include "../../elements/editor_element_table.hpp"
 #include "../entity_context_menu/entity_context_menu.hpp"
 
 namespace editor
@@ -10,7 +11,7 @@ namespace editor
 	class cworld_inspector final : public clayer_base
 	{
 	public:
-		cworld_inspector(scontext& ctx) : clayer_base("##world_inspector", ctx) {};
+		cworld_inspector(scontext& ctx) : clayer_base("##world_inspector", ctx), m_table("##table") {};
 		~cworld_inspector() = default;
 
 		bool init() override;
@@ -56,6 +57,7 @@ namespace editor
 		};
 
 		sstate m_state;
+		ui::ctable m_table;
 		ref_t<centity_context_menu> m_context_menu;
 
 	private:

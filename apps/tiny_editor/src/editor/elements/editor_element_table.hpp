@@ -32,20 +32,25 @@ namespace editor::ui
 														| options_outer_vertical_borders
 		};
 
-		ctable(stringview_t id = {}, bool* enabled = nullptr, ImGuiTableFlags flags = ImGuiTableFlags_None);
+		using table_column_data_t = std::pair<ImGuiTableColumnFlags, float>;
+
+		ctable(stringview_t id, bool* enabled = nullptr, ImGuiTableFlags flags = ImGuiTableFlags_None);
 		~ctable() = default;
 
 		ctable& size(const vec2_t& value);
 		ctable& tooltip(stringview_t text, const bool show = true);
 		ctable& options(int op);
 
-		bool draw();
+		bool begin(const unsigned columns, const vector_t<table_column_data_t>& data = {});
+		ctable& begin_next_row();
+		ctable& begin_column(const unsigned idx);
+		void end();
 
 	private:
 		string_t m_id;
 		stringview_t m_tooltip;
-		stringview_t m_hint;
 		ImVec2 m_size;
+		unsigned m_columns;
 		ImGuiTableFlags m_flags;
 		bool m_show_tooltip;
 		bool m_enabled;
