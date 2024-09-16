@@ -38,8 +38,7 @@ namespace ecs
 						//- add aabb proxy for entity to b2DynamicTree
 						create_proxy(e);
 
-						//- name of the component will be in form 'ecs.transform', we have to
-						//- format the name first
+						//- name of the component will be in form 'ecs.transform', we have to format the name first
 						//cm().on_component_added(e, c);
 					}
 					else if (it.event() == flecs::OnRemove)
@@ -49,11 +48,35 @@ namespace ecs
 					}
 				});
 
+		world().observer<>()
+			.event(flecs::OnAdd)
+			.event(flecs::OnRemove)
+			.with(flecs::Wildcard)
+			.each([&](flecs::iter& it, size_t i)
+				{
+					auto entity = it.entity(i);
+					auto string = it.event_id().str();
+
+					//- Filter for actual ecs components
+					if (const auto offset = core::string_utils::find_substr(string.c_str(), "ecs."); offset != std::string::npos)
+					{
+						auto c = core::string_utils::substr(string.c_str(), offset + strlen("ecs."));
+
+						if (it.event() == flecs::OnAdd)
+						{
+							//- name of the component will be in form 'ecs.transform', we have to format the name first
+							cm().on_component_added(entity, c);
+						}
+						else if (it.event() == flecs::OnRemove)
+						{
+							cm().on_component_removed(entity, c);
+						}
+					}
+				});
+
 		m_transform_change_tracker = world().query_builder<const stransform>()
 			.cached()
 			.build();
-
-		//- TODO: observer that observes any added or removed components seems problematic through queries
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -240,14 +240,18 @@ namespace rttr
 			cregistrator<TComponent>(name)
 		{
 			register_common_component_functions();
+			if (const auto type = rttr::type::get<TComponent>(); !type.is_valid())
+			{
+				log_error(fmt::format("Failed to register Component with name '{}'", name.data()));
+			}
 		}
 
 	private:
 		void register_common_component_functions()
 		{
-			this->meth(ecs::detail::C_COMPONENT_NAME_FUNC_NAME, &TComponent::name)
+			this->meth(ecs::detail::C_COMPONENT_NAME_FUNC_NAME,		&TComponent::name)
 				.meth(ecs::detail::C_COMPONENT_SERIALIZE_FUNC_NAME, &TComponent::serialize)
-				.meth(ecs::detail::C_COMPONENT_SET_FUNC_NAME, &TComponent::set)
+				.meth(ecs::detail::C_COMPONENT_SET_FUNC_NAME,		&TComponent::set)
 				;
 		}
 	};

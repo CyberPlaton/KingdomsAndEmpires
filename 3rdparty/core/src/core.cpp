@@ -1142,6 +1142,12 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		string_t substr(const string_t& string, size_t offset, size_t count /*= std::string::npos*/)
+		{
+			return string.substr(offset, count);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		bool does_substr_exist(const string_t& string, const string_t& substring)
 		{
 			return string.find(substring) != string_t::npos;

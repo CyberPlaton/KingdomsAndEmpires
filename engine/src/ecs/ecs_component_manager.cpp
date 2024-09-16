@@ -7,27 +7,24 @@ namespace ecs
 		iworld_context_holder(w)
 	{
 		//- gather all component types registered to RTTR
-		for (auto type : rttr::type::get_types())
+		log_trace("Register ecs components:");
+
+		for (const auto type : rttr::type::get<icomponent>().get_derived_classes())
 		{
-			for (auto base : type.get_base_classes())
-			{
-				if (base == rttr::type::get<icomponent>())
-				{
-					m_registered_components.emplace_back(type.get_name().data());
-					break;
-				}
-			}
+			log_trace(fmt::format("\t'{}'", type.get_name().data()));
+
+			m_registered_components.emplace_back(type.get_name().data());
 		}
 	}
 	
 	//------------------------------------------------------------------------------------------------------------------------
-	void ccomponent_manager::on_component_added(flecs::entity e, const std::string& component)
+	void ccomponent_manager::on_component_added(flecs::entity e, const string_t& component)
 	{
 		m_components[e.id()].emplace_back(component);
 	}
 	
 	//------------------------------------------------------------------------------------------------------------------------
-	void ccomponent_manager::on_component_removed(flecs::entity e, const std::string& component)
+	void ccomponent_manager::on_component_removed(flecs::entity e, const string_t& component)
 	{
 		auto& v = m_components[e.id()];
 		auto it = algorithm::find_at(v.begin(), v.end(), component);
@@ -39,14 +36,16 @@ namespace ecs
 	}
 	
 	//------------------------------------------------------------------------------------------------------------------------
-	const vector_t<std::string>& ccomponent_manager::all(flecs::entity e) const
+	const vector_t<string_t> ccomponent_manager::all(flecs::entity e) const
 	{
-		auto h = algorithm::hash(e.name().c_str());
-		
-		return m_components.at(h);
+		if (const auto it = m_components.find(e.id()); it != m_components.end())
+		{
+			return m_components.at(e.id());
+		}
+		return {};
 	}
 
-	const vector_t<std::string>& ccomponent_manager::components() const
+	const vector_t<string_t>& ccomponent_manager::components() const
 	{
 		return m_registered_components;
 	}

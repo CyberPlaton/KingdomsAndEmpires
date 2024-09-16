@@ -1376,6 +1376,7 @@ namespace core
 		void to_lower(string_t& string);
 		size_t length(const string_t& string);
 		size_t find_substr(const string_t& string, const string_t& substring);
+		string_t substr(const string_t& string, size_t offset, size_t count = std::string::npos);
 		bool does_substr_exist(const string_t& string, const string_t& substring);
 		bool compare(const string_t& first, const string_t& second);
 		bool starts_with(stringview_t string, stringview_t substr);
