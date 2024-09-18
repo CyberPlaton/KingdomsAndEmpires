@@ -42,7 +42,7 @@ namespace editor
 		//- TODO: it seems that the context menu only has to be one level above to work as expected.
 		m_context_menu->on_ui_render();
 
-		if (imgui::cchild_scope scope(C_CHILD_PANEL_ID.data(), ImGui::GetContentRegionAvail(), C_WORLD_INSPECTOR_CHILD_FLAGS, C_WORLD_INSPECTOR_FLAGS); scope)
+		if (imgui::cchild_scope scope(C_CHILD_PANEL_ID.data(), { 0.0f, 0.0f }, C_WORLD_INSPECTOR_CHILD_FLAGS, C_WORLD_INSPECTOR_FLAGS); scope)
 		{
 			show_menubar();
 
