@@ -17,6 +17,9 @@ namespace ecs
 		const vector_t<string_t> all(flecs::entity e) const;
 		const vector_t<string_t>& components() const;
 
+		//- If possible, avoid. Slow function
+		bool has(const flecs::entity e, stringview_t component) const;
+
 	private:
 		vector_t<string_t> m_registered_components;
 		umap_t<uint64_t, vector_t<string_t>> m_components;

@@ -17,11 +17,13 @@ namespace ecs
 		constexpr rttr::string_view C_COMPONENT_NAME_FUNC_NAME		= "name";
 		constexpr rttr::string_view C_COMPONENT_SERIALIZE_FUNC_NAME = "serialize";
 		constexpr rttr::string_view C_COMPONENT_SET_FUNC_NAME		= "set";
+		constexpr rttr::string_view C_COMPONENT_ADD_FUNC_NAME		= "add";
+		constexpr rttr::string_view C_COMPONENT_REMOVE_FUNC_NAME	= "remove";
 		constexpr rttr::string_view C_COMPONENT_SHOW_UI_FUNC_NAME	= "show_ui";
 
 		//- utility function to serialize component of an entity to json
 		//------------------------------------------------------------------------------------------------------------------------
-		template<class TComponent>
+		template<typename TComponent>
 		inline static void serialize_component(const flecs::entity& e, nlohmann::json& json)
 		{
 			if (const auto* c = e.get<TComponent>(); c)
@@ -33,12 +35,68 @@ namespace ecs
 			}
 		}
 
-		//- utility functin to add a component from a variant to an entity
+		//- Utility function to add a component from a variant to an entity
 		//------------------------------------------------------------------------------------------------------------------------
-		template<class TComponent>
+		template<typename TComponent>
 		inline static void set_component(flecs::entity& e, const rttr::variant& var)
 		{
 			e.set<TComponent>(std::move(var.get_value<TComponent>()));
+		}
+
+		//- Utility function to add a component from component name to entity
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void add_component(flecs::entity& e, stringview_t c)
+		{
+			if (const auto type = rttr::type::get_by_name(c.data()); type.is_valid())
+			{
+				if (const auto meth = type.get_method(C_COMPONENT_ADD_FUNC_NAME); meth.is_valid())
+				{
+					meth.invoke({}, e);
+				}
+				else
+				{
+					log_error(fmt::format("Component add function was not registered in RTTR for '{}'", c.data()));
+				}
+			}
+			else
+			{
+				log_error(fmt::format("Adding component failed because '{}' was not registered in RTTR", c.data()));
+			}
+		}
+
+		//- Utility function to remove a component from entity by component name
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void remove_component(flecs::entity& e, stringview_t c)
+		{
+			if (const auto type = rttr::type::get_by_name(c.data()); type.is_valid())
+			{
+				if (const auto meth = type.get_method(C_COMPONENT_REMOVE_FUNC_NAME); meth.is_valid())
+				{
+					meth.invoke({}, e);
+				}
+				else
+				{
+					log_error(fmt::format("Component remove function was not registered in RTTR for '{}'", c.data()));
+				}
+			}
+			else
+			{
+				log_error(fmt::format("Removing component failed because '{}' was not registered in RTTR", c.data()));
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TComponent>
+		inline static void add_component(flecs::entity& e)
+		{
+			e.add<TComponent>();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TComponent>
+		inline static void remove_component(flecs::entity& e)
+		{
+			e.remove<TComponent>();
 		}
 
 	} //- detail
@@ -56,6 +114,14 @@ static void serialize(flecs::entity e, nlohmann::json& json) \
 static void set(flecs::entity e, const rttr::variant& var) \
 { \
 	ecs::detail::set_component<c>(e, var); \
+} \
+static void add(flecs::entity e) \
+{ \
+	ecs::detail::add_component<c>(e); \
+} \
+static void remove(flecs::entity e) \
+{ \
+ecs::detail::remove_component<c>(e); \
 }
 
 //- Shortcut macro for defining a 'tag' component. A tag component does not have any data

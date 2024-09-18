@@ -279,20 +279,24 @@ RTTR_REGISTRATION
 		;
 
 	rttr::ccomponent<shierarchy>("shierarchy")
-		.prop("m_parent", &shierarchy::m_parent)
-		.prop("m_children", &shierarchy::m_children)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &shierarchy::show_ui)
+		.prop("m_parent",									&shierarchy::m_parent)
+		.prop("m_children",									&shierarchy::m_children)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&shierarchy::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&shierarchy::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	&shierarchy::remove)
 		;
 
 	rttr::ccomponent<scamera>("scamera")
-		.prop("m_position", &scamera::m_position)
-		.prop("m_offset", &scamera::m_offset)
-		.prop("m_zoom", &scamera::m_zoom)
-		.prop("m_rotation", &scamera::m_rotation)
-		.prop("m_viewrect", &scamera::m_viewrect)
-		.prop("m_active", &scamera::m_active)
-		.prop("m_renderlayer", &scamera::m_renderlayer)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &scamera::show_ui)
+		.prop("m_position",									&scamera::m_position)
+		.prop("m_offset",									&scamera::m_offset)
+		.prop("m_zoom",										&scamera::m_zoom)
+		.prop("m_rotation",									&scamera::m_rotation)
+		.prop("m_viewrect",									&scamera::m_viewrect)
+		.prop("m_active",									&scamera::m_active)
+		.prop("m_renderlayer",								&scamera::m_renderlayer)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&scamera::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&scamera::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	&scamera::remove)
 		;
 
 	rttr::ccomponent<sanimation>("sanimation")
@@ -308,13 +312,17 @@ RTTR_REGISTRATION
 		.prop("m_frame_height", &sanimation::m_frame_height)
 		.prop("m_frame_width", &sanimation::m_frame_width)
 		.prop("m_keyframes", &sanimation::m_keyframes)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &sanimation::show_ui)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&sanimation::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&sanimation::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	&sanimation::remove)
 		;
 
 	rttr::ccomponent<smesh>("smesh")
 		.prop("m_vertices", &smesh::m_vertices)
 		.prop("m_indices", &smesh::m_indices)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &smesh::show_ui)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&smesh::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&smesh::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	smesh::remove)
 		;
 
 	rttr::ccomponent<smaterial>("smaterial")
@@ -322,25 +330,33 @@ RTTR_REGISTRATION
 		.prop("m_texture", &smaterial::m_texture)
 		.prop("m_program", &smaterial::m_program)
 		.prop("m_flags", &smaterial::m_flags)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &smesh::show_ui)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&smaterial::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&smaterial::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	&smaterial::remove)
 		;
 
 	rttr::ccomponent<ssprite_renderer>("ssprite_renderer")
 		.prop("m_source_rect", &ssprite_renderer::m_source_rect)
 		.prop("m_tint", &ssprite_renderer::m_tint)
 		.prop("m_layer", &ssprite_renderer::m_layer)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ssprite_renderer::show_ui)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&ssprite_renderer::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&ssprite_renderer::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	&ssprite_renderer::remove)
 		;
 
 	rttr::ccomponent<stransform>("stransform")
 		.prop("m_matrix", &stransform::m_matrix)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &stransform::show_ui)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&stransform::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&stransform::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	&stransform::remove)
 		;
 
 	rttr::ccomponent<sidentifier>("sidentifier")
 		.prop("m_uuid", &sidentifier::m_uuid)
 		.prop("m_name", &sidentifier::m_name)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &sidentifier::show_ui)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&sidentifier::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&sidentifier::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	&sidentifier::remove)
 		;
 
 	rttr::registration::class_<icomponent>("icomponent")

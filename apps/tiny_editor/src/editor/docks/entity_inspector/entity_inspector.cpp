@@ -54,14 +54,29 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	void centity_inspector::show_menubar()
 	{
+		if (imgui::cmenubar_scope menubar; menubar)
+		{
+			if (const auto menu = imgui::cmenu_scope(ICON_FA_ADDRESS_BOOK " Add"))
+			{
+				const auto& world = ecs::cworld_manager::instance().active();
+				auto& e = world.em().entity(ctx().m_inspected_entity_uuid);
 
+				for (const auto& c : world.cm().components())
+				{
+					if (!world.cm().has(e, c) && ImGui::Button(c.data()))
+					{
+						ecs::detail::add_component(e, c);
+					}
+				}
+			}
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void centity_inspector::show_inspected_entity()
 	{
 		const auto& world = ecs::cworld_manager::instance().active();
-		const auto& e = world.em().entity(ctx().m_inspected_entity_uuid);
+		auto& e = world.em().entity(ctx().m_inspected_entity_uuid);
 
 		for (const auto& c : world.cm().all(e))
 		{
@@ -82,6 +97,14 @@ namespace editor
 				}
 
 				m_table.begin_column(1);
+
+				{
+					imgui::cid_scope scope(fmt::format("##remove_component_{}_{}", c.data(), e.id()).data());
+					if (ImGui::SmallButton(ICON_FA_MINUS "Remove"))
+					{
+						ecs::detail::remove_component(e, c.data());
+					}
+				}
 			}
 		}
 	}

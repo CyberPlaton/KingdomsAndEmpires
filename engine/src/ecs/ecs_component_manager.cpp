@@ -45,9 +45,19 @@ namespace ecs
 		return {};
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	const vector_t<string_t>& ccomponent_manager::components() const
 	{
 		return m_registered_components;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool ccomponent_manager::has(const flecs::entity e, stringview_t component) const
+	{
+		if (const auto it = m_components.find(e.id()); it != m_components.end())
+		{
+			return algorithm::find(it->second.begin(), it->second.end(), component);
+		}
 	}
 
 } //- ecs

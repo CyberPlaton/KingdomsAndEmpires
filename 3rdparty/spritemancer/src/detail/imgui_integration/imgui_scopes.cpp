@@ -3,6 +3,20 @@
 namespace imgui
 {
 	//------------------------------------------------------------------------------------------------------------------------
+	cmenubar_scope::cmenubar_scope(const bool enabled /*= true*/)
+	{
+		cdisabled_scope disable(!enabled);
+
+		m_result = ImGui::BeginMenuBar();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmenubar_scope::~cmenubar_scope()
+	{
+		if(m_result) ImGui::EndMenuBar();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cmenu_item::cmenu_item(const char* name, bool* selected /*= nullptr*/, const bool enabled /*= true*/)
 	{
 		m_result = ImGui::MenuItem(name, nullptr, selected, enabled);

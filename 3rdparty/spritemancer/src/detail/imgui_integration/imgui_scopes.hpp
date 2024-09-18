@@ -5,6 +5,21 @@
 namespace imgui
 {
 	//------------------------------------------------------------------------------------------------------------------------
+	class cmenubar_scope final :
+		private core::cnon_copyable,
+		private core::cnon_movable
+	{
+	public:
+		cmenubar_scope(const bool enabled = true);
+		~cmenubar_scope();
+
+		operator bool() const noexcept { return m_result; }
+
+	private:
+		bool m_result = false;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	class cmenu_scope final :
 		private core::cnon_copyable,
 		private core::cnon_movable
