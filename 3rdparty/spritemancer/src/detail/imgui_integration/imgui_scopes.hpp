@@ -40,13 +40,30 @@ namespace imgui
 		private core::cnon_movable
 	{
 	public:
-		cwindow_scope(stringview_t name, bool* open, ImGuiWindowFlags flags = ImGuiWindowFlags_None, const vec2_t& position = { 0, 0 }, const vec2_t& size_min = { 0, 0 }, const vec2_t& size_max = { 0, 0 });
+		cwindow_scope(stringview_t name, bool* open, ImGuiWindowFlags flags = ImGuiWindowFlags_None,
+			const ImVec2& position = { 0, 0 }, const ImVec2& size_min = { 0, 0 }, const ImVec2& size_max = { 0, 0 });
 		~cwindow_scope();
 
 		operator bool() const noexcept { return m_result; }
 
 	private:
 		ImGuiWindowFlags m_flags;
+		bool m_result = false;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cchild_scope final :
+		private core::cnon_copyable,
+		private core::cnon_movable
+	{
+	public:
+		cchild_scope(stringview_t name, const ImVec2& size = {0.0f, 0.0f},
+			ImGuiChildFlags child_flags = ImGuiChildFlags_None, ImGuiWindowFlags window_flags = ImGuiWindowFlags_None);
+		~cchild_scope();
+
+		operator bool() const noexcept { return m_result; }
+
+	private:
 		bool m_result = false;
 	};
 

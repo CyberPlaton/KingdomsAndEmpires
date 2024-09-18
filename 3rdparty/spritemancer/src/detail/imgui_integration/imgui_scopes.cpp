@@ -22,12 +22,12 @@ namespace imgui
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cwindow_scope::cwindow_scope(stringview_t name, bool* open, ImGuiWindowFlags flags /*= ImGuiWindowFlags_None*/,
-		const vec2_t& position /*= { 0, 0 }*/, const vec2_t& size_min /*= { 0, 0 }*/, const vec2_t& size_max /*= { 0, 0 }*/) :
+		const ImVec2& position /*= { 0, 0 }*/, const ImVec2& size_min /*= { 0, 0 }*/, const ImVec2& size_max /*= { 0, 0 }*/) :
 		m_flags(flags)
 	{
 		CORE_ASSERT(open, "Invalid operation");
 
-		vec2_t p = position;
+		ImVec2 p = position;
 
 		if (p.x == 0 && p.y == 0)
 		{
@@ -35,11 +35,11 @@ namespace imgui
 			//p.y = SCAST(float, raylib::GetScreenHeight()) * 0.5f - glm::max(size_max.y, size_min.y) * 0.5f;
 		}
 
-		ImGui::SetNextWindowPos({p.x, p.y}, ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(p, ImGuiCond_Appearing);
 
 		if (size_min.x > 0 && size_min.y > 0 && size_max.x > 0 && size_max.y > 0)
 		{
-			ImGui::SetNextWindowSizeConstraints({ size_min.x, size_min.y }, { size_max.x, size_max.y });
+			ImGui::SetNextWindowSizeConstraints(size_min, size_max);
 		}
 
 		m_result = ImGui::Begin(name.data(), open, flags);
@@ -80,6 +80,19 @@ namespace imgui
 	cdisabled_scope::~cdisabled_scope()
 	{
 		ImGui::EndDisabled();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cchild_scope::cchild_scope(stringview_t name, const ImVec2& size /*= {0.0f, 0.0f}*/,
+		ImGuiChildFlags child_flags /*= ImGuiChildFlags_None*/, ImGuiWindowFlags window_flags /*= ImGuiWindowFlags_None*/)
+	{
+		m_result = ImGui::BeginChild(name.data(), size, child_flags, window_flags);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cchild_scope::~cchild_scope()
+	{
+		ImGui::EndChild();
 	}
 
 } //- imgui

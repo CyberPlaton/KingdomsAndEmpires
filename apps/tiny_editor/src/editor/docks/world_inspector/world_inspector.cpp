@@ -5,7 +5,7 @@ namespace editor
 	namespace
 	{
 		constexpr auto C_TREE_NODE_BASE_FLAGS = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
-		constexpr std::string_view C_BOTTOM_PANEL_ID = "##editor_world_inspector";
+		constexpr stringview_t C_CHILD_PANEL_ID = "##editor_world_inspector";
 		constexpr auto C_WORLD_INSPECTOR_CHILD_FLAGS = ImGuiChildFlags_Border;
 		constexpr auto C_WORLD_INSPECTOR_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
 			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar;
@@ -42,11 +42,10 @@ namespace editor
 		//- TODO: it seems that the context menu only has to be one level above to work as expected.
 		m_context_menu->on_ui_render();
 
-		ImGui::BeginChild(C_BOTTOM_PANEL_ID.data(), {0.0f, 0.0f}, C_WORLD_INSPECTOR_CHILD_FLAGS, C_WORLD_INSPECTOR_FLAGS);
-
-		show_menubar();
-
+		if (imgui::cchild_scope scope(C_CHILD_PANEL_ID.data(), ImGui::GetContentRegionAvail(), C_WORLD_INSPECTOR_CHILD_FLAGS, C_WORLD_INSPECTOR_FLAGS); scope)
 		{
+			show_menubar();
+
 			if (m_table
 				.options(ui::ctable::options_borders_all)
 				.begin(2,
@@ -73,8 +72,6 @@ namespace editor
 				m_table.end();
 			}
 		}
-
-		ImGui::EndChild();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

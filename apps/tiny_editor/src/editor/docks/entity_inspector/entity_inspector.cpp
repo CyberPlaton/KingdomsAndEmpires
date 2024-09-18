@@ -2,6 +2,15 @@
 
 namespace editor
 {
+	namespace
+	{
+		constexpr stringview_t C_CHILD_PANEL_ID = "##editor_entity_inspector";
+		constexpr auto C_ENTITY_INSPECTOR_CHILD_FLAGS = ImGuiChildFlags_Border;
+		constexpr auto C_ENTITY_INSPECTOR_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar;
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
 	bool centity_inspector::init()
 	{
@@ -19,28 +28,53 @@ namespace editor
 	{
 		if (ecs::cworld_manager::instance().has_active())
 		{
-			const auto& world = ecs::cworld_manager::instance().active();
-
 			if (ctx().m_inspected_entity_uuid != core::cuuid::C_INVALID_UUID)
 			{
-				const auto& e = world.em().entity(ctx().m_inspected_entity_uuid);
-
-				for (const auto& c : world.cm().all(e))
+				if (imgui::cchild_scope scope(C_CHILD_PANEL_ID.data(), ImGui::GetContentRegionAvail(), C_ENTITY_INSPECTOR_CHILD_FLAGS, C_ENTITY_INSPECTOR_FLAGS); scope)
 				{
-					if (const auto type = rttr::type::get_by_name(c); type.is_valid())
-					{
-						if (const auto method = type.get_method(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME); method.is_valid())
-						{
-							if (ImGui::CollapsingHeader(c.data()))
+					show_menubar();
+
+					if (m_table
+						.options(ui::ctable::options_borders_all)
+						.begin(2,
 							{
-								//- Show actual component UI
-								method.invoke(e);
-							}
-						}
+								{ImGuiTableColumnFlags_WidthStretch, 0.9f},
+								{ImGuiTableColumnFlags_WidthStretch, 0.1f}
+							}))
+					{
+						show_inspected_entity();
+
+						m_table.end();
 					}
 				}
+			}
+		}
+	}
 
-				ImGui::Text(e.name());
+	//------------------------------------------------------------------------------------------------------------------------
+	void centity_inspector::show_menubar()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void centity_inspector::show_inspected_entity()
+	{
+		const auto& world = ecs::cworld_manager::instance().active();
+		const auto& e = world.em().entity(ctx().m_inspected_entity_uuid);
+
+		for (const auto& c : world.cm().all(e))
+		{
+			if (const auto type = rttr::type::get_by_name(c); type.is_valid())
+			{
+				if (const auto method = type.get_method(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME); method.is_valid())
+				{
+					if (ImGui::CollapsingHeader(c.data()))
+					{
+						//- Show actual component UI
+						method.invoke(e);
+					}
+				}
 			}
 		}
 	}

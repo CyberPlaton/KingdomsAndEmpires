@@ -88,6 +88,12 @@ namespace editor::ui
 		{
 			imgui::cui::help_marker_no_question_mark(m_tooltip.data(), imgui::tooltip_hovering_delay_normal);
 		}
+
+		//- Reset dynamic state for next tick if table is used in retained mode
+		m_size = ImVec2(0, 0);
+		m_result = false;
+		m_show_tooltip = false;
+		m_columns = 0;
 	}
 
 } //- editor::ui
