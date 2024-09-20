@@ -45,15 +45,13 @@ namespace editor
 		ImGui::Begin(C_BOTTOM_PANEL_ID.data(), nullptr, C_BOTTOM_PANEL_FLAGS);
 
 		//- Display tab
-		auto active = ui::ctab_bar(C_TAB_BAR_ID, C_TAB_BAR_FLAGS)
+		unsigned selected = ui::ctab_bar(C_TAB_BAR_ID, C_TAB_BAR_FLAGS)
 			.items(m_tab_bar_items.data(), (unsigned)m_tab_bar_items.size())
 			.draw();
 
 		//- Display all other elements
+		m_elements_stack.set_active_at_index(selected);
 		m_elements_stack.on_ui_render();
-
-		//- TODO: make it possible to run a specific element from stack?!
-		//m_elements[active]->on_ui_render();
 
 		ImGui::End();
 	}

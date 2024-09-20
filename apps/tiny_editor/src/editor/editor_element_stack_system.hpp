@@ -6,12 +6,20 @@ namespace editor
 {
 	//- The element stack contains an array of UI elements. It is designed to allow quick removal and creation of UI elements.
 	//- Intended to be used as one for each panel. Moreover it reflects the API of a layer.
-	//-
-	//- TODO: decide whether we update always all elements or theres a concept of current active one...
 	//------------------------------------------------------------------------------------------------------------------------
 	class celement_stack_system final
 	{
 	public:
+		using element_lookup_t = umap_t<const char*, unsigned>;
+		using elements_t = vector_t<layer_ref_t>;
+
+		enum mode : uint8_t
+		{
+			mode_none = 0,
+			mode_singular,	//- Only one element from stack is updated
+			mode_plural,	//- All elements from stack are updated
+		};
+
 		celement_stack_system() = default;
 		~celement_stack_system();
 
@@ -26,8 +34,14 @@ namespace editor
 
 		void pop(const char* id);
 
+		void set_active_at_index(unsigned idx);
+		void set_active_all();
+
 	private:
-		umap_t<const char*, layer_ref_t> m_elements;
+		elements_t m_elements;
+		element_lookup_t m_elements_lookup;
+		unsigned m_singular_index = MAX(unsigned);
+		mode m_mode = mode_plural;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -38,7 +52,11 @@ namespace editor
 
 		if (element = detail::create_ui_element<T>(std::forward<ARGS>(args)...); element && element->init())
 		{
-			m_elements[element->id()] = element;
+			auto idx = m_elements.size();
+
+			m_elements.push_back(element);
+
+			m_elements_lookup[element->id()] = idx;
 		}
 
 		return element;
