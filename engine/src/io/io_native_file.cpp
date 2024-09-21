@@ -203,9 +203,9 @@ namespace io
 			return nullptr;
 		}
 
-		auto memory = core::cmemory::make_ref(size());
+		auto memory = core::cmemory::make_ref(size(), true);
 
-		read(memory->data(), memory->size());
+		read(memory->data(), size());
 
 		return memory;
 	}

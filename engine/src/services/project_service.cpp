@@ -70,11 +70,11 @@ namespace engine
 	{
 		auto& vfs = core::cservice_manager::get<core::fs::cvirtual_filesystem>();
 
-		if (vfs.exists(filepath))
+		if (auto file = vfs.open(filepath, core::file_mode_read); file)
 		{
-			if (const auto mem = core::fs::load_text_from_file(filepath.relative()); mem && !mem->empty())
+			if (const auto mem = file->read_sync(); mem && !mem->empty())
 			{
-				auto project = core::io::from_json_blob<editor::cproject>(mem->data(), mem->size());
+				auto& project = core::io::from_json_blob<editor::cproject>(mem->data(), mem->size());
 
 				const auto& cfg = project.config();
 				const auto h = algorithm::hash(cfg.m_project_name);

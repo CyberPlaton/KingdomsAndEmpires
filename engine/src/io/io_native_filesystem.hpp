@@ -11,11 +11,12 @@ namespace io
 		cnative_filesystem();
 		~cnative_filesystem();
 
-		bool init(stringview_t basepath) override final;
+		bool init(stringview_t basepath, stringview_t alias) override final;
 		void shutdown() override final;
 		bool ready() const override final;
 		stringview_t filesystem_name() const override final;
 
+		string_t alias() const override final;
 		string_t base_path() const override final;
 		core::fs::filelist_t files() const override final;
 		bool does_exist(const core::fs::cfileinfo& filepath) const override final;
@@ -32,6 +33,7 @@ namespace io
 	private:
 		core::fs::filelist_t m_file_list;
 		string_t m_basepath;
+		string_t m_alias;
 		bool m_ready;
 
 	private:

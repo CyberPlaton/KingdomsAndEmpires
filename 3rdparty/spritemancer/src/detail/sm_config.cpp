@@ -475,7 +475,7 @@ namespace sm
 	{
 		auto mem = core::fs::load_binary_from_file(filepath.data());
 
-		return load_from_memory(mem->data(), mem->size());
+		return load_from_memory((void*)mem->data(), mem->size());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

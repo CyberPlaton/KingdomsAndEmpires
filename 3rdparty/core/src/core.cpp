@@ -219,9 +219,9 @@ namespace core
 		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message.
 		//- Does append a null terminator at the end.
 		//------------------------------------------------------------------------------------------------------------------------
-		static uint8_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out)
+		static byte_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out)
 		{
-			uint8_t* data = nullptr;
+			byte_t* data = nullptr;
 			*data_size_out = 0;
 
 			if (file_path.data() != nullptr)
@@ -236,10 +236,10 @@ namespace core
 
 					if (size > 0)
 					{
-						data = (uint8_t*)CORE_MALLOC(sizeof(uint8_t) * size + 1);
-						data[sizeof(uint8_t) * size - 1] = '\0';
+						data = (byte_t*)CORE_MALLOC(sizeof(byte_t) * size + 1);
+						data[sizeof(byte_t) * size - 1] = '\0';
 
-						unsigned count = SCAST(unsigned, fread(data, sizeof(uint8_t), size, file));
+						unsigned count = SCAST(unsigned, fread(data, sizeof(byte_t), size, file));
 						*data_size_out = count + 1;
 					}
 
@@ -267,7 +267,7 @@ namespace core
 
 		//- @reference: raylib SaveFileData
 		//------------------------------------------------------------------------------------------------------------------------
-		static bool save_binary_file_data(stringview_t file_path, uint8_t* data, unsigned data_size)
+		static bool save_binary_file_data(stringview_t file_path, byte_t* data, unsigned data_size)
 		{
 			if (file_path.data() != nullptr)
 			{
@@ -763,7 +763,7 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		rttr::variant from_json_blob(rttr::type expected, const uint8_t* data, unsigned size)
+		rttr::variant from_json_blob(rttr::type expected, const byte_t* data, unsigned size)
 		{
 			simdjson::dom::parser parser;
 			simdjson::dom::element element;
@@ -791,7 +791,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		rttr::variant from_json_string(rttr::type expected, const string_t& json)
 		{
-			return from_json_blob(expected, (const uint8_t*)json.data(), json.length());
+			return from_json_blob(expected, (const byte_t*)json.data(), json.length());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -1115,6 +1115,19 @@ namespace core
 			{
 				string.erase(index, string_to_erase.size());
 			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t replace(const string_t& string, const string_t& substr, const string_t& replacement)
+		{
+			string_t out = string;
+
+			if(const auto it = find_substr(string, substr); it != std::string::npos)
+			{
+				out.replace(it, substr.length(), replacement);
+			}
+
+			return out;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -1984,26 +1997,33 @@ namespace core
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	memory_ref_t cmemory::make_ref(unsigned size)
+	memory_ref_t cmemory::make_ref(unsigned capacity, const bool resize /*= false*/)
 	{
-		return std::make_shared<cmemory>(size);
+		return std::make_shared<cmemory>(capacity, resize);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cmemory::cmemory(byte_t* data, unsigned size)
 	{
 		//- Copy data, freeing incoming data is not our responsibility
-		m_data.resize(SCAST(size_t, size));
+		m_data.resize(SCAST(size_t, size), '\0');
 		std::memcpy(m_data.data(), data, SCAST(size_t, size));
 	}
 
 	//- Allocate a piece of memory with requested size
 	//------------------------------------------------------------------------------------------------------------------------
-	cmemory::cmemory(unsigned size)
+	cmemory::cmemory(unsigned capacity, const bool resize /*= false*/)
 	{
-		CORE_ASSERT(size > 0, "Invalid operation. Either empty memory or invalid memory requested!");
+		CORE_ASSERT(capacity > 0, "Invalid operation. Either empty memory or invalid memory requested!");
 
-		m_data.reserve(SCAST(size_t, size));
+		if (resize)
+		{
+			m_data.resize(SCAST(size_t, capacity), '\0');
+		}
+		else
+		{
+			m_data.reserve(SCAST(size_t, capacity));
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -3307,13 +3327,17 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		bool cvirtual_filesystem::exists(const cfileinfo& filepath) const
 		{
-			algorithm::for_each(m_filesystems.begin(), m_filesystems.end(), [&](const auto& pair)
+			auto path = filepath.path();
+
+			//- Locate the filesystem responsible for alias
+			if (const auto it = algorithm::find_if(m_sorted_aliases.begin(), m_sorted_aliases.end(), [&](const auto& pair)
 				{
-					if (pair.second->does_exist(filepath))
-					{
-						return true;
-					}
-				});
+					return core::string_utils::starts_with(path, pair.first);
+
+				}); it != m_sorted_aliases.end())
+			{
+				return it->second->does_exist(filepath);
+			}
 
 			return false;
 		}
@@ -3451,7 +3475,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		core::file_io_status save_binary_to_file(stringview_t filepath, void* data, unsigned size)
 		{
-			return save_binary_file_data(filepath, (uint8_t*)data, size) ? file_io_status_success : file_io_status_failed;
+			return save_binary_file_data(filepath, (byte_t*)data, size) ? file_io_status_success : file_io_status_failed;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -3476,6 +3500,16 @@ namespace core
 				}).share();
 
 				return result;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		core::fs::cfileinfo ifilesystem::convert(const ifilesystem* filesystem, const cfileinfo& info)
+		{
+			auto path = info.relative();
+
+			core::string_utils::erase_substr(path, filesystem->alias());
+
+			return { filesystem->base_path(), path };
 		}
 
 	} //- fs

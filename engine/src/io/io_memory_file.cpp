@@ -194,7 +194,7 @@ namespace io
 
 		auto memory = core::cmemory::make_ref(datasize);
 
-		read(memory->data(), memory->size());
+		read(memory->data(), datasize);
 
 		return memory;
 	}

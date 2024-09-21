@@ -51,7 +51,7 @@ namespace engine
 		{
 			const char* path = fs.current().view();
 
-			if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(path))
+			if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(path, "/"))
 			{
 				service<core::fs::cvirtual_filesystem>()->add_filesystem("/", filesystem);
 			}

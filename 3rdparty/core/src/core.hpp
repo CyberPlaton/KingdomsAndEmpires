@@ -358,7 +358,7 @@ using mat4_t = glm::mat4x4;
 using quat_t = glm::quat;
 
 //------------------------------------------------------------------------------------------------------------------------
-using byte_t = uint8_t;
+using byte_t = char;
 using memory_ref_t = ref_t<core::cmemory>;
 
 namespace rttr
@@ -1325,7 +1325,7 @@ namespace core
 		constexpr stringview_t C_MAP_VALUE_NAME		= "__value__";
 
 		//------------------------------------------------------------------------------------------------------------------------
-		[[nodiscard]] rttr::variant from_json_blob(rttr::type expected, const uint8_t* data, unsigned size);
+		[[nodiscard]] rttr::variant from_json_blob(rttr::type expected, const byte_t* data, unsigned size);
 
 		//------------------------------------------------------------------------------------------------------------------------
 		[[nodiscard]] rttr::variant from_json_object(rttr::type expected, const simdjson::dom::element& json);
@@ -1335,7 +1335,7 @@ namespace core
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TType>
-		[[nodiscard]] TType& from_json_blob(const uint8_t* data, unsigned size)
+		[[nodiscard]] TType& from_json_blob(const byte_t* data, unsigned size)
 		{
 			auto var = from_json_blob(rttr::type::get<TType>(), data, size);
 
@@ -1346,7 +1346,7 @@ namespace core
 		template<class TType>
 		[[nodiscard]] TType from_json_string(const string_t& json)
 		{
-			return from_json_blob<TType>((const uint8_t*)json.data(), SCAST(unsigned, json.length()));
+			return from_json_blob<TType>((const byte_t*)json.data(), SCAST(unsigned, json.length()));
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -1377,6 +1377,7 @@ namespace core
 		size_t length(const string_t& string);
 		size_t find_substr(const string_t& string, const string_t& substring);
 		string_t substr(const string_t& string, size_t offset, size_t count = std::string::npos);
+		string_t replace(const string_t& string, const string_t& substr, const string_t& replacement);
 		bool does_substr_exist(const string_t& string, const string_t& substring);
 		bool compare(const string_t& first, const string_t& second);
 		bool starts_with(stringview_t string, stringview_t substr);
@@ -2095,10 +2096,10 @@ namespace core
 	{
 	public:
 		static memory_ref_t make_ref(byte_t* data, unsigned size);
-		static memory_ref_t make_ref(unsigned size);
+		static memory_ref_t make_ref(unsigned capacity, const bool resize = false);
 
 		//- Constructors must be declared as public, otherwise std::make_shared cannot access them.
-		cmemory(unsigned size);
+		cmemory(unsigned capacity, const bool resize = false);
 		cmemory(byte_t* data, unsigned size);
 		~cmemory();
 
@@ -2110,10 +2111,10 @@ namespace core
 		inline auto end() { return m_data.end(); }
 
 		//- Take ownership of the data
-		[[nodiscard]] vector_t<uint8_t>&& take() { return std::move(m_data); }
+		[[nodiscard]] vector_t<byte_t>&& take() { return std::move(m_data); }
 
 	private:
-		vector_t<uint8_t> m_data;
+		vector_t<byte_t> m_data;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -3213,11 +3214,12 @@ namespace core
 		class ifilesystem
 		{
 		public:
-			virtual bool init(stringview_t basepath) = 0;
+			virtual bool init(stringview_t basepath, stringview_t alias) = 0;
 			virtual void shutdown() = 0;
 			virtual bool ready() const = 0;
 			virtual stringview_t filesystem_name() const = 0;
 
+			virtual string_t alias() const = 0;
 			virtual string_t base_path() const = 0;
 			virtual filelist_t files() const = 0;
 			virtual bool does_exist(const cfileinfo& filepath) const = 0;
@@ -3230,6 +3232,10 @@ namespace core
 			virtual bool rename_file(const cfileinfo& source, const cfileinfo& dest) = 0;
 
 			virtual vector_t<cfileinfo> iterate(const cfileinfo& path, filesystem_lookup_type type, bool recursive) const = 0;
+
+		protected:
+			//- Retrieve fileinfo in a format that will be useful to filesystem, i.e. erase alias path
+			static cfileinfo convert(const ifilesystem* filesystem, const cfileinfo& info);
 		};
 
 		//- Virtual file system implementation.
@@ -3282,7 +3288,7 @@ namespace core
 
 	} //- fs
 
-	//- Shortcut to access the virtual file system.
+	//- Shortcut to access the virtual file system. FIXME: currently used for testing, and should not be used in projects.
 	//------------------------------------------------------------------------------------------------------------------------
 	using vfs = fs::cvirtual_filesystem;
 

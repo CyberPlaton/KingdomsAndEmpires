@@ -14,8 +14,9 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnative_filesystem::init(stringview_t basepath)
+	bool cnative_filesystem::init(stringview_t basepath, stringview_t alias)
 	{
+		m_alias.assign(alias.data());
 		m_basepath.assign(basepath.data());
 
 		if (!core::string_utils::ends_with(m_basepath, "/"))
@@ -52,6 +53,12 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	string_t cnative_filesystem::alias() const
+	{
+		return m_alias;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	string_t cnative_filesystem::base_path() const
 	{
 		return m_basepath;
@@ -66,15 +73,20 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cnative_filesystem::does_exist(const core::fs::cfileinfo& filepath) const
 	{
-		core::fs::cfileinfo info(base_path(), filepath.relative());
+		auto info = core::fs::ifilesystem::convert(this, filepath);
 
-		return find_file(info) != nullptr;
+		if (info.is_file())
+		{
+			return find_file(info) != nullptr;
+		}
+
+		return info.exists();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::fs::file_ref_t cnative_filesystem::open(const core::fs::cfileinfo& filepath, int file_mode)
 	{
-		core::fs::cfileinfo info(base_path(), filepath.relative());
+		auto info = core::fs::ifilesystem::convert(this, filepath);
 
 		auto file = find_file(info);
 		const auto exists = (file != nullptr);
