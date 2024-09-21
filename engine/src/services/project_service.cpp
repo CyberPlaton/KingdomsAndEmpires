@@ -68,7 +68,9 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cproject_service::open_project(const core::fs::cfileinfo& filepath)
 	{
-		if (filepath.exists())
+		auto& vfs = core::cservice_manager::get<core::fs::cvirtual_filesystem>();
+
+		if (vfs.exists(filepath))
 		{
 			if (const auto mem = core::fs::load_text_from_file(filepath.relative()); mem && !mem->empty())
 			{

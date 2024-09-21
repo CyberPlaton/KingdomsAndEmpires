@@ -4,6 +4,8 @@ namespace engine
 {
 	namespace
 	{
+		constexpr auto C_RESOURCES_PATH = "resources";
+
 		//- Default services required for engine and others
 		constexpr array_t<stringview_t, 7> C_SERVICES = { "cthread_service"
 														, "cvirtual_filesystem"
@@ -37,6 +39,32 @@ namespace engine
 		register_services();
 		register_resource_managers();
 		register_layers();
+
+		//- set virtual path to resources
+		auto fs = core::cfilesystem(core::cfilesystem::cwd());
+		fs.backwards();
+		fs.backwards();
+		fs.backwards();
+		fs.backwards();
+
+		if (fs.forwards(C_RESOURCES_PATH))
+		{
+			const char* path = fs.current().view();
+
+			if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(path))
+			{
+				service<core::fs::cvirtual_filesystem>()->add_filesystem("/", filesystem);
+			}
+			else
+			{
+				log_error(fmt::format("Failed initializing virtual file system at path '/' for real path '{}'", path));
+			}
+		}
+		else
+		{
+			log_error(fmt::format("Failed locating default resources path at '{}'",
+				fs.current().view()));
+		}
 
 		//- load startup project
 		auto* project_service = service<cproject_service>();

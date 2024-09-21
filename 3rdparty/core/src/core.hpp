@@ -2179,9 +2179,9 @@ namespace core
 		std::filesystem::path path() const;
 		std::filesystem::directory_entry dir() const;
 
-		inline const char* view() const { return m_string_path.c_str(); }
-		inline const char* extension() const { return m_string_ext.c_str(); }
-		inline const char* stem() const { return m_string_stem.c_str(); }
+		const char* view() const { return m_string_path.c_str(); }
+		const char* extension() const { return m_string_ext.c_str(); }
+		const char* stem() const { return m_string_stem.c_str(); }
 
 		bool exists() const;
 		explicit operator bool() const { return exists(); }
@@ -2240,7 +2240,7 @@ namespace core
 		static cpath construct_relative_to_cwd(const char* path);
 		static bool is_contained(const cpath& contained, const cpath& container);
 
-		inline cpath current() const { return m_current; }
+		inline const cpath& current() const { return m_current; }
 
 		bool forwards(const char* path, bool forced = false);
 		bool backwards();
@@ -3254,6 +3254,7 @@ namespace core
 			filesystem_ref_t find_filesystem(stringview_t alias) const;
 			file_ref_t open(const cfileinfo& filepath, int file_mode);
 			void close(file_ref_t file);
+			bool exists(const cfileinfo& filepath) const;
 
 			vector_t<cfileinfo> iterate(const cfileinfo& filepath, filesystem_lookup_type type, bool recursive) const;
 

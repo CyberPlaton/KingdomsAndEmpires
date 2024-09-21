@@ -3159,7 +3159,7 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		void cvirtual_filesystem::add_filesystem(stringview_t alias, filesystem_ref_t filesystem)
 		{
-			if (filesystem)
+			if (filesystem && filesystem->ready())
 			{
 				string_t _alias = alias.data();
 
@@ -3178,6 +3178,14 @@ namespace core
 						serror_reporter::instance().m_callback(logging_verbosity_info,
 							fmt::format("Filesystem alias '{}' added to Virtual File System", _alias));
 					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(logging_verbosity_error,
+						fmt::format("Filesystem with alias '{}' could not be added to Virtual File System, because it is not ready!", alias));
 				}
 			}
 		}
@@ -3294,6 +3302,20 @@ namespace core
 						fmt::format("Failed closing file '{}'", file->info().name()));
 				}
 			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cvirtual_filesystem::exists(const cfileinfo& filepath) const
+		{
+			algorithm::for_each(m_filesystems.begin(), m_filesystems.end(), [&](const auto& pair)
+				{
+					if (pair.second->does_exist(filepath))
+					{
+						return true;
+					}
+				});
+
+			return false;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
