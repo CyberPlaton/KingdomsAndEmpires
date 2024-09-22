@@ -72,8 +72,6 @@ namespace engine
 		{
 			if (const auto mem = file->read_sync(); mem && !mem->empty())
 			{
-				auto from_blob = core::io::from_json_blob<editor::sproject>(mem->data());
-
 				editor::sproject project;
 
 				if (const auto var = core::io::from_json_blob(rttr::type::get<editor::sproject>(), mem->data(), mem->size()); var.is_valid())
