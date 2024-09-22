@@ -42,11 +42,9 @@ namespace engine
 			!core::cfilesystem::find_file(basepath.data(), fmt::format("{}.{}", name.data(), C_PROJECT_EXT.data()).data()) &&
 			core::cfilesystem::create_file_in(basepath.data(), name.data(), C_PROJECT_EXT.data()))
 		{
-			editor::cproject::sconfig cfg;
-			cfg.m_project_name = fmt::format("{}.{}", name.data(), C_PROJECT_EXT.data()).data();
-			cfg.m_basepath = basepath.data();
-
-			const auto project = std::make_shared<editor::cproject>(std::move(cfg));
+			const auto project = std::make_shared<editor::sproject>();
+			project->m_cfg.m_project_name = fmt::format("{}.{}", name.data(), C_PROJECT_EXT.data()).data();
+			project->m_cfg.m_basepath = basepath.data();
 
 			m_projects[h] = project;
 
@@ -74,9 +72,16 @@ namespace engine
 		{
 			if (const auto mem = file->read_sync(); mem && !mem->empty())
 			{
-				auto& project = core::io::from_json_blob<editor::cproject>(mem->data(), mem->size());
+				auto from_blob = core::io::from_json_blob<editor::sproject>(mem->data());
 
-				const auto& cfg = project.config();
+				editor::sproject project;
+
+				if (const auto var = core::io::from_json_blob(rttr::type::get<editor::sproject>(), mem->data(), mem->size()); var.is_valid())
+				{
+					project = var.get_value<editor::sproject>();
+				}
+
+				const auto& cfg = project.m_cfg;
 				const auto h = algorithm::hash(cfg.m_project_name);
 
 				//- Sanity checks
@@ -85,7 +90,7 @@ namespace engine
 					cfg.m_basepath == filepath.directory_path() && cfg.m_project_name == filepath.name() &&
 					m_projects.find(h) == m_projects.end())
 				{
-					m_projects[h] = std::make_shared<editor::cproject>(project);
+					m_projects[h] = std::make_shared<editor::sproject>(project);
 
 					log_info(fmt::format("Successfully opened project '{}'", filepath.relative()));
 

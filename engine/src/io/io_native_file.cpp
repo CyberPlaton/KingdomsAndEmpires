@@ -4,36 +4,24 @@ namespace io
 {
 	namespace
 	{
+		//- Note: truncate and text reading is the default
 		//------------------------------------------------------------------------------------------------------------------------
-		asio::stream_file::flags to_openmode(int file_mode)
+		const char* to_openmode(int file_mode)
 		{
-			asio::stream_file::flags mode = (asio::stream_file::flags)0;
+			const char* mode = nullptr;
 
 			if (algorithm::bit_check(file_mode, core::file_mode_read) && algorithm::bit_check(file_mode, core::file_mode_write))
 			{
-				mode = asio::stream_file::read_write;
+				mode = "r+";
 			}
 			else if (algorithm::bit_check(file_mode, core::file_mode_read))
 			{
-				mode = asio::stream_file::read_only;
+				mode = "r";
 			}
 			else if (algorithm::bit_check(file_mode, core::file_mode_write))
 			{
-				mode = asio::stream_file::write_only;
+				mode = "w";
 			}
-
-			if (algorithm::bit_check(file_mode, core::file_mode_append))
-			{
-				mode |= asio::stream_file::append;
-			}
-			if (algorithm::bit_check(file_mode, core::file_mode_truncate))
-			{
-				mode |= asio::stream_file::truncate;
-			}
-
-			//- by default, if file does not exist on open we want to create it,
-			//- and also we want flush directly after write and not wait for close
-			mode |= (asio::stream_file::create | asio::stream_file::sync_all_on_write);
 
 			return mode;
 		}
@@ -63,7 +51,12 @@ namespace io
 	{
 		if (opened())
 		{
-			return (unsigned)m_file->size();
+			auto current = tell();
+			seek(0, core::file_seek_origin_end);
+			auto filesize = tell();
+			seek(current, core::file_seek_origin_begin);
+
+			return filesize;
 		}
 		return 0;
 	}
@@ -99,10 +92,9 @@ namespace io
 			algorithm::bit_clear(m_state, core::file_state_read_only);
 		}
 
-		m_context = std::make_unique<asio::io_context>();
-		m_file = std::make_unique<asio::stream_file>(*m_context.get(), info().path().c_str(), to_openmode(m_filemode));
+		m_file = fopen(info().path().c_str(), to_openmode(m_filemode));
 
-		if (m_context && m_file)
+		if (m_file)
 		{
 			algorithm::bit_set(m_state, core::file_state_opened);
 		}
@@ -111,14 +103,14 @@ namespace io
 			//- report failure to open
 			log_warn(fmt::format("Failed to open native file '{}' with error '{}'", info().path(), strerror(errno)));
 		}
+
+		seek_to_start();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cnative_file::close()
 	{
-		m_file.reset();
-		m_context.reset();
-		m_seek_position = 0;
+		fclose(m_file); m_file = nullptr;
 		algorithm::bit_clear(m_state, core::file_state_opened);
 	}
 
@@ -156,7 +148,7 @@ namespace io
 		}
 		}
 
-		m_file->seek(SCAST(int64_t, offset), way);
+		fseek(m_file, SCAST(int64_t, offset), way);
 
 		return tell();
 	}
@@ -166,7 +158,7 @@ namespace io
 	{
 		if (opened())
 		{
-			return m_seek_position;
+			return static_cast<unsigned>(ftell(m_file));
 		}
 		return 0;
 	}
@@ -179,20 +171,26 @@ namespace io
 			return 0;
 		}
 
-		std::error_code err;
+		seek_to(0);
 
-		auto count = (unsigned)m_file->read_some(asio::buffer(buffer, datasize), err);
+		auto finished_reading = fread(buffer, sizeof(char), datasize, m_file);
 
-		if (!err)
+		if (finished_reading == datasize)
 		{
-			m_seek_position += count;
-
-			return count;
+			return datasize;
+		}
+		else if (finished_reading < datasize)
+		{
+			log_warn(fmt::format("Failed to fully read from native file '{}'. Read '{}/{}' Bytes.",
+				info().path(), finished_reading, datasize));
+		}
+		else
+		{
+			log_error(fmt::format("Failed to read from native file '{}' with error '{}'",
+				info().path(), strerror(errno)));
 		}
 
-		log_warn(fmt::format("Failed to read from native file '{}' with error '{}'", info().path(), err.message()));
-
-		return 0;
+		return finished_reading;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -203,9 +201,7 @@ namespace io
 			return nullptr;
 		}
 
-		auto memory = core::cmemory::make_ref(size(), true);
-
-		read(memory->data(), size());
+		auto memory = core::fs::load_text_from_file(info().path());
 
 		return memory;
 	}
@@ -230,20 +226,17 @@ namespace io
 			return 0;
 		}
 
-		std::error_code err;
+		auto finished_writing = fwrite(buffer, sizeof(char), datasize, m_file);
 
-		auto count = (unsigned)m_file->write_some(asio::buffer(buffer, datasize), err);
-
-		if (!err)
+		if (finished_writing == datasize)
 		{
-			m_seek_position += count;
-
-			return count;
+			return datasize;
 		}
 
-		log_warn(fmt::format("Failed to write to native file '{}' with error '{}'", info().path(), err.message()));
+		log_warn(fmt::format("Failed to write to native file '{}' with error '{}'. Wrote '{}/{}' Bytes.",
+			info().path(), strerror(errno), finished_writing, datasize));
 
-		return 0;
+		return finished_writing;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -251,13 +244,9 @@ namespace io
 	{
 		if (opened())
 		{
-			const auto file_size = (int64_t)size();
+			const auto file_size = size();
 
-			const auto p = (unsigned)m_file->seek(-file_size, asio::file_base::seek_basis::seek_end);
-
-			m_seek_position = p;
-
-			return (p == 0);
+			return (fseek(m_file, 0, SEEK_SET) == 0);
 		}
 		return false;
 	}
@@ -267,13 +256,9 @@ namespace io
 	{
 		if (opened())
 		{
-			const auto file_size = (int64_t)size();
+			const auto file_size = size();
 
-			const auto p = (unsigned)m_file->seek(file_size, asio::file_base::seek_basis::seek_set);
-
-			m_seek_position = p;
-
-			return (p == file_size);
+			return (fseek(m_file, file_size, SEEK_SET) == file_size);
 		}
 		return false;
 	}
@@ -283,15 +268,11 @@ namespace io
 	{
 		if (opened())
 		{
-			const auto file_size = (int64_t)size();
+			const auto file_size = size();
 
 			CORE_ASSERT(offset >= 0 && offset <= file_size, "Invalid operation. Offset lies outside of file start and file end!");
 
-			const auto p = (unsigned)m_file->seek((int64_t)offset, asio::file_base::seek_basis::seek_set);
-
-			m_seek_position = p;
-
-			return (p == offset);
+			return (fseek(m_file, offset, SEEK_SET) == offset);
 		}
 		return false;
 	}

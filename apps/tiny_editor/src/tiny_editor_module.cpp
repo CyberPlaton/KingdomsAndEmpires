@@ -562,7 +562,7 @@ int __real_main(int argc, char* argv[])
 	engine::cengine::sconfig cfg;
 
 	cfg.m_mode = core::launch_context_editor;
-	cfg.m_startup_project = "/default_startup_project.project";
+	cfg.m_startup_project = "/default_startup_project.json";
 
 	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");

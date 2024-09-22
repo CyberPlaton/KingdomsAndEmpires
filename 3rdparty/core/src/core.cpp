@@ -208,216 +208,6 @@ namespace core
 			return string_utils::find_substr(path.data(), ".") != MAX(size_t);
 		}
 
-		//- @reference: raylib UnloadFileData.
-		//- unload data allocated by load_binary_file_data
-		//------------------------------------------------------------------------------------------------------------------------
-		static void unload_file_binary_data(void* data)
-		{
-			CORE_FREE(data);
-		}
-
-		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message.
-		//- Does append a null terminator at the end.
-		//------------------------------------------------------------------------------------------------------------------------
-		static byte_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out)
-		{
-			byte_t* data = nullptr;
-			*data_size_out = 0;
-
-			if (file_path.data() != nullptr)
-			{
-				FILE* file = fopen(file_path.data(), "rb");
-
-				if(file != NULL)
-				{
-					fseek(file, 0, SEEK_END);
-					auto size = ftell(file);
-					fseek(file, 0, SEEK_SET);
-
-					if (size > 0)
-					{
-						data = (byte_t*)CORE_MALLOC(sizeof(byte_t) * size + 1);
-						data[sizeof(byte_t) * size - 1] = '\0';
-
-						unsigned count = SCAST(unsigned, fread(data, sizeof(byte_t), size, file));
-						*data_size_out = count + 1;
-					}
-
-					fclose(file);
-				}
-				else
-				{
-					if (serror_reporter::instance().m_callback)
-					{
-						serror_reporter::instance().m_callback(logging_verbosity_error,
-							fmt::format("Could not open file '{}'", file_path));
-					}
-				}
-			}
-			else
-			{
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(logging_verbosity_error,
-						"Invalid file path provided for load_binary_file_data");
-				}
-			}
-			return data;
-		}
-
-		//- @reference: raylib SaveFileData
-		//------------------------------------------------------------------------------------------------------------------------
-		static bool save_binary_file_data(stringview_t file_path, byte_t* data, unsigned data_size)
-		{
-			if (file_path.data() != nullptr)
-			{
-				FILE* file = fopen(file_path.data(), "wb");
-
-				if (file != NULL)
-				{
-					unsigned count = (unsigned)fwrite(data, sizeof(unsigned char), data_size, file);
-
-					fclose(file);
-
-					return count == data_size;
-				}
-				else
-				{
-					if (serror_reporter::instance().m_callback)
-					{
-						serror_reporter::instance().m_callback(logging_verbosity_error,
-							fmt::format("Could not open file '{}'", file_path));
-					}
-				}
-			}
-			else
-			{
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(logging_verbosity_error,
-						"Invalid file path provided for save_binary_file_data");
-				}
-			}
-			return false;
-		}
-
-		//- @reference: raylib UnloadFileText.
-		//- unload data allocated by load_text_file_data
-		//------------------------------------------------------------------------------------------------------------------------
-		static void unload_file_text_data(char* text)
-		{
-			CORE_FREE(text);
-		}
-
-		//- @reference: raylib LoadFileText
-		//------------------------------------------------------------------------------------------------------------------------
-		static char* load_text_file_data(stringview_t file_path)
-		{
-			char* text = nullptr;
-
-			if (file_path.data() != nullptr)
-			{
-				FILE* file = fopen(file_path.data(), "rt");
-
-				if (file != NULL)
-				{
-					fseek(file, 0, SEEK_END);
-					auto size = SCAST(unsigned, ftell(file));
-					fseek(file, 0, SEEK_SET);
-
-					if (size > 0)
-					{
-						text = SCAST(char*, CORE_MALLOC((size + 1) * sizeof(char)));
-
-						if (text != nullptr)
-						{
-							auto count = SCAST(unsigned, fread(text, sizeof(char), size, file));
-
-							if (count < size)
-							{
-								text = SCAST(char*, CORE_REALLOC(text, count + 1));
-							}
-
-							text[count] = '\0';
-						}
-					}
-					else
-					{
-						if (serror_reporter::instance().m_callback)
-						{
-							serror_reporter::instance().m_callback(logging_verbosity_error,
-								fmt::format("Could not read text from file '{}'", file_path));
-						}
-					}
-					fclose(file);
-				}
-				else
-				{
-					if (serror_reporter::instance().m_callback)
-					{
-						serror_reporter::instance().m_callback(logging_verbosity_error,
-							fmt::format("Could not open file '{}'", file_path));
-					}
-				}
-			}
-			else
-			{
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(logging_verbosity_error,
-						"Invalid file path provided for load_text_file_data");
-				}
-			}
-			return text;
-		}
-
-		//- @reference: raylib SaveFileText
-		//------------------------------------------------------------------------------------------------------------------------
-		static bool save_text_file_data(stringview_t file_path, stringview_t text)
-		{
-			if (file_path.data() != nullptr)
-			{
-				FILE* file = fopen(file_path.data(), "wt");
-
-				if (file != NULL)
-				{
-					auto count = fprintf(file, "%s", text.data());
-
-					fclose(file);
-
-					if (count > 0)
-					{
-						return true;
-					}
-					else
-					{
-						if (serror_reporter::instance().m_callback)
-						{
-							serror_reporter::instance().m_callback(logging_verbosity_error,
-								fmt::format("Could not write text to file '{}'", file_path));
-						}
-					}
-				}
-				else
-				{
-					if (serror_reporter::instance().m_callback)
-					{
-						serror_reporter::instance().m_callback(logging_verbosity_error,
-							fmt::format("Could not open file '{}'", file_path));
-					}
-				}
-			}
-			else
-			{
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(logging_verbosity_error,
-						"Invalid file path provided for save_text_file_data");
-				}
-			}
-			return false;
-		}
-
 	} //- unnamed
 
 	namespace io
@@ -589,37 +379,24 @@ namespace core
 		//------------------------------------------------------------------------------------------------------------------------
 		rttr::variant extract_from_string(stringview_t value, const rttr::type& type)
 		{
-			if (!value.empty())
-			{
-				rttr::variant var = string_t(value);
+			rttr::variant var = string_t(value);
 
-				if (var.get_type() == type || rttr::type::get<stringview_t>() == type)
-				{
-					return var;
-				}
-				//- try converting to desired type
-				if (var.convert(type))
-				{
-					return var;
-				}
-				//- error
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(logging_verbosity_error,
-						fmt::format("\tFailed extracting String '{}' to type '{}'",
-							value.data(), type.get_name().data()));
-				}
-			}
-			else
+			if (var.get_type() == type || rttr::type::get<stringview_t>() == type)
 			{
-				//- Not an error, but nice to have, report quietly
-				if (serror_reporter::instance().m_callback)
-				{
-					serror_reporter::instance().m_callback(logging_verbosity_debug,
-						"\tIgnoring extraction of empty String");
-				}
+				return var;
 			}
-			return {};
+			//- try converting to desired type
+			if (var.convert(type))
+			{
+				return var;
+			}
+			//- error
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(logging_verbosity_error,
+					fmt::format("\tFailed extracting String '{}' to type '{}'",
+						value.data(), type.get_name().data()));
+			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -768,7 +545,9 @@ namespace core
 			simdjson::dom::parser parser;
 			simdjson::dom::element element;
 
-			if (parser.parse(data, SCAST(size_t, size)).get(element) != simdjson::SUCCESS)
+			auto json = stringview_t(data);
+
+			if (parser.parse(json.data(), json.length()).get(element) != simdjson::SUCCESS)
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -789,7 +568,7 @@ namespace core
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		rttr::variant from_json_string(rttr::type expected, const string_t& json)
+		rttr::variant from_json_string(rttr::type expected, stringview_t json)
 		{
 			return from_json_blob(expected, (const byte_t*)json.data(), json.length());
 		}
@@ -2005,24 +1784,30 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	cmemory::cmemory(byte_t* data, unsigned size)
 	{
+		const auto n = SCAST(size_t, size + 1);
+
+		m_data.resize(n);
+
 		//- Copy data, freeing incoming data is not our responsibility
-		m_data.resize(SCAST(size_t, size), '\0');
-		std::memcpy(m_data.data(), data, SCAST(size_t, size));
+		std::memcpy(m_data.data(), data, n);
+
+		m_data[size] = '\0';
 	}
 
 	//- Allocate a piece of memory with requested size
 	//------------------------------------------------------------------------------------------------------------------------
 	cmemory::cmemory(unsigned capacity, const bool resize /*= false*/)
 	{
-		CORE_ASSERT(capacity > 0, "Invalid operation. Either empty memory or invalid memory requested!");
+		const auto n = capacity + 1;
 
 		if (resize)
 		{
-			m_data.resize(SCAST(size_t, capacity), '\0');
+			m_data.resize(SCAST(size_t, n));
+			m_data[capacity] = '\0';
 		}
 		else
 		{
-			m_data.reserve(SCAST(size_t, capacity));
+			m_data.reserve(SCAST(size_t, n));
 		}
 	}
 
@@ -3023,6 +2808,216 @@ namespace core
 
 	namespace fs
 	{
+		//- @reference: raylib UnloadFileData.
+		//- unload data allocated by load_binary_file_data
+		//------------------------------------------------------------------------------------------------------------------------
+		void unload_file_binary_data(void* data)
+		{
+			CORE_FREE(data);
+		}
+
+		//- @reference: raylib LoadFileData. Sevure version. If 'error' is not null then it will be filled with an error message.
+		//- Does append a null terminator at the end.
+		//------------------------------------------------------------------------------------------------------------------------
+		byte_t* load_binary_file_data(stringview_t file_path, unsigned* data_size_out)
+		{
+			byte_t* data = nullptr;
+			*data_size_out = 0;
+
+			if (file_path.data() != nullptr)
+			{
+				FILE* file = fopen(file_path.data(), "rb");
+
+				if (file != NULL)
+				{
+					fseek(file, 0, SEEK_END);
+					auto size = ftell(file);
+					fseek(file, 0, SEEK_SET);
+
+					if (size > 0)
+					{
+						data = (byte_t*)CORE_MALLOC(sizeof(byte_t) * size + 1);
+						data[sizeof(byte_t) * size - 1] = '\0';
+
+						unsigned count = SCAST(unsigned, fread(data, sizeof(byte_t), size, file));
+						*data_size_out = count + 1;
+					}
+
+					fclose(file);
+				}
+				else
+				{
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(logging_verbosity_error,
+							fmt::format("Could not open file '{}'", file_path));
+					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(logging_verbosity_error,
+						"Invalid file path provided for load_binary_file_data");
+				}
+			}
+			return data;
+		}
+
+		//- @reference: raylib SaveFileData
+		//------------------------------------------------------------------------------------------------------------------------
+		bool save_binary_file_data(stringview_t file_path, byte_t* data, unsigned data_size)
+		{
+			if (file_path.data() != nullptr)
+			{
+				FILE* file = fopen(file_path.data(), "wb");
+
+				if (file != NULL)
+				{
+					unsigned count = (unsigned)fwrite(data, sizeof(byte_t), data_size, file);
+
+					fclose(file);
+
+					return count == data_size;
+				}
+				else
+				{
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(logging_verbosity_error,
+							fmt::format("Could not open file '{}'", file_path));
+					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(logging_verbosity_error,
+						"Invalid file path provided for save_binary_file_data");
+				}
+			}
+			return false;
+		}
+
+		//- @reference: raylib UnloadFileText.
+		//- unload data allocated by load_text_file_data
+		//------------------------------------------------------------------------------------------------------------------------
+		void unload_file_text_data(byte_t* text)
+		{
+			CORE_FREE(text);
+		}
+
+		//- @reference: raylib LoadFileText
+		//------------------------------------------------------------------------------------------------------------------------
+		byte_t* load_text_file_data(stringview_t file_path)
+		{
+			byte_t* text = nullptr;
+
+			if (file_path.data() != nullptr)
+			{
+				FILE* file = fopen(file_path.data(), "rt");
+
+				if (file != NULL)
+				{
+					fseek(file, 0, SEEK_END);
+					auto size = SCAST(unsigned, ftell(file));
+					fseek(file, 0, SEEK_SET);
+
+					if (size > 0)
+					{
+						text = SCAST(byte_t*, CORE_MALLOC((size + 1) * sizeof(byte_t)));
+
+						if (text != nullptr)
+						{
+							auto count = SCAST(unsigned, fread(text, sizeof(byte_t), size, file));
+
+							if (count < size)
+							{
+								text = SCAST(byte_t*, CORE_REALLOC(text, count + 1));
+							}
+
+							text[count] = '\0';
+						}
+					}
+					else
+					{
+						if (serror_reporter::instance().m_callback)
+						{
+							serror_reporter::instance().m_callback(logging_verbosity_error,
+								fmt::format("Could not read text from file '{}'", file_path));
+						}
+					}
+					fclose(file);
+				}
+				else
+				{
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(logging_verbosity_error,
+							fmt::format("Could not open file '{}'", file_path));
+					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(logging_verbosity_error,
+						"Invalid file path provided for load_text_file_data");
+				}
+			}
+			return text;
+		}
+
+		//- @reference: raylib SaveFileText
+		//------------------------------------------------------------------------------------------------------------------------
+		bool save_text_file_data(stringview_t file_path, stringview_t text)
+		{
+			if (file_path.data() != nullptr)
+			{
+				FILE* file = fopen(file_path.data(), "wt");
+
+				if (file != NULL)
+				{
+					auto count = fprintf(file, "%s", text.data());
+
+					fclose(file);
+
+					if (count > 0)
+					{
+						return true;
+					}
+					else
+					{
+						if (serror_reporter::instance().m_callback)
+						{
+							serror_reporter::instance().m_callback(logging_verbosity_error,
+								fmt::format("Could not write text to file '{}'", file_path));
+						}
+					}
+				}
+				else
+				{
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(logging_verbosity_error,
+							fmt::format("Could not open file '{}'", file_path));
+					}
+				}
+			}
+			else
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(logging_verbosity_error,
+						"Invalid file path provided for save_text_file_data");
+				}
+			}
+			return false;
+		}
+
 		//------------------------------------------------------------------------------------------------------------------------
 		cfileinfo::cfileinfo(stringview_t filepath) :
 			std::filesystem::path(filepath.data()), m_relative(filepath.data())
@@ -3382,7 +3377,7 @@ namespace core
 				result = cmemory::make_ref((byte_t*)text, (unsigned)strlen(text));
 
 				//- free original data
-				unload_file_text_data((char*)text);
+				unload_file_text_data((byte_t*)text);
 			}
 
 			return result;

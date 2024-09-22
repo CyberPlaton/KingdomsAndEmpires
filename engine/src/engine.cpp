@@ -291,6 +291,7 @@ RTTR_REGISTRATION
 	using namespace engine;
 	using namespace ecs;
 	using namespace ecs::tag;
+	using namespace editor;
 
 	rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
 		.property("m_startup_project",	&cengine::sconfig::m_startup_project)
@@ -303,6 +304,24 @@ RTTR_REGISTRATION
 	rttr::default_constructor<cengine::sconfig>();
 	rttr::default_constructor<vector_t<string_t>>();
 
+	//- Section: Editor related
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::cregistrator<sproject>("sproject")
+		.prop("m_cfg", &sproject::m_cfg)
+		;
+
+	rttr::cregistrator<sproject::sconfig>("sproject::sconfig")
+		.prop("m_project_plugins",	&sproject::sconfig::m_project_plugins)
+		.prop("m_basepath",			&sproject::sconfig::m_basepath)
+		.prop("m_project_name",		&sproject::sconfig::m_project_name)
+		.prop("m_startup_world",	&sproject::sconfig::m_startup_world)
+		;
+
+	//rttr::default_constructor<sproject>();
+	//rttr::default_constructor<sproject::sconfig>();
+
+	//- Section: entity component system
+	//------------------------------------------------------------------------------------------------------------------------
 	rttr::cregistrator<sinvisible>("sinvisible")
 		;
 

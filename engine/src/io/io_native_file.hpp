@@ -30,10 +30,8 @@ namespace io
 
 	private:
 		core::fs::cfileinfo m_info;
-		ptr_t<asio::stream_file> m_file;
-		ptr_t<asio::io_context> m_context;
+		FILE* m_file;
 		int m_state;					//- bitwise concated core::file_state
-		unsigned m_seek_position = 0;
 	};
 
 } //- io

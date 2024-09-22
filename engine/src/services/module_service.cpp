@@ -77,7 +77,7 @@ namespace io
 			//- Load data and parse from json to object
 			if (const auto& memory = file->read_async().wait(); memory)
 			{
-				auto module = core::io::from_json_blob<cmodule>(memory->data(), memory->size());
+				auto module = core::io::from_json_blob(rttr::type::get<cmodule>(), memory->data(), memory->size()).get_value<cmodule>();
 
 				//- If this module has dependencies, we have to load them first and afterwards the module itself
 				for (const auto& def : module.definitions())

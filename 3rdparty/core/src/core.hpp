@@ -1331,23 +1331,7 @@ namespace core
 		[[nodiscard]] rttr::variant from_json_object(rttr::type expected, const simdjson::dom::element& json);
 
 		//------------------------------------------------------------------------------------------------------------------------
-		[[nodiscard]] rttr::variant from_json_string(rttr::type expected, const string_t& json);
-
-		//------------------------------------------------------------------------------------------------------------------------
-		template<class TType>
-		[[nodiscard]] TType& from_json_blob(const byte_t* data, unsigned size)
-		{
-			auto var = from_json_blob(rttr::type::get<TType>(), data, size);
-
-			return var.template get_value<TType>();
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		template<class TType>
-		[[nodiscard]] TType from_json_string(const string_t& json)
-		{
-			return from_json_blob<TType>((const byte_t*)json.data(), SCAST(unsigned, json.length()));
-		}
+		[[nodiscard]] rttr::variant from_json_string(rttr::type expected, stringview_t json);
 
 		//------------------------------------------------------------------------------------------------------------------------
 		string_t to_json_string(rttr::instance object, bool beautify = false);
@@ -2109,6 +2093,7 @@ namespace core
 		inline bool empty() const { return size() == 0; }
 		inline auto begin() { return m_data.begin(); }
 		inline auto end() { return m_data.end(); }
+		inline void resize(unsigned n) { m_data.resize(SCAST(size_t, n)); }
 
 		//- Take ownership of the data
 		[[nodiscard]] vector_t<byte_t>&& take() { return std::move(m_data); }
@@ -3106,6 +3091,14 @@ namespace core
 	namespace fs
 	{
 		//- Utility functions to load data from files directly without using VFS
+		byte_t*						load_text_file_data(stringview_t file_path);
+		bool						save_text_file_data(stringview_t file_path, stringview_t text);
+		void						unload_file_text_data(byte_t* text);
+
+		byte_t*						load_binary_file_data(stringview_t file_path, unsigned* data_size_out);
+		bool						save_binary_file_data(stringview_t file_path, byte_t* data, unsigned data_size);
+		void						unload_file_binary_data(void* data);
+
 		memory_ref_t				load_text_from_file(stringview_t filepath);
 		cfuture_type<memory_ref_t>	load_text_from_file_async(stringview_t filepath);
 		memory_ref_t				load_binary_from_file(stringview_t filepath);
