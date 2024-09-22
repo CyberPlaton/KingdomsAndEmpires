@@ -80,12 +80,11 @@ namespace engine
 				}
 
 				const auto& cfg = project.m_cfg;
-				const auto h = algorithm::hash(cfg.m_project_name);
+				const auto h = algorithm::hash(filepath.relative());
 
 				//- Sanity checks
 				if (!cfg.m_basepath.empty() &&
-					cfg.m_project_name.empty() &&
-					cfg.m_basepath == filepath.directory_path() && cfg.m_project_name == filepath.name() &&
+					!cfg.m_project_name.empty() &&
 					m_projects.find(h) == m_projects.end())
 				{
 					m_projects[h] = std::make_shared<editor::sproject>(project);
