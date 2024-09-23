@@ -17,10 +17,10 @@ namespace sm
 		void on_update(float) override final;
 
 		image_handle_t load_sync(stringview_t name, stringview_t filepath);
-		image_handle_t load_sync(stringview_t name, void* data, unsigned size);
+		image_handle_t load_sync(stringview_t name, image_type type, void* data, unsigned size);
 
 		core::cfuture_type<image_handle_t> load_async(stringview_t name, stringview_t filepath);
-		core::cfuture_type<image_handle_t> load_async(stringview_t name, void* data, unsigned size);
+		core::cfuture_type<image_handle_t> load_async(stringview_t name, image_type type, void* data, unsigned size);
 
 	private:
 		RTTR_ENABLE(core::cservice, core::cresource_manager<cimage>);
@@ -41,13 +41,11 @@ namespace sm
 
 		texture_handle_t load_sync(stringview_t name, const cimage& image);
 		texture_handle_t load_sync(stringview_t name, stringview_t filepath);
-		texture_handle_t load_sync(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
+		texture_handle_t load_sync(stringview_t name, image_type type, void* data, unsigned size);
 
 		core::cfuture_type<texture_handle_t> load_async(stringview_t name, const cimage& image);
 		core::cfuture_type<texture_handle_t> load_async(stringview_t name, stringview_t filepath);
-		core::cfuture_type<texture_handle_t> load_async(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
+		core::cfuture_type<texture_handle_t> load_async(stringview_t name, image_type type, void* data, unsigned size);
 
 	private:
 		RTTR_ENABLE(core::cservice, core::cresource_manager<ctexture>);
@@ -66,39 +64,16 @@ namespace sm
 		void on_shutdown() override final;
 		void on_update(float) override final;
 
-		shader_handle_t load_sync(stringview_t name, stringview_t path);
-		shader_handle_t load_sync(stringview_t name, const char* text);
-		shader_handle_t load_sync(stringview_t name, const uint8_t* data, unsigned size);
+		shader_handle_t load_sync(stringview_t name, shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
+		shader_handle_t load_sync(stringview_t name, shader_type type, const char* vs, const char* fs);
+		shader_handle_t load_sync(stringview_t name, shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
 
-		core::cfuture_type<shader_handle_t> load_async(stringview_t name, stringview_t path);
-		core::cfuture_type<shader_handle_t> load_async(stringview_t name, const char* text);
-		core::cfuture_type<shader_handle_t> load_async(stringview_t name, const uint8_t* data, unsigned size);
+		core::cfuture_type<shader_handle_t> load_async(stringview_t name, shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
+		core::cfuture_type<shader_handle_t> load_async(stringview_t name, shader_type type, const char* vs, const char* fs);
+		core::cfuture_type<shader_handle_t> load_async(stringview_t name, shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
 
 	private:
 		RTTR_ENABLE(core::cservice, core::cresource_manager<cshader>);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cprogram_manager final :
-		public core::cservice,
-		public core::cresource_manager<cprogram>
-	{
-	public:
-		cprogram_manager(unsigned reserve = C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT);
-		~cprogram_manager();
-
-		bool on_start() override final;
-		void on_shutdown() override final;
-		void on_update(float) override final;
-
-		program_handle_t load_sync(stringview_t name, const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs);
-		program_handle_t load_sync(stringview_t name, const cshader& vs, const cshader& fs);
-
-		core::cfuture_type<program_handle_t> load_async(stringview_t name, const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs);
-		core::cfuture_type<program_handle_t> load_async(stringview_t name, const cshader& vs, const cshader& fs);
-
-	private:
-		RTTR_ENABLE(core::cservice, core::cresource_manager<cprogram>);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

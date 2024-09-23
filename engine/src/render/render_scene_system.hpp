@@ -21,16 +21,15 @@ namespace render
 	//- System responsible for rendering sprites in current world.
 	//------------------------------------------------------------------------------------------------------------------------
 	class csprite_renderer_system :
-		public ecs::csystem<ecs::stransform, ecs::smesh, ecs::smaterial, ecs::ssprite_renderer>
+		public ecs::csystem<ecs::stransform, ecs::smaterial, ecs::ssprite_renderer>
 	{
 	public:
 		csprite_renderer_system(flecs::world& w) :
-			ecs::csystem<ecs::stransform, ecs::smesh, ecs::smaterial, ecs::ssprite_renderer>
+			ecs::csystem<ecs::stransform, ecs::smaterial, ecs::ssprite_renderer>
 			(w, "Render Sprite Renderer System")
 		{
 			multithreaded();
-			build([&](const ecs::stransform& transform, const ecs::smesh& mesh,
-				const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
+			build([&](const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 				{
 					CORE_NAMED_ZONE("Render Sprite Renderer System");
 				});

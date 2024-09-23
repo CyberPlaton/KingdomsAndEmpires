@@ -47,19 +47,19 @@ function set_basic_defines()
 	end
 
 	filter{"configurations:debug"}
-		defines{"DEBUG=1", "BX_CONFIG_DEBUG=1"}
+		defines{"DEBUG=1"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1", "BX_CONFIG_DEBUG=0"}
+		defines{"NDEBUG", "RELEASE=1"}
 	filter{"configurations:hybrid"}
-		defines{"NDEBUG", "HYBRID=1", "BX_CONFIG_DEBUG=0"}
+		defines{"NDEBUG", "HYBRID=1"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
 			"__STDC_FORMAT_MACROS",
 			"_CRT_SECURE_NO_DEPRECATE",
 			"RTTR_DLL",						-- RTTR
-			"GLFW_DLL",						-- GLFW
-			"IMGUI_DISABLE_OBSOLETE_KEYIO", -- IMGUI
+			"BUILD_LIBTYPE_SHARED",			-- raylib
+			"GLAD_API_CALL_EXPORT",			-- raylib glad/glad_es2
 			}
 
 	if IS_WARNING_AND_ERRORS_ENABLED == false then
@@ -101,68 +101,6 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function set_include_path_to_engine()
 	externalincludedirs {path.join(WORKSPACE_DIR, "engine", "include")}
-end
-
-------------------------------------------------------------------------------------------------------------------------
-function set_bx_includes()
-	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
-	if PLATFORM == "windows" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
-	elseif PLATFORM == "linux" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
-	elseif PLATFORM == "macosx" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
-	else
-		print("Unknown platform!")
-	end
-end
-
-------------------------------------------------------------------------------------------------------------------------
-function set_bgfx_3rd_party_includes()
-
-	bgfx_3rd_party_dir = path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "3rdparty")
-
-	externalincludedirs{bgfx_3rd_party_dir,
-						path.join(bgfx_3rd_party_dir, "directx-headers/include"),
-						path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
-						path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
-
-						path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
-						path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
-
-						path.join(bgfx_3rd_party_dir, "glslang"),
-						
-						path.join(bgfx_3rd_party_dir, "spirv-cross"),
-						path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
-						path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
-						path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
-	}
-
-	includedirs{bgfx_3rd_party_dir,
-				path.join(bgfx_3rd_party_dir, "directx-headers/include"),
-				path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
-				path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
-				
-				path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
-				path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
-
-				path.join(bgfx_3rd_party_dir, "glslang"),
-
-				path.join(bgfx_3rd_party_dir, "spirv-cross"),
-				path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
-				path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
-				path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
-	}
-
-	-- some things required includes to files contained in src directory
-	externalincludedirs{path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx"),
-						path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "include")}
-end
-
-------------------------------------------------------------------------------------------------------------------------
-function set_sdl_deps()
-	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "sdl", "include")}
-	links{"SDL2", "SDL2main"}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -233,8 +171,6 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
-		set_bx_includes()
-		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -291,8 +227,6 @@ function add_target_library(name, build_options, define_flags, thirdparty_header
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
-		set_bx_includes()
-		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #thirdparty_headeronly_deps do
@@ -341,8 +275,6 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		--set_libs_path()
-		set_bx_includes()
-		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -389,8 +321,6 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
-		set_bx_includes()
-		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do
@@ -454,8 +384,6 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
 		set_basic_links()
-		set_bx_includes()
-		set_bgfx_3rd_party_includes()
 
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #plugin_deps do

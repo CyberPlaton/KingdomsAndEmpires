@@ -5,7 +5,7 @@ function plugin_camera_system()
 					{},
 					{},
 					{},
-					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "bx", "bimg", "bgfx", "glfw"},
+					{"Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "raylib"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "Tracy", "asio"},
 					{"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"},

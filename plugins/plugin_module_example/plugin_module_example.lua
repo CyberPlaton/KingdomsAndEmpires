@@ -5,7 +5,7 @@ function plugin_module_example()
 					{},
 					{},
 					{},
-					{"spdlog", "core", "flecs", "spritemancer", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "bx", "bimg", "bgfx", "glfw"},
+					{"spdlog", "core", "flecs", "spritemancer", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "raylib"},
 					{},
 					{"nlohmann", "magic_enum", "taskflow", "argparse", "glm", "Tracy", "asio"},
 					{"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"},

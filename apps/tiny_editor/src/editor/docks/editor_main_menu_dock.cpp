@@ -180,7 +180,7 @@ namespace editor
 
 					ImGui::SameLine();
 
-					if (ImGui::SmallButton(ICON_KI_WRENCH))
+					if (ImGui::SmallButton(ICON_FA_ADDRESS_BOOK))
 					{
 						S_PROJECT_PATH_TEXT_BUFFER = pfd::select_folder("Select Project Path", pfd::path::home()).result();
 					}
@@ -221,7 +221,7 @@ namespace editor
 
 		if (*open && dialog
 			.title("Create World...")
-			.icon(ICON_KI_WRENCH)
+			.icon(ICON_FA_ADDRESS_BOOK)
 			.tooltip("Create World...")
 			.callback([&]()
 				{

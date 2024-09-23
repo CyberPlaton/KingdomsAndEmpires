@@ -96,11 +96,7 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	void cengine::on_imgui()
 	{
-		imgui::begin();
-
 		m_layers.on_ui_render();
-
-		imgui::end();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -362,14 +358,6 @@ RTTR_REGISTRATION
 		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&sanimation::show_ui)
 		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&sanimation::add)
 		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	&sanimation::remove)
-		;
-
-	rttr::ccomponent<smesh>("smesh")
-		.prop("m_vertices", &smesh::m_vertices)
-		.prop("m_indices", &smesh::m_indices)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME,	&smesh::show_ui)
-		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME,		&smesh::add)
-		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME,	smesh::remove)
 		;
 
 	rttr::ccomponent<smaterial>("smaterial")

@@ -2,7 +2,7 @@
 #include "platform.hpp"
 #include <core.h>
 #include <argparse.h>
-#include "bgfx_integration/bgfx.hpp"
+#include "raylib_integration/raylib.hpp"
 #include "imgui_integration/imgui.hpp"
 #include "imgui_integration/imgui_scopes.hpp"
 
@@ -33,33 +33,20 @@ namespace sm
 	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT			= 256;
 	constexpr auto C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT			= 512;
 	constexpr auto C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT			= 512;
-	constexpr auto C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT			= 256;
 	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT		= 128;
 	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT	= 64;
-	constexpr stringview_t C_UNIFORM_TEXTURE0						= "texture0";
-	constexpr stringview_t C_UNIFORM_TEXTURE1						= "texture1";
-	constexpr stringview_t C_UNIFORM_TEXTURE2						= "texture2";
-	constexpr stringview_t C_UNIFORM_TEXTURE3						= "texture3";
-	constexpr stringview_t C_UNIFORM_TEXTURE4						= "texture4";
-	constexpr stringview_t C_UNIFORM_TEXTURE5						= "texture5";
-	constexpr stringview_t C_UNIFORM_TEXTURE6						= "texture6";
-	constexpr stringview_t C_UNIFORM_TEXTURE7						= "texture7";
 
-	using image_handle_t		= uint16_t;
-	using texture_handle_t		= uint16_t;
-	using shader_handle_t		= uint16_t;
-	using program_handle_t		= uint16_t;
-	using spriteatlas_handle_t	= uint16_t;
-	using rendertarget_handle_t = uint16_t;
-	using indices_t				= vector_t<uint16_t>;
+	using image_handle_t = unsigned;
+	using texture_handle_t = unsigned;
+	using shader_handle_t = unsigned;
+	using spriteatlas_handle_t = unsigned;
+	using rendertarget_handle_t = unsigned;
 
 	class irenderer;
 	class iplatform;
 	class ios;
 	class iapp;
-	class cuniform;
 	class cshader;
-	class cprogram;
 	class crendertarget;
 	class cimage;
 	class ctexture;
@@ -72,23 +59,14 @@ namespace sm
 	class cspriteatlas_manager;
 	class crendertarget_manager;
 
+	raylib::Color to_cliteral(const core::scolor& color);
 	bool is_valid(const cshader& shader);
-	bool is_valid(const cuniform& uniform);
-	bool is_valid(const cprogram& program);
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
 	bool is_valid(const crendertarget& target);
+	bool is_valid(const ccamera& camera);
 	bool is_valid(const cmaterial& material);
 	bool is_valid(const cspriteatlas& atlas);
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum vertex_type : uint8_t
-	{
-		vertex_type_none = 0,
-		vertex_type_transient,
-		vertex_type_dynamic,
-		vertex_type_static,
-	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum window_flag : uint32_t
@@ -109,7 +87,25 @@ namespace sm
 
 	//- BC_* formats: https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-block-compression#bc3
 	//------------------------------------------------------------------------------------------------------------------------
-	using texture_format = bgfx::TextureFormat::Enum;
+	enum texture_format : uint8_t
+	{
+		texture_format_none = 0,
+		//- uncompressed
+		texture_format_8bpp		= raylib::PIXELFORMAT_UNCOMPRESSED_GRAYSCALE,
+		texture_format_8x2bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA,
+		texture_format_16bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R5G6B5,
+		texture_format_16x4bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+		texture_format_24bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R8G8B8,
+		texture_format_32bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+		texture_format_32x4bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R32G32B32A32,
+		//- compressed
+		texture_format_bc1		= raylib::PIXELFORMAT_COMPRESSED_DXT1_RGBA,
+		texture_format_bc2		= raylib::PIXELFORMAT_COMPRESSED_DXT3_RGBA,
+		texture_format_bc3		= raylib::PIXELFORMAT_COMPRESSED_DXT5_RGBA,
+		texture_format_astc_4x4 = raylib::PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA,
+		texture_format_astc_8x8 = raylib::PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA,
+		texture_format_qoi,
+	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum shader_optimization : uint8_t
@@ -156,40 +152,79 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_factor
 	{
-		blending_factor_zero						= BGFX_STATE_BLEND_ZERO,
-		blending_factor_one							= BGFX_STATE_BLEND_ONE,
-		blending_factor_src_color					= BGFX_STATE_BLEND_SRC_COLOR,
-		blending_factor_one_minus_src_color			= BGFX_STATE_BLEND_INV_SRC_COLOR,
-		blending_factor_src_alpha					= BGFX_STATE_BLEND_SRC_ALPHA,
-		blending_factor_one_minus_src_alpha			= BGFX_STATE_BLEND_INV_SRC_ALPHA,
-		blending_factor_dst_alpha					= BGFX_STATE_BLEND_DST_ALPHA,
-		blending_factor_dst_color					= BGFX_STATE_BLEND_DST_COLOR,
-		blending_factor_one_minus_dst_color			= BGFX_STATE_BLEND_INV_DST_COLOR,
-		blending_factor_one_minus_dst_alpha			= BGFX_STATE_BLEND_INV_DST_ALPHA,
-		blending_factor_src_alpha_saturate			= BGFX_STATE_BLEND_SRC_ALPHA_SAT,
-		blending_factor_constant_color				= BGFX_STATE_BLEND_FACTOR,
-		blending_factor_one_minus_constant_color	= BGFX_STATE_BLEND_INV_FACTOR,
+		blending_factor_zero						= 0,
+		blending_factor_one							= 1,
+		blending_factor_src_color					= RL_SRC_COLOR,
+		blending_factor_one_minus_src_color			= RL_ONE_MINUS_SRC_COLOR,
+		blending_factor_src_alpha					= RL_SRC_ALPHA,
+		blending_factor_one_minus_src_alpha			= RL_ONE_MINUS_SRC_ALPHA,
+		blending_factor_dst_alpha					= RL_DST_ALPHA,
+		blending_factor_dst_color					= RL_DST_COLOR,
+		blending_factor_one_minus_dst_alpha			= RL_ONE_MINUS_DST_ALPHA,
+		blending_factor_src_alpha_saturate			= RL_SRC_ALPHA_SATURATE,
+		blending_factor_constant_color				= RL_CONSTANT_COLOR,
+		blending_factor_one_minus_constant_color	= RL_ONE_MINUS_CONSTANT_COLOR,
+		blending_factor_constant_alpha				= RL_CONSTANT_ALPHA,
+		blending_factor_one_minus_constant_alpha	= RL_ONE_MINUS_CONSTANT_ALPHA,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_equation
 	{
-		blending_equation_add					= BGFX_STATE_BLEND_EQUATION_ADD,
-		blending_equation_min					= BGFX_STATE_BLEND_EQUATION_MIN,
-		blending_equation_max					= BGFX_STATE_BLEND_EQUATION_MAX,
-		blending_equation_subtract				= BGFX_STATE_BLEND_EQUATION_SUB,
-		blending_equation_reverse_subtract		= BGFX_STATE_BLEND_EQUATION_REVSUB,
+		blending_equation_add					= RL_FUNC_ADD,
+		blending_equation_min					= RL_MIN,
+		blending_equation_max					= RL_MAX,
+		blending_equation_subtract				= RL_FUNC_SUBTRACT,
+		blending_equation_reverse_subtract		= RL_FUNC_REVERSE_SUBTRACT,
+		blending_equation_blend_equation_rgb	= RL_BLEND_EQUATION_RGB,
+		blending_equation_blend_equation_alpha	= RL_BLEND_EQUATION_ALPHA,
+		blending_equation_blend_dst_rgb			= RL_BLEND_DST_RGB,
+		blending_equation_blend_src_rgb			= RL_BLEND_SRC_RGB,
+		blending_equation_blend_dst_alpha		= RL_BLEND_DST_ALPHA,
+		blending_equation_blend_src_alpha		= RL_BLEND_SRC_ALPHA,
+		blending_equation_blend_color			= RL_BLEND_COLOR,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum blending_mode : int
+	enum blending_mode : uint8_t
 	{
-		blending_mode_alpha				= BGFX_STATE_BLEND_FUNC(blending_factor_src_alpha, blending_factor_one_minus_src_alpha) | blending_equation_add,
-		blending_mode_additive			= BGFX_STATE_BLEND_FUNC(blending_factor_one, blending_factor_one) | blending_equation_add,
-		blending_mode_multiplied		= BGFX_STATE_BLEND_FUNC(blending_factor_dst_color, blending_factor_zero) | blending_equation_add,
-		blending_mode_add_colors		= BGFX_STATE_BLEND_FUNC(blending_factor_one, blending_factor_one) | blending_equation_add,
-		blending_mode_subtract_colors	= BGFX_STATE_BLEND_FUNC(blending_factor_one, blending_factor_one) | blending_equation_subtract,
-		blending_mode_alpha_premultiply = BGFX_STATE_BLEND_FUNC(blending_factor_src_alpha, blending_factor_one) | blending_equation_add
+		blending_mode_alpha				= raylib::BLEND_ALPHA,
+		blending_mode_additive			= raylib::BLEND_ADDITIVE,
+		blending_mode_multiplied		= raylib::BLEND_MULTIPLIED,
+		blending_mode_add_colors		= raylib::BLEND_ADD_COLORS,
+		blending_mode_subtract_colors	= raylib::BLEND_SUBTRACT_COLORS,
+		blending_mode_alpha_premultiply = raylib::BLEND_ALPHA_PREMULTIPLY
+	};
+
+	//- @see https://subscription.packtpub.com/book/programming/9781849698009/1/ch01lvl1sec10/types-of-shaders
+	//------------------------------------------------------------------------------------------------------------------------
+	enum shader_type : uint8_t
+	{
+		shader_type_none = 0,
+		shader_type_vertex,		//- individual
+		shader_type_fragment,	//- individual
+		shader_type_program,	//- combined vertex and fragment shaders
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum image_type : uint8_t
+	{
+		image_type_none = 0,
+		image_type_png,
+		image_type_bmp,
+		image_type_tga,
+		image_type_jpg,
+		image_type_gif,
+		image_type_pic,
+		image_type_psd,
+		image_type_hdr,
+		image_type_qoi,
+		image_type_svg,
+		image_type_dds,
+		image_type_pkm,
+		image_type_ktx,
+		image_type_pvr,
+		image_type_astc
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -232,9 +267,6 @@ namespace sm
 
 	namespace entry
 	{
-		bx::FileReaderI*	filreader();
-		bx::FileWriterI*	filewriter();
-		bx::AllocatorI*		allocator();
 		bool				has_platform();
 		iplatform*			get_platform();
 		irenderer*			get_renderer();
@@ -247,153 +279,82 @@ namespace sm
 
 	} //- entry
 
-	namespace vertex_layouts
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		struct spostexcoord final
-		{
-			static bool init();
-
-			inline static bgfx::VertexLayout S_LAYOUT;
-			inline static bgfx::VertexLayoutHandle S_HANDLE;
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		struct spostexcoordcolor final
-		{
-			static bool init();
-
-			inline static bgfx::VertexLayout S_LAYOUT;
-			inline static bgfx::VertexLayoutHandle S_HANDLE;
-		};
-
-	} //- vertex_layouts
-
 	//------------------------------------------------------------------------------------------------------------------------
-	class cvertices final
+	struct sblending final
 	{
-	public:
-		explicit cvertices(const bgfx::VertexLayout& layout, uint64_t count);
-		cvertices();
-		~cvertices() = default;
+		bool operator==(const sblending& other) const;
+		bool operator!=(const sblending& other) const;
 
-		void init(const bgfx::VertexLayout& layout, uint64_t count);
-
-		cvertices& begin(uint64_t idx);
-		cvertices& position(const vec3_t& v);
-		cvertices& tex_coord(const vec2_t& v);
-		cvertices& color(const core::scolor& v);
-		cvertices& end();
-
-		inline const bgfx::VertexLayout& declaration() const { return m_vertex_layout; }
-		inline const byte_t* data() const { return m_data.data(); }
-		inline unsigned count() const { return SCAST(unsigned, m_data.size()); }
-		inline unsigned size() const { return m_vertex_layout.getSize(count()); }
-
-	private:
-		bgfx::VertexLayout m_vertex_layout;
-		vector_t<byte_t> m_data;
-		int m_idx = -1;
-		int m_vertex_attribute_flags = 0;
+		blending_mode m_mode;
+		blending_equation m_equation;
+		blending_factor m_dst_factor;
+		blending_factor m_src_factor;
 	};
 
-	//- Lightweight class containing a shader uniform. Can easily be copied around and has to be manually destroyed when
-	//- created.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cuniform final
-	{
-	public:
-		static void destroy(cuniform& uniform);
-
-		explicit cuniform(stringview_t name, bgfx::UniformType::Enum type);
-		cuniform();
-		~cuniform();
-
-		opresult create(stringview_t name, bgfx::UniformType::Enum type);
-
-		inline bgfx::UniformHandle uniform() const { return m_handle; }
-
-	private:
-		bgfx::UniformHandle m_handle;
-	};
-
-	//- A shader. Can be a single vertex, fragment or compute shader. A vertex and fragment shader can be used to create
-	//- a program to be used for rendering.
+	//- A shader. Can be a single vertex or fragment shader or a combination of them, becoming a program
 	//------------------------------------------------------------------------------------------------------------------------
 	class cshader final : public core::cresource
 	{
 	public:
 		static void destroy(cshader& shader);
 
-		explicit cshader(stringview_t path);
-		explicit cshader(const char* text);
-		explicit cshader(const uint8_t* data, unsigned size);
+		explicit cshader(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
+		explicit cshader(shader_type type, const char* vs, const char* fs);
+		explicit cshader(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
 		cshader();
 		~cshader();
 
-		opresult load_from_file(stringview_t path);
-		opresult load_from_string(const char* text);
-		opresult load_from_memory(const uint8_t* data, unsigned size);
+		opresult load_from_file(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
+		opresult load_from_string(shader_type type, const char* vs, const char* fs);
+		opresult load_from_memory(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
 
-		inline bgfx::ShaderHandle shader() const { return m_handle; }
+		inline raylib::Shader shader() const { return m_shader; }
+		inline shader_type type() const { return m_type; }
+
+		void set_uniform_float(stringview_t name, float value);
+		void set_uniform_int(stringview_t name, int value);
+		void set_uniform_vec2(stringview_t name, const vec2_t& value);
+		void set_uniform_vec3(stringview_t name, const vec3_t& value);
+		void set_uniform_vec4(stringview_t name, const vec4_t& value);
+		void set_uniform_matrix(stringview_t name, const mat4_t& value);
+		void set_uniform_texture(stringview_t name, const ctexture& value);
+		void remove_uniform(stringview_t name);
 
 		cshader& operator=(const cshader& other);
 
 	private:
-		bgfx::ShaderHandle m_handle;
+		raylib::Shader m_shader;
+		shader_type m_type;
 
 		RTTR_ENABLE(core::cresource);
 	};
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class cprogram final : public core::cresource
-	{
-	public:
-		static void destroy(cprogram& program);
-
-		explicit cprogram(const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs);
-		explicit cprogram(const cshader& vs, const cshader& fs);
-		cprogram();
-		~cprogram();
-
-		opresult load_from_handles(const bgfx::ShaderHandle vs, const bgfx::ShaderHandle fs);
-		opresult load_from_shaders(const cshader& vs, const cshader& fs);
-
-		inline bgfx::ProgramHandle program() const { return m_program; }
-
-		cprogram& operator=(const cprogram& other);
-
-	private:
-		bgfx::ProgramHandle m_program;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//- CPU resident image representation. Can easily be copied around, as the data is managed elsewhere, as a
-	//- consequence, you have to manually call destroy to signal that an image is no longer needed,
-	//- otherwise the memory will not be freed.
+	//- CPU resident image representation
 	//------------------------------------------------------------------------------------------------------------------------
 	class cimage final : public core::cresource
 	{
 	public:
+		using image_generate_function_t = std::function<raylib::Image()>;
+
 		static void destroy(cimage& image);
 
+		explicit cimage(image_generate_function_t&& callback);
 		explicit cimage(stringview_t filepath);
-		explicit cimage(void* data, unsigned size);
+		explicit cimage(image_type type, void* data, unsigned size);
 		cimage();
 		~cimage();
 
 		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(void* data, unsigned size);
+		opresult load_from_memory(image_type type, void* data, unsigned size);
 
-		inline bimg::ImageContainer* image() const { return m_container; }
+		inline raylib::Image image() const { return m_container; }
 
 		//- utility functions for image generation and manipulation
 		void create_solid(unsigned w, unsigned h, const core::scolor& color);
 		void create_checkerboard(unsigned w, unsigned h, unsigned step, const core::scolor& first, const core::scolor& second);
 
 	private:
-		bimg::ImageContainer* m_container;
+		raylib::Image m_container;
 
 		RTTR_ENABLE(core::cresource);
 	};
@@ -407,27 +368,20 @@ namespace sm
 
 		explicit ctexture(const cimage& image);
 		explicit ctexture(stringview_t filepath);
-		explicit ctexture(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
+		explicit ctexture(image_type type, void* data, unsigned size);
 		ctexture();
 		~ctexture();
 
 		opresult load_from_image(const cimage& image);
 		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
+		opresult load_from_memory(image_type type, void* data, unsigned size);
 
-		inline unsigned w() const { return m_info.width; }
-		inline unsigned h() const { return m_info.height; }
-		inline bgfx::TextureHandle texture() const { return m_handle; }
-		inline const cuniform& uniform() const { return m_uniform; }
-		inline int flags() const { return m_flags; }
+		inline unsigned w() const { return m_texture.width; }
+		inline unsigned h() const { return m_texture.height; }
+		inline raylib::Texture2D texture() const { return m_texture; }
 
 	private:
-		bgfx::TextureInfo m_info;
-		bgfx::TextureHandle m_handle;
-		cuniform m_uniform;
-		int m_flags = BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
+		raylib::Texture2D m_texture;
 
 		RTTR_ENABLE(core::cresource);
 	};
@@ -445,19 +399,13 @@ namespace sm
 		opresult create(unsigned w, unsigned h);
 		opresult resize(unsigned w, unsigned h);
 
-		inline unsigned w() const { return  m_info.width; }
-		inline unsigned h() const { return m_info.height; }
-		inline bgfx::FrameBufferHandle target() const { return m_target; }
-		inline bgfx::TextureHandle texture() const { return bgfx::getTexture(target()); }
-		inline const bgfx::TextureInfo& info() const { return m_info; }
-		inline const cuniform& uniform() const { return m_uniform; }
-		inline int flags() const { m_flags; }
+		inline unsigned w() const { return m_texture.texture.width; }
+		inline unsigned h() const { return m_texture.texture.height; }
+		inline raylib::RenderTexture2D target() const { return m_texture; }
+		inline raylib::Texture2D texture() const { return m_texture.texture; }
 
 	private:
-		bgfx::TextureInfo m_info;
-		bgfx::FrameBufferHandle m_target;
-		cuniform m_uniform;
-		int m_flags = BGFX_TEXTURE_RT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
+		raylib::RenderTexture2D m_texture;
 
 		RTTR_ENABLE(core::cresource);
 	};
@@ -490,7 +438,7 @@ namespace sm
 	//- Cues: while in a camera region, some entities can activate/deactivate
 	//- their attraction/detraction behavior
 	//-
-	//-
+	//- Camera class designed to be lighweight and copied around and to be a thin layer over raylib::Camera2D.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ccamera final
 	{
@@ -498,44 +446,14 @@ namespace sm
 		ccamera();
 		~ccamera() = default;
 
-		void matrix_view_update();
-		void matrix_projection_update();
+		raylib::Camera2D camera() const;
+		inline bool ready() const { return m_ready; }
 
-		mat4_t& matrix_view() { return m_view; }
-		mat4_t& matrix_projection() { return m_projection; }
-
-		vec3_t& translation() { return m_translation; }
-		vec3_t& rotation() { return m_rotation; }
-		vec3_t& scale() { return m_scale; }
-
-		core::srect viewport() { return m_viewport; }
-		core::scolor clearcolor() { return m_clear_color; }
-
-		float plane_near() { return m_near; }
-		float plane_far() { return m_far; }
-
-		uint64_t state() { return m_state; }
-		uint64_t clear_state() { return m_clear_state; }
-
-		void* window_handle() { return m_window_handle; }
-
-	public:
-		mat4_t m_view;
-		mat4_t m_projection;
-		vec3_t m_translation;
-		vec3_t m_rotation;
-		vec3_t m_scale;
-		core::srect m_viewport;
-		float m_near;
-		float m_far;
+		vec2_t m_position;
+		vec2_t m_offset;
 		float m_zoom;
-		core::scolor m_clear_color;
-		uint64_t m_state;
-		uint64_t m_clear_state;
-		void* m_window_handle;
-
-		RTTR_ENABLE();
-		RTTR_REGISTRATION_FRIEND;
+		float m_rotation;
+		bool m_ready;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -571,9 +489,44 @@ namespace sm
 		bool operator ==(const srenderstate& other) const;
 		bool operator !=(const srenderstate& other) const;
 
-		blending_mode m_blending= blending_mode_alpha;
-		int m_bgfx_state		= 0;
-		int m_renderable_flags	= 0; //- bitwise concated renderable_flag
+		sblending m_blending;
+		int m_flags = 0; //- bitwise concated renderable_flag
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccommand final
+	{
+	public:
+		using render_callback_t = std::function<void()>;
+
+		explicit ccommand(render_callback_t&& callback);
+		ccommand() = default;
+		~ccommand() = default;
+
+		void create(render_callback_t&& callback);
+
+		void execute() const;
+
+	private:
+		render_callback_t m_callback;
+	};
+
+	//- Description of a rendering layer. Some of the data becomes only relevant when appropriate flags are set
+	//------------------------------------------------------------------------------------------------------------------------
+	struct slayer
+	{
+		crendertarget m_target;
+		vector_t<ccommand> m_commands;
+		ccamera m_camera;					//- optional: camera to be used when rendering
+		cshader m_shader;					//- optional: shader used to render the layer render texture on previous layers
+		core::scolor m_combine_tint;		//- color put over layer render texture when drawing on previous layers
+		core::scolor m_clear_tint;			//- color used to clear the layer render texture before drawing
+		vec2_t m_position = { 0.0f, 0.0f }; //- optional: where to draw the render target when combining; by default we cover whole screen
+		vec2_t m_scale = { 1.0f, 1.0f };	//- optional: scaling of the render target; by default normal scale
+		vec2_t m_origin = { 0.0f, 0.0f };	//- optional: origin of the render target; by default top-left
+		unsigned m_flags = 0;				//- bitwise concated layer_flags
+		bool m_show = false;
+		unsigned m_id = 0;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -587,12 +540,17 @@ namespace sm
 			bool fullscreen, bool vsync) = 0;
 		virtual opresult shutdown_device() = 0;
 
-		virtual void frame_begin() = 0;
-		virtual void frame_end() = 0;
-
-		virtual void on_event(const rttr::variant& event) = 0; //- handle a hardware event from glfw or SDL etc.
-
+		virtual void prepare_frame() = 0;
+		virtual void display_frame() = 0;
 		virtual void update_viewport(const vec2_t& position, const vec2_t& size) = 0;
+		virtual void blendmode(sblending mode) = 0;
+
+		virtual void clear(const slayer& layer, bool depth) = 0;
+		virtual bool begin(const slayer& layer) = 0;
+		virtual void draw(const slayer& layer) = 0;
+		virtual void end(const slayer& layer) = 0;
+		virtual bool combine(const slayer& layer) = 0;
+
 		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) = 0;
 		virtual void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) = 0;
 
@@ -610,38 +568,17 @@ namespace sm
 		virtual opresult init() = 0;						//- create and init of client application
 		virtual opresult shutdown() = 0;					//- destroy and clean of client application
 
-		virtual opresult init_gfx(int w, int h,
+		virtual opresult init_gfx(unsigned w, unsigned h,
 			bool fullscreen, bool vsync) = 0;				//- create graphical context
 
 		virtual opresult init_mainwindow(stringview_t title,
-			int w, int h, bool fullscreen) = 0;				//- create application main window
+			unsigned w, unsigned h, bool fullscreen) = 0;	//- create application main window
 
 		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
-		virtual opresult optional_process_event() = 0;		//- process one hardware event
+		virtual opresult optional_process_event() = 0;				//- process one hardware event
 
-		virtual void on_event(const rttr::variant& event) = 0; //- handle a hardware event from glfw or SDL etc.
-
-		virtual core::smouse_state mouse_state() const = 0;
-		virtual core::skeyboard_state keyboard_state() const = 0;
-		virtual core::sgamepad_state gamepad_state() const = 0;
-
-		virtual unsigned read_input_character() = 0;
-
-		virtual void main_window_position(int* x, int* y) = 0;
-		virtual void main_window_size(int* x, int* y) = 0;
-
-		virtual bool is_key_held(core::key k) const = 0;
-		virtual bool is_key_pressed(core::key k) const = 0;
-		virtual bool is_key_released(core::key k) const = 0;
-		virtual bool is_modifier_active(int modifiers) const = 0;
-
-		virtual void mouse_position(double* x, double* y) = 0;
-		virtual void mouse_scroll_dt(double* x, double* y) = 0;
-		virtual bool is_mouse_button_held(core::mouse_button b) = 0;
-		virtual bool is_mouse_button_pressed(core::mouse_button b) = 0;
-		virtual bool is_mouse_button_released(core::mouse_button b) = 0;
-
-		virtual float gamepad_axis(core::gamepad_axis a) = 0;
+		virtual void main_window_position(unsigned* x, unsigned* y) = 0;
+		virtual void main_window_size(unsigned* x, unsigned* y) = 0;
 
 		RTTR_ENABLE();
 	};

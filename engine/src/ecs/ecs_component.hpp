@@ -193,19 +193,6 @@ namespace ecs
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	struct smesh final : public icomponent
-	{
-		DECLARE_COMPONENT(smesh);
-
-		static void show_ui(flecs::entity e);
-
-		sm::cvertices m_vertices;
-		sm::indices_t m_indices;
-
-		RTTR_ENABLE(icomponent);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
 	struct smaterial final : public icomponent
 	{
 		DECLARE_COMPONENT(smaterial);
@@ -214,7 +201,7 @@ namespace ecs
 
 		sm::srenderstate m_renderstate;
 		sm::texture_handle_t m_texture;
-		sm::program_handle_t m_program;
+		sm::shader_handle_t m_program;
 		sm::renderable_flag m_flags;
 
 		RTTR_ENABLE(icomponent);

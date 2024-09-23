@@ -1,6 +1,7 @@
 #pragma once
 #include <core.h>
 #include <imgui.h>
+#include "imgui/rlImGui.h"
 
 namespace ImNodes = ax::NodeEditor;
 
