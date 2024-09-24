@@ -187,7 +187,7 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		mat4_t m_matrix;
+		mat4_t m_matrix = math::C_MAT4_ID;
 
 		RTTR_ENABLE(icomponent);
 	};

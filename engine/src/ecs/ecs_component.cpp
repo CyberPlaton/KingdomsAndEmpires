@@ -4,8 +4,23 @@ namespace ecs
 {
 	namespace
 	{
-		constexpr auto C_MIN = MIN(float);
-		constexpr auto C_MAX = MAX(float);
+		constexpr auto C_TRANSLATION_MIN= MIN(float);
+		constexpr auto C_TRANSLATION_MAX= MAX(float);
+		constexpr auto C_SCALE_MIN		= math::C_EPSILON;
+		constexpr auto C_SCALE_MAX		= MAX(float);
+		constexpr auto C_SHEAR_MIN		= MIN(float);
+		constexpr auto C_SHEAR_MAX		= MAX(float);
+		constexpr auto C_ROTATION_MIN	= 0.0f;
+		constexpr auto C_ROTATION_MAX	= math::C_PI2;
+		constexpr auto C_FORMAT_SCALE	= "%.5f";
+		constexpr auto C_FORMAT_TRANS	= "%.3f";
+		constexpr auto C_FORMAT_SHEAR	= "%.4f";
+		constexpr auto C_FORMAT_ROT		= "%.5f";
+		constexpr auto C_FLAGS			= ImGuiSliderFlags_Logarithmic;
+		constexpr auto C_CHANGE_TRANS	= 1.0f;
+		constexpr auto C_CHANGE_SCALE	= 1.0f;
+		constexpr auto C_CHANGE_ROT		= 0.01f;
+		constexpr auto C_CHANGE_SHEAR	= 0.1f;
 
 	} //- unnamed
 
@@ -32,10 +47,32 @@ namespace ecs
 		shear = math::extract_shear(transform->m_matrix);
 		rotation = math::extract_rotation(transform->m_matrix);
 
-		imgui::cui::edit_field_vec2(translation, C_MIN, C_MAX, "Translation", "Translation", sid++, scid++, ImGuiSliderFlags_Logarithmic, 0.1f);
-		imgui::cui::edit_field_vec2(scale, C_MIN, C_MAX, "Scale", "Scale", sid++, scid++, ImGuiSliderFlags_Logarithmic, 0.1f);
-		imgui::cui::edit_field_vec2(shear, C_MIN, C_MAX, "Shear", "Shear", sid++, scid++, ImGuiSliderFlags_Logarithmic, 0.1f);
-		imgui::cui::edit_field_float(rotation, C_MIN, C_MAX, "Rotation", "Rotation", sid++, scid++, ImGuiSliderFlags_Logarithmic, 0.1f);
+		if (ImGui::TreeNode("Translation"))
+		{
+			ImGui::DragFloat("##x", &translation.x, C_CHANGE_TRANS, C_TRANSLATION_MIN, C_TRANSLATION_MAX, C_FORMAT_TRANS, C_FLAGS);
+			ImGui::SameLine();
+			ImGui::DragFloat("##y", &translation.y, C_CHANGE_TRANS, C_TRANSLATION_MIN, C_TRANSLATION_MAX, C_FORMAT_TRANS, C_FLAGS);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Scale"))
+		{
+			ImGui::DragFloat("##x", &scale.x, C_CHANGE_SCALE, C_SCALE_MIN, C_SCALE_MAX, C_FORMAT_SCALE, C_FLAGS);
+			ImGui::SameLine();
+			ImGui::DragFloat("##y", &scale.y, C_CHANGE_SCALE, C_SCALE_MIN, C_SCALE_MAX, C_FORMAT_SCALE, C_FLAGS);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Shear"))
+		{
+			ImGui::DragFloat("##x", &shear.x, C_CHANGE_SHEAR, C_SHEAR_MIN, C_SHEAR_MAX, C_FORMAT_SHEAR, C_FLAGS);
+			ImGui::SameLine();
+			ImGui::DragFloat("##y", &shear.y, C_CHANGE_SHEAR, C_SHEAR_MIN, C_SHEAR_MAX, C_FORMAT_SHEAR, C_FLAGS);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Rotation"))
+		{
+			ImGui::DragFloat("##r", &rotation, C_CHANGE_ROT, C_ROTATION_MIN, C_ROTATION_MAX, C_FORMAT_ROT, C_FLAGS);
+			ImGui::TreePop();
+		}
 
 		transform->m_matrix = math::transform(translation, scale, shear, rotation);
 	}

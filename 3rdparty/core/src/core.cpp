@@ -3894,41 +3894,58 @@ namespace math
 
 	//------------------------------------------------------------------------------------------------------------------------
 	mat4_t transform(const vec2_t& translation, const vec2_t& scale, const vec2_t& shear, float rotation,
-		const mat4_t& parent /*= C_MAT4_ID*/)
+		const mat4_t& parent /*= mat4_t(1.0f)*/)
 	{
-		static constexpr vec3_t C_AXIS_Z = {0.0f, 0.0f, 1.0f};
+		static constexpr vec3_t C_Z = { 0.0f, 0.0f, 1.0f };
 
-		return glm::translate(C_MAT4_ID, vec3_t(translation, 0.0f))
-			* glm::rotate(C_MAT4_ID, rotation, C_AXIS_Z)
+		mat4_t shear_matrix = C_MAT4_ID;
+		shear_matrix[0][1] = shear.x; //- Shear in x direction
+		shear_matrix[1][0] = shear.y; //- Shear in y direction
+
+		return parent
+			* glm::translate(C_MAT4_ID, vec3_t(translation, 1.0f))
+			* glm::rotate(C_MAT4_ID, rotation, C_Z)
+			/** shear_matrix*/
 			* glm::scale(C_MAT4_ID, vec3_t(scale, 1.0f));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	vec2_t extract_translation(const mat4_t& matrix)
 	{
-		return { matrix[3].x, matrix[3].y };
+		const auto& p = vec3_t(matrix[3]);
+
+		return { p.x, p.y };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	vec2_t extract_scale(const mat4_t& matrix)
 	{
-		return { glm::length(matrix[0]) , glm::length(matrix[1]) };
+		return
+		{
+			glm::length(vec3_t(matrix[0])),
+			glm::length(vec3_t(matrix[1]))
+		};
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	vec2_t extract_shear(const mat4_t& matrix)
 	{
-		return {0.0f, 0.0f};
+		float x = glm::length(vec3_t(matrix[0]));
+		float y = glm::length(vec3_t(matrix[1]));
+
+		return
+		{
+			glm::dot(vec3_t(matrix[0]), vec3_t(matrix[1])) / (x * y),
+			glm::dot(vec3_t(matrix[1]), vec3_t(matrix[0])) / (x * y)
+		};
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	float extract_rotation(const mat4_t& matrix)
 	{
-		float x = 0.0f, y = 0.0f, z = 0.0f;
+		vec3_t m0 = vec3_t(matrix[0]);
 
-		glm::extractEulerAngleXYZ(matrix, x, y, z);
-
-		return glm::degrees(z);
+		return atan2(m0.y, m0.x);
 	}
 
 } //- math

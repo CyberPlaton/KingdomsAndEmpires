@@ -92,7 +92,7 @@ namespace editor
 					if (ImGui::CollapsingHeader(c.data()))
 					{
 						//- Show actual component UI
-						method.invoke(e);
+						method.invoke({}, e);
 					}
 				}
 
