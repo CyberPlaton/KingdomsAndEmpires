@@ -3903,10 +3903,10 @@ namespace math
 		shear_matrix[1][0] = shear.y; //- Shear in y direction
 
 		return parent
-			* glm::translate(C_MAT4_ID, vec3_t(translation, 1.0f))
+			* glm::translate(C_MAT4_ID, vec3_t(translation, 0.0f))
 			* glm::rotate(C_MAT4_ID, rotation, C_Z)
-			/** shear_matrix*/
-			* glm::scale(C_MAT4_ID, vec3_t(scale, 1.0f));
+			* shear_matrix
+			* glm::scale(C_MAT4_ID, vec3_t(scale, 0.0f));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -3943,9 +3943,11 @@ namespace math
 	//------------------------------------------------------------------------------------------------------------------------
 	float extract_rotation(const mat4_t& matrix)
 	{
-		vec3_t m0 = vec3_t(matrix[0]);
+		float x, y, z;
 
-		return atan2(m0.y, m0.x);
+		glm::extractEulerAngleXYZ(matrix, x, y, z);
+
+		return z;
 	}
 
 } //- math

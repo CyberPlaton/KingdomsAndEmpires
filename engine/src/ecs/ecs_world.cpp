@@ -432,7 +432,7 @@ namespace ecs
 		const auto p = math::extract_translation(transform.m_matrix);
 		const auto s = math::extract_scale(transform.m_matrix);
 
-		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x / 2.0f, s.y / 2.0f), {0.0f, 0.0f});
+		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x * 0.5f, s.y * 0.5f), { 0.0f, 0.0f });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

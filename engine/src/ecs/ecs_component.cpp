@@ -36,45 +36,44 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void stransform::show_ui(flecs::entity e)
 	{
+		//- copy construct component for editing
 		auto* transform = e.get_mut<stransform>();
 
-		vec2_t translation = { 0.0f, 0.0f }, scale = { 0.0f, 0.0f }, shear = { 0.0f, 0.0f };
-		float rotation = 0.0f;
-		ImGuiID sid = 10000, scid = 50000;
+		auto position = math::extract_translation(transform->m_matrix);
+		auto scale = math::extract_scale(transform->m_matrix);
+		auto shear = math::extract_shear(transform->m_matrix);
+		auto rotation = math::extract_rotation(transform->m_matrix);
 
-		translation = math::extract_translation(transform->m_matrix);
-		scale = math::extract_scale(transform->m_matrix);
-		shear = math::extract_shear(transform->m_matrix);
-		rotation = math::extract_rotation(transform->m_matrix);
+		ImGuiID sid = 10000, scid = 50000;
 
 		if (ImGui::TreeNode("Translation"))
 		{
-			ImGui::DragFloat("##x", &translation.x, C_CHANGE_TRANS, C_TRANSLATION_MIN, C_TRANSLATION_MAX, C_FORMAT_TRANS, C_FLAGS);
+			ImGui::DragFloat("##translation_x", &position.x, 1.0f);
 			ImGui::SameLine();
-			ImGui::DragFloat("##y", &translation.y, C_CHANGE_TRANS, C_TRANSLATION_MIN, C_TRANSLATION_MAX, C_FORMAT_TRANS, C_FLAGS);
+			ImGui::DragFloat("##translation_y", &position.y, 1.0f);
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Scale"))
 		{
-			ImGui::DragFloat("##x", &scale.x, C_CHANGE_SCALE, C_SCALE_MIN, C_SCALE_MAX, C_FORMAT_SCALE, C_FLAGS);
+			ImGui::DragFloat("##scale_x", &scale.x, 0.5f, 0.001f);
 			ImGui::SameLine();
-			ImGui::DragFloat("##y", &scale.y, C_CHANGE_SCALE, C_SCALE_MIN, C_SCALE_MAX, C_FORMAT_SCALE, C_FLAGS);
+			ImGui::DragFloat("##scale_y", &scale.y, 0.5f, 0.001f);
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Shear"))
 		{
-			ImGui::DragFloat("##x", &shear.x, C_CHANGE_SHEAR, C_SHEAR_MIN, C_SHEAR_MAX, C_FORMAT_SHEAR, C_FLAGS);
+			ImGui::DragFloat("##shear_x", &shear.x, 0.1f);
 			ImGui::SameLine();
-			ImGui::DragFloat("##y", &shear.y, C_CHANGE_SHEAR, C_SHEAR_MIN, C_SHEAR_MAX, C_FORMAT_SHEAR, C_FLAGS);
+			ImGui::DragFloat("##shear_y", &shear.y, 0.1f);
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Rotation"))
 		{
-			ImGui::DragFloat("##r", &rotation, C_CHANGE_ROT, C_ROTATION_MIN, C_ROTATION_MAX, C_FORMAT_ROT, C_FLAGS);
+			ImGui::DragFloat("##rotation", &rotation, 0.01f, 0.0f, math::C_PI2);
 			ImGui::TreePop();
 		}
 
-		transform->m_matrix = math::transform(translation, scale, shear, rotation);
+		transform->m_matrix = math::transform(position, scale, shear, rotation);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
