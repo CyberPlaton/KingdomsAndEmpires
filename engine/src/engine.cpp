@@ -313,9 +313,6 @@ RTTR_REGISTRATION
 		.prop("m_startup_world",	&sproject::sconfig::m_startup_world)
 		;
 
-	//rttr::default_constructor<sproject>();
-	//rttr::default_constructor<sproject::sconfig>();
-
 	//- Section: entity component system
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::cregistrator<sinvisible>("sinvisible")

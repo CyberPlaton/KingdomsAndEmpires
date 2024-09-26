@@ -110,7 +110,8 @@ namespace io
 	//------------------------------------------------------------------------------------------------------------------------
 	void cnative_file::close()
 	{
-		fclose(m_file); m_file = nullptr;
+		if(m_file) fclose(m_file);
+		m_file = nullptr;
 		algorithm::bit_clear(m_state, core::file_state_opened);
 	}
 

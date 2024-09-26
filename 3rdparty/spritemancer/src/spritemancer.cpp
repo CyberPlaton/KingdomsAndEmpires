@@ -337,6 +337,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::slayer& get_layer(unsigned layer)
+	{
+		CORE_ASSERT(layer < S_LAYER_COUNT, "Invalid operation. Accessed layer does not exist!");
+
+		return S_LAYERS[layer];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
 	{
 		SM_DRAW_CALL(6); //- 6 vertices? Really???
@@ -459,7 +467,7 @@ namespace sm
 					const auto& sm = *core::cservice_manager::find<cshader_manager>();
 
 					//- texture and dimension
-					const auto& _texture = tm.at(texture);
+					const auto& _texture = tm.at(texture == C_INVALID_HANDLE ? S_PLACEHOLDER_TEXTURE : texture);
 					const auto w = _texture.w();
 					const auto h = _texture.h();
 

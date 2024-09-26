@@ -20,6 +20,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned create_layer();
 
+	slayer& get_layer(unsigned layer);
+
 #pragma endregion
 
 #pragma region primitive_rendering

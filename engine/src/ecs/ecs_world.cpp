@@ -1,4 +1,5 @@
 #include "ecs_world.hpp"
+#include "../render/render_scene_system.hpp"
 
 namespace ecs
 {
@@ -77,6 +78,9 @@ namespace ecs
 		m_transform_change_tracker = world().query_builder<const stransform>()
 			.cached()
 			.build();
+
+		//- Add default systems
+		mm().import_module<render::cscene_render_module>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

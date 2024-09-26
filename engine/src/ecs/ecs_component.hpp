@@ -200,9 +200,9 @@ namespace ecs
 		static void show_ui(flecs::entity e);
 
 		sm::srenderstate m_renderstate;
-		sm::texture_handle_t m_texture;
-		sm::shader_handle_t m_program;
-		sm::renderable_flag m_flags;
+		sm::texture_handle_t m_texture = sm::C_INVALID_HANDLE;
+		sm::shader_handle_t m_program = sm::C_INVALID_HANDLE;
+		sm::renderable_flag m_flags = sm::renderable_flag_none;
 
 		RTTR_ENABLE(icomponent);
 	};

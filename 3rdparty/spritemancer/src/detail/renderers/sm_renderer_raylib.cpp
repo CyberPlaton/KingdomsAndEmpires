@@ -61,7 +61,7 @@ namespace sm
 		static uint16_t S_X = 0;
 		static uint16_t S_Y = 0;
 		static core::scolor S_WHITE = { 255, 255, 255, 255 };
-		static raylib::Camera2D S_CAMERA = {{0.0f, 0.0f}, {0.0f, 0.0f}, 0.0f, 0.0f};
+		static raylib::Camera2D S_CAMERA = {{0.0f, 0.0f}, {0.0f, 0.0f}, 0.0f, 1.0f};
 
 	} //- unnamed
 
@@ -82,7 +82,7 @@ namespace sm
 		S_W = w;
 		S_H = h;
 
-		S_CAMERA.offset = { S_W / 2.0f, S_H / 2.0f };
+		S_CAMERA.offset = { S_W * 0.5f, S_H * 0.5f };
 
 		return opresult_ok;
 	}
@@ -118,7 +118,7 @@ namespace sm
 		S_W = (uint16_t)size.x;
 		S_H = (uint16_t)size.y;
 
-		S_CAMERA.offset = { S_W / 2.0f, S_H / 2.0f };
+		S_CAMERA.offset = { S_W * 0.5f, S_H * 0.5f };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

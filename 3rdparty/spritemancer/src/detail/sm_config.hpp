@@ -42,6 +42,8 @@ namespace sm
 	using spriteatlas_handle_t = unsigned;
 	using rendertarget_handle_t = unsigned;
 
+	static constexpr auto C_INVALID_HANDLE = MAX(unsigned);
+
 	class irenderer;
 	class iplatform;
 	class ios;
