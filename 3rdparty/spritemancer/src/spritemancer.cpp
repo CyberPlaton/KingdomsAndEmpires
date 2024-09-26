@@ -10,56 +10,50 @@ namespace sm
 {
 	namespace
 	{
-		constexpr unsigned C_LAYER_COUNT_MAX = 256;
-		static unsigned S_LAYER_COUNT = 0;
-		static array_t<slayer, C_LAYER_COUNT_MAX> S_LAYERS;
-		static core::cmutex S_MUTEX;
-
-		static shader_handle_t S_DEFAULT_SHADER = 0;
-		static core::scolor S_WHITE = { 255, 255, 255, 255 };
-		static core::scolor S_BLACK = { 0, 0, 0, 0 };
-		static core::scolor S_BLANK = { 0, 0, 0, 255 };
-		static std::atomic_bool S_RUNNING;
-		static bool S_FULLSCREEN = false;
-		static bool S_VSYNC = true;
-		static unsigned S_X = 0, S_Y = 0, S_W = 0, S_H = 0;
-		static bool S_RESIZE_REQUIRED = false;
-		static float S_DT = 0.0f;
-		static texture_handle_t S_PLACEHOLDER_TEXTURE = 0;
-		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha, blending_equation_blend_color,
-			blending_factor_src_color, blending_factor_one_minus_src_color };
-		static srenderstate S_RENDERSTATE_DEFAULT = { S_BLEND_MODE_DEFAULT, 0 };
-		constexpr float C_ROTATION_DEFAULT = 0.0f;
-		constexpr vec2_t C_SCALE_DEFAULT = {1.0f, 1.0f};
-		constexpr vec2_t C_ORIGIN_DEFAULT = {0.5f, 0.5f};
-		static inline const core::srect C_SOURCE_DEFAULT = {0.0f, 0.0f, 1.0f, 1.0f};
-
-		//- current used rendering state data
-		static sblending S_CURRENT_BLEND_MODE = S_BLEND_MODE_DEFAULT;
-		static srenderstate S_CURRENT_RENDERSTATE = S_RENDERSTATE_DEFAULT;
-		static shader_handle_t S_CURRENT_SHADER = S_DEFAULT_SHADER;
-
-		static void* S_CONFIG = nullptr;
+		static void* S_CONFIG				= nullptr;
 		static argparse::ArgumentParser S_ARGS;
+		static core::cmutex S_MUTEX;
+		static std::atomic_bool S_RUNNING;
+		static bool S_FULLSCREEN			= false;
+		static bool S_VSYNC					= true;
+		static bool S_RESIZE_REQUIRED		= false;
+		static core::scolor S_WHITE			= { 255, 255, 255, 255 };
+		static core::scolor S_BLACK			= { 0, 0, 0, 0 };
+		static core::scolor S_BLANK			= { 0, 0, 0, 255 };
+
+		//- defaults
+		constexpr float C_DEFAULT_ROTATION	= 0.0f;
+		constexpr vec2_t C_DEFAULT_SCALE	= { 1.0f, 1.0f };
+		constexpr vec2_t C_DEFAULT_ORIGIN	= { 0.5f, 0.5f };
+		static const auto C_DEFAULT_SOURCE	= core::srect{ 0.0f, 0.0f, 1.0f, 1.0f };
 
 		//- Load some default assets such as default shaders, images and textures etc.
 		//------------------------------------------------------------------------------------------------------------------------
 		void load_internal_resources()
 		{
-			S_DEFAULT_SHADER = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment, shaders::sprite::C_VS, shaders::sprite::C_PS);
+			//- set default data for rendering
+			auto& renderdata = ctx().m_render_data;
+			renderdata.m_default_renderstate.m_blending = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
+			renderdata.m_default_renderstate.m_flags = 0;
+
+			ctx().m_render_data.m_default_shader = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment,
+				shaders::sprite::C_VS, shaders::sprite::C_PS);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void update_window_size(unsigned w, unsigned h)
 		{
-			S_W = w;
-			S_H = h;
+			ctx().m_os_data.m_window_w = w;
+			ctx().m_os_data.m_window_h = h;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void update_window_viewport()
 		{
-			entry::get_renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
+			const auto& os_data = ctx().m_os_data;
+
+			entry::get_renderer()->update_viewport({ os_data.m_window_x, os_data.m_window_y },
+				{ os_data.m_window_w, os_data.m_window_h });
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -90,6 +84,12 @@ namespace sm
 		{
 			CORE_ZONE;
 
+			auto& osdata = ctx().m_os_data;
+			auto& renderdata = ctx().m_render_data;
+			auto& layerdata = renderdata.m_layer_data;
+
+			osdata.m_delta_time = entry::get_os()->frametime();
+
 			//- platforms may need to handle events
 			if (entry::get_os()->optional_process_event() == opresult_fail)
 			{
@@ -99,27 +99,26 @@ namespace sm
 			//- check for resize of most basic layer. Other layers are not our responsibility
 			if (S_RESIZE_REQUIRED)
 			{
-				S_LAYERS[0].m_target.resize(S_W, S_H);
+				layerdata.m_layers[0].m_target.resize(osdata.m_window_w, osdata.m_window_h);
 
 				S_RESIZE_REQUIRED = false;
 			}
 
 			//- update HID state, such as keyboard and mouse
-
-			entry::get_app()->on_update(S_DT);
+			entry::get_app()->on_update(osdata.m_delta_time);
 
 			//- render frame
-			entry::get_renderer()->update_viewport({ S_X, S_Y }, { S_W, S_H });
+			entry::get_renderer()->update_viewport({ osdata.m_window_x, osdata.m_window_y }, { osdata.m_window_w, osdata.m_window_h });
 
 			//- most basic layer, does always exist
-			S_LAYERS[0].m_show = true;
+			layerdata.m_layers[0].m_show = true;
 			entry::get_renderer()->prepare_frame();
-			entry::get_renderer()->blendmode(S_BLEND_MODE_DEFAULT);
+			entry::get_renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
 
 			//- layered rendering, from bottom to top
-			for (auto i = 0u; i < S_LAYER_COUNT; ++i)
+			for (auto i = 0u; i < layerdata.m_layer_count; ++i)
 			{
-				auto& layer = S_LAYERS[i];
+				auto& layer = layerdata.m_layers[i];
 
 				if (layer.m_show &&
 					entry::get_renderer()->begin(layer))
@@ -135,9 +134,9 @@ namespace sm
 			}
 
 			//- layered rendering, combine them upon each other
-			for (auto i = 0u; i < S_LAYER_COUNT; ++i)
+			for (auto i = 0u; i < layerdata.m_layer_count; ++i)
 			{
-				auto& layer = S_LAYERS[i];
+				auto& layer = layerdata.m_layers[i];
 
 				if (layer.m_show &&
 					entry::get_renderer()->combine(layer))
@@ -156,7 +155,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_prepare()
 		{
-			update_window_size(S_W, S_H);
+			update_window_size(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h);
 			update_window_viewport();
 
 			//- create resource managers
@@ -173,7 +172,7 @@ namespace sm
 				cimage image;
 				image.create_solid(256, 256, core::scolor(core::common_color_magenta));
 
-				S_PLACEHOLDER_TEXTURE = core::cservice_manager::find<ctexture_manager>()->load_sync("placeholder", image);
+				ctx().m_render_data.m_placeholder_texture = core::cservice_manager::find<ctexture_manager>()->load_sync("placeholder", image);
 
 				cimage::destroy(image);
 			}
@@ -196,9 +195,8 @@ namespace sm
 			core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
 				{
 					const auto& e = var.convert<events::window::sresize>();
-					S_W = e.w;
-					S_H = e.h;
-
+					ctx().m_os_data.m_window_w = e.w;
+					ctx().m_os_data.m_window_h = e.h;
 					S_RESIZE_REQUIRED = true;
 				});
 		}
@@ -268,13 +266,13 @@ namespace sm
 		}
 
 		//- cache common data
-		entry::get_os()->main_window_position(&S_X, &S_Y);
-		entry::get_os()->main_window_size(&S_W, &S_H);
+		entry::get_os()->main_window_position(&ctx().m_os_data.m_window_x, &ctx().m_os_data.m_window_y);
+		entry::get_os()->main_window_size(&ctx().m_os_data.m_window_w, &ctx().m_os_data.m_window_h);
 		S_FULLSCREEN = fullscreen;
 		S_VSYNC = vsync;
 
 		//- starting up graphics and app
-		if (entry::get_os()->init_gfx(S_W, S_H, S_FULLSCREEN, S_VSYNC) != opresult_ok)
+		if (entry::get_os()->init_gfx(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h, S_FULLSCREEN, S_VSYNC) != opresult_ok)
 		{
 			return opresult_fail;
 		}
@@ -311,6 +309,13 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::scontext& ctx()
+	{
+		static scontext S_CONTEXT;
+		return S_CONTEXT;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	vec2_t window_size()
 	{
 		return vec2_t{ SCAST(float, raylib::GetScreenWidth()), SCAST(float, raylib::GetScreenHeight()) };
@@ -319,18 +324,21 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned create_layer()
 	{
-		if (S_LAYER_COUNT < C_LAYER_COUNT_MAX)
+		auto& renderdata = ctx().m_render_data;
+		auto& layerdata = renderdata.m_layer_data;
+
+		if (layerdata.m_layer_count < scontext::srender::slayers::C_LAYER_COUNT_MAX)
 		{
-			auto& layer = S_LAYERS[S_LAYER_COUNT];
+			auto& layer = layerdata.m_layers[layerdata.m_layer_count];
 
 			//- create with reasonable defaults
-			layer.m_target.create(S_W, S_H);
+			layer.m_target.create(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h);
 			layer.m_combine_tint = S_WHITE;
 			layer.m_clear_tint = S_WHITE;
 			layer.m_flags = 0;
 			layer.m_show = true;
 
-			return S_LAYER_COUNT++;
+			return ++layerdata.m_layer_count;
 		}
 		return MAX(unsigned);
 	}
@@ -338,17 +346,22 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::slayer& get_layer(unsigned layer)
 	{
-		CORE_ASSERT(layer < S_LAYER_COUNT, "Invalid operation. Accessed layer does not exist!");
+		auto& renderdata = ctx().m_render_data;
+		auto& layerdata = renderdata.m_layer_data;
 
-		return S_LAYERS[layer];
+		CORE_ASSERT(layer < layerdata.m_layer_count, "Invalid operation. Accessed layer does not exist!");
+
+		return layerdata.m_layers[layer];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
 	{
-		SM_DRAW_CALL(6); //- 6 vertices? Really???
+		SM_DRAW_CALL(6);
 
-		auto& command = S_LAYERS[layer].m_commands.emplace_back();
+		auto& renderdata = ctx().m_render_data;
+		auto& layerdata = renderdata.m_layer_data;
+		auto& command = layerdata.m_layers[layer].m_commands.emplace_back();
 
 		command.create([=]()
 			{
@@ -361,7 +374,9 @@ namespace sm
 	{
 		SM_DRAW_CALL(4);
 
-		auto& command = S_LAYERS[layer].m_commands.emplace_back();
+		auto& renderdata = ctx().m_render_data;
+		auto& layerdata = renderdata.m_layer_data;
+		auto& command = layerdata.m_layers[layer].m_commands.emplace_back();
 
 		command.create([=]()
 			{
@@ -374,7 +389,9 @@ namespace sm
 	{
 		SM_DRAW_CALL(4);
 
-		auto& command = S_LAYERS[layer].m_commands.emplace_back();
+		auto& renderdata = ctx().m_render_data;
+		auto& layerdata = renderdata.m_layer_data;
+		auto& command = layerdata.m_layers[layer].m_commands.emplace_back();
 
 		command.create([=]()
 			{
@@ -392,7 +409,7 @@ namespace sm
 	void draw_placeholder(unsigned layer, const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
 		const core::scolor& tint /*= {255, 255, 255, 255}*/)
 	{
-		draw_texture(layer, position, S_PLACEHOLDER_TEXTURE, tint, C_ROTATION_DEFAULT, scale);
+		draw_texture(layer, position, ctx().m_render_data.m_placeholder_texture, tint, C_DEFAULT_ROTATION, scale);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -404,41 +421,41 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint)
 	{
-		draw_texture(layer, position, texture, tint, C_ROTATION_DEFAULT);
+		draw_texture(layer, position, texture, tint, C_DEFAULT_ROTATION);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation)
 	{
-		draw_texture(layer, position, texture, tint, rotation, C_SCALE_DEFAULT);
+		draw_texture(layer, position, texture, tint, rotation, C_DEFAULT_SCALE);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, S_DEFAULT_SHADER);
+		draw_texture(layer, position, texture, tint, rotation, scale, ctx().m_render_data.m_default_shader);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, shader_handle_t shader)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, S_RENDERSTATE_DEFAULT);
+		draw_texture(layer, position, texture, tint, rotation, scale, shader, ctx().m_render_data.m_default_renderstate);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, shader_handle_t shader, const srenderstate& state)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, C_ORIGIN_DEFAULT);
+		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, C_DEFAULT_ORIGIN);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin)
 	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, origin, C_SOURCE_DEFAULT);
+		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, origin, C_DEFAULT_SOURCE);
 	}
 
 	//- The actual rendering routine for a texture/sprite
@@ -457,8 +474,11 @@ namespace sm
 		{
 			core::cscope_mutex m(S_MUTEX);
 
-			S_LAYERS[layer].m_commands.emplace_back().create([=]()
+			ctx().m_render_data.m_layer_data.m_layers[layer].m_commands.emplace_back().create([=]()
 				{
+					auto& renderdata = ctx().m_render_data;
+					auto& statedata = renderdata.m_state_data;
+
 					//- TODO: think of a better way to get actual shaders, textures etc. from resource managers,
 					//- Note: these command are executed on main thread, but other threads may still post load/unload
 					//- requests, so we have to account for that and make them thread-safe.
@@ -466,7 +486,7 @@ namespace sm
 					const auto& sm = *core::cservice_manager::find<cshader_manager>();
 
 					//- texture and dimension
-					const auto& _texture = tm.at(texture == C_INVALID_HANDLE ? S_PLACEHOLDER_TEXTURE : texture);
+					const auto& _texture = tm.at(texture == C_INVALID_HANDLE ? renderdata.m_placeholder_texture : texture);
 					const auto w = _texture.w();
 					const auto h = _texture.h();
 
@@ -494,26 +514,28 @@ namespace sm
 					}
 
 					//- check if shader has changed since last draw command
-					if (shader != S_CURRENT_SHADER)
+					if (shader != statedata.m_shader)
 					{
-						S_CURRENT_SHADER = shader;
+						statedata.m_shader = shader;
 					}
 
 					//- setting shader is always enabled as we set default shader manually
-					const auto& _shader = sm.at(S_CURRENT_SHADER);
+					const auto& _shader = sm.at(statedata.m_shader);
 					raylib::BeginShaderMode(_shader.shader());
 
 					//- check if renderstate has changed since last draw command
-					if (state != S_CURRENT_RENDERSTATE)
+					if (state != statedata.m_renderstate)
 					{
-						S_CURRENT_RENDERSTATE = state;
+						statedata.m_renderstate = state;
 					}
 
 					//- set blending mode only if enabled for this draw command
 					if (algorithm::bit_check(state.m_flags, renderable_flag_blending_custom))
 					{
-						raylib::rlSetBlendMode(S_CURRENT_RENDERSTATE.m_blending.m_mode);
-						raylib::rlSetBlendFactors(S_CURRENT_RENDERSTATE.m_blending.m_src_factor, S_CURRENT_RENDERSTATE.m_blending.m_dst_factor, S_CURRENT_RENDERSTATE.m_blending.m_equation);
+						auto& renderstate = statedata.m_renderstate;
+
+						raylib::rlSetBlendMode(renderstate.m_blending.m_mode);
+						raylib::rlSetBlendFactors(renderstate.m_blending.m_src_factor, renderstate.m_blending.m_dst_factor, renderstate.m_blending.m_equation);
 						raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
 					}
 

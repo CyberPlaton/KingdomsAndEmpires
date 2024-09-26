@@ -193,6 +193,12 @@ namespace sm
 		*y = raylib::GetRenderHeight();
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	float cos_raylib::frametime() const
+	{
+		return raylib::GetFrameTime();
+	}
+
 } //- sm
 
 RTTR_REGISTRATION

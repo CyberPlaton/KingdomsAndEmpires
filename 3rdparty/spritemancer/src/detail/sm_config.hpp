@@ -44,6 +44,7 @@ namespace sm
 
 	static constexpr auto C_INVALID_HANDLE = MAX(unsigned);
 
+	struct scontext;
 	class irenderer;
 	class iplatform;
 	class ios;
@@ -582,6 +583,8 @@ namespace sm
 		virtual void main_window_position(unsigned* x, unsigned* y) = 0;
 		virtual void main_window_size(unsigned* x, unsigned* y) = 0;
 
+		virtual float frametime() const = 0;
+
 		RTTR_ENABLE();
 	};
 
@@ -696,5 +699,48 @@ namespace sm
 		};
 
 	} //- profile
+
+	//- Spritemancer context concentrating important data in one place.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct scontext final
+	{
+		struct srender
+		{
+			//- current rendering state with used blending and shader
+			struct sstate
+			{
+				srenderstate m_renderstate;
+				shader_handle_t m_shader;
+			};
+
+			//- layered rendering data
+			struct slayers
+			{
+				static constexpr unsigned C_LAYER_COUNT_MAX = 256;
+
+				array_t<slayer, C_LAYER_COUNT_MAX> m_layers;
+				unsigned m_layer_count = 0;
+			};
+
+			slayers m_layer_data;
+			sstate m_state_data;
+			srenderstate m_default_renderstate;
+			shader_handle_t m_default_shader;
+			texture_handle_t m_placeholder_texture;
+		};
+
+		//- window etc. related data
+		struct sos
+		{
+			unsigned m_window_x = 0;
+			unsigned m_window_y = 0;
+			unsigned m_window_w = 0;
+			unsigned m_window_h = 0;
+			float m_delta_time = 0.0f;
+		};
+
+		srender m_render_data;
+		sos m_os_data;
+	};
 
 } //- sm
