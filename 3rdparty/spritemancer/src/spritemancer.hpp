@@ -8,10 +8,7 @@ namespace sm
 	opresult configure(iapp* app, void* config, int argc, char* argv[]);
 
 	//------------------------------------------------------------------------------------------------------------------------
-	opresult init(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync);
-
-	//------------------------------------------------------------------------------------------------------------------------
-	opresult run();
+	opresult run(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	scontext& ctx();

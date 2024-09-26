@@ -538,24 +538,20 @@ namespace sm
 	public:
 		virtual ~irenderer() = default;
 
-		virtual void prepare_device() = 0;
-		virtual opresult init_device(void* nwh, unsigned w, unsigned h,
-			bool fullscreen, bool vsync) = 0;
-		virtual opresult shutdown_device() = 0;
-
-		virtual void prepare_frame() = 0;
-		virtual void display_frame() = 0;
-		virtual void update_viewport(const vec2_t& position, const vec2_t& size) = 0;
-		virtual void blendmode(sblending mode) = 0;
-
-		virtual void clear(const slayer& layer, bool depth) = 0;
-		virtual bool begin(const slayer& layer) = 0;
-		virtual void draw(const slayer& layer) = 0;
-		virtual void end(const slayer& layer) = 0;
-		virtual bool combine(const slayer& layer) = 0;
-
-		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) = 0;
-		virtual void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) = 0;
+		virtual void		prepare_device() = 0;
+		virtual opresult	init_device(void* nwh, unsigned w, unsigned h, bool fullscreen, bool vsync) = 0;
+		virtual opresult	shutdown_device() = 0;
+		virtual void		prepare_frame() = 0;
+		virtual void		display_frame() = 0;
+		virtual void		update_viewport(const vec2_t& position, const vec2_t& size) = 0;
+		virtual void		blendmode(sblending mode) = 0;
+		virtual void		clear(const slayer& layer, bool depth) = 0;
+		virtual bool		begin(const slayer& layer) = 0;
+		virtual void		draw(const slayer& layer) = 0;
+		virtual void		end(const slayer& layer) = 0;
+		virtual bool		combine(const slayer& layer) = 0;
+		virtual void		update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) = 0;
+		virtual void		update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) = 0;
 
 		RTTR_ENABLE();
 	};
@@ -568,22 +564,14 @@ namespace sm
 	public:
 		virtual ~ios() = default;
 
-		virtual opresult init() = 0;						//- create and init of client application
-		virtual opresult shutdown() = 0;					//- destroy and clean of client application
-
-		virtual opresult init_gfx(unsigned w, unsigned h,
-			bool fullscreen, bool vsync) = 0;				//- create graphical context
-
-		virtual opresult init_mainwindow(stringview_t title,
-			unsigned w, unsigned h, bool fullscreen) = 0;	//- create application main window
-
-		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
-		virtual opresult optional_process_event() = 0;				//- process one hardware event
-
-		virtual void main_window_position(unsigned* x, unsigned* y) = 0;
-		virtual void main_window_size(unsigned* x, unsigned* y) = 0;
-
-		virtual float frametime() const = 0;
+		virtual opresult	init() = 0;																			//- create and init of client application
+		virtual opresult	shutdown() = 0;																		//- destroy and clean of client application
+		virtual opresult	init_gfx(unsigned w, unsigned h, bool fullscreen, bool vsync) = 0;					//- create graphical context
+		virtual opresult	init_mainwindow(stringview_t title, unsigned w, unsigned h, bool fullscreen) = 0;	//- create application main window
+		virtual opresult	process_events() = 0;																//- process one hardware events
+		virtual void		main_window_position(unsigned* x, unsigned* y) = 0;
+		virtual void		main_window_size(unsigned* x, unsigned* y) = 0;
+		virtual float		frametime() const = 0;
 
 		RTTR_ENABLE();
 	};
@@ -595,10 +583,10 @@ namespace sm
 	public:
 		virtual ~iplatform() = default;
 
-		virtual opresult pre_init() = 0;	//- perform setup before os and graphics context are created
-		virtual opresult init() = 0;		//- initialize in turn after os and graphics context
-		virtual void shutdown() = 0;		//- shutdown before os and graphics context
-		virtual void post_shutdown() = 0;	//- shutdown after os and graphics context
+		virtual opresult	pre_init() = 0;		//- perform setup before os and graphics context are created
+		virtual opresult	init() = 0;			//- initialize in turn after os and graphics context
+		virtual void		shutdown() = 0;		//- shutdown before os and graphics context
+		virtual void		post_shutdown() = 0;//- shutdown after os and graphics context
 	};
 
 	//- Interface class for application to derive from and implement functionality
@@ -737,6 +725,8 @@ namespace sm
 			unsigned m_window_w = 0;
 			unsigned m_window_h = 0;
 			float m_delta_time = 0.0f;
+			bool m_fullscreen = false;
+			bool m_vsync = false;
 		};
 
 		srender m_render_data;

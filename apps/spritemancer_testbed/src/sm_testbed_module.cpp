@@ -379,9 +379,7 @@ int __real_main(int argc, char* argv[])
 		argc,									//- command line args count
 		argv);									//- command line args values
 
-	sm::init("spritemancer testbed", 1920, 1080, false, true);
-
-	sm::run();
+	sm::run("spritemancer testbed", 1920, 1080, false, true);
 
 	logging::clog::instance().shutdown();
 

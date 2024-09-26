@@ -574,8 +574,6 @@ int __real_main(int argc, char* argv[])
 		argc,									//- command line args count
 		argv);									//- command line args values
 
-	sm::init("tiny editor", 1360, 768, false, false);
-
 // 	core::profile::cpu::get_aggregator()->update();
 // 	core::profile::memory::get_aggregator()->update();
 // 	sm::profile::gpu::get_aggregator()->update();
@@ -586,7 +584,7 @@ int __real_main(int argc, char* argv[])
 // 	auto gpustats = sm::profile::gpu::get_aggregator()->stats();
 // 	auto drawcallstats = sm::profile::gpu::get_aggregator()->drawcall_data();
 
-	sm::run();
+	sm::run("tiny editor", 1360, 768, false, false);
 
 	logging::clog::instance().shutdown();
 	core::sentry::shutdown();

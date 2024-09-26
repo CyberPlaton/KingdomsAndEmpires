@@ -14,8 +14,6 @@ namespace sm
 		static argparse::ArgumentParser S_ARGS;
 		static core::cmutex S_MUTEX;
 		static std::atomic_bool S_RUNNING;
-		static bool S_FULLSCREEN			= false;
-		static bool S_VSYNC					= true;
 		static bool S_RESIZE_REQUIRED		= false;
 		static core::scolor S_WHITE			= { 255, 255, 255, 255 };
 		static core::scolor S_BLACK			= { 0, 0, 0, 0 };
@@ -26,35 +24,6 @@ namespace sm
 		constexpr vec2_t C_DEFAULT_SCALE	= { 1.0f, 1.0f };
 		constexpr vec2_t C_DEFAULT_ORIGIN	= { 0.5f, 0.5f };
 		static const auto C_DEFAULT_SOURCE	= core::srect{ 0.0f, 0.0f, 1.0f, 1.0f };
-
-		//- Load some default assets such as default shaders, images and textures etc.
-		//------------------------------------------------------------------------------------------------------------------------
-		void load_internal_resources()
-		{
-			//- set default data for rendering
-			auto& renderdata = ctx().m_render_data;
-			renderdata.m_default_renderstate.m_blending = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
-			renderdata.m_default_renderstate.m_flags = 0;
-
-			ctx().m_render_data.m_default_shader = core::cservice_manager::find<cshader_manager>()->load_sync("sprite", shader_type_fragment,
-				shaders::sprite::C_VS, shaders::sprite::C_PS);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void update_window_size(unsigned w, unsigned h)
-		{
-			ctx().m_os_data.m_window_w = w;
-			ctx().m_os_data.m_window_h = h;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void update_window_viewport()
-		{
-			const auto& os_data = ctx().m_os_data;
-
-			entry::get_renderer()->update_viewport({ os_data.m_window_x, os_data.m_window_y },
-				{ os_data.m_window_w, os_data.m_window_h });
-		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_configure_platform_and_renderer(iapp* app)
@@ -91,7 +60,7 @@ namespace sm
 			osdata.m_delta_time = entry::get_os()->frametime();
 
 			//- platforms may need to handle events
-			if (entry::get_os()->optional_process_event() == opresult_fail)
+			if (entry::get_os()->process_events() == opresult_fail)
 			{
 				S_RUNNING = false;
 			}
@@ -152,22 +121,63 @@ namespace sm
 			entry::get_renderer()->display_frame();
 		}
 
+		//- Main engine thread where the update and rendering happens. Created from outside
 		//------------------------------------------------------------------------------------------------------------------------
-		void engine_prepare()
+		void engine_thread(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync)
 		{
-			update_window_size(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h);
-			update_window_viewport();
+			if (entry::get_os()->init_mainwindow(title.data(), w, h, fullscreen) != opresult_ok)
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(core::logging_verbosity_error,
+						"Failed initializing OS mainwindow!");
+				}
+				return;
+			}
 
-			//- create resource managers
+			if (entry::has_platform() && entry::get_platform()->init() != opresult_ok)
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(core::logging_verbosity_error,
+						"Failed initializing platform!");
+				}
+				return;
+			}
+
+			entry::get_os()->main_window_position(&ctx().m_os_data.m_window_x, &ctx().m_os_data.m_window_y);
+			entry::get_os()->main_window_size(&ctx().m_os_data.m_window_w, &ctx().m_os_data.m_window_h);
+			ctx().m_os_data.m_fullscreen = fullscreen;
+			ctx().m_os_data.m_vsync = vsync;
+
+			if (entry::get_os()->init_gfx(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h,
+				fullscreen, vsync) != opresult_ok)
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(core::logging_verbosity_error,
+						"Failed initializing GFX!");
+				}
+				return;
+			}
+
+			entry::get_renderer()->update_viewport({ ctx().m_os_data.m_window_x, ctx().m_os_data.m_window_y },
+				{ ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h });
+
+			//- create resource managers and load default data
 			core::cservice_manager::emplace<cimage_manager>();
 			core::cservice_manager::emplace<ctexture_manager>();
 			core::cservice_manager::emplace<cshader_manager>();
 			core::cservice_manager::emplace<cspriteatlas_manager>();
 			core::cservice_manager::emplace<crendertarget_manager>();
 
-			load_internal_resources();
+			auto& renderdata = ctx().m_render_data;
+			renderdata.m_default_renderstate.m_blending = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
+			renderdata.m_default_renderstate.m_flags = 0;
 
-			//- create default placeholder texture
+			ctx().m_render_data.m_default_shader = core::cservice_manager::find<cshader_manager>()->load_sync("sprite",
+				shader_type_fragment, shaders::sprite::C_VS, shaders::sprite::C_PS);
+
 			{
 				cimage image;
 				image.create_solid(256, 256, core::scolor(core::common_color_magenta));
@@ -177,21 +187,20 @@ namespace sm
 				cimage::destroy(image);
 			}
 
-			//- create default font
-
-			//- create default rendering layer
+			//- finalize preparation
 			create_layer();
 
-			//- sample time for custom frame timing
-		}
+			//- initialize client application
+			if (!entry::get_app()->on_init(S_CONFIG, S_ARGS))
+			{
+				if (serror_reporter::instance().m_callback)
+				{
+					serror_reporter::instance().m_callback(core::logging_verbosity_error,
+						"Failed initializing client application!");
+				}
+				return;
+			}
 
-		//------------------------------------------------------------------------------------------------------------------------
-		void engine_finalize_init()
-		{
-			//- initialize imgui
-			imgui::init();
-
-			//- create internal event listeners
 			core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
 				{
 					const auto& e = var.convert<events::window::sresize>();
@@ -199,12 +208,10 @@ namespace sm
 					ctx().m_os_data.m_window_h = e.h;
 					S_RESIZE_REQUIRED = true;
 				});
-		}
 
-		//- Main engine thread where the update and rendering happens. Created from outside
-		//------------------------------------------------------------------------------------------------------------------------
-		void engine_thread()
-		{
+			//- create imgui context
+			imgui::init();
+
 			//- main loop
 			while (S_RUNNING)
 			{
@@ -243,66 +250,37 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult init(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync)
+	sm::opresult run(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync)
 	{
+		//- setup and initialize things that do not require a window and graphics context
 		if (entry::has_platform() && entry::get_platform()->pre_init() != opresult_ok)
 		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed pre-initializing platform!");
+			}
 			return opresult_fail;
 		}
-
 		if (entry::get_os()->init() != opresult_ok)
 		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed initializing OS!");
+			}
 			return opresult_fail;
 		}
 
-		if (entry::get_os()->init_mainwindow(title.data(), w, h, fullscreen) != opresult_ok)
-		{
-			return opresult_fail;
-		}
+		S_RUNNING.store(true);
 
-		if (entry::has_platform() && entry::get_platform()->init() != opresult_ok)
-		{
-			return opresult_fail;
-		}
+		//- start the thread with window and graphics context and proceed init there
+		std::thread thread(engine_thread, title, w, h, fullscreen, vsync);
 
-		//- cache common data
-		entry::get_os()->main_window_position(&ctx().m_os_data.m_window_x, &ctx().m_os_data.m_window_y);
-		entry::get_os()->main_window_size(&ctx().m_os_data.m_window_w, &ctx().m_os_data.m_window_h);
-		S_FULLSCREEN = fullscreen;
-		S_VSYNC = vsync;
+		thread.join();
 
-		//- starting up graphics and app
-		if (entry::get_os()->init_gfx(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h, S_FULLSCREEN, S_VSYNC) != opresult_ok)
-		{
-			return opresult_fail;
-		}
-
-		engine_prepare();
-
-		//- TODO: ignore return value for testing and development
-		entry::get_app()->on_init(S_CONFIG, S_ARGS);
-// 		if (entry::get_app()->on_init(S_CONFIG, S_ARGS))
-// 		{
-// 			return opresult_fail;
-// 		}
-
-		engine_finalize_init();
-
-		return opresult_ok;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult run()
-	{
-		S_RUNNING = true;
-
-		engine_thread();
-
-		if (entry::get_os()->shutdown() != opresult_ok)
-		{
-			return opresult_fail;
-		}
-
+		//- end of the thread and cleanup without requiring window and graphics context
+		entry::get_os()->shutdown();
 		if (entry::has_platform()) { entry::get_platform()->post_shutdown(); }
 
 		return opresult_ok;

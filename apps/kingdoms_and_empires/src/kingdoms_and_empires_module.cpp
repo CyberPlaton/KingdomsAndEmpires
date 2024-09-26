@@ -57,9 +57,7 @@ int __real_main(int argc, char* argv[])
 		argc,									//- command line args count
 		argv);									//- command line args values
 
-	sm::init("Kingdoms & Empires", 1280, 1024, true, true);
-
-	sm::run();
+	sm::run("Kingdoms & Empires", 1280, 1024, true, true);
 
 	logging::clog::instance().shutdown();
 

@@ -70,14 +70,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cos_raylib::optional_init_event_mainloop()
-	{
-		//- empty
-		return opresult_ok;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cos_raylib::optional_process_event()
+	sm::opresult cos_raylib::process_events()
 	{
 		if (raylib::WindowShouldClose())
 		{
