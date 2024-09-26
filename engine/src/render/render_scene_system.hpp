@@ -3,6 +3,40 @@
 
 namespace render
 {
+	namespace
+	{
+		static auto S_PLACEHOLDER_TEXTURE = 0;
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void draw_texture(const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
+		{
+			using namespace sm;
+
+			const auto& tm = *core::cservice_manager::find<ctexture_manager>();
+			const auto& sm = *core::cservice_manager::find<cshader_manager>();
+
+			//- extract transform data
+			auto position = math::extract_translation(transform.m_matrix);
+			auto scale = math::extract_scale(transform.m_matrix);
+			auto shear = math::extract_shear(transform.m_matrix);
+			auto rotation = math::extract_rotation(transform.m_matrix);
+
+			//- texture and dimension
+			const auto& _texture = tm.at(material.m_texture == C_INVALID_HANDLE ? S_PLACEHOLDER_TEXTURE : material.m_texture);
+			const auto w = _texture.w();
+			const auto h = _texture.h();
+
+			//- construct rectangles for where to sample from and where to draw
+			raylib::Rectangle src = { renderer.m_source_rect.x(), renderer.m_source_rect.y(),
+				renderer.m_source_rect.w() * w, renderer.m_source_rect.h() * h };
+			raylib::Rectangle dst = { position.x, position.y, scale.x * w, scale.y * h };
+			raylib::Vector2 orig = { 0.0f, 0.0f };
+
+			raylib::DrawTexturePro(_texture.texture(), src, dst, orig, rotation, renderer.m_tint.cliteral<raylib::Color>());
+		}
+
+	} //- unnamed
+
 	//- Class specifying the entry for scene rendering systems. It does not match any components and serves as reference
 	//- point for other rendering systems.
 	//------------------------------------------------------------------------------------------------------------------------
@@ -28,24 +62,18 @@ namespace render
 			ecs::csystem<ecs::stransform, ecs::smaterial, ecs::ssprite_renderer>
 			(w, "Scene Render System")
 		{
+			S_PLACEHOLDER_TEXTURE = algorithm::hash("placeholder");
+
 			multithreaded();
 			build([&](const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 				{
 					CORE_NAMED_ZONE("Scene Render System");
 
-					auto& layer = sm::get_layer(renderer.m_layer);
-					layer.m_flags = sm::layer_flags_2d;
-
 					auto position = math::extract_translation(transform.m_matrix);
 
 					sm::draw_texture(renderer.m_layer, position, material.m_texture);
 
-					auto m = raylib::GetMousePosition();
-
-					sm::draw_rect(renderer.m_layer, { m.x, m.y }, {64.0f, 64.0f}, core::scolor(255, 150, 255, 255));
-
-					raylib::DrawRectangle(1, 1 ,64, 64, {255, 255, 100, 255});
-
+					//draw_texture(transform, material, renderer);
 				});
 			run_after("Frame Begin System");
 		}

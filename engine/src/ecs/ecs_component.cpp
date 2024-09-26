@@ -21,6 +21,7 @@ namespace ecs
 		constexpr auto C_CHANGE_SCALE	= 1.0f;
 		constexpr auto C_CHANGE_ROT		= 0.01f;
 		constexpr auto C_CHANGE_SHEAR	= 0.1f;
+		static auto S_PLACEHOLDER_TEXTURE = 0;
 
 	} //- unnamed
 
@@ -105,13 +106,66 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void smaterial::show_ui(flecs::entity e)
 	{
+		S_PLACEHOLDER_TEXTURE = algorithm::hash("placeholder");
 
+		auto* material = e.get_mut<smaterial>();
+
+		if (ImGui::TreeNode("Renderstate"))
+		{
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Texture"))
+		{
+			const auto& tm = *core::cservice_manager::find<sm::ctexture_manager>();
+			const auto& _texture = tm.at(material->m_texture == sm::C_INVALID_HANDLE ? S_PLACEHOLDER_TEXTURE : material->m_texture);
+
+			imgui::cui::image(&_texture.texture(), { 64, 64 });
+
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Program"))
+		{
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Flags"))
+		{
+			bool invisible = algorithm::bit_check(material->m_flags, sm::renderable_flag_invisible);
+			bool flipx = algorithm::bit_check(material->m_flags, sm::renderable_flag_flipx);
+			bool flipy = algorithm::bit_check(material->m_flags, sm::renderable_flag_flipy);
+			bool origin_center = algorithm::bit_check(material->m_flags, sm::renderable_flag_origin_center);
+			bool origin_custom = algorithm::bit_check(material->m_flags, sm::renderable_flag_origin_custom);
+			bool has_material = algorithm::bit_check(material->m_flags, sm::renderable_flag_has_material);
+			bool blending_custom = algorithm::bit_check(material->m_flags, sm::renderable_flag_blending_custom);
+
+			imgui::cui::toggle_button("Invisible", &invisible);
+			imgui::cui::toggle_button("Flip X", &flipx);
+			imgui::cui::toggle_button("Flip Y", &flipy);
+			imgui::cui::toggle_button("Origin center", &origin_center);
+			imgui::cui::toggle_button("Origin Custom", &origin_custom);
+			imgui::cui::toggle_button("Has Material", &has_material);
+			imgui::cui::toggle_button("Blending Custom", &blending_custom);
+
+			ImGui::TreePop();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void ssprite_renderer::show_ui(flecs::entity e)
 	{
+		auto* renderer = e.get_mut<ssprite_renderer>();
 
+		if (ImGui::TreeNode("Layer"))
+		{
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Source Rectangle"))
+		{
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Tint"))
+		{
+			ImGui::TreePop();
+		}
 	}
 
 } //- ecs

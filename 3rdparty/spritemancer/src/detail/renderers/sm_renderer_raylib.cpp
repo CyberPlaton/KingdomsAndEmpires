@@ -60,7 +60,7 @@ namespace sm
 		static uint16_t S_H = 0;
 		static uint16_t S_X = 0;
 		static uint16_t S_Y = 0;
-		static core::scolor S_WHITE = { 255, 255, 255, 255 };
+		static core::scolor S_CLEAR_COLOR = { 50, 50, 155, 255 };
 		static raylib::Camera2D S_CAMERA = {{0.0f, 0.0f}, {0.0f, 0.0f}, 0.0f, 1.0f};
 
 	} //- unnamed
@@ -97,7 +97,7 @@ namespace sm
 	void crenderer_raylib::prepare_frame()
 	{
 		raylib::BeginDrawing();
-		raylib::ClearBackground(to_cliteral(S_WHITE));
+		raylib::ClearBackground(to_cliteral(S_CLEAR_COLOR));
 
 		imgui::begin();
 	}
@@ -199,7 +199,6 @@ namespace sm
 			}
 
 			raylib::DrawTexturePro(target.texture, src, dst, origin, 0.0f, to_cliteral(layer.m_combine_tint));
-
 
 			//- reset previously (optionally) set state
 			raylib::EndBlendMode();

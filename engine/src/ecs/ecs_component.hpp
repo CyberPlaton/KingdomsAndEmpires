@@ -202,7 +202,7 @@ namespace ecs
 		sm::srenderstate m_renderstate;
 		sm::texture_handle_t m_texture = sm::C_INVALID_HANDLE;
 		sm::shader_handle_t m_program = sm::C_INVALID_HANDLE;
-		sm::renderable_flag m_flags = sm::renderable_flag_none;
+		int m_flags = sm::renderable_flag_none;
 
 		RTTR_ENABLE(icomponent);
 	};
@@ -216,8 +216,8 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		core::srect m_source_rect	= { 0.0f, 0.0f, 0.0f, 0.0f };;
-		core::scolor m_tint			= core::scolor(core::common_color_neutral1000);;
+		core::srect m_source_rect	= { 0.0f, 0.0f, 0.0f, 0.0f };
+		core::scolor m_tint			= core::scolor(core::common_color_neutral1000);
 		unsigned m_layer			= 0;
 
 		RTTR_ENABLE(icomponent);

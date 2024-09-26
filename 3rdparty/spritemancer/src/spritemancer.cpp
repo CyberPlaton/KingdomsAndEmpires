@@ -26,7 +26,8 @@ namespace sm
 		static bool S_RESIZE_REQUIRED = false;
 		static float S_DT = 0.0f;
 		static texture_handle_t S_PLACEHOLDER_TEXTURE = 0;
-		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
+		static sblending S_BLEND_MODE_DEFAULT = { blending_mode_alpha, blending_equation_blend_color,
+			blending_factor_src_color, blending_factor_one_minus_src_color };
 		static srenderstate S_RENDERSTATE_DEFAULT = { S_BLEND_MODE_DEFAULT, 0 };
 		constexpr float C_ROTATION_DEFAULT = 0.0f;
 		constexpr vec2_t C_SCALE_DEFAULT = {1.0f, 1.0f};
@@ -169,14 +170,12 @@ namespace sm
 
 			//- create default placeholder texture
 			{
-				cimage solid([]() -> raylib::Image
-					{
-						return raylib::GenImageColor(256, 256, S_WHITE.cliteral<raylib::Color>());
-					});
+				cimage image;
+				image.create_solid(256, 256, core::scolor(core::common_color_magenta));
 
-				S_PLACEHOLDER_TEXTURE = core::cservice_manager::find<ctexture_manager>()->load_sync("placeholder", solid);
+				S_PLACEHOLDER_TEXTURE = core::cservice_manager::find<ctexture_manager>()->load_sync("placeholder", image);
 
-				cimage::destroy(solid);
+				cimage::destroy(image);
 			}
 
 			//- create default font
