@@ -38,8 +38,8 @@ namespace editor
 						.options(ui::ctable::options_borders_all)
 						.begin(2,
 							{
-								{ImGuiTableColumnFlags_WidthStretch, 0.9f},
-								{ImGuiTableColumnFlags_WidthStretch, 0.1f}
+								{ImGuiTableColumnFlags_WidthStretch, 0.95f},
+								{ImGuiTableColumnFlags_WidthStretch, 0.05f}
 							}))
 					{
 						show_inspected_entity();
@@ -100,7 +100,7 @@ namespace editor
 
 				{
 					imgui::cid_scope scope(fmt::format("##remove_component_{}_{}", c.data(), e.id()).data());
-					if (ImGui::SmallButton(ICON_FA_MINUS "Remove"))
+					if (ImGui::SmallButton(ICON_FA_MINUS))
 					{
 						ecs::detail::remove_component(e, c.data());
 					}
