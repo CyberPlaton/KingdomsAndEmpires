@@ -221,6 +221,7 @@ namespace sm
 			//- shutting down
 			entry::get_app()->on_shutdown();
 			imgui::shutdown();
+			entry::get_os()->shutdown();
 			if (entry::has_platform()) { entry::get_platform()->shutdown(); }
 		}
 
@@ -280,7 +281,6 @@ namespace sm
 		thread.join();
 
 		//- end of the thread and cleanup without requiring window and graphics context
-		entry::get_os()->shutdown();
 		if (entry::has_platform()) { entry::get_platform()->post_shutdown(); }
 
 		return opresult_ok;
