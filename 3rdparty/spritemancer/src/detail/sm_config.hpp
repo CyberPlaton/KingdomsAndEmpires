@@ -30,25 +30,29 @@ ANONYMOUS_VARIABLE(gpu_profile_function)	\
 
 namespace sm
 {
+	//- How much resources to expect, not a fixed size, merely for reserving memory.
+	//------------------------------------------------------------------------------------------------------------------------
 	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT			= 256;
 	constexpr auto C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT			= 512;
 	constexpr auto C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT			= 512;
 	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT		= 128;
 	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT	= 64;
 
+	//------------------------------------------------------------------------------------------------------------------------
 	using image_handle_t = unsigned;
 	using texture_handle_t = unsigned;
 	using shader_handle_t = unsigned;
 	using spriteatlas_handle_t = unsigned;
 	using rendertarget_handle_t = unsigned;
-
 	static constexpr auto C_INVALID_HANDLE = MAX(unsigned);
 
+	//------------------------------------------------------------------------------------------------------------------------
 	struct scontext;
 	class irenderer;
 	class iplatform;
 	class ios;
 	class iapp;
+	struct slayer;
 	class cshader;
 	class crendertarget;
 	class cimage;
@@ -134,8 +138,8 @@ namespace sm
 	enum shader_language : uint8_t
 	{
 		shader_language_none = 0,
-		shader_language_glsl,
-		shader_language_essl,
+		shader_language_glsl,	//- OpenGL 3.3
+		shader_language_essl,	//- OpenGL ES
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -294,125 +298,6 @@ namespace sm
 		blending_factor m_src_factor;
 	};
 
-	//- A shader. Can be a single vertex or fragment shader or a combination of them, becoming a program
-	//------------------------------------------------------------------------------------------------------------------------
-	class cshader final : public core::cresource
-	{
-	public:
-		static void destroy(cshader& shader);
-
-		explicit cshader(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
-		explicit cshader(shader_type type, const char* vs, const char* fs);
-		explicit cshader(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
-		cshader();
-		~cshader();
-
-		opresult load_from_file(shader_type type, stringview_t vertex_filepath, stringview_t fragment_filepath);
-		opresult load_from_string(shader_type type, const char* vs, const char* fs);
-		opresult load_from_memory(shader_type type, const uint8_t* vs, unsigned vs_size, const uint8_t* fs, unsigned fs_size);
-
-		inline raylib::Shader shader() const { return m_shader; }
-		inline shader_type type() const { return m_type; }
-
-		void set_uniform_float(stringview_t name, float value);
-		void set_uniform_int(stringview_t name, int value);
-		void set_uniform_vec2(stringview_t name, const vec2_t& value);
-		void set_uniform_vec3(stringview_t name, const vec3_t& value);
-		void set_uniform_vec4(stringview_t name, const vec4_t& value);
-		void set_uniform_matrix(stringview_t name, const mat4_t& value);
-		void set_uniform_texture(stringview_t name, const ctexture& value);
-		void remove_uniform(stringview_t name);
-
-		cshader& operator=(const cshader& other);
-
-	private:
-		raylib::Shader m_shader;
-		shader_type m_type;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//- CPU resident image representation
-	//------------------------------------------------------------------------------------------------------------------------
-	class cimage final : public core::cresource
-	{
-	public:
-		using image_generate_function_t = std::function<raylib::Image()>;
-
-		static void destroy(cimage& image);
-
-		explicit cimage(image_generate_function_t&& callback);
-		explicit cimage(stringview_t filepath);
-		explicit cimage(image_type type, void* data, unsigned size);
-		cimage();
-		~cimage();
-
-		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(image_type type, void* data, unsigned size);
-
-		inline raylib::Image image() const { return m_container; }
-
-		//- utility functions for image generation and manipulation
-		void create_solid(unsigned w, unsigned h, const core::scolor& color);
-		void create_checkerboard(unsigned w, unsigned h, unsigned step, const core::scolor& first, const core::scolor& second);
-
-	private:
-		raylib::Image m_container;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//- GPU resident image representation
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture final : public core::cresource
-	{
-	public:
-		static void destroy(ctexture& texture);
-
-		explicit ctexture(const cimage& image);
-		explicit ctexture(stringview_t filepath);
-		explicit ctexture(image_type type, void* data, unsigned size);
-		ctexture();
-		~ctexture();
-
-		opresult load_from_image(const cimage& image);
-		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(image_type type, void* data, unsigned size);
-
-		inline unsigned w() const { return m_texture.width; }
-		inline unsigned h() const { return m_texture.height; }
-		inline raylib::Texture2D texture() const { return m_texture; }
-
-	private:
-		raylib::Texture2D m_texture;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class crendertarget final : public core::cresource
-	{
-	public:
-		static void destroy(crendertarget& target);
-
-		explicit crendertarget(unsigned w, unsigned h);
-		crendertarget();
-		~crendertarget();
-
-		opresult create(unsigned w, unsigned h);
-		opresult resize(unsigned w, unsigned h);
-
-		inline unsigned w() const { return m_texture.texture.width; }
-		inline unsigned h() const { return m_texture.texture.height; }
-		inline raylib::RenderTexture2D target() const { return m_texture; }
-		inline raylib::Texture2D texture() const { return m_texture.texture; }
-
-	private:
-		raylib::RenderTexture2D m_texture;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
 	//- TODO: Reworking camera system
 	//- Following an entity: camera locks on to an in-game entity
 	//- Edge-Snapping: camera can not move farther or below some coordinate
@@ -460,33 +345,6 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas final : public core::cresource
-	{
-	public:
-		static void destroy(cspriteatlas& atlas);
-
-		explicit cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
-		cspriteatlas();
-		~cspriteatlas() = default;
-
-		opresult create(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
-		const core::srect& at(stringview_t name) const;
-		vec2_t dimension() const;
-		unsigned subtextures() const;
-
-		//- Routines for manual atlas creation
-		cspriteatlas& begin(unsigned w, unsigned h);
-		cspriteatlas& subtexture(stringview_t name, const core::srect& rect);
-		cspriteatlas& end();
-
-	private:
-		umap_t<unsigned, core::srect> m_subtextures;
-		vec2_t m_size;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
 	struct srenderstate
 	{
 		bool operator ==(const srenderstate& other) const;
@@ -507,29 +365,10 @@ namespace sm
 		~ccommand() = default;
 
 		void create(render_callback_t&& callback);
-
 		void execute() const;
 
 	private:
 		render_callback_t m_callback;
-	};
-
-	//- Description of a rendering layer. Some of the data becomes only relevant when appropriate flags are set
-	//------------------------------------------------------------------------------------------------------------------------
-	struct slayer
-	{
-		crendertarget m_target;
-		vector_t<ccommand> m_commands;
-		ccamera m_camera;					//- optional: camera to be used when rendering
-		cshader m_shader;					//- optional: shader used to render the layer render texture on previous layers
-		core::scolor m_combine_tint;		//- color put over layer render texture when drawing on previous layers
-		core::scolor m_clear_tint;			//- color used to clear the layer render texture before drawing
-		vec2_t m_position = { 0.0f, 0.0f }; //- optional: where to draw the render target when combining; by default we cover whole screen
-		vec2_t m_scale = { 1.0f, 1.0f };	//- optional: scaling of the render target; by default normal scale
-		vec2_t m_origin = { 0.0f, 0.0f };	//- optional: origin of the render target; by default top-left
-		unsigned m_flags = 0;				//- bitwise concated layer_flags
-		bool m_show = false;
-		unsigned m_id = 0;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -687,50 +526,5 @@ namespace sm
 		};
 
 	} //- profile
-
-	//- Spritemancer context concentrating important data in one place.
-	//------------------------------------------------------------------------------------------------------------------------
-	struct scontext final
-	{
-		struct srender
-		{
-			//- current rendering state with used blending and shader
-			struct sstate
-			{
-				srenderstate m_renderstate;
-				shader_handle_t m_shader;
-			};
-
-			//- layered rendering data
-			struct slayers
-			{
-				static constexpr unsigned C_LAYER_COUNT_MAX = 256;
-
-				array_t<slayer, C_LAYER_COUNT_MAX> m_layers;
-				unsigned m_layer_count = 0;
-			};
-
-			slayers m_layer_data;
-			sstate m_state_data;
-			srenderstate m_default_renderstate;
-			shader_handle_t m_default_shader;
-			texture_handle_t m_placeholder_texture;
-		};
-
-		//- window etc. related data
-		struct sos
-		{
-			unsigned m_window_x = 0;
-			unsigned m_window_y = 0;
-			unsigned m_window_w = 0;
-			unsigned m_window_h = 0;
-			float m_delta_time = 0.0f;
-			bool m_fullscreen = false;
-			bool m_vsync = false;
-		};
-
-		srender m_render_data;
-		sos m_os_data;
-	};
 
 } //- sm

@@ -1,5 +1,6 @@
 #include "sm_renderer_raylib.hpp"
 #include "../sm_embedded_shaders.hpp"
+#include "../sm_layer.hpp"
 
 namespace sm
 {

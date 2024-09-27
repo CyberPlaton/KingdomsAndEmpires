@@ -8,6 +8,51 @@
 
 namespace sm
 {
+	//- Spritemancer context concentrating important data in one place.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct scontext final
+	{
+		struct srender
+		{
+			//- current rendering state with used blending and shader
+			struct sstate
+			{
+				srenderstate m_renderstate;
+				shader_handle_t m_shader;
+			};
+
+			//- layered rendering data
+			struct slayers
+			{
+				static constexpr unsigned C_LAYER_COUNT_MAX = 256;
+
+				array_t<slayer, C_LAYER_COUNT_MAX> m_layers;
+				unsigned m_layer_count = 0;
+			};
+
+			slayers m_layer_data;
+			sstate m_state_data;
+			srenderstate m_default_renderstate;
+			shader_handle_t m_default_shader;
+			texture_handle_t m_placeholder_texture;
+		};
+
+		//- window etc. related data
+		struct sos
+		{
+			unsigned m_window_x = 0;
+			unsigned m_window_y = 0;
+			unsigned m_window_w = 0;
+			unsigned m_window_h = 0;
+			float m_delta_time = 0.0f;
+			bool m_fullscreen = false;
+			bool m_vsync = false;
+		};
+
+		srender m_render_data;
+		sos m_os_data;
+	};
+
 	namespace
 	{
 		static void* S_CONFIG				= nullptr;
@@ -523,3 +568,44 @@ namespace sm
 	}
 
 } //- sm
+
+RTTR_REGISTRATION
+{
+	using namespace sm;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<cspriteatlas>("cspriteatlas")
+	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cspriteatlas::destroy)
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+		vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+		".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
+	;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<crendertarget>("crendertarget")
+	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &crendertarget::destroy)
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{})
+;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<ctexture>("ctexture")
+	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &ctexture::destroy)
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+		vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+		".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
+	;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<cimage>("cimage")
+	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cimage::destroy)
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
+		vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
+		".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
+	;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<cshader>("cshader")
+	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cshader::destroy)
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
+;
+}
