@@ -4,186 +4,81 @@
 
 namespace module_example
 {
-	namespace
-	{
-		constexpr auto C_DT = 0.016f;
-
-	} //- unnamed
+	void targeting_system(flecs::entity e, stargeting_component& target);
+	void targeting_system_2(flecs::entity e, stargeting_component& target);
+	void targeting_system_3(flecs::entity e, stargeting_component& target);
+	void transform_system(flecs::entity e, stransform_component& transform);
+	void replication_system(flecs::entity e, sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id);
 
 	//- Example module system
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_system : public ecs::csystem<stargeting_component>
+	struct EXAMPLE_API stargeting_system final
 	{
-	public:
-		cmy_system(flecs::world& w) :
-			ecs::csystem<stargeting_component>
-			(w, "Targeting System")
+		stargeting_system(flecs::world& w)
 		{
-			multithreaded();
-			build([&](flecs::entity e, stargeting_component& target)
-				{
-					CORE_NAMED_ZONE("Targeting System");
+			ecs::system::sconfig cfg{ w };
 
-					//- check for first start of the system or
-					//- end of cooldown and restart
-					if (target.m_cooldown == stargeting_component::C_TARGET_COOLDOWN_INVALID ||
-						target.m_cooldown <= 0.0f)
-					{
-						target.m_next_target = core::cuuid();
-						target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
+			cfg.m_flags |= ecs::system::system_flag_multithreaded;
+			cfg.m_name = "Targeting System";
 
-						//logging::log_info(fmt::format("[Targeting System] Changing Target '{}' for '{}'",
-						//	target.m_next_target.string(), e.name().c_str()));
-					}
-					target.m_cooldown -= C_DT;
-				});
-
-			run_after(flecs::OnUpdate);
+			ecs::system::create_system(cfg, targeting_system);
 		}
 	};
 
-	//- mainly a duplicate of above system to be used as test in multithreaded environment
+	//- Duplicate of above system to be used as test in multithreaded environment
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_second_system : public ecs::csystem<stargeting_component>
+	struct EXAMPLE_API stargeting_system_2 final
 	{
-	public:
-		cmy_second_system(flecs::world& w) :
-			ecs::csystem<stargeting_component>
-			(w, "Targeting System #2")
+		stargeting_system_2(flecs::world& w)
 		{
-			multithreaded();
-			build([&](flecs::entity e, stargeting_component& target)
-				{
-					CORE_NAMED_ZONE("Targeting System #2");
+			ecs::system::sconfig cfg{ w };
 
-					//- check for first start of the system or
-					//- end of cooldown and restart
-					if (target.m_cooldown == stargeting_component::C_TARGET_COOLDOWN_INVALID ||
-						target.m_cooldown <= 0.0f);
-					{
-						target.m_next_target = core::cuuid();
-						target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
+			cfg.m_flags |= ecs::system::system_flag_multithreaded;
+			cfg.m_name = "Targeting System #2";
 
-						//logging::log_warn(fmt::format("[Targeting System #2] Changing Target '{}' for '{}'",
-						//	target.m_next_target.string(), e.name().c_str()));
-					}
+			ecs::system::create_system(cfg, targeting_system_2);
+		}
+	};
 
-					core::crandom rand;
+	//- Duplicate of above system to be used as test in multithreaded environment
+	//------------------------------------------------------------------------------------------------------------------------
+	struct EXAMPLE_API stargeting_system_3 final
+	{
+		stargeting_system_3(flecs::world& w)
+		{
+			ecs::system::sconfig cfg{ w };
 
-					target.m_cooldown -= C_DT * rand.in_range_float(0.0f, 1.75f);
-				});
+			cfg.m_flags |= ecs::system::system_flag_multithreaded;
+			cfg.m_name = "Targeting System #3";
 
-			run_after(flecs::OnUpdate);
+			ecs::system::create_system(cfg, targeting_system_3);
 		}
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_third_system : public ecs::csystem<stargeting_component>
+	struct EXAMPLE_API stransform_system final
 	{
-	public:
-		cmy_third_system(flecs::world& w) :
-			ecs::csystem<stargeting_component>
-			(w, "Targeting System #3")
+		stransform_system(flecs::world& w)
 		{
-			multithreaded();
-			build([&](flecs::entity e, stargeting_component& target)
-				{
-					CORE_NAMED_ZONE("Targeting System #3");
+			ecs::system::sconfig cfg{ w };
 
-					//- check for first start of the system or
-					//- end of cooldown and restart
-					if (target.m_cooldown == stargeting_component::C_TARGET_COOLDOWN_INVALID ||
-						target.m_cooldown <= 0.0f);
-					{
-						target.m_next_target = core::cuuid();
-						target.m_cooldown = stargeting_component::C_TARGET_COOLDOWN_TIMER;
+			cfg.m_name = "Transform System";
 
-						//logging::log_debug(fmt::format("[Targeting System #3] Changing Target '{}' for '{}'",
-						//	target.m_next_target.string(), e.name().c_str()));
-					}
-
-					core::crandom rand;
-
-					target.m_cooldown -= C_DT * rand.in_range_float(0.0f, 1.75f);
-				});
-
-			run_after(flecs::OnUpdate);
-		}
-	};
-
-	//- 
-	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cexample_transform_system : public ecs::csystem<stransform_component>
-	{
-	public:
-		cexample_transform_system(flecs::world& world) :
-			ecs::csystem<stransform_component>(world, "Transform System")
-		{
-			auto update_phase = world.entity("Transform Update Phase")
-				.add(flecs::Phase)
-				.depends_on(flecs::OnUpdate);
-
-			build([&](flecs::entity e, stransform_component& tr)
-				{
-					static core::ctimer transform_timer(false);
-
-					if (transform_timer.secs() > 5)
-					{
-						core::crandom rand;
-
-						tr.x = rand.in_range_float(0.0f, 10.0f);
-						tr.y = rand.in_range_float(0.0f, 10.0f);
-						tr.rotation = rand.in_range_float(0.0f, 365.0f);
-
-						log_debug(fmt::format("[{}][Transform] Updating transform [{}:{}:{}]",
-							logging::clog::instance().runtime_ms(), tr.x, tr.y, tr.rotation));
-
-						transform_timer.start();
-					}
-				});
-
-			run_after(update_phase);
+			ecs::system::create_system(cfg, transform_system);
 		}
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API sexample_module_system : public ecs::csystem<sreplicable_component, stransform_component, sidentifier_component>
+	struct EXAMPLE_API sreplication_system final
 	{
-	public:
-		sexample_module_system(flecs::world& w) :
-			ecs::csystem<sreplicable_component, stransform_component, sidentifier_component>
-			(w, "Replication System")
+		sreplication_system(flecs::world& w)
 		{
-			auto update_phase = w.entity("Replication Update Phase")
-				.add(flecs::Phase)
-				.depends_on(w.lookup("Transform Update Phase"));
+			ecs::system::sconfig cfg{ w };
 
-			build([&](flecs::entity e, sreplicable_component& rep, const stransform_component& trans,
-				const sidentifier_component& id)
-				{
-					static core::ctimer network_timer(false);
+			cfg.m_name = "Replication System";
+			cfg.m_run_after = { "Transform System" };
 
-					//- simulate some heavy networking work
-					if (network_timer.secs() > 5)
-					{
-						auto n = 0;
-						for (auto ii = 0; ii < 25000; ++ii)
-						{
-							++n;
-						}
-
-						//- example: showing firstly that entity name is equal to his uuid.
-						log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{} ({})\":\n\t[{}:{}:{}]",
-							logging::clog::instance().runtime_ms(), n, id.uuid.string(), e.name(), trans.x, trans.y, trans.rotation));
-
-						network_timer.start();
-					}
-				});
-
-			//- Note: another possibility should be to write:
-			//- kind("Transform Update Phase");
-			//- without the need to create a new phase as above.
-			run_after("Replication Update Phase");
+			ecs::system::create_system(cfg, replication_system);
 		}
 	};
 

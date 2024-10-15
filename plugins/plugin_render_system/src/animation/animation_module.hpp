@@ -4,26 +4,18 @@
 
 namespace render_system
 {
-	//- TODO: we need easing functions
+	void animation_system(flecs::entity e, ecs::sanimation& animation);
+
 	//------------------------------------------------------------------------------------------------------------------------
-	class RENDER_API canimation_system : public ecs::csystem<ecs::sanimation>
+	struct RENDER_API sanimation_system final
 	{
-	public:
-		canimation_system(flecs::world& w) :
-			ecs::csystem<ecs::sanimation>
-			(w, "Animation System")
+		sanimation_system(flecs::world& w)
 		{
-			multithreaded();
-			build([&](flecs::entity e, ecs::sanimation& animation)
-				{
-					CORE_NAMED_ZONE("Animation System");
+			ecs::system::sconfig cfg{ w };
 
-					//- TODO: we do it like this for now. But intended was to use world().visible_entities()
-					//- and update their animations only, as it does not make sense to compute so much stuff
-					//- for sprites we do not even see.
-				});
+			cfg.m_name = "Animation System";
 
-			run_after(flecs::OnUpdate);
+			ecs::system::create_system(cfg, animation_system);
 		}
 	};
 
@@ -34,7 +26,7 @@ namespace render_system
 		canimation_module(flecs::world& w) : ecs::imodule(w)
 		{
 			begin<canimation_module>("Animation Module")
-				.subsystem<canimation_module, canimation_system>()
+				.subsystem<canimation_module, sanimation_system>()
 				.end<canimation_module>();
 		}
 

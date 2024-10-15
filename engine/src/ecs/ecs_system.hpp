@@ -5,183 +5,160 @@
 
 namespace ecs
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	class isystem
+	namespace system
 	{
-	public:
-		virtual flecs::entity self() const = 0;
-		virtual stringview_t name() const = 0;
-	};
+		using system_flags_t = int;
 
-	//- system interface. Note that flecs::system is basically an entity,
-	//- we take advantage of this by assigning a name to it.
-	//-
-	//- when defining used components do
-	//- class cexample : public csystem<ecs::stransform, ecs::sidentifier>
-	//-
-	//- what really matters for runtime is the 'build' function:
-	//- you can define const ecs::stransform& there as well as ecs::stransform&
-	//- and those are what will be passed to the function.
-	//-
-	//- TCallable system function should be as in system_function_prototype_t, i.e.
-	//- entity first and then your used components as described above.
-	//-
-	//- Note: it is possible to force a system to run on more than one phase, i.e.
-	//- run_on(system_running_phase_on_update | system_running_phase_on_ui_render);
-	//- just make sure you know what you are doing.
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	class csystem : public isystem,
-		public iworld_context_holder
-	{
-	public:
-		using system_function_prototype_t = std::function<void(flecs::entity, TComps...)>;
-
-		csystem(flecs::world& world, const std::string& name) :
-			iworld_context_holder(world),
-			m_builder(world.system<TComps...>(name.c_str()))
+		//------------------------------------------------------------------------------------------------------------------------
+		enum system_flag : uint8_t
 		{
-		}
-		virtual ~csystem() {};
+			system_flag_none = 0,
+			system_flag_multithreaded,
+			system_flag_immediate,
+		};
 
-		flecs::entity self() const override final { return m_self; }
-		stringview_t name() const override final { return m_self.name().c_str(); }
-
-	protected:
-		//- Marks the system as available for threading. Note that a system using ImGui UI
-		//- is not eligible for multithreading.
-		//- Note: must be called BEFORE 'build'
-		void multithreaded();
-
-		//- Changes made by this system are visible immediately. Normally,
-		//- any structural changes are inserted into a command buffer and synced
-		//- before next tick. Enabling this makes the system single threaded.
-		//- Note: Structural changes are for example adding or removing components from an entity.
-		//- Also, must be called BEFORE 'build'
-		void immediate();
-
-		//- Specifies a component to explicitly exclude, meaning an entity having it will be ignored,
-		//- can be more than one component
-		//- Note: must be called BEFORE 'build'
-		template<typename... TComponent>
-		void exclude();
-
-		template<typename TCallable>
-		void build(TCallable&& func);
-
-		//- Specifies after which already existing system to run in order.
-		//- Note: the other system must have the same 'run_on' value set,
-		//- otherwise we wont run at all.
-		//- Also, this must be called AFTER 'build', otherwise its a crash...
-		void run_after(flecs::entity e);
-		void run_after(const flecs::entity_t e);
-		void run_after(stringview_t name);
-
-	private:
-		flecs::system m_self;
-		flecs::system_builder<TComps...> m_builder;
-		bool m_multithreaded = false;
-	};
-
-	//- Excludes one or more components from matching table, i.e. retrieves entities that
-	//- do not have those components.
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	template<typename... TComponent>
-	void csystem<TComps...>::exclude()
-	{
-		m_builder.template without<TComponent...>();
-	}
-
-	//- Marks the system as available for threading. Note that a system using ImGui UI
-	//- is not eligible for multithreading.
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	void csystem<TComps...>::multithreaded()
-	{
-		m_builder.multi_threaded();
-		m_multithreaded = true;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	void csystem<TComps...>::immediate()
-	{
-		m_builder.immediate();
-		m_multithreaded = false;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	void csystem<TComps...>::run_after(flecs::entity e)
-	{
-		CORE_ASSERT(e.is_valid(), "Invalid operation. Specified system does not exist!");
-
-		m_self.add(flecs::Phase).depends_on(e);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	void csystem<TComps...>::run_after(const flecs::entity_t e)
-	{
-		m_self.add(flecs::Phase).depends_on(e);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	void csystem<TComps...>::run_after(stringview_t name)
-	{
-		run_after(world().lookup(name.data()));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps>
-	template<typename TCallable>
-	void csystem<TComps...>::build(TCallable&& func)
-	{
-		m_self = m_builder.each(func);
-	}
-
-	//- A task is similar to a normal system, only that it does not match any components and thus no entities.
-	//- If entities are required they can be retrieved through the world or a query.
-	//- The function itself is executed as is, with only delta time provided.
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctask : public isystem,
-		public iworld_context_holder
-	{
-	public:
-		using system_function_prototype_t = std::function<void(float)>;
-
-		ctask(flecs::world& world, const string_t& name) :
-			iworld_context_holder(world),
-			m_builder(world.system(name.data()))
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sconfig final
 		{
-		}
-		virtual ~ctask() {};
+			flecs::world& m_world;
+			string_t m_name;
+			vector_t<string_t> m_run_after;
+			vector_t<string_t> m_run_before;
+			system_flags_t m_flags = 0;
+		};
 
-		flecs::entity self() const override final { return m_self; }
-		stringview_t name() const override final { return m_self.name().c_str(); }
+		//- Function responsible for creating a system for a world with given configuration, matching components and function to execute.
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TCallback, typename... TComps>
+		void create_system(const sconfig& cfg, TCallback callback)
+		{
+			CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system_flag_multithreaded) &&
+				algorithm::bit_check(cfg.m_flags, system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
 
-		template<typename TCallable>
-		void build(TCallable&& callback);
+			auto builder = cfg.m_world.system<TComps...>(cfg.m_name.c_str());
 
-		void run_after(flecs::entity e);
-		void run_after(const flecs::entity_t e);
-		void run_after(stringview_t name);
-
-	private:
-		flecs::system m_self;
-		flecs::system_builder<> m_builder;
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TCallable>
-	void ctask::build(TCallable&& callback)
-	{
-		m_self = m_builder.run([&](flecs::iter& it)
+			//- Set options that are required before system entity creation
 			{
-				callback(it.delta_time());
-			});
-	}
+				if (algorithm::bit_check(cfg.m_flags, system_flag_multithreaded))
+				{
+					builder.multi_threaded();
+				}
+				if (algorithm::bit_check(cfg.m_flags, system_flag_immediate))
+				{
+					builder.immediate();
+				}
+			}
+
+			auto system = builder.each<TComps...>(callback);
+
+			//- Set options that are required after system entity creation
+			{
+				for (const auto& after :cfg.m_run_after)
+				{
+					if (auto e = cfg.m_world.lookup(after.c_str()); e.is_valid())
+					{
+						system.add(flecs::Phase).depends_on(e);
+					}
+					else
+					{
+						log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
+							after, cfg.m_name));
+					}
+				}
+
+				for (const auto& before : cfg.m_run_before)
+				{
+					if (auto e = cfg.m_world.lookup(before.c_str()); e.is_valid())
+					{
+						e.add(flecs::Phase).depends_on(system);
+					}
+					else
+					{
+						log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
+							after, cfg.m_name));
+					}
+				}
+			}
+
+			//- TODO: store system object along with information in system manager for later use
+		}
+
+		//- Function responsible for creating a system for a world with given configuration, without matching any components
+		//- and function to execute.
+		//- A task is similar to a normal system, only that it does not match any components and thus no entities.
+		//- If entities are required they can be retrieved through the world or a query.
+		//- The function itself is executed as is, with only delta time provided.
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TCallback>
+		void create_task(const sconfig& cfg, TCallback callback)
+		{
+			CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system_flag_multithreaded) &&
+				algorithm::bit_check(cfg.m_flags, system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
+
+			auto builder = cfg.m_world.system(cfg.m_name.c_str());
+
+			//- Set options that are required before system entity creation
+			{
+				if (algorithm::bit_check(cfg.m_flags, system_flag_multithreaded))
+				{
+					builder.multi_threaded();
+				}
+				if (algorithm::bit_check(cfg.m_flags, system_flag_immediate))
+				{
+					builder.immediate();
+				}
+			}
+
+			auto task = builder.run([&](flecs::iter& it)
+				{
+					callback(it.delta_time());
+				});
+
+			//- Set options that are required after system entity creation
+			{
+				for (const auto& after : cfg.m_run_after)
+				{
+					if (auto e = cfg.m_world.lookup(after.c_str()); e.is_valid())
+					{
+						task.add(flecs::Phase).depends_on(e);
+					}
+					else
+					{
+						log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
+							after, cfg.m_name));
+					}
+				}
+
+				for (const auto& before : cfg.m_run_before)
+				{
+					if (auto e = cfg.m_world.lookup(before.c_str()); e.is_valid())
+					{
+						e.add(flecs::Phase).depends_on(systasktem);
+					}
+					else
+					{
+						log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
+							after, cfg.m_name));
+					}
+				}
+			}
+		}
+
+	} //- system
+
+	struct smy_system final
+	{
+		smy_system(flecs::world& world)
+		{
+			ecs::system::sconfig cfg{ world };
+
+			cfg.m_run_after = { "A", "B" };
+			cfg.m_run_before = { "C", "D", "E" };
+			cfg.m_name = "Name";
+			cfg.m_flags = ecs::system::system_flag_multithreaded;
+
+			ecs::system::create_system(cfg, nullptr);
+		}
+	};
 
 } //- ecs

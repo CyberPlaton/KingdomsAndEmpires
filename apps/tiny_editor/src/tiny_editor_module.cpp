@@ -540,6 +540,10 @@ int text_filter_algorithms_test_run()
 	return 0;
 }
 
+void f(flecs::entity e, ecs::stransform& t)
+{
+}
+
 //------------------------------------------------------------------------------------------------------------------------
 int __real_main(int argc, char* argv[])
 {
@@ -547,7 +551,6 @@ int __real_main(int argc, char* argv[])
 #if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 	ZoneScoped;
 #endif
-
 	engine::cprofiler_service::init();
 #endif
 	core::sentry::init();

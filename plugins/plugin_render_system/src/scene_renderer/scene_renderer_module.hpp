@@ -4,35 +4,32 @@
 
 namespace render_system
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	class RENDER_API cscenerender_system final : public ecs::ctask
-	{
-	public:
-		cscenerender_system(flecs::world& w) :
-			ecs::ctask(w, "Scene Render System")
-		{
-			build([&](float dt)
-				{
-					CORE_NAMED_ZONE("Scene Render System");
-				});
+	void scene_render_system(float dt);
+	void scene_debug_render_system(float dt);
 
-			run_after(flecs::OnUpdate);
+	//------------------------------------------------------------------------------------------------------------------------
+	struct RENDER_API srender_system final
+	{
+		srender_system(flecs::world& w)
+		{
+			ecs::system::sconfig cfg{ w };
+
+			cfg.m_name = "Render System";
+
+			ecs::system::create_task(cfg, scene_render_system);
 		}
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class RENDER_API cscenedebugrender_system final : public ecs::ctask
+	struct RENDER_API sdebug_render_system final
 	{
-	public:
-		cscenedebugrender_system(flecs::world& w) :
-			ecs::ctask(w, "Debug Scene Render System")
+		sdebug_render_system(flecs::world& w)
 		{
-			build([&](float dt)
-				{
-					CORE_NAMED_ZONE("Debug Scene Render System");
-				});
+			ecs::system::sconfig cfg{ w };
 
-			run_after("Scene Render System");
+			cfg.m_name = "Debug Render System";
+
+			ecs::system::create_task(cfg, scene_debug_render_system);
 		}
 	};
 
@@ -43,8 +40,8 @@ namespace render_system
 		cscene_render_module(flecs::world& w) : ecs::imodule(w)
 		{
 			begin<cscene_render_module>("Scene Render Module")
-				.subsystem<cscene_render_module, cscenerender_system>()
-				.subsystem<cscene_render_module, cscenedebugrender_system>()
+				.subsystem<cscene_render_module, srender_system>()
+				.subsystem<cscene_render_module, sdebug_render_system>()
 			.end<cscene_render_module>();
 		}
 

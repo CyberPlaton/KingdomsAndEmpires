@@ -2,6 +2,18 @@
 
 namespace render_system
 {
+	//------------------------------------------------------------------------------------------------------------------------
+	void scene_render_system(float dt)
+	{
+		CORE_NAMED_ZONE("Render System");
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void scene_debug_render_system(float dt)
+	{
+		CORE_NAMED_ZONE("Debug Render System");
+	}
+
 } //- render_system
 
 RTTR_REGISTRATION
