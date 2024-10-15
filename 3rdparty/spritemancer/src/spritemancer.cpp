@@ -217,7 +217,8 @@ namespace sm
 			core::cservice_manager::emplace<crendertarget_manager>();
 
 			auto& renderdata = ctx().m_render_data;
-			renderdata.m_default_renderstate.m_blending = { blending_mode_alpha, blending_equation_blend_color, blending_factor_src_color, blending_factor_one_minus_src_color };
+			renderdata.m_default_renderstate.m_blending = { sblending::blending_mode_alpha, sblending::blending_equation_blend_color,
+				sblending::blending_factor_src_color, sblending::blending_factor_one_minus_src_color };
 			renderdata.m_default_renderstate.m_flags = 0;
 
 			ctx().m_render_data.m_default_shader = core::cservice_manager::find<cshader_manager>()->load_sync("sprite",

@@ -10,72 +10,7 @@ namespace sm
 {
 	namespace
 	{
-		//------------------------------------------------------------------------------------------------------------------------
-		uint64_t texture_gpu_memory_usage(int w, int h, int mips, int format)
-		{
-			switch(format)
-			{
-			default:
-				break;
-			case texture_format_8bpp:
-			{
-				//- luminance, grayscale, i.e. generally one channel
-				return static_cast<uint64_t>(w * h);
-			}
-			case texture_format_16bpp:
-			case texture_format_8x2bpp:
-			{
-				//- two channels
-				return static_cast<uint64_t>(w * h * 2);
-			}
-			case texture_format_16x4bpp:
-			{
-				//- RGBA16
-				return static_cast<uint64_t>(w * h * 4 * 2);
-			}
-			case texture_format_24bpp:
-			{
-				//- RGB
-				return static_cast<uint64_t>(w * h * 3);
-			}
-			case texture_format_qoi:
-			case texture_format_32bpp:
-			{
-				//- RGBA
-				return static_cast<uint64_t>(w * h * 4);
-			}
-			case texture_format_32x4bpp:
-			{
-				//- RGBA32
-				return static_cast<uint64_t>(w * h * 4 * 4);
-			}
-			case texture_format_bc1:
-			{
-				//- RGB and binary color, 8:1 compression ratio
-				return (w * h * 4) / 8;
-			}
-			case texture_format_bc3:
-			case texture_format_bc2:
-			{
-				//- RGB and gradient alpha, 4:1 compression ratio
-				return (w * h * 4) / 4;
-			}
-			//- @reference: https://www.cs.cmu.edu/afs/cs/academic/class/15869-f11/www/readings/nystad12_astc.pdf
-			case texture_format_astc_4x4:
-			{
-				//- 8bpp
-				return w * h;
-			}
-			case texture_format_astc_8x8:
-			{
-				//- 2bpp
-				return (w * h) / 4;
-			}
-			}
-			return 0;
-		}
-
-		//- FIXME: only while we are using raylib
+	//- FIXME: querying shader GPU memory usage directly from OpenGL.
 	#include <raylib.h>
 #if CORE_PLATFORM_DESKTOP
 	#include <../src/raylib/external/glad.h>
@@ -367,7 +302,7 @@ namespace sm
 					{
 						auto tex = texture.texture();
 
-						m_drawcalls.m_textures_bytes += texture_gpu_memory_usage(tex.width, tex.height, tex.mipmaps, tex.format);
+						m_drawcalls.m_textures_bytes += detail::texture_gpu_memory_usage(tex.width, tex.height, tex.mipmaps, (texture_format)tex.format);
 					});
 
 				sm.each([&](const cshader& shader)

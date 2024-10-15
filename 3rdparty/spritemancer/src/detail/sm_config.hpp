@@ -92,28 +92,6 @@ namespace sm
 		window_flag_fxaa		= BIT(11),
 	};
 
-	//- BC_* formats: https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-block-compression#bc3
-	//------------------------------------------------------------------------------------------------------------------------
-	enum texture_format : uint8_t
-	{
-		texture_format_none = 0,
-		//- uncompressed
-		texture_format_8bpp		= raylib::PIXELFORMAT_UNCOMPRESSED_GRAYSCALE,
-		texture_format_8x2bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA,
-		texture_format_16bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R5G6B5,
-		texture_format_16x4bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
-		texture_format_24bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R8G8B8,
-		texture_format_32bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-		texture_format_32x4bpp	= raylib::PIXELFORMAT_UNCOMPRESSED_R32G32B32A32,
-		//- compressed
-		texture_format_bc1		= raylib::PIXELFORMAT_COMPRESSED_DXT1_RGBA,
-		texture_format_bc2		= raylib::PIXELFORMAT_COMPRESSED_DXT3_RGBA,
-		texture_format_bc3		= raylib::PIXELFORMAT_COMPRESSED_DXT5_RGBA,
-		texture_format_astc_4x4 = raylib::PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA,
-		texture_format_astc_8x8 = raylib::PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA,
-		texture_format_qoi,
-	};
-
 	//------------------------------------------------------------------------------------------------------------------------
 	enum shader_optimization : uint8_t
 	{
@@ -156,53 +134,6 @@ namespace sm
 		shader_options_keep_intermediate		= BIT(8),
 	};
 
-	//------------------------------------------------------------------------------------------------------------------------
-	enum blending_factor
-	{
-		blending_factor_zero						= 0,
-		blending_factor_one							= 1,
-		blending_factor_src_color					= RL_SRC_COLOR,
-		blending_factor_one_minus_src_color			= RL_ONE_MINUS_SRC_COLOR,
-		blending_factor_src_alpha					= RL_SRC_ALPHA,
-		blending_factor_one_minus_src_alpha			= RL_ONE_MINUS_SRC_ALPHA,
-		blending_factor_dst_alpha					= RL_DST_ALPHA,
-		blending_factor_dst_color					= RL_DST_COLOR,
-		blending_factor_one_minus_dst_alpha			= RL_ONE_MINUS_DST_ALPHA,
-		blending_factor_src_alpha_saturate			= RL_SRC_ALPHA_SATURATE,
-		blending_factor_constant_color				= RL_CONSTANT_COLOR,
-		blending_factor_one_minus_constant_color	= RL_ONE_MINUS_CONSTANT_COLOR,
-		blending_factor_constant_alpha				= RL_CONSTANT_ALPHA,
-		blending_factor_one_minus_constant_alpha	= RL_ONE_MINUS_CONSTANT_ALPHA,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum blending_equation
-	{
-		blending_equation_add					= RL_FUNC_ADD,
-		blending_equation_min					= RL_MIN,
-		blending_equation_max					= RL_MAX,
-		blending_equation_subtract				= RL_FUNC_SUBTRACT,
-		blending_equation_reverse_subtract		= RL_FUNC_REVERSE_SUBTRACT,
-		blending_equation_blend_equation_rgb	= RL_BLEND_EQUATION_RGB,
-		blending_equation_blend_equation_alpha	= RL_BLEND_EQUATION_ALPHA,
-		blending_equation_blend_dst_rgb			= RL_BLEND_DST_RGB,
-		blending_equation_blend_src_rgb			= RL_BLEND_SRC_RGB,
-		blending_equation_blend_dst_alpha		= RL_BLEND_DST_ALPHA,
-		blending_equation_blend_src_alpha		= RL_BLEND_SRC_ALPHA,
-		blending_equation_blend_color			= RL_BLEND_COLOR,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum blending_mode : uint8_t
-	{
-		blending_mode_alpha				= raylib::BLEND_ALPHA,
-		blending_mode_additive			= raylib::BLEND_ADDITIVE,
-		blending_mode_multiplied		= raylib::BLEND_MULTIPLIED,
-		blending_mode_add_colors		= raylib::BLEND_ADD_COLORS,
-		blending_mode_subtract_colors	= raylib::BLEND_SUBTRACT_COLORS,
-		blending_mode_alpha_premultiply = raylib::BLEND_ALPHA_PREMULTIPLY
-	};
-
 	//- @see https://subscription.packtpub.com/book/programming/9781849698009/1/ch01lvl1sec10/types-of-shaders
 	//------------------------------------------------------------------------------------------------------------------------
 	enum shader_type : uint8_t
@@ -232,6 +163,28 @@ namespace sm
 		image_type_ktx,
 		image_type_pvr,
 		image_type_astc
+	};
+
+	//- BC_* formats: https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-block-compression#bc3
+	//------------------------------------------------------------------------------------------------------------------------
+	enum texture_format : uint8_t
+	{
+		texture_format_none = 0,
+		//- uncompressed
+		texture_format_r8			= raylib::PIXELFORMAT_UNCOMPRESSED_GRAYSCALE,
+		texture_format_r8g8			= raylib::PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA,
+		texture_format_r5g6b5		= raylib::PIXELFORMAT_UNCOMPRESSED_R5G6B5,
+		texture_format_r16g16b16a16 = raylib::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+		texture_format_r8g8b8		= raylib::PIXELFORMAT_UNCOMPRESSED_R8G8B8,
+		texture_format_r8g8b8a8		= raylib::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+		texture_format_r32g32b32a32 = raylib::PIXELFORMAT_UNCOMPRESSED_R32G32B32A32,
+		//- compressed
+		texture_format_bc1			= raylib::PIXELFORMAT_COMPRESSED_DXT1_RGBA,
+		texture_format_bc2			= raylib::PIXELFORMAT_COMPRESSED_DXT3_RGBA,
+		texture_format_bc3			= raylib::PIXELFORMAT_COMPRESSED_DXT5_RGBA,
+		texture_format_astc_4x4		= raylib::PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA,
+		texture_format_astc_8x8		= raylib::PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA,
+		texture_format_qoi,
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -289,13 +242,58 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sblending final
 	{
+		enum mode : uint8_t
+		{
+			blending_mode_alpha				= raylib::BLEND_ALPHA,
+			blending_mode_additive			= raylib::BLEND_ADDITIVE,
+			blending_mode_multiplied		= raylib::BLEND_MULTIPLIED,
+			blending_mode_add_colors		= raylib::BLEND_ADD_COLORS,
+			blending_mode_subtract_colors	= raylib::BLEND_SUBTRACT_COLORS,
+			blending_mode_alpha_premultiply = raylib::BLEND_ALPHA_PREMULTIPLY
+		};
+
+		enum equation
+		{
+			blending_equation_add					= RL_FUNC_ADD,
+			blending_equation_min					= RL_MIN,
+			blending_equation_max					= RL_MAX,
+			blending_equation_subtract				= RL_FUNC_SUBTRACT,
+			blending_equation_reverse_subtract		= RL_FUNC_REVERSE_SUBTRACT,
+			blending_equation_blend_equation_rgb	= RL_BLEND_EQUATION_RGB,
+			blending_equation_blend_equation_alpha	= RL_BLEND_EQUATION_ALPHA,
+			blending_equation_blend_dst_rgb			= RL_BLEND_DST_RGB,
+			blending_equation_blend_src_rgb			= RL_BLEND_SRC_RGB,
+			blending_equation_blend_dst_alpha		= RL_BLEND_DST_ALPHA,
+			blending_equation_blend_src_alpha		= RL_BLEND_SRC_ALPHA,
+			blending_equation_blend_color			= RL_BLEND_COLOR,
+		};
+
+		enum factor
+		{
+			blending_factor_zero						= 0,
+			blending_factor_one							= 1,
+			blending_factor_src_color					= RL_SRC_COLOR,
+			blending_factor_one_minus_src_color			= RL_ONE_MINUS_SRC_COLOR,
+			blending_factor_src_alpha					= RL_SRC_ALPHA,
+			blending_factor_one_minus_src_alpha			= RL_ONE_MINUS_SRC_ALPHA,
+			blending_factor_dst_alpha					= RL_DST_ALPHA,
+			blending_factor_dst_color					= RL_DST_COLOR,
+			blending_factor_one_minus_dst_alpha			= RL_ONE_MINUS_DST_ALPHA,
+			blending_factor_src_alpha_saturate			= RL_SRC_ALPHA_SATURATE,
+			blending_factor_constant_color				= RL_CONSTANT_COLOR,
+			blending_factor_one_minus_constant_color	= RL_ONE_MINUS_CONSTANT_COLOR,
+			blending_factor_constant_alpha				= RL_CONSTANT_ALPHA,
+			blending_factor_one_minus_constant_alpha	= RL_ONE_MINUS_CONSTANT_ALPHA,
+		};
+
+
 		bool operator==(const sblending& other) const;
 		bool operator!=(const sblending& other) const;
 
-		blending_mode m_mode;
-		blending_equation m_equation;
-		blending_factor m_dst_factor;
-		blending_factor m_src_factor;
+		mode m_mode;
+		equation m_equation;
+		factor m_dst_factor;
+		factor m_src_factor;
 	};
 
 	//- TODO: Reworking camera system
