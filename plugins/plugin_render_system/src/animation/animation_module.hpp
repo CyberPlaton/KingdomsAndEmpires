@@ -27,7 +27,7 @@ namespace render_system
 		{
 			begin<canimation_module>("Animation Module")
 				.subsystem<canimation_module, sanimation_system>()
-				.end<canimation_module>();
+			.end<canimation_module>();
 		}
 
 		RTTR_ENABLE(ecs::imodule);

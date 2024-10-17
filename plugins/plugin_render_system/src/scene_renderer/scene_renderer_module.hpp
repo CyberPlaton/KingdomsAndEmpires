@@ -4,9 +4,10 @@
 
 namespace render_system
 {
-	void scene_render_system(float dt);
-	void scene_debug_render_system(float dt);
+	void scene_render_system(const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer);
+	void scene_debug_render_system(const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer);
 
+	//- System responsible for rendering sprites in current world
 	//------------------------------------------------------------------------------------------------------------------------
 	struct RENDER_API srender_system final
 	{
@@ -15,11 +16,13 @@ namespace render_system
 			ecs::system::sconfig cfg{ w };
 
 			cfg.m_name = "Render System";
+			cfg.m_run_after = { "Frame Begin System" };
 
-			ecs::system::create_task(cfg, scene_render_system);
+			ecs::system::create_system(cfg, scene_render_system);
 		}
 	};
 
+	//- System responsible for debug rendering on top of rendered sprites in current world
 	//------------------------------------------------------------------------------------------------------------------------
 	struct RENDER_API sdebug_render_system final
 	{
@@ -28,8 +31,9 @@ namespace render_system
 			ecs::system::sconfig cfg{ w };
 
 			cfg.m_name = "Debug Render System";
+			cfg.m_run_after = { "Render System" };
 
-			ecs::system::create_task(cfg, scene_debug_render_system);
+			ecs::system::create_system(cfg, scene_debug_render_system);
 		}
 	};
 
