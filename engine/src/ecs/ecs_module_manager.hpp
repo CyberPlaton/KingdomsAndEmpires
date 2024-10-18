@@ -3,7 +3,7 @@
 
 namespace ecs
 {
-	//- class responsible for loading and unloading modules for a world. Contains all current active modules.
+	//- Class responsible for loading and unloading modules for a world. Contains all current active modules.
 	//-------------------------------------------------------------------------------------------------------------------------
 	class cmodule_manager final : public iworld_context_holder
 	{

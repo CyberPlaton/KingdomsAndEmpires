@@ -5,6 +5,24 @@
 
 namespace ecs
 {
+	namespace modules
+	{
+		//-------------------------------------------------------------------------------------------------------------------------
+		struct sconfig final
+		{
+			flecs::world& m_world;
+			string_t m_name;
+			vector_t<string_t> m_components;//- Components that this module is using
+			vector_t<string_t> m_systems;	//- Systems that this module is using
+			vector_t<string_t> m_modules;	//- Dependent modules that must be loaded before this one
+		};
+
+		//- Responsible for registering the module along with systems, components and dependency modules.
+		//-------------------------------------------------------------------------------------------------------------------------
+		void import_module(const sconfig& cfg);
+
+	} //-- modules
+
 	//- information about an active module,
 	//- dependencies can be traversed recursive
 	struct smodule_info

@@ -105,7 +105,14 @@ namespace ecs
 
 //- Macro for defining a component
 //- TODO: 'automate' component registration to RTTR or at least make it more seamless.
+//- When the component is constructed with the world as argument it registers itself to flecs as a component, this is used in modules.
 #define DECLARE_COMPONENT(c) \
+c() = default; \
+~c() = default; \
+c(flecs::world& w) \
+{ \
+	w.component<c>(); \
+} \
 static stringview_t name() { static constexpr stringview_t C_NAME = STRING(c); return C_NAME; } \
 static void serialize(flecs::entity e, nlohmann::json& json) \
 { \
