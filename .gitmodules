@@ -5,9 +5,6 @@
 [submodule "3rdparty/hwinfo/hwinfo"]
 	path = 3rdparty/hwinfo/hwinfo
 	url = https://github.com/lfreist/hwinfo.git
-[submodule "3rdparty/rttr/rttr"]
-	path = 3rdparty/rttr/rttr
-	url = https://github.com/CyberPlaton/rttr
 [submodule "3rdparty/tree_sitter/tree_sitter"]
 	path = 3rdparty/tree_sitter/tree_sitter
 	url = https://github.com/tree-sitter/tree-sitter.git
