@@ -14,6 +14,9 @@ namespace ecs
 		template<class TModuleType>
 		cmodule_manager& import_module();
 
+		cmodule_manager& import_module(rttr::type type);
+		cmodule_manager& import_module(stringview_t type_name);
+
 	private:
 	};
 
