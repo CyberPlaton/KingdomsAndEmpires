@@ -1,10 +1,11 @@
 #include "ecs_entity_manager.hpp"
 #include "ecs_component.hpp"
+#include "ecs_world.hpp"
 
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	centity_manager::centity_manager(flecs::world& w) :
+	centity_manager::centity_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
 	}
@@ -31,7 +32,7 @@ namespace ecs
 	flecs::entity centity_manager::create_entity(stringview_t uuid)
 	{
 		//- create runtime ecs entity uniquely identifiable by uuid
-		auto e = world().entity(uuid.data());
+		auto e = world().ecs().entity(uuid.data());
 
 		//- emplace default components
 		auto* id = e.add<sidentifier>().get_mut<sidentifier>();
@@ -45,13 +46,19 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	flecs::entity centity_manager::entity(const core::cuuid& uuid) const
 	{
-		return world().lookup(uuid.string().c_str());
+		return world().ecs().lookup(uuid.string().c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	const vector_t<flecs::entity>& centity_manager::entities() const
 	{
 		return m_entities;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool centity_manager::is_prefab(flecs::entity e) const
+	{
+		return e.has(flecs::Prefab);
 	}
 
 } //- ecs

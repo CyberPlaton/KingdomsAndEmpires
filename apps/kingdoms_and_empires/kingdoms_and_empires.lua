@@ -8,7 +8,7 @@ function kingdoms_and_empires()
 					{},
 					{"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "imgui", "raylib"},
 					{"plugin_module_example", "plugin_kingdoms_core", 
-					"plugin_camera_system", "plugin_race_human", "plugin_render_system",
+					"plugin_camera_system", "plugin_race_human",
 					"plugin_status_effects", "plugin_kingdoms_and_empires"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "asio"},

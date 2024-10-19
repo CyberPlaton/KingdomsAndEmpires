@@ -10,7 +10,7 @@ namespace ecs
 	class ccomponent_manager : public iworld_context_holder
 	{
 	public:
-		ccomponent_manager(flecs::world& w);
+		ccomponent_manager(cworld* w);
 
 		void on_component_added(flecs::entity e, const string_t& component);
 		void on_component_removed(flecs::entity e, const string_t& component);

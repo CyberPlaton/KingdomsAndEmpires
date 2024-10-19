@@ -1,5 +1,5 @@
 #include "ecs_query_manager.hpp"
-#
+#include "ecs_world.hpp"
 
 namespace ecs
 {
@@ -122,7 +122,7 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cquery_manager::cquery_manager(flecs::world& w) :
+	cquery_manager::cquery_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
 		m_queries.init(engine::cfg::C_ECS_QUERY_COUNT_MAX);

@@ -1,6 +1,7 @@
-#include "scene_renderer_module.hpp"
+#include "render_module.hpp"
+#include "../ecs/ecs_world.hpp"
 
-namespace render_system
+namespace render
 {
 	namespace
 	{
@@ -37,7 +38,7 @@ namespace render_system
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void scene_render_system(const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
+	void scene_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
 		CORE_NAMED_ZONE("Scene Render System");
 
@@ -49,9 +50,43 @@ namespace render_system
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void scene_debug_render_system(const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
+	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
 		CORE_NAMED_ZONE("Scene Debug Render System");
 	}
 
-} //- render_system
+	//------------------------------------------------------------------------------------------------------------------------
+	sdebug_render_system::sdebug_render_system(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_name = "Debug Render System";
+		cfg.m_run_after = { "Render System" };
+
+		w->create_system(cfg, scene_debug_render_system);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	srender_system::srender_system(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_name = "Render System";
+		cfg.m_run_after = { "Frame Begin System" };
+
+		w->create_system(cfg, scene_render_system);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	srender_module::srender_module(ecs::cworld* w)
+	{
+		ecs::modules::sconfig cfg;
+		cfg.m_name = "Render Module";
+		cfg.m_components = { "stransform", "smaterial", "ssprite_renderer" };
+		cfg.m_systems = { "srender_system", "sdebug_render_system" };
+		cfg.m_modules = {};
+
+		w->import_module<srender_module>(cfg);
+	}
+
+} //- render

@@ -83,7 +83,7 @@ namespace ecs
 	{
 		friend class cworld;
 	public:
-		cquery_manager(flecs::world& w);
+		cquery_manager(cworld* w);
 		~cquery_manager();
 
 		//- immediate mode query for an entity matching some value in component.
@@ -132,7 +132,7 @@ namespace ecs
 	{
 		//- use ad-hoc filter, as this does not require building tables
 		//- and thus can be used inside a progress tick
-		return world().query_builder<TComps...>()
+		return world().ecs().query_builder<TComps...>()
 			.build()
 			.find(callback);
 	}

@@ -1,9 +1,10 @@
 #include "ecs_singleton_manager.hpp"
+#include "ecs_world.hpp"
 
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	csingleton_manager::csingleton_manager(flecs::world& w) :
+	csingleton_manager::csingleton_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
 		//- gather all singleton component types registered to RTTR

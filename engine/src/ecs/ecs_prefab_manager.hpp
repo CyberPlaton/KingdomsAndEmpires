@@ -8,10 +8,8 @@ namespace ecs
 	class cprefab_manager final : public iworld_context_holder
 	{
 	public:
-		cprefab_manager(flecs::world& w);
+		cprefab_manager(cworld* w);
 		~cprefab_manager();
-
-		void on_shutdown() override final;
 
 		cprefab& create_prefab();
 		cprefab& create_prefab(stringview_t uuid);

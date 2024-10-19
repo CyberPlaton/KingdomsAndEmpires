@@ -106,6 +106,7 @@ namespace ecs
 //- Macro for defining a component
 //- TODO: 'automate' component registration to RTTR or at least make it more seamless.
 //- When the component is constructed with the world as argument it registers itself to flecs as a component, this is used in modules.
+//-------------------------------------------------------------------------------------------------------------------------
 #define DECLARE_COMPONENT(c) \
 c() = default; \
 ~c() = default; \
@@ -134,6 +135,7 @@ ecs::detail::remove_component<c>(e); \
 //- Shortcut macro for defining a 'tag' component. A tag component does not have any data
 //- and is useful in ecs queries and systems.
 //- Declaring a tag does not require registration to RTTR, it is done automatically.
+//-------------------------------------------------------------------------------------------------------------------------
 #define DECLARE_TAG(c, ...) \
 struct __VA_ARGS__ c final : public ecs::icomponent \
 { \

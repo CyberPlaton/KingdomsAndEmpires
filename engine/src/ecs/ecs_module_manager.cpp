@@ -1,4 +1,5 @@
 #include "ecs_module_manager.hpp"
+#include "ecs_world.hpp"
 
 namespace ecs
 {
@@ -8,7 +9,7 @@ namespace ecs
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cmodule_manager::cmodule_manager(flecs::world& w) :
+	cmodule_manager::cmodule_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
 	}
@@ -18,7 +19,7 @@ namespace ecs
 	{
 		if (type.is_valid())
 		{
-			auto var = type.create({ world() });
+			auto var = type.create({ &world() });
 		}
 		else
 		{

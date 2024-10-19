@@ -9,7 +9,7 @@ namespace ecs
 	class centity_manager final : public iworld_context_holder
 	{
 	public:
-		centity_manager(flecs::world& w);
+		centity_manager(cworld* w);
 		~centity_manager();
 
 		flecs::entity create_entity();
@@ -19,6 +19,8 @@ namespace ecs
 		flecs::entity entity(const core::cuuid& uuid) const;
 
 		const vector_t<flecs::entity>& entities() const;
+
+		bool is_prefab(flecs::entity e) const;
 
 	private:
 		vector_t<flecs::entity> m_entities;

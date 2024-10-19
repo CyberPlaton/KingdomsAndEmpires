@@ -1,9 +1,10 @@
 #include "ecs_component_manager.hpp"
+#include "ecs_world.hpp"
 
 namespace ecs
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	ccomponent_manager::ccomponent_manager(flecs::world& w) :
+	ccomponent_manager::ccomponent_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
 		//- gather all component types registered to RTTR

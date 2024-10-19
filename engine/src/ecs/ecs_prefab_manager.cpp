@@ -1,5 +1,6 @@
 #include "ecs_prefab_manager.hpp"
 #include "ecs_component.hpp"
+#include "ecs_world.hpp"
 
 namespace ecs
 {
@@ -12,7 +13,7 @@ namespace ecs
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cprefab_manager::cprefab_manager(flecs::world& w) :
+	cprefab_manager::cprefab_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
 	}
@@ -21,12 +22,6 @@ namespace ecs
 	cprefab_manager::~cprefab_manager()
 	{
 
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cprefab_manager::on_shutdown()
-	{
-		m_prefabs.clear();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

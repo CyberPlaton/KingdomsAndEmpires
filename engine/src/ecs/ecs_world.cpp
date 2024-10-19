@@ -1,5 +1,6 @@
 #include "ecs_world.hpp"
-#include "../render/render_scene_system.hpp"
+#include "../animation/animation_module.hpp"
+#include "../render/render_module.hpp"
 
 namespace ecs
 {
@@ -15,19 +16,19 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	cworld::cworld(stringview_t name) :
 		m_name(name),
-		m_entity_manager(world()),
-		m_component_manager(world()),
-		m_prefab_manager(world()),
-		m_query_manager(world()),
-		m_singleton_manager(world()),
-		m_module_manager(world()),
+		m_entity_manager(this),
+		m_component_manager(this),
+		m_prefab_manager(this),
+		m_query_manager(this),
+		m_singleton_manager(this),
+		m_module_manager(this),
 		m_used_threads(1)
 	{
 		use_threads(m_used_threads);
 
 		//- setup observers
 		//- observe transform changes for AABB tree
-		world().observer<stransform, sidentifier>()
+		ecs().observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
 			.each([&](flecs::iter& it, size_t i, stransform& transform, sidentifier& id)
@@ -49,7 +50,7 @@ namespace ecs
 					}
 				});
 
-		world().observer<>()
+		ecs().observer<>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
 			.with(flecs::Wildcard)
@@ -75,24 +76,18 @@ namespace ecs
 					}
 				});
 
-		m_transform_change_tracker = world().query_builder<const stransform>()
+		m_transform_change_tracker = ecs().query_builder<const stransform>()
 			.cached()
 			.build();
 
-		//- Add default systems
-		mm().import_module<render::cscene_render_module>();
+		//- Import default modules
+		mm().import_module<render::srender_module>();
+		mm().import_module<animation::sanimation_module>();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cworld::~cworld()
 	{
-		//-
-		pm().on_shutdown();
-		em().on_shutdown();
-		cm().on_shutdown();
-		sm().on_shutdown();
-		qm().on_shutdown();
-		mm().on_shutdown();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -102,7 +97,7 @@ namespace ecs
 
 		prepare();
 
-		world().progress(dt);
+		ecs().progress(dt);
 
 		//- process any queries, they will be available for systems on next tick,
 		//- also clearup memory for already taken and processed queries.
@@ -386,7 +381,7 @@ namespace ecs
 	void cworld::use_threads(unsigned count)
 	{
 		m_used_threads = count;
-		ecs_set_threads(world(), SCAST(int32_t, m_used_threads));
+		ecs_set_threads(ecs(), SCAST(int32_t, m_used_threads));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -407,7 +402,7 @@ namespace ecs
 		json[C_COMPONENTS_PROP] = nlohmann::json::array();
 
 		auto i = 0;
-		for (const auto& c : em().components(e))
+		for (const auto& c : cm().all(e))
 		{
 			auto type = rttr::type::get_by_name(c);
 

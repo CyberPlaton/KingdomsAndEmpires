@@ -9,7 +9,7 @@ namespace ecs
 	class csingleton_manager : public iworld_context_holder
 	{
 	public:
-		csingleton_manager(flecs::world& w);
+		csingleton_manager(cworld* w);
 
 		template<class TComponent>
 		TComponent* add();

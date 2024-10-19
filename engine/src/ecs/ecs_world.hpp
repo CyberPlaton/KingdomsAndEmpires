@@ -1,5 +1,6 @@
 #pragma once
 #include "../math.hpp"
+#include "ecs_system.hpp"
 #include "ecs_entity_manager.hpp"
 #include "ecs_module_manager.hpp"
 #include "ecs_component_manager.hpp"
@@ -31,8 +32,8 @@ namespace ecs
 		void use_threads(unsigned count);
 		unsigned used_threads() const;
 
-		const flecs::world& world() const { return m_world; }
-		flecs::world& world() { return m_world; }
+		const flecs::world& ecs() const { return m_world; }
+		flecs::world& ecs() { return m_world; }
 
 		const centity_manager& em() const { return m_entity_manager; }
 		centity_manager& em() { return m_entity_manager; }
@@ -54,6 +55,15 @@ namespace ecs
 
 		bool QueryCallback(int proxy_id);
 		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
+
+		template<typename TCallback, typename... TComps>
+		void create_system(const system::sconfig& cfg, TCallback callback);
+
+		template<typename TCallback>
+		void create_task(const system::sconfig& cfg, TCallback callback);
+
+		template<typename TModule>
+		void import_module(const modules::sconfig& cfg);
 
 	private:
 		cquery_manager m_query_manager;
@@ -107,6 +117,159 @@ namespace ecs
 		void process_queries();
 		void process_query(cquery& q);
 		core::srect world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom);
+	};
+
+	//- Instantiates the module object that does the registration along with systems, components and dependency modules.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TModule>
+	void ecs::cworld::import_module(const modules::sconfig& cfg)
+	{
+		//- Import dependencies
+		for (const auto& m : cfg.m_modules)
+		{
+			if (const auto type = rttr::type::get_by_name(m.data()); type.is_valid())
+			{
+				//- Calling module constructor that does the actual importing of the module
+				type.create({ this });
+			}
+		}
+
+		ecs().module<TModule>(cfg.m_name.data());
+
+		//- Register components
+		for (const auto& c : cfg.m_components)
+		{
+			if (const auto type = rttr::type::get_by_name(c.data()); type.is_valid())
+			{
+				//- Calling special component constructor that register the component to provided world
+				type.create({ this });
+			}
+		}
+
+		//- Register systems
+		for (const auto& s : cfg.m_systems)
+		{
+			if (const auto type = rttr::type::get_by_name(s.data()); type.is_valid())
+			{
+				//- Calling system constructor that does the actual registration of the system
+				type.create({ this });
+			}
+		}
+	}
+
+	// -Function responsible for creating a system for a world with given configuration, without matching any components
+	//- and function to execute.
+	//- A task is similar to a normal system, only that it does not match any components and thus no entities.
+	//- If entities are required they can be retrieved through the world or a query.
+	//- The function itself is executed as is, with only delta time provided.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TCallback>
+	void ecs::cworld::create_task(const system::sconfig& cfg, TCallback callback)
+	{
+		CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded) &&
+			algorithm::bit_check(cfg.m_flags, system::system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
+
+		auto builder = ecs().system(cfg.m_name.c_str());
+
+		//- Set options that are required before system entity creation
+		{
+			if (algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded))
+			{
+				builder.multi_threaded();
+			}
+			if (algorithm::bit_check(cfg.m_flags, system::system_flag_immediate))
+			{
+				builder.immediate();
+			}
+		}
+
+		auto task = builder.run([&](flecs::iter& it)
+			{
+				callback(it.delta_time());
+			});
+
+		//- Set options that are required after system entity creation
+		{
+			for (const auto& after : cfg.m_run_after)
+			{
+				if (auto e = ecs().lookup(after.c_str()); e.is_valid())
+				{
+					task.add(flecs::Phase).depends_on(e);
+				}
+				else
+				{
+					log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
+						after, cfg.m_name));
+				}
+			}
+
+			for (const auto& before : cfg.m_run_before)
+			{
+				if (auto e = ecs().lookup(before.c_str()); e.is_valid())
+				{
+					e.add(flecs::Phase).depends_on(systasktem);
+				}
+				else
+				{
+					log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
+						before, cfg.m_name));
+				}
+			}
+		}
+	}
+
+	//- Function responsible for creating a system for a world with given configuration, matching components and function to execute.
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TCallback, typename... TComps>
+	void ecs::cworld::create_system(const system::sconfig& cfg, TCallback callback)
+	{
+		CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded) &&
+			algorithm::bit_check(cfg.m_flags, system::system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
+
+		auto builder = ecs().system<TComps...>(cfg.m_name.c_str());
+
+		//- Set options that are required before system entity creation
+		{
+			if (algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded))
+			{
+				builder.multi_threaded();
+			}
+			if (algorithm::bit_check(cfg.m_flags, system::system_flag_immediate))
+			{
+				builder.immediate();
+			}
+		}
+
+		auto system = builder.each<TComps...>(callback);
+
+		//- Set options that are required after system entity creation
+		{
+			for (const auto& after : cfg.m_run_after)
+			{
+				if (auto e = ecs().lookup(after.c_str()); e.is_valid())
+				{
+					system.add(flecs::Phase).depends_on(e);
+				}
+				else
+				{
+					log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
+						after, cfg.m_name));
+				}
+			}
+
+			for (const auto& before : cfg.m_run_before)
+			{
+				if (auto e = ecs().lookup(before.c_str()); e.is_valid())
+				{
+					e.add(flecs::Phase).depends_on(system);
+				}
+				else
+				{
+					log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
+						before, cfg.m_name));
+				}
+			}
+		}
 	};
 
 } //- ecs
