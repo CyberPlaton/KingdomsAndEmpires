@@ -20,6 +20,8 @@ namespace render_system
 
 			ecs::system::create_system(cfg, scene_render_system);
 		}
+
+		RTTR_ENABLE();
 	};
 
 	//- System responsible for debug rendering on top of rendered sprites in current world
@@ -35,21 +37,25 @@ namespace render_system
 
 			ecs::system::create_system(cfg, scene_debug_render_system);
 		}
+
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class RENDER_API cscene_render_module : public ecs::imodule
+	struct RENDER_API srender_module final
 	{
-	public:
-		cscene_render_module(flecs::world& w) : ecs::imodule(w)
+		srender_module(flecs::world& w)
 		{
-			begin<cscene_render_module>("Scene Render Module")
-				.subsystem<cscene_render_module, srender_system>()
-				.subsystem<cscene_render_module, sdebug_render_system>()
-			.end<cscene_render_module>();
+			ecs::modules::sconfig cfg{ w };
+			cfg.m_name = "Render Module";
+			cfg.m_components = { "stransform", "smaterial", "ssprite_renderer"};
+			cfg.m_systems = { "srender_system", "sdebug_render_system"};
+			cfg.m_modules = {};
+
+			ecs::modules::import_module(cfg);
 		}
 
-		RTTR_ENABLE(ecs::imodule);
+		RTTR_ENABLE();
 	};
 
 } //- render_system

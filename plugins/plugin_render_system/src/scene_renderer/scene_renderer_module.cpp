@@ -51,19 +51,7 @@ namespace render_system
 	//------------------------------------------------------------------------------------------------------------------------
 	void scene_debug_render_system(const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
-
+		CORE_NAMED_ZONE("Scene Debug Render System");
 	}
 
 } //- render_system
-
-RTTR_REGISTRATION
-{
-	using namespace render_system;
-
-	rttr::registration::class_<cscene_render_module>("cscene_render_module")
-	.constructor<flecs::world&>()
-	(
-			rttr::policy::ctor::as_raw_ptr
-	)
-	;
-}

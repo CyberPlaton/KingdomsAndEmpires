@@ -16,6 +16,8 @@ namespace render_system
 
 			ecs::system::create_system(cfg, animation_system);
 		}
+
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -31,20 +33,8 @@ namespace render_system
 
 			ecs::modules::import_module(cfg);
 		}
-	};
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class RENDER_API canimation_module : public ecs::imodule
-	{
-	public:
-		canimation_module(flecs::world& w) : ecs::imodule(w)
-		{
-			begin<canimation_module>("Animation Module")
-				.subsystem<canimation_module, sanimation_system>()
-			.end<canimation_module>();
-		}
-
-		RTTR_ENABLE(ecs::imodule);
+		RTTR_ENABLE();
 	};
 
 } //- render_system

@@ -17,7 +17,7 @@ namespace ecs
 			vector_t<string_t> m_modules;	//- Dependent modules that must be loaded before this one
 		};
 
-		//- Responsible for registering the module along with systems, components and dependency modules.
+		//- Instantiates the module object that does the registration along with systems, components and dependency modules.
 		//-------------------------------------------------------------------------------------------------------------------------
 		void import_module(const sconfig& cfg);
 
