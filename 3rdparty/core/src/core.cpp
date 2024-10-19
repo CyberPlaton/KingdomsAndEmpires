@@ -1263,7 +1263,7 @@ namespace core
 		{
 			auto* p = reinterpret_cast<m128i_t*>(dest);
 #if SSEx64
-			const auto* s = reinterpret_cast<const m128i_t*>(source);
+			auto* s = const_cast<m128i_t*>(reinterpret_cast<const m128i_t*>(source));
 #else
 			const auto* s = reinterpret_cast<const uint64_t*>(source);
 #endif
@@ -1275,7 +1275,7 @@ namespace core
 			while (i--)
 			{
 #if SSEx64
-				p[i] = _mm_stream_load_si128(s + i);
+				p[i] = _mm_load_si128(s + i);
 #else
 				p[i] = vld1q_u64(s + (i * 2));
 #endif

@@ -21,7 +21,6 @@ namespace stl = std;
 #include <../src/tracy.hpp>
 #define ASIO_NO_EXCEPTIONS
 #include <asio.h>
-#include "SIMDString.h" //- For testing only
 namespace miniz
 {
 #include <../src/miniz.hpp>
@@ -1661,12 +1660,12 @@ namespace core
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	template<typename uint64_t SSO>
+	template<uint64_t SSO>
 	class
 #if CORE_PLATFORM_WINDOWS
-		__declspec(align(C_STRING_SSO_ALIGNMENT))
+		__declspec(align(SSO))
 #else
-		__attribute__((aligned(C_STRING_SSO_ALIGNMENT)))
+		__attribute__((aligned(SSO)))
 #endif
 	istring
 	{
