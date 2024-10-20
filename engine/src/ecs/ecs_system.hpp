@@ -1,6 +1,16 @@
 #pragma once
 #include <core.h>
 #include <flecs.h>
+#include "ecs_world_context_holder.hpp"
+
+#define DECLARE_SYSTEM(s) \
+s() = default; \
+~s() = default; \
+s(ecs::cworld* w) : ecs::system::isystem(w) \
+{ \
+	auto cfg = init(); \
+	w->create_system(cfg, callback); \
+}
 
 namespace ecs
 {
@@ -26,6 +36,18 @@ namespace ecs
 			vector_t<string_t> m_run_after;
 			vector_t<string_t> m_run_before;
 			system_flags_t m_flags = 0;
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		struct isystem
+		{
+			isystem(cworld* w);
+			isystem() = default;
+			virtual ~isystem() = default;
+
+			virtual sconfig init() = 0;
+
+			RTTR_ENABLE();
 		};
 
 	} //- system
