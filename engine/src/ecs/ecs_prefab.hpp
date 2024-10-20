@@ -14,8 +14,8 @@ namespace ecs
 		private core::cnon_copyable
 	{
 	public:
-		cprefab(const string_t& name, flecs::world& w);
-		cprefab(flecs::entity e, flecs::world& w);
+		cprefab(const string_t& name, cworld* w);
+		cprefab(flecs::entity e, cworld* w);
 		~cprefab();
 
 		stringview_t name() const;

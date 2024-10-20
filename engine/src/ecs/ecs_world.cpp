@@ -319,6 +319,66 @@ namespace ecs
 		return result;
 	}
 
+	// -Function responsible for creating a system for a world with given configuration, without matching any components
+	//- and function to execute.
+	//- A task is similar to a normal system, only that it does not match any components and thus no entities.
+	//- If entities are required they can be retrieved through the world or a query.
+	//- The function itself is executed as is, with only delta time provided.
+	//------------------------------------------------------------------------------------------------------------------------
+	void cworld::create_task(const system::sconfig& cfg, system::task_callback_t* callback)
+	{
+		CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded) &&
+			algorithm::bit_check(cfg.m_flags, system::system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
+
+		auto builder = ecs().system(cfg.m_name.c_str());
+
+		//- Set options that are required before system entity creation
+		{
+			if (algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded))
+			{
+				builder.multi_threaded();
+			}
+			if (algorithm::bit_check(cfg.m_flags, system::system_flag_immediate))
+			{
+				builder.immediate();
+			}
+		}
+
+		auto task = builder.run([&](flecs::iter& it)
+			{
+				(*callback)(it.delta_time());
+			});
+
+		//- Set options that are required after system entity creation
+		{
+			for (const auto& after : cfg.m_run_after)
+			{
+				if (auto e = ecs().lookup(after.c_str()); e.is_valid())
+				{
+					task.add(flecs::Phase).depends_on(e);
+				}
+				else
+				{
+					log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
+						after, cfg.m_name));
+				}
+			}
+
+			for (const auto& before : cfg.m_run_before)
+			{
+				if (auto e = ecs().lookup(before.c_str()); e.is_valid())
+				{
+					e.add(flecs::Phase).depends_on(task);
+				}
+				else
+				{
+					log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
+						before, cfg.m_name));
+				}
+			}
+		}
+	}
+
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cworld::load(const core::cpath& path)
 	{

@@ -31,7 +31,7 @@ namespace animation
 		ecs::system::sconfig cfg;
 		cfg.m_name = "Animation System";
 
-		w->create_system(cfg, animation_system);
+		w->create_system(cfg, &animation_system);
 	}
 
 } //- animation

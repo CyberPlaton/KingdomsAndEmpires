@@ -63,7 +63,7 @@ namespace render
 		cfg.m_name = "Debug Render System";
 		cfg.m_run_after = { "Render System" };
 
-		w->create_system(cfg, scene_debug_render_system);
+		w->create_system(cfg, &scene_debug_render_system);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ namespace render
 		cfg.m_name = "Render System";
 		cfg.m_run_after = { "Frame Begin System" };
 
-		w->create_system(cfg, scene_render_system);
+		w->create_system(cfg, &scene_render_system);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

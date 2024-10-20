@@ -14,9 +14,9 @@ namespace module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API stargeting_system final
 	{
-		stargeting_system(flecs::world& w)
+		stargeting_system(ecs::cworld* w)
 		{
-			ecs::system::sconfig cfg{ w };
+			ecs::system::sconfig cfg;
 
 			cfg.m_flags |= ecs::system::system_flag_multithreaded;
 			cfg.m_name = "Targeting System";

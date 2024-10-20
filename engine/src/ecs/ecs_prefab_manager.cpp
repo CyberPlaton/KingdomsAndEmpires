@@ -44,7 +44,7 @@ namespace ecs
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
-			m_prefabs.try_emplace(h, string_t(uuid), world());
+			m_prefabs.try_emplace(h, string_t(uuid), &world());
 		}
 		else
 		{
@@ -64,7 +64,7 @@ namespace ecs
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
-			m_prefabs.try_emplace(h, e, world());
+			m_prefabs.try_emplace(h, e, &world());
 		}
 		else
 		{
@@ -82,7 +82,7 @@ namespace ecs
 
 		if (m_prefabs.find(h) == m_prefabs.end())
 		{
-			m_prefabs.try_emplace(h, string_t(name), world());
+			m_prefabs.try_emplace(h, string_t(name), &world());
 		}
 		else
 		{
@@ -183,7 +183,7 @@ namespace ecs
 		json[C_COMPONENTS_PROP] = nlohmann::json::array();
 
 		auto i = 0;
-		for (const auto& c : components(prefab.self()))
+		for (const auto& c : world().cm().all(prefab.self()))
 		{
 			auto type = rttr::type::get_by_name(c);
 

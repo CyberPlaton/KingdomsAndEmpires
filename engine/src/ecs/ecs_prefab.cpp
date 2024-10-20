@@ -1,17 +1,18 @@
 #include "ecs_prefab.hpp"
+#include "ecs_world.hpp"
 
 namespace ecs
 {
 	//- create a prefab entity to be ready for definition
 	//------------------------------------------------------------------------------------------------------------------------
-	cprefab::cprefab(const string_t& name, flecs::world& w) :
+	cprefab::cprefab(const string_t& name, cworld* w) :
 		iworld_context_holder(w)
 	{
-		m_entity = world().prefab(name.data());
+		m_entity = world().ecs().prefab(name.data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cprefab::cprefab(flecs::entity e, flecs::world& w) :
+	cprefab::cprefab(flecs::entity e, cworld* w) :
 		iworld_context_holder(w), m_entity(e)
 	{
 	}

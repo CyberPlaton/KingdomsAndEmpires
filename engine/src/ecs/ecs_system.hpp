@@ -1,10 +1,14 @@
 #pragma once
 #include <core.h>
+#include <flecs.h>
 
 namespace ecs
 {
 	namespace system
 	{
+		template<typename... TComps>
+		using system_callback_t = void(flecs::entity, TComps...);
+		using task_callback_t = void(float);
 		using system_flags_t = int;
 
 		//------------------------------------------------------------------------------------------------------------------------
