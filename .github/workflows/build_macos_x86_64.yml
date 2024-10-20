@@ -17,5 +17,6 @@ jobs:
       - name: Build on macOS
         run: |
           premake5 gmake
+          make clean
           make
         working-directory: .

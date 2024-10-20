@@ -22,5 +22,6 @@ jobs:
       - name: Build on Linux
         run: |
           premake5 gmake2
+          make clean
           make
         working-directory: .
