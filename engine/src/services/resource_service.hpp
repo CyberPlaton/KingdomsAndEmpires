@@ -57,14 +57,14 @@ namespace engine
 		const auto& manager_type = rttr::type::get<TResourceManager>();
 
 		//- Check that they are derived from required classes
-		if (!resource_type.is_derived_from<core::cresource>())
+		if (!resource_type.template is_derived_from<core::cresource>())
 		{
 			log_warn(fmt::format("Resource '{}' was not derived from 'core::cresource'",
 				resource_type.get_name().data()));
 
 			return false;
 		}
-		if (!manager_type.is_derived_from<core::cresource_manager<TResource>>())
+		if (!manager_type.template is_derived_from<core::cresource_manager<TResource>>())
 		{
 			log_warn(fmt::format("Resource Manager '{}' was not derived from 'core::cresource_manager'",
 				manager_type.get_name().data()));

@@ -111,8 +111,8 @@ namespace ecs
 		{
 			const auto& tm = *core::cservice_manager::find<sm::ctexture_manager>();
 			const auto& _texture = tm.at(material->m_texture == sm::C_INVALID_HANDLE ? S_PLACEHOLDER_TEXTURE : material->m_texture);
-
-			imgui::cui::image(&_texture.texture(), { 64, 64 });
+			const auto tex = _texture.texture();
+			imgui::cui::image(&tex, { 64, 64 });
 
 			ImGui::TreePop();
 		}

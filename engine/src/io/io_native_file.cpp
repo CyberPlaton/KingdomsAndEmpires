@@ -123,23 +123,23 @@ namespace io
 			return 0;
 		}
 
-		asio::file_base::seek_basis way;
+		int way = 0;
 
 		switch (origin)
 		{
 		case core::file_seek_origin_begin:
 		{
-			way = asio::file_base::seek_basis::seek_cur;
+			way = SEEK_CUR;
 			break;
 		}
 		case core::file_seek_origin_end:
 		{
-			way = asio::file_base::seek_basis::seek_end;
+			way = SEEK_END;
 			break;
 		}
 		case core::file_seek_origin_set:
 		{
-			way = asio::file_base::seek_basis::seek_set;
+			way = SEEK_SET;
 			break;
 		}
 		default:
