@@ -11,27 +11,27 @@ namespace imnodes
 		enum pin_type : uint8_t
 		{
 			pin_type_none	= 0,
-			pin_type_input	= ImNodes::PinKind::Input,
-			pin_type_output = ImNodes::PinKind::Output,
+			pin_type_input	= (uint8_t)ImNodes::PinKind::Input,
+			pin_type_output = (uint8_t)ImNodes::PinKind::Output,
 		};
 
 		enum pin_color : uint8_t
 		{
 			pin_color_none			= 0,
-			pin_color_background	= ImNodes::StyleColor_PinRect,
-			pin_color_border		= ImNodes::StyleColor_PinRectBorder,
+			pin_color_background	= (uint8_t)ImNodes::StyleColor_PinRect,
+			pin_color_border		= (uint8_t)ImNodes::StyleColor_PinRectBorder,
 		};
 
 		enum pin_style : uint8_t
 		{
 			pin_style_none			= 0,
-			pin_style_alignment		= ImNodes::StyleVar_PivotAlignment,
-			pin_style_size			= ImNodes::StyleVar_PivotSize,
-			pin_style_scale			= ImNodes::StyleVar_PivotScale,
-			pin_style_corners		= ImNodes::StyleVar_PinCorners,
-			pin_style_radius		= ImNodes::StyleVar_PinRadius,
-			pin_style_arrow_size	= ImNodes::StyleVar_PinArrowSize,
-			pin_style_arrow_width	= ImNodes::StyleVar_PinArrowWidth,
+			pin_style_alignment		= (uint8_t)ImNodes::StyleVar_PivotAlignment,
+			pin_style_size			= (uint8_t)ImNodes::StyleVar_PivotSize,
+			pin_style_scale			= (uint8_t)ImNodes::StyleVar_PivotScale,
+			pin_style_corners		= (uint8_t)ImNodes::StyleVar_PinCorners,
+			pin_style_radius		= (uint8_t)ImNodes::StyleVar_PinRadius,
+			pin_style_arrow_size	= (uint8_t)ImNodes::StyleVar_PinArrowSize,
+			pin_style_arrow_width	= (uint8_t)ImNodes::StyleVar_PinArrowWidth,
 		};
 
 		cpin(const ImNodes::PinId& id);

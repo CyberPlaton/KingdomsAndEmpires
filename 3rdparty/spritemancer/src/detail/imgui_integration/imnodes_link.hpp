@@ -12,25 +12,25 @@ namespace imnodes
 		enum link_flow : uint8_t
 		{
 			link_flow_none					= 0,
-			link_flow_direction_forward		= ImNodes::FlowDirection::Forward,
-			link_flow_direction_backward	= ImNodes::FlowDirection::Backward,
-			link_flow_speed					= ImNodes::StyleVar_FlowSpeed,
-			link_flow_duration				= ImNodes::StyleVar_FlowDuration,
-			link_flow_marker_distance		= ImNodes::StyleVar_FlowMarkerDistance,
+			link_flow_direction_forward		= (uint8_t)ImNodes::FlowDirection::Forward,
+			link_flow_direction_backward	= (uint8_t)ImNodes::FlowDirection::Backward,
+			link_flow_speed					= (uint8_t)ImNodes::StyleVar_FlowSpeed,
+			link_flow_duration				= (uint8_t)ImNodes::StyleVar_FlowDuration,
+			link_flow_marker_distance		= (uint8_t)ImNodes::StyleVar_FlowMarkerDistance,
 		};
 
 		enum link_style : uint8_t
 		{
 			link_style_none = 0,
-			link_style_strength = ImNodes::StyleVar_LinkStrength,
+			link_style_strength = (uint8_t)ImNodes::StyleVar_LinkStrength,
 		};
 
 		enum link_color : uint8_t
 		{
 			link_color_none = 0,
 			link_color_line,
-			link_color_hovered = ImNodes::StyleColor_HovLinkBorder,
-			link_color_selected = ImNodes::StyleColor_SelLinkBorder,
+			link_color_hovered 	= (uint8_t)ImNodes::StyleColor_HovLinkBorder,
+			link_color_selected = (uint8_t)ImNodes::StyleColor_SelLinkBorder,
 		};
 
 		clink(const ImNodes::LinkId& id, const ImNodes::PinId& from, const ImNodes::PinId& to);
