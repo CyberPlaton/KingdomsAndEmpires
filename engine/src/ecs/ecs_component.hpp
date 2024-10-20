@@ -196,7 +196,10 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		mat4_t m_matrix = mat4_t(1.0f);
+		vec2_t m_position	= { 0.0f, 0.0f };
+		vec2_t m_scale		= { 0.0f, 0.0f };
+		vec2_t m_shear		= { 0.0f, 0.0f };
+		float m_rotation	= 0.0f;
 
 		RTTR_ENABLE(icomponent);
 	};

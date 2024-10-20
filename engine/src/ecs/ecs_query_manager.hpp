@@ -10,9 +10,6 @@ namespace ecs
 
 	class cworld;
 
-	template<typename... TComps>
-	using query_callback_t = core::cfunction<void(flecs::entity, TComps...)>;
-
 	//------------------------------------------------------------------------------------------------------------------------
 	enum query_type : uint8_t
 	{

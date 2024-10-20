@@ -125,10 +125,10 @@ namespace ecs
 		}
 
 		//- get current viewing rect for active camera
-		if (auto e = qm().query_one<const scamera>(
-			[](const scamera& c)
+		if (auto e = query_one<const scamera>([](const scamera& c)
 			{
 				return c.m_active == true;
+
 			}); e.is_valid())
 		{
 			const auto& c = *e.get<scamera>();
@@ -488,10 +488,8 @@ namespace ecs
 		const auto& proxy = m_proxies.at(e.id());
 		const auto& transform = *e.get<stransform>();
 
-		const auto p = math::extract_translation(transform.m_matrix);
-		const auto s = math::extract_scale(transform.m_matrix);
-
-		MoveProxy(proxy.m_proxy_id, math::caabb(p.x, p.y, s.x * 0.5f, s.y * 0.5f), { 0.0f, 0.0f });
+		MoveProxy(proxy.m_proxy_id, math::caabb(transform.m_position.x, transform.m_position.y,
+			transform.m_scale.x * 0.5f, transform.m_scale.y * 0.5f), { 0.0f, 0.0f });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

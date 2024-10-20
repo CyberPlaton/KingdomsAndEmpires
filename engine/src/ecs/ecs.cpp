@@ -78,7 +78,10 @@ RTTR_REGISTRATION
 		;
 
 	rttr::ccomponent<stransform>("stransform")
-		.prop("m_matrix", &stransform::m_matrix)
+		.prop("m_position", &stransform::m_position)
+		.prop("m_scale", &stransform::m_scale)
+		.prop("m_shear", &stransform::m_shear)
+		.prop("m_rotation", &stransform::m_rotation)
 		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &stransform::show_ui)
 		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME, &stransform::add)
 		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME, &stransform::remove)

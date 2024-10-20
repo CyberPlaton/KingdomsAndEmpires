@@ -12,7 +12,7 @@ RTTR_REGISTRATION
 	rttr::registration::class_<sexample_singleton>("sexample_singleton")
 		.property("m_data", &sexample_singleton::m_data)
 		.method("serialize", &sexample_singleton::serialize)
-		.method("set", &sexample_singleton::set)
+		.method("add", &sexample_singleton::add)
 		;
 	
 	rttr::default_constructor<sexample_singleton>();

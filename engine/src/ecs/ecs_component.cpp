@@ -40,41 +40,34 @@ namespace ecs
 		//- copy construct component for editing
 		auto* transform = e.get_mut<stransform>();
 
-		auto position = math::extract_translation(transform->m_matrix);
-		auto scale = math::extract_scale(transform->m_matrix);
-		auto shear = math::extract_shear(transform->m_matrix);
-		auto rotation = math::extract_rotation(transform->m_matrix);
-
 		ImGuiID sid = 10000, scid = 50000;
 
 		if (ImGui::TreeNode("Translation"))
 		{
-			ImGui::DragFloat("##translation_x", &position.x, 1.0f);
+			ImGui::DragFloat("##translation_x", &transform->m_position.x, 1.0f);
 			ImGui::SameLine();
-			ImGui::DragFloat("##translation_y", &position.y, 1.0f);
+			ImGui::DragFloat("##translation_y", &transform->m_position.y, 1.0f);
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Scale"))
 		{
-			ImGui::DragFloat("##scale_x", &scale.x, 0.5f, 0.001f);
+			ImGui::DragFloat("##scale_x", &transform->m_scale.x, 0.5f, 0.001f);
 			ImGui::SameLine();
-			ImGui::DragFloat("##scale_y", &scale.y, 0.5f, 0.001f);
+			ImGui::DragFloat("##scale_y", &transform->m_scale.y, 0.5f, 0.001f);
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Shear"))
 		{
-			ImGui::DragFloat("##shear_x", &shear.x, 0.1f);
+			ImGui::DragFloat("##shear_x", &transform->m_shear.x, 0.1f);
 			ImGui::SameLine();
-			ImGui::DragFloat("##shear_y", &shear.y, 0.1f);
+			ImGui::DragFloat("##shear_y", &transform->m_shear.y, 0.1f);
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Rotation"))
 		{
-			ImGui::DragFloat("##rotation", &rotation, 0.01f, 0.0f, math::C_PI2);
+			ImGui::DragFloat("##rotation", &transform->m_rotation, 0.01f, 0.0f, math::C_PI2);
 			ImGui::TreePop();
 		}
-
-		transform->m_matrix = math::transform(position, scale, shear, rotation);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -4134,9 +4134,6 @@ RTTR_REGISTRATION
 		.property("m_h", &srect::m_h)
 		;
 
-	rttr::registrattion::class_<mat4_t>("mat4_t")
-		;
-
 	rttr::registration::class_<vec2_t>("vec2_t")
 		.constructor<>()
 		(

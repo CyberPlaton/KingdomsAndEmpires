@@ -15,12 +15,6 @@ namespace render
 			const auto& tm = *core::cservice_manager::find<ctexture_manager>();
 			const auto& sm = *core::cservice_manager::find<cshader_manager>();
 
-			//- extract transform data
-			auto position = math::extract_translation(transform.m_matrix);
-			auto scale = math::extract_scale(transform.m_matrix);
-			auto shear = math::extract_shear(transform.m_matrix);
-			auto rotation = math::extract_rotation(transform.m_matrix);
-
 			//- texture and dimension
 			const auto& _texture = tm.at(material.m_texture == C_INVALID_HANDLE ? S_PLACEHOLDER_TEXTURE : material.m_texture);
 			const auto w = _texture.w();
@@ -29,10 +23,10 @@ namespace render
 			//- construct rectangles for where to sample from and where to draw
 			raylib::Rectangle src = { renderer.m_source_rect.x(), renderer.m_source_rect.y(),
 				renderer.m_source_rect.w() * w, renderer.m_source_rect.h() * h };
-			raylib::Rectangle dst = { position.x, position.y, scale.x * w, scale.y * h };
+			raylib::Rectangle dst = { transform.m_position.x, transform.m_position.y, transform.m_scale.x * w, transform.m_scale.y * h };
 			raylib::Vector2 orig = { 0.0f, 0.0f };
 
-			raylib::DrawTexturePro(_texture.texture(), src, dst, orig, rotation, renderer.m_tint.cliteral<raylib::Color>());
+			raylib::DrawTexturePro(_texture.texture(), src, dst, orig, transform.m_rotation, renderer.m_tint.cliteral<raylib::Color>());
 		}
 
 	} //- unnamed
@@ -42,9 +36,7 @@ namespace render
 	{
 		CORE_NAMED_ZONE("Scene Render System");
 
-		auto position = math::extract_translation(transform.m_matrix);
-
-		sm::draw_texture(renderer.m_layer, position, material.m_texture);
+		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture);
 
 		//draw_texture(transform, material, renderer);
 	}
