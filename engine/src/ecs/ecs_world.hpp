@@ -49,6 +49,13 @@ namespace ecs
 		const csingleton_manager& sm() const { return m_singleton_manager; }
 		csingleton_manager& sm() { return m_singleton_manager; }
 
+		template<typename TSingleton>
+		TSingleton& singleton();
+
+		template<typename TSingleton>
+		const TSingleton& singleton() const;
+
+
 		const cprefab_manager& pm() const { return m_prefab_manager; }
 		cprefab_manager& pm() { return m_prefab_manager; }
 
@@ -115,6 +122,20 @@ namespace ecs
 		void process_queries();
 		void process_query(cquery& q);
 		core::srect world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TSingleton>
+	TSingleton& ecs::cworld::singleton()
+	{
+		return *ecs().get_mut<TSingleton>();
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TSingleton>
+	const TSingleton& ecs::cworld::singleton() const
+	{
+		return *ecs().get<TSingleton>();
 	};
 
 	//- Instantiates the module object that does the registration along with systems, components and dependency modules.

@@ -26,7 +26,7 @@ namespace ecs
 		//- utility function to add a singleton component from a variant to a world
 		//------------------------------------------------------------------------------------------------------------------------
 		template<class TComponent>
-		inline static void set_singleton(flecs::world& w, const rttr::variant& var)
+		inline static void add_singleton(flecs::world& w, const rttr::variant& var)
 		{
 			w.set<TComponent>(std::move(var.get_value<TComponent>()));
 		}
@@ -42,9 +42,9 @@ static void serialize(const flecs::world& w, nlohmann::json& json) \
 { \
 	ecs::detail::serialize_singleton<c>(w, json); \
 } \
-static void set(flecs::world& w, const rttr::variant& var) \
+static void add(flecs::world& w, const rttr::variant& var) \
 {\
-	ecs::detail::set_singleton<c>(w, var); \
+	ecs::detail::add_singleton<c>(w, var); \
 }
 
 namespace ecs
