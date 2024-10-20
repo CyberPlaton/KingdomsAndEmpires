@@ -10,6 +10,9 @@ namespace ecs
 
 	class cworld;
 
+	template<typename... TComps>
+	using query_callback_t = core::cfunction<void(flecs::entity, TComps...)>;
+
 	//------------------------------------------------------------------------------------------------------------------------
 	enum query_type : uint8_t
 	{
@@ -86,10 +89,6 @@ namespace ecs
 		cquery_manager(cworld* w);
 		~cquery_manager();
 
-		//- immediate mode query for an entity matching some value in component.
-		template<typename... TComps, typename TCallable>
-		flecs::entity query_one(TCallable callback) const;
-
 		template<typename... ARGS>
 		query_t query(ARGS&&... args);
 
@@ -119,23 +118,6 @@ namespace ecs
 		//- Note: for now we do not limit time of processing, but it might become relevant later.
 		void tick();
 	};
-
-	//- example usage:
-	//-
-	//- auto e = w.qm().query_one<ecs::stransform>([](const ecs::stransform& transform)
-	//- {
-	//-		return transform.m_rotation > 45;
-	//- });
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename... TComps, typename TCallable>
-	flecs::entity cquery_manager::query_one(TCallable callback) const
-	{
-		//- use ad-hoc filter, as this does not require building tables
-		//- and thus can be used inside a progress tick
-		return world().ecs().query_builder<TComps...>()
-			.build()
-			.find(callback);
-	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... ARGS>

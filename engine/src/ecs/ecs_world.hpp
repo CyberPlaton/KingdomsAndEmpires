@@ -46,6 +46,9 @@ namespace ecs
 		const cquery_manager& qm() const { return m_query_manager; }
 		cquery_manager& qm() { return m_query_manager; }
 
+		template<typename... TComps>
+		flecs::entity query_one(query_callback_t<TComps...> callback) const;
+
 		const csingleton_manager& sm() const { return m_singleton_manager; }
 		csingleton_manager& sm() { return m_singleton_manager; }
 
@@ -54,7 +57,6 @@ namespace ecs
 
 		template<typename TSingleton>
 		const TSingleton& singleton() const;
-
 
 		const cprefab_manager& pm() const { return m_prefab_manager; }
 		cprefab_manager& pm() { return m_prefab_manager; }
@@ -122,6 +124,23 @@ namespace ecs
 		void process_queries();
 		void process_query(cquery& q);
 		core::srect world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom);
+	};
+
+	//- example usage:
+	//-
+	//- auto e = w.qm().query_one<ecs::stransform>([](const ecs::stransform& transform)
+	//- {
+	//-		return transform.m_rotation > 45;
+	//- });
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename... TComps>
+	flecs::entity ecs::cworld::query_one(query_callback_t<TComps...> callback) const
+	{
+		//- use ad-hoc filter, as this does not require building tables
+		//- and thus can be used inside a progress tick
+		return ecs().query_builder<TComps...>()
+          .build()
+          .find(callback);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

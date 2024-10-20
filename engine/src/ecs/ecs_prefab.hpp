@@ -69,7 +69,7 @@ namespace ecs
 	template<typename TComponent>
 	cprefab & cprefab::override()
 	{
-		m_entity.set_override<TComponent>();
+		m_entity.emplace_auto_override<TComponent>();
 		return *this;
 	}
 
@@ -77,7 +77,7 @@ namespace ecs
 	template<typename TComponent>
 	cprefab & cprefab::override(TComponent c)
 	{
-		m_entity.set_override<TComponent>({ c });
+		m_entity.emplace_auto_override<TComponent>({ c });
 		return *this;
 	}
 
