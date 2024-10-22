@@ -1,5 +1,5 @@
 #pragma once
-#include <core/platform.hpp>
+#include "core_platform.hpp"
 #include <vector>
 #include <array>
 #include <map>

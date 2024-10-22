@@ -19,6 +19,7 @@
 #include "detail/core_memory.hpp"
 #include "detail/core_mutex.hpp"
 #include "detail/core_pool_allocator.hpp"
+#include "detail/core_platform.hpp"
 #include "detail/core_profiler.hpp"
 #include "detail/core_random.hpp"
 #include "detail/core_rect.hpp"
