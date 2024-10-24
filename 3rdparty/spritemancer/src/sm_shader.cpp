@@ -48,12 +48,12 @@ namespace sm
 
 		if (!vertex_filepath.empty())
 		{
-			vs = core::fs::load_text_from_file(vertex_filepath);
+			vs = fs::load_text_from_file(vertex_filepath);
 		}
 
 		if (!fragment_filepath.empty())
 		{
-			fs = core::fs::load_text_from_file(fragment_filepath);
+			fs = fs::load_text_from_file(fragment_filepath);
 		}
 
 		return load_from_memory(type, (uint8_t*)vs->data(), (unsigned)vs->size(), (uint8_t*)fs->data(), (unsigned)fs->size());

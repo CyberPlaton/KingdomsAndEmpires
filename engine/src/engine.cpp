@@ -53,7 +53,7 @@ namespace engine
 
 			if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(path, "/"))
 			{
-				service<core::fs::cvirtual_filesystem>()->add_filesystem("/", filesystem);
+				service<fs::cvirtual_filesystem>()->add_filesystem("/", filesystem);
 			}
 			else
 			{
@@ -185,7 +185,7 @@ namespace engine
 		log_info("Initializing plugins...");
 
 		//- But first, we have to create the plugin service and all it depends on
-		core::cservice_manager::emplace<core::fs::cvirtual_filesystem>()->on_start();
+		core::cservice_manager::emplace<fs::cvirtual_filesystem>()->on_start();
 
 		auto* plugin_service =  core::cservice_manager::emplace<cplugin_service>();
 
@@ -295,8 +295,8 @@ RTTR_REGISTRATION
 		.property("m_plugins_cfg",		&cengine::sconfig::m_plugins_cfg)
 		;
 	
-	rttr::default_constructor<cengine::sconfig>();
-	rttr::default_constructor<vector_t<string_t>>();
+	rttr::detail::default_constructor<cengine::sconfig>();
+	rttr::detail::default_constructor<vector_t<string_t>>();
 
 	//- Section: editor
 	//------------------------------------------------------------------------------------------------------------------------

@@ -109,7 +109,7 @@ namespace ecs
 		simdjson::dom::element component_element;
 		stringview_t type_name;
 
-		auto memory = core::fs::load_text_from_file(path.view());
+		auto memory = fs::load_text_from_file(path.view());
 
 		//- loading component overrides
 		if (parser.parse((const char*)memory->data(), (unsigned)memory->size()).get(element) == simdjson::SUCCESS)

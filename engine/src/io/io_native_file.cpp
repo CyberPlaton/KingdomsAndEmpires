@@ -29,7 +29,7 @@ namespace io
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cnative_file::cnative_file(const core::fs::cfileinfo& filepath) :
+	cnative_file::cnative_file(const fs::cfileinfo& filepath) :
 		m_info(filepath), m_file(nullptr), m_state(core::file_state_read_only)
 	{
 	}
@@ -41,7 +41,7 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	const core::fs::cfileinfo& cnative_file::info() const
+	const fs::cfileinfo& cnative_file::info() const
 	{
 		return m_info;
 	}
@@ -202,7 +202,7 @@ namespace io
 			return nullptr;
 		}
 
-		auto memory = core::fs::load_text_from_file(info().path());
+		auto memory = fs::load_text_from_file(info().path());
 
 		return memory;
 	}

@@ -20,17 +20,17 @@ namespace engine
 		project_ref_t create_project(stringview_t basepath, stringview_t name);
 
 		//- Load project from file to project service
-		bool open_project(const core::fs::cfileinfo& filepath);
+		bool open_project(const fs::cfileinfo& filepath);
 
 		//- Unload project from project service
 		void remove_project(stringview_t name);
 
 		//- Delete project file and associated directory
-		void delete_project(const core::fs::cfileinfo& filepath);
+		void delete_project(const fs::cfileinfo& filepath);
 
 		//- Currently, we basically set ref to new project without any loading of
 		//- resources or plugins etc.
-		bool set_current(const core::fs::cfileinfo& filepath);
+		bool set_current(const fs::cfileinfo& filepath);
 		bool set_current(const project_ref_t& project);
 		bool set_current(stringview_t name);
 

@@ -14,7 +14,7 @@ namespace engine
 	public:
 		struct sconfig
 		{
-			core::fs::cfileinfo m_compiled_output_path;
+			fs::cfileinfo m_compiled_output_path;
 		};
 
 		casset_service() = default;
@@ -24,10 +24,10 @@ namespace engine
 		void on_shutdown() override final;
 		void on_update(float) override final;
 
-		asset_ref_t open_asset(const core::fs::cfileinfo& source_filepath);
+		asset_ref_t open_asset(const fs::cfileinfo& source_filepath);
 
-		asset_ref_t create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type);
-		asset_ref_t create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type, casset::asset_meta_t meta, rttr::variant options);
+		asset_ref_t create_asset(const fs::cfileinfo& filepath, rttr::type resource_type);
+		asset_ref_t create_asset(const fs::cfileinfo& filepath, rttr::type resource_type, casset::asset_meta_t meta, rttr::variant options);
 
 	private:
 		//- mapping source resource paths to asset files

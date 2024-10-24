@@ -6,14 +6,14 @@ namespace io
 	class cmemory_filesystem;
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cmemory_file final : public core::fs::ifile
+	class cmemory_file final : public fs::ifile
 	{
 		friend class cmemory_filesystem;
 	public:
-		cmemory_file(const core::fs::cfileinfo& filepath);
+		cmemory_file(const fs::cfileinfo& filepath);
 		~cmemory_file();
 
-		const core::fs::cfileinfo& info() const override final;
+		const fs::cfileinfo& info() const override final;
 		unsigned size() override final;
 		bool read_only() override final;
 		bool opened() override final;
@@ -30,7 +30,7 @@ namespace io
 		bool seek_to(unsigned offset) override final;
 
 	private:
-		core::fs::cfileinfo m_info;
+		fs::cfileinfo m_info;
 		vector_t<uint8_t> m_memory;
 		int m_state;	//- bitwise concated core::file_state
 		unsigned m_seek_position;

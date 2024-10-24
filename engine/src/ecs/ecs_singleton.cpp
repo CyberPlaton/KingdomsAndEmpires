@@ -15,6 +15,6 @@ RTTR_REGISTRATION
 		.method("add", &sexample_singleton::add)
 		;
 	
-	rttr::default_constructor<sexample_singleton>();
-	rttr::default_constructor<umap_t<std::string, bool>>();
+	rttr::detail::default_constructor<sexample_singleton>();
+	rttr::detail::default_constructor<umap_t<std::string, bool>>();
 }

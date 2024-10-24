@@ -27,63 +27,63 @@ namespace sm
 
 			const auto ext = path.extension();
 
-			if (core::string_utils::compare(ext, C_PNG.data()))
+			if (string_utils::compare(ext, C_PNG.data()))
 			{
 				return image_type_png;
 			}
-			else if (core::string_utils::compare(ext, C_BMP.data()))
+			else if (string_utils::compare(ext, C_BMP.data()))
 			{
 				return image_type_bmp;
 			}
-			else if (core::string_utils::compare(ext, C_TGA.data()))
+			else if (string_utils::compare(ext, C_TGA.data()))
 			{
 				return image_type_tga;
 			}
-			else if (core::string_utils::compare(ext, C_JPG.data()))
+			else if (string_utils::compare(ext, C_JPG.data()))
 			{
 				return image_type_jpg;
 			}
-			else if (core::string_utils::compare(ext, C_GIF.data()))
+			else if (string_utils::compare(ext, C_GIF.data()))
 			{
 				return image_type_gif;
 			}
-			else if (core::string_utils::compare(ext, C_PIC.data()))
+			else if (string_utils::compare(ext, C_PIC.data()))
 			{
 				return image_type_pic;
 			}
-			else if (core::string_utils::compare(ext, C_PSD.data()))
+			else if (string_utils::compare(ext, C_PSD.data()))
 			{
 				return image_type_psd;
 			}
-			else if (core::string_utils::compare(ext, C_HDR.data()))
+			else if (string_utils::compare(ext, C_HDR.data()))
 			{
 				return image_type_hdr;
 			}
-			else if (core::string_utils::compare(ext, C_QOI.data()))
+			else if (string_utils::compare(ext, C_QOI.data()))
 			{
 				return image_type_qoi;
 			}
-			else if (core::string_utils::compare(ext, C_SVG.data()))
+			else if (string_utils::compare(ext, C_SVG.data()))
 			{
 				return image_type_svg;
 			}
-			else if (core::string_utils::compare(ext, C_DDS.data()))
+			else if (string_utils::compare(ext, C_DDS.data()))
 			{
 				return image_type_dds;
 			}
-			else if (core::string_utils::compare(ext, C_PKM.data()))
+			else if (string_utils::compare(ext, C_PKM.data()))
 			{
 				return image_type_pkm;
 			}
-			else if (core::string_utils::compare(ext, C_KTX.data()))
+			else if (string_utils::compare(ext, C_KTX.data()))
 			{
 				return image_type_ktx;
 			}
-			else if (core::string_utils::compare(ext, C_PVR.data()))
+			else if (string_utils::compare(ext, C_PVR.data()))
 			{
 				return image_type_pvr;
 			}
-			else if (core::string_utils::compare(ext, C_ASTC.data()))
+			else if (string_utils::compare(ext, C_ASTC.data()))
 			{
 				return image_type_astc;
 			}
@@ -261,7 +261,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cimage::load_from_file(stringview_t filepath)
 	{
-		const auto memory = core::fs::load_binary_from_file(filepath.data());
+		const auto memory = fs::load_binary_from_file(filepath.data());
 
 		return load_from_memory(image_type_from_filepath(filepath), (void*)memory->data(), (unsigned)memory->size());
 	}

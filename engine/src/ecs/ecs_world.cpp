@@ -60,9 +60,9 @@ namespace ecs
 					auto string = it.event_id().str();
 
 					//- Filter for actual ecs components
-					if (const auto offset = core::string_utils::find_substr(string.c_str(), "ecs."); offset != std::string::npos)
+					if (const auto offset = string_utils::find_substr(string.c_str(), "ecs."); offset != std::string::npos)
 					{
-						auto c = core::string_utils::substr(string.c_str(), offset + strlen("ecs."));
+						auto c = string_utils::substr(string.c_str(), offset + strlen("ecs."));
 
 						if (it.event() == flecs::OnAdd)
 						{
@@ -385,7 +385,7 @@ namespace ecs
 		simdjson::dom::parser parser;
 		simdjson::dom::element element;
 
-		auto memory = core::fs::load_text_from_file(path.view());
+		auto memory = fs::load_text_from_file(path.view());
 
 		if(parser.parse((const char*)memory->data(), (size_t)memory->size()).get(element) == simdjson::SUCCESS)
 		{
@@ -434,7 +434,7 @@ namespace ecs
 			serialize_entity(e, json[C_ENTITIES_PROP][i++]);
 		}
 
-		core::fs::save_text_to_file(path.view(), json.dump(4).data());
+		fs::save_text_to_file(path.view(), json.dump(4).data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

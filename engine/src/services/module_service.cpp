@@ -50,7 +50,7 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmodule_service::load(const core::fs::cfileinfo& filepath)
+	void cmodule_service::load(const fs::cfileinfo& filepath)
 	{
 		core::cscope_mutex m(m_mutex);
 
@@ -58,7 +58,7 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmodule_service::unload(const core::fs::cfileinfo& filepath)
+	void cmodule_service::unload(const fs::cfileinfo& filepath)
 	{
 		core::cscope_mutex m(m_mutex);
 
@@ -66,9 +66,9 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmodule_service::load_module(const core::fs::cfileinfo& filepath)
+	void cmodule_service::load_module(const fs::cfileinfo& filepath)
 	{
-		auto& vfs = core::cservice_manager::get<core::fs::cvirtual_filesystem>();
+		auto& vfs = core::cservice_manager::get<fs::cvirtual_filesystem>();
 		auto has_deps = false;
 
 		//- Load module definition file
@@ -124,7 +124,7 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmodule_service::unload_module(const core::fs::cfileinfo& filepath)
+	void cmodule_service::unload_module(const fs::cfileinfo& filepath)
 	{
 		//- TODO: Before module is unloaded, post requests for unloading assets and resources
 

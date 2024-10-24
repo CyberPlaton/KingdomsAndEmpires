@@ -82,7 +82,7 @@ namespace engine
 		}
 
 		//-- Load plugin information so we can load dependencies if required
-		if (const auto json = core::fs::load_text_from_file(fmt::format("{}/resources/{}.plugin", core::cfilesystem::cwd().view(), filename.data())); json)
+		if (const auto json = fs::load_text_from_file(fmt::format("{}/resources/{}.plugin", core::cfilesystem::cwd().view(), filename.data())); json)
 		{
 			auto info = core::io::from_json_blob(rttr::type::get<cplugin::sconfig>(), json->data(), json->size()).get_value<cplugin::sconfig>();
 

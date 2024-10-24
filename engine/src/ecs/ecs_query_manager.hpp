@@ -97,7 +97,7 @@ namespace ecs
 		bool ready(unsigned id);
 
 	private:
-		core::detail::cdynamic_pool<cquery> m_queries;
+		core::cdynamic_pool<cquery> m_queries;
 
 		//- order of queries.
 		std::queue<unsigned> m_query_queue;

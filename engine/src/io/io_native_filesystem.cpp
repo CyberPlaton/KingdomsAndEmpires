@@ -19,7 +19,7 @@ namespace io
 		m_alias.assign(alias.data());
 		m_basepath.assign(basepath.data());
 
-		if (!core::string_utils::ends_with(m_basepath, "/"))
+		if (!string_utils::ends_with(m_basepath, "/"))
 		{
 			m_basepath += "/";
 		}
@@ -65,15 +65,15 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::fs::filelist_t cnative_filesystem::files() const
+	fs::filelist_t cnative_filesystem::files() const
 	{
 		return m_file_list;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnative_filesystem::does_exist(const core::fs::cfileinfo& filepath) const
+	bool cnative_filesystem::does_exist(const fs::cfileinfo& filepath) const
 	{
-		auto info = core::fs::ifilesystem::convert(this, filepath);
+		auto info = fs::ifilesystem::convert(this, filepath);
 
 		if (info.is_file())
 		{
@@ -84,9 +84,9 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::fs::file_ref_t cnative_filesystem::open(const core::fs::cfileinfo& filepath, int file_mode)
+	fs::file_ref_t cnative_filesystem::open(const fs::cfileinfo& filepath, int file_mode)
 	{
-		auto info = core::fs::ifilesystem::convert(this, filepath);
+		auto info = fs::ifilesystem::convert(this, filepath);
 
 		auto file = find_file(info);
 		const auto exists = (file != nullptr);
@@ -109,7 +109,7 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cnative_filesystem::close(core::fs::file_ref_t file)
+	void cnative_filesystem::close(fs::file_ref_t file)
 	{
 		if (file)
 		{
@@ -118,13 +118,13 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnative_filesystem::create_file(const core::fs::cfileinfo& filepath)
+	bool cnative_filesystem::create_file(const fs::cfileinfo& filepath)
 	{
 		auto result = false;
 
 		if (!does_exist(filepath))
 		{
-			core::fs::cfileinfo info(base_path(), filepath.relative());
+			fs::cfileinfo info(base_path(), filepath.relative());
 
 			if (const auto file = open(info, core::file_mode_read_write | core::file_mode_truncate); file)
 			{
@@ -143,11 +143,11 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnative_filesystem::remove_file(const core::fs::cfileinfo& filepath)
+	bool cnative_filesystem::remove_file(const fs::cfileinfo& filepath)
 	{
 		auto result = true;
 
-		core::fs::cfileinfo info(base_path(), filepath.relative());
+		fs::cfileinfo info(base_path(), filepath.relative());
 
 		if (const auto file = find_file(info); file)
 		{
@@ -172,14 +172,14 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnative_filesystem::copy_file(const core::fs::cfileinfo& source, const core::fs::cfileinfo& dest)
+	bool cnative_filesystem::copy_file(const fs::cfileinfo& source, const fs::cfileinfo& dest)
 	{
 		auto result = false;
 
-		core::fs::cfileinfo info(base_path(), source.relative());
+		fs::cfileinfo info(base_path(), source.relative());
 		auto source_file = find_file(info);
 
-		info = core::fs::cfileinfo(base_path(), dest.relative());
+		info = fs::cfileinfo(base_path(), dest.relative());
 		auto dest_file = open(info, core::file_mode_write);
 
 		if (source_file && dest_file)
@@ -235,12 +235,12 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cnative_filesystem::rename_file(const core::fs::cfileinfo& source, const core::fs::cfileinfo& dest)
+	bool cnative_filesystem::rename_file(const fs::cfileinfo& source, const fs::cfileinfo& dest)
 	{
 		auto result = false;
 
-		core::fs::cfileinfo source_info(base_path(), source.relative());
-		core::fs::cfileinfo dest_info(base_path(), dest.relative());
+		fs::cfileinfo source_info(base_path(), source.relative());
+		fs::cfileinfo dest_info(base_path(), dest.relative());
 
 		auto source_file = find_file(source_info);
 		auto dest_file = find_file(dest_info);
@@ -264,10 +264,10 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	vector_t<core::fs::cfileinfo> cnative_filesystem::iterate(const core::fs::cfileinfo& path,
+	vector_t<fs::cfileinfo> cnative_filesystem::iterate(const fs::cfileinfo& path,
 		core::filesystem_lookup_type type, bool recursive) const
 	{
-		vector_t<core::fs::cfileinfo> result;
+		vector_t<fs::cfileinfo> result;
 
 		const auto base = base_path();
 
@@ -297,9 +297,9 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::fs::file_ref_t cnative_filesystem::find_file(const core::fs::cfileinfo& fileinfo) const
+	fs::file_ref_t cnative_filesystem::find_file(const fs::cfileinfo& fileinfo) const
 	{
-		const auto it = algorithm::find_if(m_file_list.begin(), m_file_list.end(), [&](const core::fs::file_ref_t& file)
+		const auto it = algorithm::find_if(m_file_list.begin(), m_file_list.end(), [&](const fs::file_ref_t& file)
 			{
 				return file->info() == fileinfo;
 			});
@@ -313,9 +313,9 @@ namespace io
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cnative_filesystem::build_file_list(string_t path, core::fs::filelist_t& out)
+	void cnative_filesystem::build_file_list(string_t path, fs::filelist_t& out)
 	{
-		if (!core::string_utils::ends_with(path, "/"))
+		if (!string_utils::ends_with(path, "/"))
 		{
 			path += "/";
 		}
@@ -333,7 +333,7 @@ namespace io
 			{
 				auto relative = std::filesystem::relative(entry.path(), base);
 
-				core::fs::cfileinfo info(base, relative.generic_u8string());
+				fs::cfileinfo info(base, relative.generic_u8string());
 
 				out.insert(std::move(std::make_shared<cnative_file>(info)));
 			}

@@ -19,8 +19,8 @@ namespace io
 		void on_shutdown() override final;
 		void on_update(float dt) override final;
 
-		void load(const core::fs::cfileinfo& filepath);
-		void unload(const core::fs::cfileinfo& filepath);
+		void load(const fs::cfileinfo& filepath);
+		void unload(const fs::cfileinfo& filepath);
 
 		const umap_t<string_t, cmodule>& modules() const { return m_modules; }
 
@@ -29,16 +29,16 @@ namespace io
 
 		core::cmutex m_mutex;
 
-		core::stack_t<core::fs::cfileinfo> m_to_load;
-		core::stack_t<core::fs::cfileinfo> m_to_unload;
+		core::stack_t<fs::cfileinfo> m_to_load;
+		core::stack_t<fs::cfileinfo> m_to_unload;
 
 		core::ctimer m_timer;
 
 		RTTR_ENABLE(core::cservice, core::cresource_manager<cmodule>);
 
 	private:
-		void load_module(const core::fs::cfileinfo& filepath);
-		void unload_module(const core::fs::cfileinfo& filepath);
+		void load_module(const fs::cfileinfo& filepath);
+		void unload_module(const fs::cfileinfo& filepath);
 	};
 
 } //- io

@@ -6,13 +6,13 @@ namespace io
 	//- Native file implementation. Note that after each read/write operation the current cursor position shifts
 	//- forwards by amount of bytes written or read.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cnative_file final : public core::fs::ifile
+	class cnative_file final : public fs::ifile
 	{
 	public:
-		cnative_file(const core::fs::cfileinfo& filepath);
+		cnative_file(const fs::cfileinfo& filepath);
 		~cnative_file();
 
-		const core::fs::cfileinfo& info() const override final;
+		const fs::cfileinfo& info() const override final;
 		unsigned size() override final;
 		bool read_only() override final;
 		bool opened() override final;
@@ -29,7 +29,7 @@ namespace io
 		bool seek_to(unsigned offset) override final;
 
 	private:
-		core::fs::cfileinfo m_info;
+		fs::cfileinfo m_info;
 		FILE* m_file;
 		int m_state;					//- bitwise concated core::file_state
 	};

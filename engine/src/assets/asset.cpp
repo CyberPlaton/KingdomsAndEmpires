@@ -45,5 +45,5 @@ RTTR_REGISTRATION
 		.prop("m_meta", &casset::m_meta)
 		;
 	
-	rttr::default_constructor<umap_t<string_t, rttr::variant>>();
+	rttr::detail::default_constructor<umap_t<string_t, rttr::variant>>();
 }

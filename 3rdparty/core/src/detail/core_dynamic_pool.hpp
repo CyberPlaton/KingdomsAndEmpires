@@ -16,7 +16,7 @@ namespace core
 	//- Note: you have to deallocate memory using the shutdown function
 	//------------------------------------------------------------------------------------------------------------------------
 	template<class TType>
-	class cdynamic_pool : public ipool
+	class cdynamic_pool : public detail::ipool
 	{
 	public:
 		cdynamic_pool();
@@ -86,7 +86,7 @@ namespace core
 
 		m_start = CORE_MALLOC(count * sizeof(TType));
 
-		m_end = reinterpret_cast<void*>(memloc(m_start) + count * SCAST(uint64_t, sizeof(TType)));
+		m_end = reinterpret_cast<void*>(detail::memloc(m_start) + count * SCAST(uint64_t, sizeof(TType)));
 
 		m_capacity = count;
 
@@ -157,9 +157,9 @@ namespace core
 	template<class TType>
 	TType* core::cdynamic_pool<TType>::advance(TType* object)
 	{
-		auto next = memloc(object) + sizeof(TType);
+		auto next = detail::memloc(object) + sizeof(TType);
 
-		while (next <= RCAST(uint64_t, m_end) && !initialized_at_index(memloc_index(RCAST(void*, next), m_start, sizeof(TType))))
+		while (next <= RCAST(uint64_t, m_end) && !initialized_at_index(detail::memloc_index(RCAST(void*, next), m_start, sizeof(TType))))
 		{
 			next += sizeof(TType);
 		}
@@ -345,7 +345,7 @@ namespace core
 	{
 		m_start = CORE_MALLOC(sizeof(TType) * count);
 
-		m_end = reinterpret_cast<void*>(memloc(m_start) + count * SCAST(uint64_t, sizeof(TType)));
+		m_end = reinterpret_cast<void*>(detail::memloc(m_start) + count * SCAST(uint64_t, sizeof(TType)));
 
 		m_capacity = count;
 

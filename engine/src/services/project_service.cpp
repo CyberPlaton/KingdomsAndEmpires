@@ -48,7 +48,7 @@ namespace engine
 
 			m_projects[h] = project;
 
-			if (const auto result = core::fs::save_text_to_file(fmt::format("{}/{}.{}", basepath.data(), name.data(), C_PROJECT_EXT.data()), core::io::to_json_string(*project.get()).data());
+			if (const auto result = fs::save_text_to_file(fmt::format("{}/{}.{}", basepath.data(), name.data(), C_PROJECT_EXT.data()), core::io::to_json_string(*project.get()).data());
 				result != core::file_io_status_success)
 			{
 				log_error(fmt::format("Could not save file for project '{}' at '{}'", name.data(), basepath.data()));
@@ -64,9 +64,9 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cproject_service::open_project(const core::fs::cfileinfo& filepath)
+	bool cproject_service::open_project(const fs::cfileinfo& filepath)
 	{
-		auto& vfs = core::cservice_manager::get<core::fs::cvirtual_filesystem>();
+		auto& vfs = core::cservice_manager::get<fs::cvirtual_filesystem>();
 
 		if (auto file = vfs.open(filepath, core::file_mode_read); file)
 		{
@@ -111,7 +111,7 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cproject_service::delete_project(const core::fs::cfileinfo& filepath)
+	void cproject_service::delete_project(const fs::cfileinfo& filepath)
 	{
 		if (filepath.exists())
 		{
@@ -141,7 +141,7 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cproject_service::set_current(const core::fs::cfileinfo& filepath)
+	bool cproject_service::set_current(const fs::cfileinfo& filepath)
 	{
 		return set_current(filepath.stem());
 	}

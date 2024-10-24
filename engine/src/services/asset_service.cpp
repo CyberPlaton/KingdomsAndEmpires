@@ -38,7 +38,7 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	asset_ref_t casset_service::open_asset(const core::fs::cfileinfo& source_filepath)
+	asset_ref_t casset_service::open_asset(const fs::cfileinfo& source_filepath)
 	{
 		const auto path = source_filepath.path();
 
@@ -51,18 +51,18 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	asset_ref_t casset_service::create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type)
+	asset_ref_t casset_service::create_asset(const fs::cfileinfo& filepath, rttr::type resource_type)
 	{
 		return create_asset(filepath, resource_type, {}, {});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	asset_ref_t casset_service::create_asset(const core::fs::cfileinfo& filepath, rttr::type resource_type,
+	asset_ref_t casset_service::create_asset(const fs::cfileinfo& filepath, rttr::type resource_type,
 		casset::asset_meta_t meta, rttr::variant options)
 	{
 		log_debug(fmt::format("Creating asset file at '{}'", filepath.path()));
 
-		auto* vfs = core::cservice_manager::find<core::fs::cvirtual_filesystem>();
+		auto* vfs = core::cservice_manager::find<fs::cvirtual_filesystem>();
 
 		if (vfs->find_filesystem("/")->create_file(filepath))
 		{
