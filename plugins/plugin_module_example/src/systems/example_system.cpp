@@ -117,4 +117,53 @@ namespace module_example
 		}
 	}
 
+	stargeting_system::stargeting_system(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_flags |= ecs::system::system_flag_multithreaded;
+		cfg.m_name = "Targeting System";
+
+		w->create_system(cfg, targeting_system);
+	}
+
+	stargeting_system_2::stargeting_system_2(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_flags |= ecs::system::system_flag_multithreaded;
+		cfg.m_name = "Targeting System #2";
+
+		w->create_system(cfg, targeting_system_2);
+	}
+
+	stargeting_system_3::stargeting_system_3(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_flags |= ecs::system::system_flag_multithreaded;
+		cfg.m_name = "Targeting System #3";
+
+		w->create_system(cfg, targeting_system_3);
+	}
+
+	stransform_system::stransform_system(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_name = "Transform System";
+
+		w->create_system(cfg, transform_system);
+	}
+
+	sreplication_system::sreplication_system(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_name = "Replication System";
+		cfg.m_run_after = { "Transform System" };
+
+		w->create_system(cfg, replication_system);
+	}
+
 } //- module_example

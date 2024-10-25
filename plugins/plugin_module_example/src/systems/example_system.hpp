@@ -14,72 +14,38 @@ namespace module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API stargeting_system final
 	{
-		stargeting_system(ecs::cworld* w)
-		{
-			ecs::system::sconfig cfg;
-
-			cfg.m_flags |= ecs::system::system_flag_multithreaded;
-			cfg.m_name = "Targeting System";
-
-			ecs::system::create_system(cfg, targeting_system);
-		}
+		stargeting_system() = default;
+		stargeting_system(ecs::cworld* w);
 	};
 
 	//- Duplicate of above system to be used as test in multithreaded environment
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API stargeting_system_2 final
 	{
-		stargeting_system_2(flecs::world& w)
-		{
-			ecs::system::sconfig cfg{ w };
-
-			cfg.m_flags |= ecs::system::system_flag_multithreaded;
-			cfg.m_name = "Targeting System #2";
-
-			ecs::system::create_system(cfg, targeting_system_2);
-		}
+		stargeting_system_2() = default;
+		stargeting_system_2(ecs::cworld* w);
 	};
 
 	//- Duplicate of above system to be used as test in multithreaded environment
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API stargeting_system_3 final
 	{
-		stargeting_system_3(flecs::world& w)
-		{
-			ecs::system::sconfig cfg{ w };
-
-			cfg.m_flags |= ecs::system::system_flag_multithreaded;
-			cfg.m_name = "Targeting System #3";
-
-			ecs::system::create_system(cfg, targeting_system_3);
-		}
+		stargeting_system_3() = default;
+		stargeting_system_3(ecs::cworld* w);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API stransform_system final
 	{
-		stransform_system(flecs::world& w)
-		{
-			ecs::system::sconfig cfg{ w };
-
-			cfg.m_name = "Transform System";
-
-			ecs::system::create_system(cfg, transform_system);
-		}
+		stransform_system() = default;
+		stransform_system(ecs::cworld* w);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API sreplication_system final
 	{
-		sreplication_system(flecs::world& w)
-		{
-			ecs::system::sconfig cfg{ w };
-
-			cfg.m_name = "Replication System";
-			cfg.m_run_after = { "Transform System" };
-
-			ecs::system::create_system(cfg, replication_system);
-		}
+		sreplication_system() = default;
+		sreplication_system(ecs::cworld* w);
 	};
 
 } //- module_example
