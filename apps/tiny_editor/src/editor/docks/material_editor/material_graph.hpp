@@ -70,7 +70,7 @@ namespace editor
 
 		m_nodes_lookup_table[id] = idx;
 
-		if (core::string_utils::compare(node->type().data(), "master_node"))
+		if (string_utils::compare(node->type().data(), "master_node"))
 		{
 			m_master_node = id;
 		}

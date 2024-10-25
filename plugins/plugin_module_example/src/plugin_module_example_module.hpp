@@ -5,74 +5,31 @@
 
 namespace module_example
 {
-	//- Trying alternative registering modules and systems without requiring templates.
-	//- Note that while we are registering our classes inside RTTR_PLUGIN_REGISTRATION
-	//- we do not need to explicitly write EXAMPLE_API for exported classes
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_module : public ecs::imodule
+	struct EXAMPLE_API smy_module final
 	{
-	public:
-		cmy_module(flecs::world& w) : ecs::imodule(w)
-		{
-			begin<cmy_module>("My first module")
-				.comp<cmy_module, stargeting_component>()
-				.subsystem<cmy_module, cmy_system>()
-			.end<cmy_module>();
-		}
+		smy_module() = default;
+		smy_module(ecs::cworld* w);
 
-		RTTR_ENABLE(ecs::imodule);
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_second_module : public ecs::imodule
+	struct EXAMPLE_API smy_second_module final
 	{
-	public:
-		cmy_second_module(flecs::world& w) : ecs::imodule(w)
-		{
-			begin<cmy_second_module>("Module some other dude made")
-				.depends_on<cmy_second_module, cmy_module>()
-				.comp<cmy_second_module, stargeting_component>()
-				.subsystem<cmy_second_module, cmy_system>()
-				.subsystem<cmy_second_module, cmy_second_system>()
-				.subsystem<cmy_second_module, cmy_third_system>()
-			.end<cmy_second_module>();
+		smy_second_module() = default;
+		smy_second_module(ecs::cworld* w);
 
-			//- this is not the intended way to create entities
-			auto test = w.entity("Walther");
-
-			test.set<stargeting_component>({});
-		}
-
-		RTTR_ENABLE(ecs::imodule);
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class EXAMPLE_API cmy_third_module : public ecs::imodule
+	struct EXAMPLE_API smy_third_module final
 	{
-	public:
-		cmy_third_module(flecs::world& w) : ecs::imodule(w)
-		{
-			begin<cmy_third_module>("My favorite module")
-				.comp<cmy_third_module, sreplicable_component>()
-				.comp<cmy_third_module, stransform_component>()
-				.comp<cmy_third_module, sidentifier_component>()
-				.subsystem<cmy_third_module, sexample_module_system>()
-			.end<cmy_third_module>();
+		smy_third_module() = default;
+		smy_third_module(ecs::cworld* w);
 
-			//- this is not the intended way to create entities
-			auto e = w.entity("Manfred");
-
-			e.set<stransform_component>({})
-				.set<sreplicable_component>({})
-				.set<sidentifier_component>({});
-
-			auto* transform = e.get_mut<stransform_component>();
-			transform->x = 24.0f;
-			transform->y = 1.0f;
-			transform->rotation = 11.0f;
-		}
-
-		RTTR_ENABLE(ecs::imodule);
+		RTTR_ENABLE();
 	};
 
 } //- module_example

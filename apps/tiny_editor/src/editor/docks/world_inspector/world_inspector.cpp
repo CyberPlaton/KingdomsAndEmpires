@@ -205,7 +205,7 @@ namespace editor
 		state().m_hierarchy_view.m_view.clear();
 		state().m_layered_view.m_view.clear();
 
-		ecs::cworld_manager::instance().active().world().each([&](flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
+		ecs::cworld_manager::instance().active().ecs().each([&](flecs::entity e, const ecs::shierarchy& hierarchy, const ecs::sidentifier& identifier)
 			{
 				store_in_snapshot(e, hierarchy, identifier);
 			});
