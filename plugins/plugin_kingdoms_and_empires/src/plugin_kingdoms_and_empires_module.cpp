@@ -36,7 +36,7 @@ void cgame::on_post_update(float dt)
 
 }
 
-RTTR_REGISTRATION
+RTTR_PLUGIN_REGISTRATION
 {
 	REGISTER_LAYER(cgame);
 }

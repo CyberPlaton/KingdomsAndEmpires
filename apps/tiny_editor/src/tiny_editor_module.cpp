@@ -436,7 +436,6 @@ int __real_main(int argc, char* argv[])
 	cfg.m_mode = core::launch_context_editor;
 	cfg.m_startup_project = "/default_startup_project.json";
 
-	cfg.m_layers_cfg.emplace_back("cgame");
 	cfg.m_layers_cfg.emplace_back("ceditor");
 
 	cfg.m_plugins_cfg.emplace_back("plugin_rttr_example");

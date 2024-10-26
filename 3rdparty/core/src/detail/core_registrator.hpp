@@ -14,6 +14,15 @@ namespace rttr
 		template<class T> constexpr bool sis_container = sis_iterator<T>::value && !std::is_same_v<T, string_t>;
 		struct no_default {};
 
+		enum constructor_policy : uint8_t
+		{
+			constructor_policy_none = 0,
+			constructor_policy_as_object,
+			constructor_policy_as_shared_ptr,
+			constructor_policy_as_raw_ptr,
+			constructor_policy_no_default,
+		};
+
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TClass>
 		static rttr::type type_of()
@@ -116,26 +125,32 @@ namespace rttr
 		template<typename TValue>
 		cregistrator& meta(rttr::string_view name, TValue value);
 
-		template<typename TCustomPolicy, typename... ARGS>
-		cregistrator& ctor()
+		template<typename... ARGS>
+		cregistrator& ctor(detail::constructor_policy policy = detail::constructor_policy::constructor_policy_as_object)
 		{
-			if constexpr (std::is_same_v<rttr::detail::as_object, TCustomPolicy>)
-			{
-				static_assert(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
+			auto& c = m_object.template constructor<ARGS...>();
 
-				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_object);
-			}
-			else if constexpr (std::is_same_v<rttr::detail::as_raw_pointer, TCustomPolicy>)
+			switch (policy)
 			{
-				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_raw_ptr);
-			}
-			else if constexpr (std::is_same_v<rttr::detail::as_std_shared_ptr, TCustomPolicy>)
+			default:
+			case detail::constructor_policy_none:
+			case detail::constructor_policy_as_object:
 			{
-				m_object.template constructor<ARGS...>()(rttr::policy::ctor::as_std_shared_ptr);
+				CORE_ASSERT(std::is_copy_constructible_v<TClass>, "Invalid operation. Class must be copy-constructible when registered as with 'as_object' policy");
+
+				c(rttr::policy::ctor::as_object);
+				break;
 			}
-			else
+			case detail::constructor_policy_as_shared_ptr:
 			{
-				CORE_ASSERT(false, "Invalid operation. TCustomPolicy must be one of 'rttr::policy::ctor::as_object', 'rttr::policy::ctor::as_std_shared_ptr' or 'rttr::policy::ctor::as_raw_pointer'");
+				c(rttr::policy::ctor::as_std_shared_ptr);
+				break;
+			}
+			case detail::constructor_policy_as_raw_ptr:
+			{
+				c(rttr::policy::ctor::as_raw_ptr);
+				break;
+			}
 			}
 			return *this;
 		}
