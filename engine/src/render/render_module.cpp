@@ -70,7 +70,7 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	srender_module::srender_module(ecs::cworld* w)
+	ecs::modules::sconfig srender_module::config()
 	{
 		ecs::modules::sconfig cfg;
 		cfg.m_name = "Render Module";
@@ -78,7 +78,7 @@ namespace render
 		cfg.m_systems = { "srender_system", "sdebug_render_system" };
 		cfg.m_modules = {};
 
-		w->import_module<srender_module>(cfg);
+		return cfg;
 	}
 
 } //- render

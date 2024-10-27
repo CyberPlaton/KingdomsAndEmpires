@@ -32,8 +32,9 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	struct srender_module final
 	{
-		srender_module() = default;
-		srender_module(ecs::cworld* w);
+		DECLARE_MODULE(srender_module);
+
+		static ecs::modules::sconfig config();
 
 		RTTR_ENABLE();
 	};

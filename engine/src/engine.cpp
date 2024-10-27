@@ -288,6 +288,7 @@ RTTR_REGISTRATION
 	using namespace editor;
 	using namespace ecs;
 	using namespace render;
+	using namespace animation;
 
 	rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
 		.property("m_startup_project",	&cengine::sconfig::m_startup_project)
@@ -406,7 +407,10 @@ RTTR_REGISTRATION
 		;
 
 	//- Section: Modules and Systems
+	//- Render
 	//------------------------------------------------------------------------------------------------------------------------
+	REGISTER_MODULE(srender_module);
+
 	rttr::cregistrator<srender_system>("srender_system")
 		.ctor<cworld*>()
 		;
@@ -415,7 +419,11 @@ RTTR_REGISTRATION
 		.ctor<cworld*>()
 		;
 
-	rttr::cregistrator<srender_module>("srender_module")
+	//- Animation
+	//------------------------------------------------------------------------------------------------------------------------
+	REGISTER_MODULE(sanimation_module);
+
+	rttr::cregistrator<sanimation_system>("sanimation_system")
 		.ctor<cworld*>()
 		;
 }

@@ -8,8 +8,9 @@ namespace module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API smy_module final
 	{
-		smy_module() = default;
-		smy_module(ecs::cworld* w);
+		DECLARE_MODULE(smy_module);
+
+		static ecs::modules::sconfig config();
 
 		RTTR_ENABLE();
 	};
@@ -17,8 +18,9 @@ namespace module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API smy_second_module final
 	{
-		smy_second_module() = default;
-		smy_second_module(ecs::cworld* w);
+		DECLARE_MODULE(smy_second_module);
+
+		static ecs::modules::sconfig config();
 
 		RTTR_ENABLE();
 	};
@@ -26,8 +28,9 @@ namespace module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API smy_third_module final
 	{
-		smy_third_module() = default;
-		smy_third_module(ecs::cworld* w);
+		DECLARE_MODULE(smy_third_module);
+
+		static ecs::modules::sconfig config();
 
 		RTTR_ENABLE();
 	};

@@ -14,7 +14,7 @@ namespace animation
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sanimation_module::sanimation_module(ecs::cworld* w)
+	ecs::modules::sconfig sanimation_module::config()
 	{
 		ecs::modules::sconfig cfg;
 		cfg.m_name = "Animation Module";
@@ -22,7 +22,7 @@ namespace animation
 		cfg.m_systems = { "sanimation_system" };
 		cfg.m_modules = {};
 
-		w->import_module<sanimation_module>(cfg);
+		return cfg;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

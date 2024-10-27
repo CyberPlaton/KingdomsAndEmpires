@@ -50,6 +50,7 @@ namespace ecs
 					}
 				});
 
+		//- observe added and removed components of entities
 		ecs().observer<>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
@@ -112,7 +113,6 @@ namespace ecs
 		//- observe changes and update internal AABB tree
 		if (m_transform_change_tracker.changed())
 		{
-			//- TODO: does not look like we only observe 'changes', but rather do this every tick
 			m_transform_change_tracker.run([this](flecs::iter& it)
 				{
 					for (auto i : it)

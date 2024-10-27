@@ -16,6 +16,8 @@ namespace module_example
 	{
 		stargeting_system() = default;
 		stargeting_system(ecs::cworld* w);
+
+		RTTR_ENABLE();
 	};
 
 	//- Duplicate of above system to be used as test in multithreaded environment
@@ -24,6 +26,8 @@ namespace module_example
 	{
 		stargeting_system_2() = default;
 		stargeting_system_2(ecs::cworld* w);
+
+		RTTR_ENABLE();
 	};
 
 	//- Duplicate of above system to be used as test in multithreaded environment
@@ -32,6 +36,8 @@ namespace module_example
 	{
 		stargeting_system_3() = default;
 		stargeting_system_3(ecs::cworld* w);
+
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -39,6 +45,8 @@ namespace module_example
 	{
 		stransform_system() = default;
 		stransform_system(ecs::cworld* w);
+
+		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -46,6 +54,8 @@ namespace module_example
 	{
 		sreplication_system() = default;
 		sreplication_system(ecs::cworld* w);
+
+		RTTR_ENABLE();
 	};
 
 } //- module_example

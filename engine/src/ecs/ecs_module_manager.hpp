@@ -12,6 +12,9 @@ namespace ecs
 		cmodule_manager(cworld* w);
 		~cmodule_manager() = default;
 
+		void reload_modules();
+
+		//- Importing is a deferred operation. Here we only store the module type.
 		template<typename TModule>
 		cmodule_manager& import_module();
 		cmodule_manager& import_module(rttr::type type);

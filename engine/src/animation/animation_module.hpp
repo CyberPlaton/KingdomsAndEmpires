@@ -20,8 +20,9 @@ namespace animation
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sanimation_module final
 	{
-		sanimation_module() = default;
-		sanimation_module(ecs::cworld* w);
+		DECLARE_MODULE(sanimation_module);
+
+		static ecs::modules::sconfig config();
 
 		RTTR_ENABLE();
 	};

@@ -1,6 +1,18 @@
 #pragma once
 #include <core.h>
 
+//- Use macro to reflect your layer, the layer functions must be declared and implemented
+//------------------------------------------------------------------------------------------------------------------------
+#define REGISTER_LAYER(layer)																\
+	rttr::cregistrator<layer>(STRINGIFY(layer))												\
+		.meth(engine::slayer::C_LAYER_UPDATE_FUNC_NAME,			&layer::on_update)			\
+		.meth(engine::slayer::C_LAYER_WORLD_RENDER_FUNC_NAME,	&layer::on_world_render)	\
+		.meth(engine::slayer::C_LAYER_UI_RENDER_FUNC_NAME,		&layer::on_ui_render)		\
+		.meth(engine::slayer::C_LAYER_POST_UPDATE_FUNC_NAME,	&layer::on_post_update)		\
+		.meth(engine::slayer::C_LAYER_INIT_FUNC_NAME,			&layer::init)				\
+		.meth(engine::slayer::C_LAYER_SHUTDOWN_FUNC_NAME,		&layer::shutdown)			\
+		;
+
 namespace engine
 {
 	class cengine;
@@ -25,6 +37,8 @@ namespace engine
 		static void on_world_render()		{}
 		static void on_ui_render()			{}
 		static void on_post_update(float)	{}
+
+		RTTR_ENABLE();
 	};
 
 	//- Class containing array of layers that are currently present. Responsible for any layer management and execution.
@@ -66,15 +80,3 @@ namespace engine
 	};
 
 } //- engine
-
-//- Use macro to reflect your layer, the layer functions must be declared and implemented
-//------------------------------------------------------------------------------------------------------------------------
-#define REGISTER_LAYER(layer)																\
-	rttr::cregistrator<layer>(STRINGIFY(layer))												\
-		.meth(engine::slayer::C_LAYER_UPDATE_FUNC_NAME,			&layer::on_update)			\
-		.meth(engine::slayer::C_LAYER_WORLD_RENDER_FUNC_NAME,	&layer::on_world_render)	\
-		.meth(engine::slayer::C_LAYER_UI_RENDER_FUNC_NAME,		&layer::on_ui_render)		\
-		.meth(engine::slayer::C_LAYER_POST_UPDATE_FUNC_NAME,	&layer::on_post_update)		\
-		.meth(engine::slayer::C_LAYER_INIT_FUNC_NAME,			&layer::init)				\
-		.meth(engine::slayer::C_LAYER_SHUTDOWN_FUNC_NAME,		&layer::shutdown)			\
-		;
