@@ -8,7 +8,8 @@ namespace module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API smy_module final
 	{
-		DECLARE_MODULE(smy_module);
+		smy_module() = default;
+		smy_module(ecs::cworld* w);
 
 		static ecs::modules::sconfig config();
 
@@ -18,7 +19,8 @@ namespace module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API smy_second_module final
 	{
-		DECLARE_MODULE(smy_second_module);
+		smy_second_module() = default;
+		smy_second_module(ecs::cworld* w);
 
 		static ecs::modules::sconfig config();
 
@@ -28,7 +30,8 @@ namespace module_example
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API smy_third_module final
 	{
-		DECLARE_MODULE(smy_third_module);
+		smy_third_module() = default;
+		smy_third_module(ecs::cworld* w);
 
 		static ecs::modules::sconfig config();
 

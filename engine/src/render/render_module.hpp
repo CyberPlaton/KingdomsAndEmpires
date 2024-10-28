@@ -32,7 +32,8 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	struct srender_module final
 	{
-		DECLARE_MODULE(srender_module);
+		srender_module() = default;
+		srender_module(ecs::cworld* w);
 
 		static ecs::modules::sconfig config();
 

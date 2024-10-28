@@ -84,6 +84,7 @@ namespace ecs
 		//- Import default modules
 		mm().import_module<render::srender_module>();
 		mm().import_module<animation::sanimation_module>();
+		mm().do_import_modules();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

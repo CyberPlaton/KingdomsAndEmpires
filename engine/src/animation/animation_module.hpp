@@ -20,7 +20,8 @@ namespace animation
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sanimation_module final
 	{
-		DECLARE_MODULE(sanimation_module);
+		sanimation_module() = default;
+		sanimation_module(ecs::cworld* w);
 
 		static ecs::modules::sconfig config();
 

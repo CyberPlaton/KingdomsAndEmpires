@@ -1,12 +1,6 @@
 #pragma once
 #include <core.h>
 
-//- 
-//-------------------------------------------------------------------------------------------------------------------------
-#define DECLARE_MODULE(m) \
-m() = default; \
-m(ecs::cworld* w) { w->import_module<m>(config()); }
-
 //- Use macro to reflect your module, the module functions must be declared and implemented.
 //-------------------------------------------------------------------------------------------------------------------------
 #define REGISTER_MODULE(m) \
@@ -14,7 +8,6 @@ m(ecs::cworld* w) { w->import_module<m>(config()); }
 		.ctor<ecs::cworld*>() \
 		.meth(ecs::modules::smodule::C_MODULE_CONFIG_FUNC_NAME, &m::config) \
 		;
-
 
 namespace ecs
 {

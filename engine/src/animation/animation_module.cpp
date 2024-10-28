@@ -14,10 +14,16 @@ namespace animation
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sanimation_module::sanimation_module(ecs::cworld* w)
+	{
+		w->import_module<sanimation_module>(config());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	ecs::modules::sconfig sanimation_module::config()
 	{
 		ecs::modules::sconfig cfg;
-		cfg.m_name = "Animation Module";
+		cfg.m_name = "sanimation_module";
 		cfg.m_components = { "sanimation" };
 		cfg.m_systems = { "sanimation_system" };
 		cfg.m_modules = {};

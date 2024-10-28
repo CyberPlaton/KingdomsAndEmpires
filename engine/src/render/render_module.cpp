@@ -70,10 +70,16 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	srender_module::srender_module(ecs::cworld* w)
+	{
+		w->import_module<srender_module>(config());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	ecs::modules::sconfig srender_module::config()
 	{
 		ecs::modules::sconfig cfg;
-		cfg.m_name = "Render Module";
+		cfg.m_name = "srender_module";
 		cfg.m_components = { "stransform", "smaterial", "ssprite_renderer" };
 		cfg.m_systems = { "srender_system", "sdebug_render_system" };
 		cfg.m_modules = {};
