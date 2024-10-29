@@ -419,6 +419,14 @@ RTTR_REGISTRATION
 		.ctor<cworld*>()
 		;
 
+	rttr::cregistrator<srender_frame_begin_system>("srender_frame_begin_system")
+		.ctor<cworld*>()
+		;
+
+	rttr::cregistrator<srender_frame_end_system>("srender_frame_end_system")
+		.ctor<cworld*>()
+		;
+
 	//- Animation
 	//------------------------------------------------------------------------------------------------------------------------
 	REGISTER_MODULE(sanimation_module);

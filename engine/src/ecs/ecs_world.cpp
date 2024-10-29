@@ -11,6 +11,33 @@ namespace ecs
 		constexpr std::string_view C_MODULES_PROP		= "modules";
 		constexpr std::string_view C_COMPONENTS_PROP	= "components";
 
+		//------------------------------------------------------------------------------------------------------------------------
+		std::pair<bool, uint64_t> is_flecs_built_in_phase(stringview_t name)
+		{
+			static array_t<std::pair<stringview_t, uint64_t>, 8> C_PHASES =
+			{
+				std::pair("OnLoad",		(uint64_t)flecs::OnLoad),
+				std::pair("PostLoad",	(uint64_t)flecs::PostLoad),
+				std::pair("PreUpdate",	(uint64_t)flecs::PreUpdate),
+				std::pair("OnUpdate",	(uint64_t)flecs::OnUpdate),
+				std::pair("OnValidate", (uint64_t)flecs::OnValidate),
+				std::pair("PostUpdate", (uint64_t)flecs::PostUpdate),
+				std::pair("PreStore",	(uint64_t)flecs::PreStore),
+				std::pair("OnStore",	(uint64_t)flecs::OnStore)
+			};
+
+			if (const auto& it = algorithm::find_if(C_PHASES.begin(), C_PHASES.end(), [=](const auto& pair)
+				{
+					return string_utils::compare(pair.first, name);
+
+				}); it != C_PHASES.end())
+			{
+				return { true, (uint64_t)it->second };
+			}
+
+			return { false, MAX(uint64_t) };
+		}
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -354,27 +381,42 @@ namespace ecs
 		{
 			for (const auto& after : cfg.m_run_after)
 			{
-				if (auto e = ecs().lookup(after.c_str()); e.is_valid())
+				//- TODO: need the same for create_system
+				if (const auto [result, phase] = is_flecs_built_in_phase(after); result)
 				{
-					task.add(flecs::Phase).depends_on(e);
+					task.add(flecs::Phase).depends_on(phase);
 				}
 				else
 				{
-					log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
-						after, cfg.m_name));
+					if (auto e = ecs().lookup(after.c_str()); e.is_valid())
+					{
+						task.add(flecs::Phase).depends_on(e);
+					}
+					else
+					{
+						log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
+							after, cfg.m_name));
+					}
 				}
 			}
 
 			for (const auto& before : cfg.m_run_before)
 			{
-				if (auto e = ecs().lookup(before.c_str()); e.is_valid())
+				if (const auto [result, phase] = is_flecs_built_in_phase(before); result)
 				{
-					e.add(flecs::Phase).depends_on(task);
+					task.add(flecs::Phase).depends_on(phase);
 				}
 				else
 				{
-					log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
-						before, cfg.m_name));
+					if (auto e = ecs().lookup(before.c_str()); e.is_valid())
+					{
+						e.add(flecs::Phase).depends_on(task);
+					}
+					else
+					{
+						log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
+							before, cfg.m_name));
+					}
 				}
 			}
 		}

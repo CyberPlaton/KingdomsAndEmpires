@@ -48,12 +48,42 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	srender_frame_begin_system::srender_frame_begin_system(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_name = "srender_frame_begin_system";
+		cfg.m_run_after = { "OnUpdate" };
+
+		w->create_task(cfg, [](float dt)
+			{
+				//-- no-op
+			});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	srender_frame_end_system::srender_frame_end_system(ecs::cworld* w)
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_name = "srender_frame_end_system";
+		cfg.m_run_after = { "srender_frame_begin_system" };
+		cfg.m_run_after = { "PreStore" };
+
+		w->create_task(cfg, [](float dt)
+			{
+				//-- no-op
+			});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sdebug_render_system::sdebug_render_system(ecs::cworld* w)
 	{
 		ecs::system::sconfig cfg;
 
-		cfg.m_name = "Debug Render System";
-		cfg.m_run_after = { "Render System" };
+		cfg.m_name = "sdebug_render_system";
+		cfg.m_run_after = { "srender_system" };
+		cfg.m_run_before = { "srender_frame_end_system" };
 
 		w->create_system(cfg, &scene_debug_render_system);
 	}
@@ -63,8 +93,9 @@ namespace render
 	{
 		ecs::system::sconfig cfg;
 
-		cfg.m_name = "Render System";
-		cfg.m_run_after = { "Frame Begin System" };
+		cfg.m_name = "srender_system";
+		cfg.m_run_after = { "srender_frame_begin_system" };
+		cfg.m_run_before = { "srender_frame_end_system" };
 
 		w->create_system(cfg, &scene_render_system);
 	}
@@ -81,7 +112,7 @@ namespace render
 		ecs::modules::sconfig cfg;
 		cfg.m_name = "srender_module";
 		cfg.m_components = { "stransform", "smaterial", "ssprite_renderer" };
-		cfg.m_systems = { "srender_system", "sdebug_render_system" };
+		cfg.m_systems = { "srender_frame_begin_system", "srender_frame_end_system", "srender_system", "sdebug_render_system" };
 		cfg.m_modules = {};
 
 		return cfg;

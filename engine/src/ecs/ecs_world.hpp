@@ -10,6 +10,11 @@
 
 namespace ecs
 {
+	namespace detail
+	{
+
+	} //- detail
+
 	//- Wrapper around flecs::world. Allows queries into current state of the ecs world and also in spatial world.
 	//- Note that a world is not intended to be constructed on its own, rather through the world manager.
 	//- Systems, tasks and modules can be added though the world object.
@@ -24,6 +29,8 @@ namespace ecs
 
 		void tick(float dt);
 		[[nodiscard]] inline const vector_t<flecs::entity>& visible_entities() const { return m_visible_entities; }
+
+		stringview_t name() const { return m_name; }
 
 		bool load(const core::cpath& path);
 		void save(const core::cpath& path);
@@ -170,6 +177,11 @@ namespace ecs
 				//- Calling module constructor that does the actual importing of the module
 				type.create({ this });
 			}
+			else
+			{
+				log_error(fmt::format("Failed creating dependency module '{}' for world '{}' and module '{}', as the component is not reflected to RTTR!",
+					m.data(), name().data(), cfg.m_name.data()));
+			}
 		}
 
 		ecs().module<TModule>(cfg.m_name.data());
@@ -182,6 +194,11 @@ namespace ecs
 				//- Calling special component constructor that register the component to provided world
 				type.create({ this });
 			}
+			else
+			{
+				log_error(fmt::format("Failed creating component '{}' for world '{}' and module '{}', as the component is not reflected to RTTR!",
+					c.data(), name().data(), cfg.m_name.data()));
+			}
 		}
 
 		//- Register systems
@@ -191,6 +208,11 @@ namespace ecs
 			{
 				//- Calling system constructor that does the actual registration of the system
 				type.create({ this });
+			}
+			else
+			{
+				log_error(fmt::format("Failed creating system '{}' for world '{}' and module '{}', as the system is not reflected to RTTR!",
+					s.data(), name().data(), cfg.m_name.data()));
 			}
 		}
 	}
