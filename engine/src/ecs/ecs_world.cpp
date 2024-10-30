@@ -16,12 +16,6 @@ namespace ecs
 	namespace detail
 	{
 		//------------------------------------------------------------------------------------------------------------------------
-		void task_function(system::task_callback_t* callback)
-		{
-
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
 		std::pair<bool, uint64_t> is_flecs_built_in_phase(const string_t& name)
 		{
 			static array_t<std::pair<string_t, uint64_t>, 8> C_PHASES =
@@ -382,6 +376,7 @@ namespace ecs
 			}
 		}
 
+		//- Create function to be called for running the task
 		auto function = [=](flecs::iter& it)
 			{
 				(callback)(it.delta_time());

@@ -39,7 +39,7 @@ namespace core
 {
 	//- Structure to retrieve underlying information about platform, configuration etc.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sinfo
+	struct sinfo final
 	{
 		static string_t platform();
 		static string_t architecture();
@@ -49,7 +49,7 @@ namespace core
 
 	//- Structure to retrieve central structures and helpers etc.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sentry
+	struct sentry final
 	{
 		static void init();
 		static void shutdown();

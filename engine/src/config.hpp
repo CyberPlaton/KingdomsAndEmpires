@@ -1,5 +1,6 @@
 #pragma once
 #include <core.h>
+#include "version.hpp"
 
 namespace engine::cfg
 {
