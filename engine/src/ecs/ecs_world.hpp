@@ -12,6 +12,7 @@ namespace ecs
 {
 	namespace detail
 	{
+		std::pair<bool, uint64_t> is_flecs_built_in_phase(const string_t& name);
 
 	} //- detail
 
@@ -72,9 +73,9 @@ namespace ecs
 		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
 
 		template<typename... TComps>
-		void create_system(const system::sconfig& cfg, system::system_callback_t<TComps...>* callback);
+		void create_system(const system::sconfig& cfg, system::system_callback_t<TComps...> callback);
 
-		void create_task(const system::sconfig& cfg, system::task_callback_t* callback);
+		void create_task(const system::sconfig& cfg, system::task_callback_t callback);
 
 		template<typename TModule>
 		void import_module(const modules::sconfig& cfg);
@@ -220,7 +221,7 @@ namespace ecs
 	//- Function responsible for creating a system for a world with given configuration, matching components and function to execute.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... TComps>
-	void ecs::cworld::create_system(const system::sconfig& cfg, system::system_callback_t<TComps...>* callback)
+	void ecs::cworld::create_system(const system::sconfig& cfg, system::system_callback_t<TComps...> callback)
 	{
 		CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded) &&
 			algorithm::bit_check(cfg.m_flags, system::system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
@@ -239,33 +240,47 @@ namespace ecs
 			}
 		}
 
-		auto system = builder.each(*callback);
+		auto system = builder.each(callback);
 
 		//- Set options that are required after system entity creation
 		{
 			for (const auto& after : cfg.m_run_after)
 			{
-				if (auto e = ecs().lookup(after.c_str()); e.is_valid())
+				if (const auto [result, phase] = detail::is_flecs_built_in_phase(after); result)
 				{
-					system.add(flecs::Phase).depends_on(e);
+					system.add(flecs::Phase).depends_on(phase);
 				}
 				else
 				{
-					log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
-						after, cfg.m_name));
+					if (auto e = ecs().lookup(after.c_str()); e.is_valid())
+					{
+						system.add(flecs::Phase).depends_on(e);
+					}
+					else
+					{
+						log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
+							after, cfg.m_name));
+					}
 				}
 			}
 
 			for (const auto& before : cfg.m_run_before)
 			{
-				if (auto e = ecs().lookup(before.c_str()); e.is_valid())
+				if (const auto [result, phase] = detail::is_flecs_built_in_phase(before); result)
 				{
-					e.add(flecs::Phase).depends_on(system);
+					system.add(flecs::Phase).depends_on(phase);
 				}
 				else
 				{
-					log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
-						before, cfg.m_name));
+					if (auto e = ecs().lookup(before.c_str()); e.is_valid())
+					{
+						e.add(flecs::Phase).depends_on(system);
+					}
+					else
+					{
+						log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
+							before, cfg.m_name));
+					}
 				}
 			}
 		}

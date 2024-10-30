@@ -11,10 +11,20 @@ namespace ecs
 		constexpr std::string_view C_MODULES_PROP		= "modules";
 		constexpr std::string_view C_COMPONENTS_PROP	= "components";
 
+	} //- unnamed
+
+	namespace detail
+	{
 		//------------------------------------------------------------------------------------------------------------------------
-		std::pair<bool, uint64_t> is_flecs_built_in_phase(stringview_t name)
+		void task_function(system::task_callback_t* callback)
 		{
-			static array_t<std::pair<stringview_t, uint64_t>, 8> C_PHASES =
+
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		std::pair<bool, uint64_t> is_flecs_built_in_phase(const string_t& name)
+		{
+			static array_t<std::pair<string_t, uint64_t>, 8> C_PHASES =
 			{
 				std::pair("OnLoad",		(uint64_t)flecs::OnLoad),
 				std::pair("PostLoad",	(uint64_t)flecs::PostLoad),
@@ -38,7 +48,7 @@ namespace ecs
 			return { false, MAX(uint64_t) };
 		}
 
-	} //- unnamed
+	} //- detail
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cworld::cworld(stringview_t name) :
@@ -353,7 +363,7 @@ namespace ecs
 	//- If entities are required they can be retrieved through the world or a query.
 	//- The function itself is executed as is, with only delta time provided.
 	//------------------------------------------------------------------------------------------------------------------------
-	void cworld::create_task(const system::sconfig& cfg, system::task_callback_t* callback)
+	void cworld::create_task(const system::sconfig& cfg, system::task_callback_t callback)
 	{
 		CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded) &&
 			algorithm::bit_check(cfg.m_flags, system::system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
@@ -372,17 +382,18 @@ namespace ecs
 			}
 		}
 
-		auto task = builder.run([&](flecs::iter& it)
+		auto function = [=](flecs::iter& it)
 			{
-				(*callback)(it.delta_time());
-			});
+				(callback)(it.delta_time());
+			};
+
+		auto task = builder.run(std::move(function));
 
 		//- Set options that are required after system entity creation
 		{
 			for (const auto& after : cfg.m_run_after)
 			{
-				//- TODO: need the same for create_system
-				if (const auto [result, phase] = is_flecs_built_in_phase(after); result)
+				if (const auto [result, phase] = detail::is_flecs_built_in_phase(after); result)
 				{
 					task.add(flecs::Phase).depends_on(phase);
 				}
@@ -402,7 +413,7 @@ namespace ecs
 
 			for (const auto& before : cfg.m_run_before)
 			{
-				if (const auto [result, phase] = is_flecs_built_in_phase(before); result)
+				if (const auto [result, phase] = detail::is_flecs_built_in_phase(before); result)
 				{
 					task.add(flecs::Phase).depends_on(phase);
 				}
