@@ -218,72 +218,11 @@ namespace ecs
 		}
 	}
 
-	//- Function responsible for creating a system for a world with given configuration, matching components and function to execute.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename... TComps>
 	void ecs::cworld::create_system(const system::sconfig& cfg, system::system_callback_t<TComps...> callback)
 	{
-		CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded) &&
-			algorithm::bit_check(cfg.m_flags, system::system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
-
-		auto builder = ecs().system<TComps...>(cfg.m_name.c_str());
-
-		//- Set options that are required before system entity creation
-		{
-			if (algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded))
-			{
-				builder.multi_threaded();
-			}
-			if (algorithm::bit_check(cfg.m_flags, system::system_flag_immediate))
-			{
-				builder.immediate();
-			}
-		}
-
-		auto system = builder.each(callback);
-
-		//- Set options that are required after system entity creation
-		{
-			for (const auto& after : cfg.m_run_after)
-			{
-				if (const auto [result, phase] = detail::is_flecs_built_in_phase(after); result)
-				{
-					system.add(flecs::Phase).depends_on(phase);
-				}
-				else
-				{
-					if (auto e = ecs().lookup(after.c_str()); e.is_valid())
-					{
-						system.add(flecs::Phase).depends_on(e);
-					}
-					else
-					{
-						log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
-							after, cfg.m_name));
-					}
-				}
-			}
-
-			for (const auto& before : cfg.m_run_before)
-			{
-				if (const auto [result, phase] = detail::is_flecs_built_in_phase(before); result)
-				{
-					system.add(flecs::Phase).depends_on(phase);
-				}
-				else
-				{
-					if (auto e = ecs().lookup(before.c_str()); e.is_valid())
-					{
-						e.add(flecs::Phase).depends_on(system);
-					}
-					else
-					{
-						log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
-							before, cfg.m_name));
-					}
-				}
-			}
-		}
+		mm().create_system<TComps...>(ecs(), cfg, callback);
 	};
 
 } //- ecs

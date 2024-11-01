@@ -2,6 +2,7 @@
 #include "../config.hpp"
 #include "../ecs/ecs_world_context_holder.hpp"
 #include "../ecs/ecs_component.hpp"
+#include "../ecs/ecs_system.hpp"
 #include "../ecs/ecs_module.hpp"
 
 namespace animation
@@ -13,6 +14,8 @@ namespace animation
 	{
 		sanimation_system() = default;
 		sanimation_system(ecs::cworld* w);
+
+		static ecs::system::sconfig config();
 
 		RTTR_ENABLE();
 	};

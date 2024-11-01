@@ -34,7 +34,9 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	void scene_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
-		CORE_NAMED_ZONE("Scene Render System");
+		CORE_NAMED_ZONE("scene_render_system");
+
+		log_trace(fmt::format("----Update: scene_render_system"));
 
 		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture);
 
@@ -44,25 +46,44 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
-		CORE_NAMED_ZONE("Scene Debug Render System");
+		CORE_NAMED_ZONE("scene_debug_render_system");
+
+		log_trace(fmt::format("----Update: scene_render_system"));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_frame_begin_system::srender_frame_begin_system(ecs::cworld* w)
+	{
+		w->create_task(config(), [](float dt)
+			{
+				//-- no-op
+				log_trace(fmt::format("----Update: srender_frame_begin_system"));
+			});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig srender_frame_begin_system::config()
 	{
 		ecs::system::sconfig cfg;
 
 		cfg.m_name = "srender_frame_begin_system";
 		cfg.m_run_after = { "OnUpdate" };
 
-		w->create_task(cfg, [](float dt)
-			{
-				//-- no-op
-			});
+		return cfg;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_frame_end_system::srender_frame_end_system(ecs::cworld* w)
+	{
+		w->create_task(config(), [](float dt)
+			{
+				//-- no-op
+				log_trace(fmt::format("----Update: srender_frame_end_system"));
+			});
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig srender_frame_end_system::config()
 	{
 		ecs::system::sconfig cfg;
 
@@ -70,14 +91,17 @@ namespace render
 		cfg.m_run_after = { "srender_frame_begin_system" };
 		cfg.m_run_after = { "PreStore" };
 
-		w->create_task(cfg, [](float dt)
-			{
-				//-- no-op
-			});
+		return cfg;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sdebug_render_system::sdebug_render_system(ecs::cworld* w)
+	{
+		w->create_system(config(), &scene_debug_render_system);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig sdebug_render_system::config()
 	{
 		ecs::system::sconfig cfg;
 
@@ -85,11 +109,17 @@ namespace render
 		cfg.m_run_after = { "srender_system" };
 		cfg.m_run_before = { "srender_frame_end_system" };
 
-		w->create_system(cfg, &scene_debug_render_system);
+		return cfg;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_system::srender_system(ecs::cworld* w)
+	{
+		w->create_system(config(), &scene_render_system);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig srender_system::config()
 	{
 		ecs::system::sconfig cfg;
 
@@ -97,7 +127,7 @@ namespace render
 		cfg.m_run_after = { "srender_frame_begin_system" };
 		cfg.m_run_before = { "srender_frame_end_system" };
 
-		w->create_system(cfg, &scene_render_system);
+		return cfg;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

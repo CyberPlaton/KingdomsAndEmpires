@@ -11,6 +11,8 @@ namespace animation
 		//- TODO: we do it like this for now. But intended was to use world().visible_entities()
 		//- and update their animations only, as it does not make sense to compute so much stuff
 		//- for sprites we do not even see.
+
+		log_trace(fmt::format("----Update: animation_system"));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -26,7 +28,7 @@ namespace animation
 		cfg.m_name = "sanimation_module";
 		cfg.m_components = { "sanimation" };
 		cfg.m_systems = { "sanimation_system" };
-		cfg.m_modules = {};
+		cfg.m_modules = { "srender_module" };
 
 		return cfg;
 	}
@@ -34,10 +36,18 @@ namespace animation
 	//------------------------------------------------------------------------------------------------------------------------
 	sanimation_system::sanimation_system(ecs::cworld* w)
 	{
-		ecs::system::sconfig cfg;
-		cfg.m_name = "Animation System";
+		w->create_system(config(), &animation_system);
+	}
 
-		w->create_system(cfg, &animation_system);
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig sanimation_system::config()
+	{
+		ecs::system::sconfig cfg;
+		cfg.m_name = "sanimation_system";
+		cfg.m_run_after = { "OnUpdate" };
+		cfg.m_run_before = { "srender_system" };
+
+		return cfg;
 	}
 
 } //- animation

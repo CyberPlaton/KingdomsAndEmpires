@@ -13,37 +13,6 @@ namespace ecs
 
 	} //- unnamed
 
-	namespace detail
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		std::pair<bool, uint64_t> is_flecs_built_in_phase(const string_t& name)
-		{
-			static array_t<std::pair<string_t, uint64_t>, 8> C_PHASES =
-			{
-				std::pair("OnLoad",		(uint64_t)flecs::OnLoad),
-				std::pair("PostLoad",	(uint64_t)flecs::PostLoad),
-				std::pair("PreUpdate",	(uint64_t)flecs::PreUpdate),
-				std::pair("OnUpdate",	(uint64_t)flecs::OnUpdate),
-				std::pair("OnValidate", (uint64_t)flecs::OnValidate),
-				std::pair("PostUpdate", (uint64_t)flecs::PostUpdate),
-				std::pair("PreStore",	(uint64_t)flecs::PreStore),
-				std::pair("OnStore",	(uint64_t)flecs::OnStore)
-			};
-
-			if (const auto& it = algorithm::find_if(C_PHASES.begin(), C_PHASES.end(), [=](const auto& pair)
-				{
-					return string_utils::compare(pair.first, name);
-
-				}); it != C_PHASES.end())
-			{
-				return { true, (uint64_t)it->second };
-			}
-
-			return { false, MAX(uint64_t) };
-		}
-
-	} //- detail
-
 	//------------------------------------------------------------------------------------------------------------------------
 	cworld::cworld(stringview_t name) :
 		m_name(name),
@@ -116,6 +85,7 @@ namespace ecs
 		mm().import_module<render::srender_module>();
 		mm().import_module<animation::sanimation_module>();
 		mm().do_import_modules();
+		mm().dump_adjacency_map();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -127,6 +97,8 @@ namespace ecs
 	void cworld::tick(float dt)
 	{
 		CORE_NAMED_ZONE("cworld::tick");
+
+		log_trace(fmt::format("\n\n----Tick: {}", name()));
 
 		prepare();
 
@@ -351,81 +323,10 @@ namespace ecs
 		return result;
 	}
 
-	// -Function responsible for creating a system for a world with given configuration, without matching any components
-	//- and function to execute.
-	//- A task is similar to a normal system, only that it does not match any components and thus no entities.
-	//- If entities are required they can be retrieved through the world or a query.
-	//- The function itself is executed as is, with only delta time provided.
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::create_task(const system::sconfig& cfg, system::task_callback_t callback)
 	{
-		CORE_ASSERT(!(algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded) &&
-			algorithm::bit_check(cfg.m_flags, system::system_flag_immediate)), "Invalid operation! A system cannot be multithreaded and immediate at the same time!");
-
-		auto builder = ecs().system(cfg.m_name.c_str());
-
-		//- Set options that are required before system entity creation
-		{
-			if (algorithm::bit_check(cfg.m_flags, system::system_flag_multithreaded))
-			{
-				builder.multi_threaded();
-			}
-			if (algorithm::bit_check(cfg.m_flags, system::system_flag_immediate))
-			{
-				builder.immediate();
-			}
-		}
-
-		//- Create function to be called for running the task
-		auto function = [=](flecs::iter& it)
-			{
-				(callback)(it.delta_time());
-			};
-
-		auto task = builder.run(std::move(function));
-
-		//- Set options that are required after system entity creation
-		{
-			for (const auto& after : cfg.m_run_after)
-			{
-				if (const auto [result, phase] = detail::is_flecs_built_in_phase(after); result)
-				{
-					task.add(flecs::Phase).depends_on(phase);
-				}
-				else
-				{
-					if (auto e = ecs().lookup(after.c_str()); e.is_valid())
-					{
-						task.add(flecs::Phase).depends_on(e);
-					}
-					else
-					{
-						log_error(fmt::format("Dependency (run after) system '{}' for system '{}' could not be found!",
-							after, cfg.m_name));
-					}
-				}
-			}
-
-			for (const auto& before : cfg.m_run_before)
-			{
-				if (const auto [result, phase] = detail::is_flecs_built_in_phase(before); result)
-				{
-					task.add(flecs::Phase).depends_on(phase);
-				}
-				else
-				{
-					if (auto e = ecs().lookup(before.c_str()); e.is_valid())
-					{
-						e.add(flecs::Phase).depends_on(task);
-					}
-					else
-					{
-						log_error(fmt::format("Dependent (run before) system '{}' for system '{}' could not be found!",
-							before, cfg.m_name));
-					}
-				}
-			}
-		}
+		mm().create_task(ecs(), cfg, callback);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 #include "../config.hpp"
 #include "../ecs/ecs_world_context_holder.hpp"
 #include "../ecs/ecs_component.hpp"
+#include "../ecs/ecs_system.hpp"
 #include "../ecs/ecs_module.hpp"
 
 namespace render
@@ -15,6 +16,8 @@ namespace render
 		srender_frame_begin_system() = default;
 		srender_frame_begin_system(ecs::cworld* w);
 
+		static ecs::system::sconfig config();
+
 		RTTR_ENABLE();
 	};
 
@@ -23,6 +26,8 @@ namespace render
 	{
 		srender_frame_end_system() = default;
 		srender_frame_end_system(ecs::cworld* w);
+
+		static ecs::system::sconfig config();
 
 		RTTR_ENABLE();
 	};
@@ -34,6 +39,8 @@ namespace render
 		srender_system() = default;
 		srender_system(ecs::cworld* w);
 
+		static ecs::system::sconfig config();
+
 		RTTR_ENABLE();
 	};
 
@@ -43,6 +50,8 @@ namespace render
 	{
 		sdebug_render_system() = default;
 		sdebug_render_system(ecs::cworld* w);
+
+		static ecs::system::sconfig config();
 
 		RTTR_ENABLE();
 	};

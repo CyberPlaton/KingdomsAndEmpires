@@ -3,14 +3,13 @@
 #include <flecs.h>
 #include "ecs_world_context_holder.hpp"
 
-#define DECLARE_SYSTEM(s) \
-s() = default; \
-~s() = default; \
-s(ecs::cworld* w) : ecs::system::isystem(w) \
-{ \
-	auto cfg = init(); \
-	w->create_system(cfg, callback); \
-}
+//- Use macro to reflect your system, the system function must be declared and implemented.
+//-------------------------------------------------------------------------------------------------------------------------
+#define REGISTER_SYSTEM(s) \
+	rttr::cregistrator<s>(STRINGIFY(s)) \
+		.ctor<ecs::cworld*>() \
+		.meth(ecs::system::ssystem::C_SYSTEM_CONFIG_FUNC_NAME, &s::config) \
+		;
 
 namespace ecs
 {
@@ -38,14 +37,15 @@ namespace ecs
 			system_flags_t m_flags = 0;
 		};
 
+		//- This is a dummy system to show how one should be defined. While creating you must not inherit from it.
+		//- Define all required functions and reflect them to RTTR using the macro REGISTER_SYSTEM().
 		//------------------------------------------------------------------------------------------------------------------------
-		struct isystem
+		struct ssystem final
 		{
-			isystem(cworld* w);
-			isystem() = default;
-			virtual ~isystem() = default;
+			static constexpr rttr::string_view C_SYSTEM_CONFIG_FUNC_NAME = "config";
+			static constexpr array_t<rttr::string_view, 1> C_MODULE_FUNC_NAMES = { C_SYSTEM_CONFIG_FUNC_NAME };
 
-			virtual sconfig init() = 0;
+			static sconfig config() { return {}; }
 
 			RTTR_ENABLE();
 		};

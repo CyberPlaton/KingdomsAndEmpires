@@ -410,28 +410,13 @@ RTTR_REGISTRATION
 	//- Render
 	//------------------------------------------------------------------------------------------------------------------------
 	REGISTER_MODULE(srender_module);
-
-	rttr::cregistrator<srender_system>("srender_system")
-		.ctor<cworld*>()
-		;
-
-	rttr::cregistrator<sdebug_render_system>("sdebug_render_system")
-		.ctor<cworld*>()
-		;
-
-	rttr::cregistrator<srender_frame_begin_system>("srender_frame_begin_system")
-		.ctor<cworld*>()
-		;
-
-	rttr::cregistrator<srender_frame_end_system>("srender_frame_end_system")
-		.ctor<cworld*>()
-		;
+	REGISTER_SYSTEM(srender_system);
+	REGISTER_SYSTEM(sdebug_render_system);
+	REGISTER_SYSTEM(srender_frame_begin_system);
+	REGISTER_SYSTEM(srender_frame_end_system);
 
 	//- Animation
 	//------------------------------------------------------------------------------------------------------------------------
 	REGISTER_MODULE(sanimation_module);
-
-	rttr::cregistrator<sanimation_system>("sanimation_system")
-		.ctor<cworld*>()
-		;
+	REGISTER_SYSTEM(sanimation_system);
 }
