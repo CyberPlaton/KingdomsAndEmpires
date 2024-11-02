@@ -65,6 +65,12 @@ namespace ecs
 			}
 		}
 
+		if (const auto duplicate_system = find_system(cfg.m_name); duplicate_system)
+		{
+			log_warn(fmt::format("Trying to create a system with same name twice '{}'. This is not allowed!", cfg.m_name));
+			return;
+		}
+
 		auto system = builder.each(callback);
 
 		system.add<tag::ssystem>();

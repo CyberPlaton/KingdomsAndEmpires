@@ -36,8 +36,6 @@ namespace render
 	{
 		CORE_NAMED_ZONE("scene_render_system");
 
-		log_trace(fmt::format("----Update: scene_render_system"));
-
 		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture);
 
 		//draw_texture(transform, material, renderer);
@@ -47,8 +45,6 @@ namespace render
 	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
 		CORE_NAMED_ZONE("scene_debug_render_system");
-
-		log_trace(fmt::format("----Update: scene_render_system"));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -57,7 +53,6 @@ namespace render
 		w->create_task(config(), [](float dt)
 			{
 				//-- no-op
-				log_trace(fmt::format("----Update: srender_frame_begin_system"));
 			});
 	}
 
@@ -78,7 +73,6 @@ namespace render
 		w->create_task(config(), [](float dt)
 			{
 				//-- no-op
-				log_trace(fmt::format("----Update: srender_frame_end_system"));
 			});
 	}
 

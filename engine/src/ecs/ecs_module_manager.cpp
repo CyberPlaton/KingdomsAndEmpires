@@ -236,6 +236,12 @@ namespace ecs
 			}
 		}
 
+		if (const auto duplicate_system = find_system(cfg.m_name); duplicate_system)
+		{
+			log_warn(fmt::format("Trying to create a system with same name twice '{}'. This is not allowed!", cfg.m_name));
+			return;
+		}
+
 		//- Create function to be called for running the task
 		auto function = [=](flecs::iter& it)
 			{
@@ -341,7 +347,11 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	flecs::system cmodule_manager::find_system(stringview_t name)
 	{
-		return m_systems.at(name.data());
+		if (const auto it = m_systems.find(name.data()); it != m_systems.end())
+		{
+			return it->second;
+		}
+		return flecs::system();
 	}
 
 } //- ecs
