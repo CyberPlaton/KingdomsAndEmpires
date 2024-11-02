@@ -64,9 +64,11 @@ namespace imgui
 
 		ImGui::SetNextWindowPos({p.x, p.y}, ImGuiCond_Appearing);
 
-		if (size_min.x > 0 && size_min.y > 0 && size_max.x > 0 && size_max.y > 0)
+		if ((size_min.x > 0 && size_min.y > 0) || (size_max.x > 0 && size_max.y > 0))
 		{
-			ImGui::SetNextWindowSizeConstraints({ size_min.x, size_min.y }, { size_max.x, size_max.y });
+			auto max = (size_max.x > 0 && size_max.y > 0) ? ImVec2(size_max.x, size_max.y) : ImGui::GetContentRegionMax();
+
+			ImGui::SetNextWindowSizeConstraints({ size_min.x, size_min.y }, max);
 		}
 
 		m_result = ImGui::Begin(name.data(), open, flags);

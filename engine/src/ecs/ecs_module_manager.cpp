@@ -110,6 +110,14 @@ namespace ecs
 
 			auto var = type.create({ &world() });
 		}
+
+		if constexpr (!engine::cfg::C_ECS_MODULES_AND_SYSTEMS_GATHER_INFORMATION)
+		{
+			m_module_to_module.clear();
+			m_system_to_module.clear();
+			m_loaded_modules.clear();
+			m_loaded_systems.clear();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -179,7 +187,13 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	cmodule_manager& cmodule_manager::import_module(stringview_t type_name)
 	{
-		return import_module(rttr::type::get_by_name(type_name.data()));
+		if (const auto type = rttr::type::get_by_name(type_name.data()); type.is_valid())
+		{
+			return import_module(type);
+		}
+
+		log_error(fmt::format("Trying to load an invalid or unreflected module '{}'", type_name.data()));
+		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

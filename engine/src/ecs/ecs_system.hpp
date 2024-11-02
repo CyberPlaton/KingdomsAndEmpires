@@ -11,6 +11,14 @@
 		.meth(ecs::system::ssystem::C_SYSTEM_CONFIG_FUNC_NAME, &s::config) \
 		;
 
+//-------------------------------------------------------------------------------------------------------------------------
+#define DECLARE_SYSTEM(system_struct, system_function) \
+system_struct() = default; \
+system_struct(ecs::cworld* w) { w->create_system(config(), system_function); } \
+static stringview_t name() { return STRINGIFY(system_struct); } \
+static ecs::system::sconfig config(); \
+RTTR_ENABLE();
+
 namespace ecs
 {
 	namespace system

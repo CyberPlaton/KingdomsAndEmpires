@@ -14,15 +14,15 @@ namespace ecs
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cworld::cworld(stringview_t name) :
-		m_name(name),
+	cworld::cworld(world::sconfig cfg) :
+		m_name(cfg.m_name),
 		m_entity_manager(this),
 		m_component_manager(this),
 		m_prefab_manager(this),
 		m_query_manager(this),
 		m_singleton_manager(this),
 		m_module_manager(this),
-		m_used_threads(1)
+		m_used_threads(cfg.m_threads)
 	{
 		use_threads(m_used_threads);
 
@@ -84,8 +84,20 @@ namespace ecs
 		//- Import default modules
 		mm().import_module<render::srender_module>();
 		mm().import_module<animation::sanimation_module>();
+
+		for (const auto& m : cfg.m_modules)
+		{
+			mm().import_module(m);
+		}
+
 		mm().do_import_modules();
-		mm().dump_adjacency_map();
+
+#if CORE_DEBUG
+		if constexpr (engine::cfg::C_ECS_MODULES_AND_SYSTEMS_GATHER_INFORMATION)
+		{
+			mm().dump_adjacency_map();
+		}
+#endif
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -97,8 +109,6 @@ namespace ecs
 	void cworld::tick(float dt)
 	{
 		CORE_NAMED_ZONE("cworld::tick");
-
-		log_trace(fmt::format("\n\n----Tick: {}", name()));
 
 		prepare();
 

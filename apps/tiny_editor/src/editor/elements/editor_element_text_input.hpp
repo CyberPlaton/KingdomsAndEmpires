@@ -10,6 +10,7 @@ namespace editor::ui
 	class ctext_input final
 	{
 	public:
+		using options_t = int;
 		enum options
 		{
 			options_none				= 0,
@@ -23,14 +24,18 @@ namespace editor::ui
 			options_password			= ImGuiInputTextFlags_Password,
 			options_disable_undo_redo	= ImGuiInputTextFlags_NoUndoRedo,
 			options_escape_clear_all	= ImGuiInputTextFlags_EscapeClearsAll,
+			option_ctrl_enter_new_line	= ImGuiInputTextFlags_CtrlEnterForNewLine,
 		};
 
-		ctext_input(stringview_t id = {}, bool* enabled = nullptr, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None);
+		static constexpr options_t C_DEFAULT_OPTIONS = options_true_on_enter;
+
+		ctext_input(stringview_t id = {}, bool* enabled = nullptr, options_t flags = C_DEFAULT_OPTIONS);
 		~ctext_input() = default;
 
 		ctext_input& value(string_t* text);
 		ctext_input& hint(stringview_t text);
 		ctext_input& multiline(const bool value);
+		ctext_input& resizeable(const bool value);
 		ctext_input& size(const vec2_t& value);
 		ctext_input& options(int op);
 		ctext_input& tooltip(stringview_t text, const bool show = true);
@@ -43,7 +48,7 @@ namespace editor::ui
 		stringview_t m_tooltip;
 		stringview_t m_hint;
 		ImVec2 m_size;
-		ImGuiInputTextFlags m_flags;
+		options_t m_flags;
 		bool m_show_tooltip;
 		bool m_enabled;
 		bool m_result = false;

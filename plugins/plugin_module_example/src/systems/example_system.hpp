@@ -17,6 +17,8 @@ namespace module_example
 		stargeting_system() = default;
 		stargeting_system(ecs::cworld* w);
 
+		static ecs::system::sconfig config();
+
 		RTTR_ENABLE();
 	};
 
@@ -26,6 +28,8 @@ namespace module_example
 	{
 		stargeting_system_2() = default;
 		stargeting_system_2(ecs::cworld* w);
+
+		static ecs::system::sconfig config();
 
 		RTTR_ENABLE();
 	};
@@ -37,6 +41,8 @@ namespace module_example
 		stargeting_system_3() = default;
 		stargeting_system_3(ecs::cworld* w);
 
+		static ecs::system::sconfig config();
+
 		RTTR_ENABLE();
 	};
 
@@ -46,16 +52,15 @@ namespace module_example
 		stransform_system() = default;
 		stransform_system(ecs::cworld* w);
 
+		static ecs::system::sconfig config();
+
 		RTTR_ENABLE();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct EXAMPLE_API sreplication_system final
 	{
-		sreplication_system() = default;
-		sreplication_system(ecs::cworld* w);
-
-		RTTR_ENABLE();
+		DECLARE_SYSTEM(sreplication_system, replication_system);
 	};
 
 } //- module_example

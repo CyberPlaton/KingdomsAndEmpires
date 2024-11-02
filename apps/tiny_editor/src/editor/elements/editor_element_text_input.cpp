@@ -46,6 +46,16 @@ namespace editor::ui
 			return 0;
 		}
 
+		//- A good candidate for base class functionality for all elements, we use flags all over the place and dont want to
+		//- solve the same problem everywhere each time anew...
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename TBit>
+		void set_flag(int& byte, TBit bit, const bool value)
+		{
+			if(value) algorithm::bit_set(byte, bit);
+			else algorithm::bit_clear(byte, bit);
+		}
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -61,8 +71,7 @@ namespace editor::ui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ctext_input::ctext_input(stringview_t id /*= {}*/, bool* enabled /*= nullptr*/,
-		ImGuiInputTextFlags flags /*= ImGuiInputTextFlags_None*/) :
+	ctext_input::ctext_input(stringview_t id /*= {}*/, bool* enabled /*= nullptr*/, options_t flags /*= C_DEFAULT_OPTIONS*/) :
 		m_flags(flags), m_id(id.data()), m_enabled(enabled ? *enabled : true), m_value(nullptr), m_size(ImVec2(0, 0)), m_result(false)
 	{
 	}
@@ -89,14 +98,14 @@ namespace editor::ui
 	//------------------------------------------------------------------------------------------------------------------------
 	ctext_input& ctext_input::multiline(const bool value)
 	{
-		if (value)
-		{
-			algorithm::bit_set(m_flags, ImGuiInputTextFlags_Multiline);
-		}
-		else
-		{
-			algorithm::bit_clear(m_flags, ImGuiInputTextFlags_Multiline);
-		}
+		set_flag(m_flags, ImGuiInputTextFlags_Multiline, value);
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ctext_input& ctext_input::resizeable(const bool value)
+	{
+		set_flag(m_flags, ImGuiInputTextFlags_CallbackResize, value);
 		return *this;
 	}
 
@@ -110,7 +119,7 @@ namespace editor::ui
 	//------------------------------------------------------------------------------------------------------------------------
 	ctext_input& ctext_input::options(int op)
 	{
-		m_flags = op;
+		m_flags |= (ImGuiInputTextFlags_)op;
 		return *this;
 	}
 
@@ -139,7 +148,7 @@ namespace editor::ui
 		{
 			imgui::cdisabled_scope disabled_scope(!m_enabled);
 
-			m_result = input_text(m_id, m_hint, m_size, m_value, m_flags, input_text_callback, nullptr);
+			m_result = input_text(m_id, m_hint, m_size, m_value, SCAST(ImGuiInputTextFlags, m_flags), input_text_callback, nullptr);
 		}
 
 		if (m_show_tooltip)

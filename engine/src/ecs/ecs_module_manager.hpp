@@ -34,7 +34,7 @@ namespace ecs
 		umap_t<string_t, string_t> m_system_to_module;			//- System-to-module dependency
 		set_t<string_t> m_loaded_modules;
 		set_t<string_t> m_loaded_systems;
-		umap_t<string_t, flecs::system> m_systems;
+		umap_t<string_t, flecs::system> m_systems;				//- Access to systems currently alive in world
 
 	private:
 		void dump_module(const string_t& module, const unsigned depth) const;

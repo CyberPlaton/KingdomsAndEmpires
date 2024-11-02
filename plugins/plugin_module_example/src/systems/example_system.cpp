@@ -117,53 +117,83 @@ namespace module_example
 		}
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	stargeting_system::stargeting_system(ecs::cworld* w)
 	{
+		w->create_system(config(), targeting_system);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig stargeting_system::config()
+	{
 		ecs::system::sconfig cfg;
 
 		cfg.m_flags |= ecs::system::system_flag_multithreaded;
-		cfg.m_name = "Targeting System";
+		cfg.m_name = "stargeting_system";
 
-		w->create_system(cfg, targeting_system);
+		return cfg;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	stargeting_system_2::stargeting_system_2(ecs::cworld* w)
 	{
+		w->create_system(config(), targeting_system_2);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig stargeting_system_2::config()
+	{
 		ecs::system::sconfig cfg;
 
 		cfg.m_flags |= ecs::system::system_flag_multithreaded;
-		cfg.m_name = "Targeting System #2";
+		cfg.m_name = "stargeting_system_2";
 
-		w->create_system(cfg, targeting_system_2);
+		return cfg;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	stargeting_system_3::stargeting_system_3(ecs::cworld* w)
 	{
+		w->create_system(config(), targeting_system_3);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig stargeting_system_3::config()
+	{
 		ecs::system::sconfig cfg;
 
 		cfg.m_flags |= ecs::system::system_flag_multithreaded;
-		cfg.m_name = "Targeting System #3";
+		cfg.m_name = "stargeting_system_3";
 
-		w->create_system(cfg, targeting_system_3);
+		return cfg;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	stransform_system::stransform_system(ecs::cworld* w)
 	{
-		ecs::system::sconfig cfg;
-
-		cfg.m_name = "Transform System";
-
-		w->create_system(cfg, transform_system);
+		w->create_system(config(), transform_system);
 	}
 
-	sreplication_system::sreplication_system(ecs::cworld* w)
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig stransform_system::config()
 	{
 		ecs::system::sconfig cfg;
 
-		cfg.m_name = "Replication System";
-		cfg.m_run_after = { "Transform System" };
+		cfg.m_name = "stransform_system";
+		cfg.m_run_after = { "OnUpdate" };
 
-		w->create_system(cfg, replication_system);
+		return cfg;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig sreplication_system::config()
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_name = "sreplication_system";
+		cfg.m_run_after = { "stransform_system" };
+
+		return cfg;
 	}
 
 } //- module_example

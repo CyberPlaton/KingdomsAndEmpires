@@ -32,20 +32,27 @@ namespace ecs
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cworld_manager::create(stringview_t name, const bool make_active /*= false*/)
+	bool cworld_manager::create(world::sconfig cfg, const bool make_active /*= false*/)
 	{
-		auto h = algorithm::hash(name);
-
-		if (m_worlds.find(h) == m_worlds.end())
+		if (!cfg.m_name.empty())
 		{
-			m_worlds.emplace(h, name);
+			auto h = algorithm::hash(cfg.m_name);
 
-			if (make_active)
+			if (m_worlds.find(h) == m_worlds.end())
 			{
-				m_current = h;
-			}
+				m_worlds.emplace(h, cfg);
 
-			return true;
+				if (make_active)
+				{
+					m_current = h;
+				}
+
+				return true;
+			}
+		}
+		else
+		{
+			log_error("Trying to create a world with an empty name is not allowed!");
 		}
 		return false;
 	}

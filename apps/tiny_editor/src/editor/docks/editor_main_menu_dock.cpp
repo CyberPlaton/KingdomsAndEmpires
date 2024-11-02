@@ -19,6 +19,8 @@ namespace editor
 		static bool S_CREATE_WORLD_WINDOW = false;
 		static bool S_PROJECT_SETTINGS_WINDOW = false;
 		static const char* C_PROJECT_EXTENSION[] = {".project"};
+		static vector_t<string_t> S_WORLD_MODULES;
+		static ecs::world::sconfig S_WORLD_CONFIG;
 
 	} //- unnamed
 
@@ -163,6 +165,7 @@ namespace editor
 					ui::ctext_input input("##inputProjectName");
 					input
 						.multiline(false)
+						.resizeable(true)
 						.value(&S_PROJECT_NAME_TEXT_BUFFER)
 						.tooltip(S_PROJECT_NAME_TEXT_BUFFER)
 						.options(ui::ctext_input::options_allow_tab)
@@ -173,6 +176,7 @@ namespace editor
 
 					folder
 						.multiline(false)
+						.resizeable(true)
 						.value(&S_PROJECT_PATH_TEXT_BUFFER)
 						.tooltip(S_PROJECT_PATH_TEXT_BUFFER)
 						.hint("Project Directory")
@@ -225,25 +229,54 @@ namespace editor
 			.tooltip("Create World...")
 			.callback([&]()
 				{
+					//- Create and modify world configuration
 					ui::ctext_input input("##inputWorldName");
 					input
 						.multiline(false)
+						.resizeable(true)
 						.value(&S_WORLD_NAME_TEXT_BUFFER)
 						.tooltip(S_WORLD_NAME_TEXT_BUFFER)
 						.options(ui::ctext_input::options_allow_tab)
 						.hint("World Name")
 						.draw();
+
+					if (ImGui::CollapsingHeader("Modules"))
+					{
+						for (auto i = 0; i < S_WORLD_CONFIG.m_modules.size(); ++i)
+						{
+							ui::ctext_input input(fmt::format("##inputModule_{}", i));
+							input
+								.multiline(false)
+								.resizeable(true)
+								.value(&S_WORLD_CONFIG.m_modules[i])
+								.tooltip(S_WORLD_CONFIG.m_modules[i])
+								.options(ui::ctext_input::options_true_on_enter)
+								.hint("Module Name")
+								.draw();
+						}
+
+						if (ImGui::SmallButton(ICON_FA_PLUS))
+						{
+							S_WORLD_CONFIG.m_modules.emplace_back();
+						}
+					}
+
+					imgui::cui::edit_field_uint32(S_WORLD_CONFIG.m_threads, 1, engine::cthread_service::hardware_threads() / 2,
+						"World Threads", "The number of threads the world will be using. The maximum count orients itself on currents PC hardware threads!", 10000, 10001);
 				})
 			.draw())
 		{
-			auto verified = true;
 			auto result = false;
 
-			verified &= !S_WORLD_NAME_TEXT_BUFFER.empty();
+			//- Verify that world name is not empty
+			string_t name(S_WORLD_NAME_TEXT_BUFFER.data());
 
-			if (verified)
+			if (!name.empty())
 			{
-				result = ecs::cworld_manager::instance().create(S_WORLD_NAME_TEXT_BUFFER, !ecs::cworld_manager::instance().has_active());
+				S_WORLD_CONFIG.m_name = name;
+				S_WORLD_CONFIG.m_threads = 1;
+
+				result = ecs::cworld_manager::instance().create(S_WORLD_CONFIG, !ecs::cworld_manager::instance().has_active());
 			}
 
 			if (result)
@@ -252,6 +285,8 @@ namespace editor
 					imgui::notification_type_success);
 
 				S_WORLD_NAME_TEXT_BUFFER.clear();
+				*open = false;
+				S_WORLD_CONFIG = ecs::world::sconfig();
 			}
 			else
 			{

@@ -10,11 +10,20 @@
 
 namespace ecs
 {
-	namespace detail
+	namespace world
 	{
-		std::pair<bool, uint64_t> is_flecs_built_in_phase(const string_t& name);
+		using world_flags_t = int;
 
-	} //- detail
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sconfig final
+		{
+			string_t m_name;
+			vector_t<string_t> m_modules;
+			unsigned m_threads				= 1;
+			world_flags_t m_flags			= 0;
+		};
+
+	} //- world
 
 	//- Wrapper around flecs::world. Allows queries into current state of the ecs world and also in spatial world.
 	//- Note that a world is not intended to be constructed on its own, rather through the world manager.
@@ -25,7 +34,7 @@ namespace ecs
 		private core::cnon_copyable
 	{
 	public:
-		cworld(stringview_t name);
+		cworld(world::sconfig cfg);
 		~cworld();
 
 		void tick(float dt);

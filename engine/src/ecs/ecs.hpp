@@ -3,7 +3,4 @@
 
 namespace ecs
 {
-	//- convenient shortcut for accessing active world
-	ecs::cworld& world();
-
 } //- ecs
