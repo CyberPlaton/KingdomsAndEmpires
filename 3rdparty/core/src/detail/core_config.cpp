@@ -3,9 +3,9 @@
 namespace core
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	void serror_reporter::set_logger(error_report_function_t&& callback)
+	void serror_reporter::set_logger(error_report_function_t callback)
 	{
-		serror_reporter::instance().m_callback = std::move(callback);
+		serror_reporter::instance().m_callback = callback;
 	}
 
 } //- core

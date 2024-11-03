@@ -251,9 +251,8 @@ namespace fs
 	class cvirtual_filesystem final : public core::cservice
 	{
 	public:
-		//- TODO: why is this static? This is already a service.
-		//- Was this static for functionality testing?
-		STATIC_INSTANCE_EX(cvirtual_filesystem);
+		static constexpr auto C_FILESYSTEMS_RESERVE_COUNT = 16;
+		static constexpr auto C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT = 256;
 
 		cvirtual_filesystem();
 		~cvirtual_filesystem();

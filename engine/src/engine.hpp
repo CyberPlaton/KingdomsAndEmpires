@@ -1,6 +1,8 @@
 #pragma once
 #include <core.h>
+#include <flecs.h>
 #include <spritemancer.h>
+#include <argparse.h>
 #include "physics/b2_physics.hpp"
 #include "ecs/ecs.hpp"
 #include "editor/editor_tool.hpp"
@@ -17,7 +19,7 @@
 #include "io/io_native_filesystem.hpp"
 #include "animation/animation_module.hpp"
 #include "render/render_module.hpp"
-#include <argparse.h>
+#include "main.hpp"
 
 namespace engine
 {
@@ -46,29 +48,19 @@ namespace engine
 		private core::cnon_movable
 	{
 	public:
-		struct sconfig
-		{
-			vector_t<string_t> m_services_cfg;
-			vector_t<string_t> m_layers_cfg;
-			vector_t<string_t> m_plugins_cfg;
-
-			string_t m_startup_project;
-			launch_context_t m_mode;
-
-			RTTR_ENABLE();
-		};
-
-	public:
 		template<typename TService>
 		static auto service();
 
 		template<typename TResource>
 		static auto manager();
 
+		static void configure_args(argparse::ArgumentParser& args);
+		static void prepare(sconfig& cfg);
+
 		STATIC_INSTANCE_EX(cengine);
 		~cengine();
 
-		bool on_init(void* config, argparse::ArgumentParser& args) override final;
+		bool on_init(void* config) override final;
 		void on_update(float dt) override final;
 		void on_imgui() override final;
 		void on_shutdown() override final;

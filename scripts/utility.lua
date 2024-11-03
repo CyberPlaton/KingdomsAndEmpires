@@ -105,7 +105,7 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------
 function link_with_engine()
-	links{"engine"}
+	links{ENGINE_NAME}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -120,19 +120,27 @@ function set_include_path_to_self(name)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function set_include_path(is_third_party, name)
+function set_include_path(type_name, name)
 
-	if is_third_party == true then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", name, "include")}
+	if string.find(type_name, THIRDPARTY_DIR) then
+		externalincludedirs {path.join(WORKSPACE_DIR, THIRDPARTY_DIR, name, "include")}
+	elseif string.find(type_name, PLUGINS_DIR) then
+		externalincludedirs {path.join(WORKSPACE_DIR, PLUGINS_DIR, name, "include")}
+	elseif string.find(type_name, PROJECTS_DIR) then
+		externalincludedirs {path.join(WORKSPACE_DIR, PROJECTS_DIR, name, "include")}
 	else
-		externalincludedirs {path.join(WORKSPACE_DIR, "plugins", name, "include")}
+		if VERBOSE == true then
+			print("Unrecognized type name for include path '" .. name .. "'")
+		end
 	end
 
 	if VERBOSE == true then
-		if is_third_party == true then
-			print("\t\tadding dependency: " .. path.join(WORKSPACE_DIR, "3rdparty", name, "include"))
-		else
-			print("\t\tadding dependency: " .. path.join(WORKSPACE_DIR, "plugins", name, "include"))
+		if string.find(type_name, THIRDPARTY_DIR) then
+			print("\t\tadding dependency: " .. path.join(WORKSPACE_DIR, THIRDPARTY_DIR, name, "include"))
+		elseif string.find(type_name, PLUGINS_DIR) then
+			print("\t\tadding dependency: " .. path.join(WORKSPACE_DIR, PLUGINS_DIR, name, "include"))
+		elseif string.find(type_name, PROJECTS_DIR) then
+			print("\t\tadding dependency: " .. path.join(WORKSPACE_DIR, PROJECTS_DIR, name, "include"))
 		end
 	end
 end
@@ -145,7 +153,7 @@ end
 -- Creates a static library project. By default c sources are compiled too.
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language,
-	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes)
+	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes, depends_on_engine)
 	if VERBOSE == true then
 		print("\tstatic library: " .. name)
 	end
@@ -176,22 +184,27 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
 			links{p}
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 
 		-- set includes only from other plugins and thirdparty
 		for ii = 1, #plugin_headeronly_deps do
 			p = plugin_headeronly_deps[ii]
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_headeronly_deps do
 			p = thirdparty_headeronly_deps[ii]
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
+		end
+
+		-- link with engine by default, if not explicitly disabled
+		if depends_on_engine == true then
+			link_with_engine()
 		end
 
 		configure()
@@ -231,12 +244,12 @@ function add_target_library(name, build_options, define_flags, thirdparty_header
 		-- include and link deps from other plugins and thirdparty
 		for ii = 1, #thirdparty_headeronly_deps do
 			p = thirdparty_headeronly_deps[ii]
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 
 		-- set additional default defines
@@ -280,12 +293,12 @@ function add_target_library_ex(name, build_options, define_flags, plugin_deps, t
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
 			links{p}
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 
 		-- set additional default defines
@@ -326,20 +339,20 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
 			links{p}
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 		for ii = 1, #plugin_headeronly_deps do
 			p = plugin_headeronly_deps[ii]
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_headeronly_deps do
 			p = thirdparty_headeronly_deps[ii]
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 
 		-- link with engine by default, if not explicitly disabled
@@ -389,21 +402,90 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
 			links{p}
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 		for ii = 1, #plugin_headeronly_deps do
 			p = plugin_headeronly_deps[ii]
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_headeronly_deps do
 			p = thirdparty_headeronly_deps[ii]
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 
 		configure()
+end
+
+-- Create an application for given project to serve only as entry point and executable. Note: mostly a copy of add_target_app
+-- but does not include ALL projects source files, only two specific ones.
+------------------------------------------------------------------------------------------------------------------------
+function add_project_main_app(name, build_options, define_flags, plugin_deps, thirdparty_deps, plugin_headeronly_deps,
+	thirdparty_headeronly_deps, additional_includes)
+
+	app_name = name .. "_main"
+
+	if VERBOSE == true then
+		print("\tproject main application: " .. name .. " (".. app_name ..")")
+	end
+
+	project(app_name)
+		location (path.join(".project", app_name))
+
+		kind ("WindowedApp")
+		files{"main.cpp",
+			  "src/**.h",
+			  "src/**.cpp",
+			  "src/**.hpp",
+			  "src/**.c"}
+
+		buildoptions{build_options}
+		set_basic_defines()
+		defines{define_flags}
+		externalincludedirs{"include"}
+		externalincludedirs{additional_includes}
+		includedirs{additional_includes}
+		set_include_path_to_engine()
+		link_with_engine()
+		targetdir(path.join(VENDOR_DIR, OUTDIR))
+		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
+		set_libs_path()
+		set_basic_links()
+
+		-- include and link deps from other plugins and thirdparty
+		for ii = 1, #plugin_deps do
+			p = plugin_deps[ii]
+			links{p}
+			set_include_path(PLUGINS_DIR, p)
+		end
+		for ii = 1, #thirdparty_deps do
+			p = thirdparty_deps[ii]
+			links{p}
+			set_include_path(THIRDPARTY_DIR, p)
+		end
+		for ii = 1, #plugin_headeronly_deps do
+			p = plugin_headeronly_deps[ii]
+			set_include_path(PLUGINS_DIR, p)
+		end
+		for ii = 1, #thirdparty_headeronly_deps do
+			p = thirdparty_headeronly_deps[ii]
+			set_include_path(THIRDPARTY_DIR, p)
+		end
+
+		configure()
+end
+
+-- Create a project, note that projects depend on the engine and each plugin and thirdparty the engine depends on.
+------------------------------------------------------------------------------------------------------------------------
+function add_target_project(name, build_options, define_flags, plugin_deps, thirdparty_deps, plugin_headeronly_deps,
+	thirdparty_headeronly_deps, additional_includes)
+
+	group("projects/".. name)
+		add_project_main_app(name, build_options, define_flags, plugin_deps, thirdparty_deps, plugin_headeronly_deps,
+			thirdparty_headeronly_deps, additional_includes)
+	group ""
 end

@@ -209,35 +209,37 @@ void operator delete(void* p) { CORE_FREE(p); }
 #endif
 
 //------------------------------------------------------------------------------------------------------------------------
-#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-#define CORE_ZONE ZoneScoped
-#define CORE_NAMED_ZONE(name) ZoneScopedN(name)
-#elif PROFILE_ENABLE
-//- TODO: Currently we have no way of setting the category of a function
-//------------------------------------------------------------------------------------------------------------------------
-#define CORE_ZONE core::profile::cpu::cscoped_function			\
-ANONYMOUS_VARIABLE(cpu_profile_function)						\
-(																\
-	std::hash<std::thread::id>{}(std::this_thread::get_id()),	\
-	CORE_FUNC_SIG,												\
-	nullptr,													\
-	__FILE__,													\
-	__LINE__													\
-)
-//- Create a named zone
-//------------------------------------------------------------------------------------------------------------------------
-#define CORE_NAMED_ZONE(name) core::profile::cpu::cscoped_function			\
-ANONYMOUS_VARIABLE(cpu_profile_function)									\
-(																			\
-	std::hash<std::thread::id>{}(std::this_thread::get_id()),				\
-	SSTRING(name),															\
-	nullptr,																\
-	__FILE__,																\
-	__LINE__																\
-)
+#if PROFILE_ENABLE
+	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
+		#define CORE_ZONE ZoneScoped
+		#define CORE_NAMED_ZONE(name) ZoneScopedN(name)
+	#else
+		//- TODO: Currently we have no way of setting the category of a function
+		//------------------------------------------------------------------------------------------------------------------------
+		#define CORE_ZONE core::profile::cpu::cscoped_function			\
+		ANONYMOUS_VARIABLE(cpu_profile_function)						\
+		(																\
+			std::hash<std::thread::id>{}(std::this_thread::get_id()),	\
+			CORE_FUNC_SIG,												\
+			nullptr,													\
+			__FILE__,													\
+			__LINE__													\
+		)
+		//- Create a named zone
+		//------------------------------------------------------------------------------------------------------------------------
+		#define CORE_NAMED_ZONE(name) core::profile::cpu::cscoped_function			\
+		ANONYMOUS_VARIABLE(cpu_profile_function)									\
+		(																			\
+			std::hash<std::thread::id>{}(std::this_thread::get_id()),				\
+			SSTRING(name),															\
+			nullptr,																\
+			__FILE__,																\
+			__LINE__																\
+		)
+	#endif
 #else
-#define CORE_ZONE
-#define CORE_NAMED_ZONE(name)
+	#define CORE_ZONE
+	#define CORE_NAMED_ZONE(name)
 #endif
 
 namespace core
@@ -653,7 +655,7 @@ namespace core
 	{
 		STATIC_INSTANCE_EX(serror_reporter);
 
-		static void set_logger(error_report_function_t&& callback);
+		static void set_logger(error_report_function_t callback);
 
 		error_report_function_t m_callback = nullptr;
 	};

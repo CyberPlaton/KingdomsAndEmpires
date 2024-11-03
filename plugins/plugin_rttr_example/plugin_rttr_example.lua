@@ -40,20 +40,20 @@ function plugin_rttr_example()
 		for ii = 1, #plugin_deps do
 			p = plugin_deps[ii]
 			links{p}
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_deps do
 			p = thirdparty_deps[ii]
 			links{p}
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 		for ii = 1, #plugin_headeronly_deps do
 			p = plugin_headeronly_deps[ii]
-			set_include_path(false, p)
+			set_include_path(PLUGINS_DIR, p)
 		end
 		for ii = 1, #thirdparty_headeronly_deps do
 			p = thirdparty_headeronly_deps[ii]
-			set_include_path(true, p)
+			set_include_path(THIRDPARTY_DIR, p)
 		end
 
 		-- link with engine by default, if not explicitly disabled

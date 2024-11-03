@@ -18,6 +18,26 @@ namespace engine
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::configure_args(argparse::ArgumentParser& args)
+	{
+		//- common arguments available everywhere
+		args.add_argument("--world")
+			.default_value("");
+
+		//- configuration specific arguments
+#if DEBUG
+		args.add_argument("--console")
+			.default_value(true);
+#else
+#endif
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::prepare(sconfig& cfg)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cengine::~cengine()
 	{
 		//- FIXME: just for decoy, use some of the services so that they wont get optimized out for not being used...
@@ -27,7 +47,7 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cengine::on_init(void* config, argparse::ArgumentParser& args)
+	bool cengine::on_init(void* config)
 	{
 		m_result = engine_run_result_ok;
 		m_config = std::move(*(sconfig*)config);
@@ -290,15 +310,22 @@ RTTR_REGISTRATION
 	using namespace render;
 	using namespace animation;
 
-	rttr::registration::class_<cengine::sconfig>("cengine::sconfig")
-		.property("m_startup_project",	&cengine::sconfig::m_startup_project)
-		.property("m_mode",				&cengine::sconfig::m_mode)
-		.property("m_services_cfg",		&cengine::sconfig::m_services_cfg)
-		.property("m_layers_cfg",		&cengine::sconfig::m_layers_cfg)
-		.property("m_plugins_cfg",		&cengine::sconfig::m_plugins_cfg)
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::cregistrator<sconfig>("sconfig")
+		.prop("m_title",			&sconfig::m_title)
+		.prop("m_window_width",		&sconfig::m_window_width)
+		.prop("m_window_height",	&sconfig::m_window_height)
+		.prop("m_fullscreen",		&sconfig::m_fullscreen)
+		.prop("m_vsync",			&sconfig::m_vsync)
+		.prop("m_services_cfg",		&sconfig::m_services_cfg)
+		.prop("m_layers_cfg",		&sconfig::m_layers_cfg)
+		.prop("m_plugins_cfg",		&sconfig::m_plugins_cfg)
+		.prop("m_startup_project",	&sconfig::m_startup_project)
+		.prop("m_mode",				&sconfig::m_mode)
+		.prop("m_logging_verbosity",&sconfig::m_logging_verbosity)
+		.prop("m_show_console",		&sconfig::m_show_console)
 		;
-	
-	rttr::detail::default_constructor<cengine::sconfig>();
+
 	rttr::detail::default_constructor<vector_t<string_t>>();
 
 	//- Section: editor

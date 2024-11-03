@@ -56,7 +56,6 @@ namespace sm
 	namespace
 	{
 		static void* S_CONFIG				= nullptr;
-		static argparse::ArgumentParser S_ARGS;
 		static core::cmutex S_MUTEX;
 		static std::atomic_bool S_RUNNING;
 		static bool S_RESIZE_REQUIRED		= false;
@@ -76,21 +75,6 @@ namespace sm
 			entry::set_app(app);
 			entry::set_os(std::make_unique<cos_raylib>());
 			entry::set_renderer(std::make_unique<crenderer_raylib>());
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void engine_configure_args()
-		{
-			//- common arguments available everywhere
-			S_ARGS.add_argument("--world")
-				.default_value("");
-
-			//- configuration specific arguments
-#if DEBUG
-			S_ARGS.add_argument("--console")
-				.default_value(true);
-#else
-#endif
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -237,7 +221,7 @@ namespace sm
 			create_layer();
 
 			//- initialize client application
-			if (!entry::get_app()->on_init(S_CONFIG, S_ARGS))
+			if (!entry::get_app()->on_init(S_CONFIG))
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -274,26 +258,13 @@ namespace sm
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult configure(iapp* app, void* config, int argc, char* argv[])
+	sm::opresult prepare(iapp* app, void* config)
 	{
 		S_CONFIG = config;
 
 		engine_configure_platform_and_renderer(app);
 
-		engine_configure_args();
-
-		//- argparse throws on errorss
-		try
-		{
-			if (argc > 0 && argv)
-			{
-				S_ARGS.parse_args(argc, argv);
-			}
-		}
-		catch (const std::runtime_error& err)
-		{
-			return opresult_fail;
-		}
+		return opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -427,6 +398,12 @@ namespace sm
 	void set_logger(core::error_report_function_t callback)
 	{
 		serror_reporter::instance().m_callback = std::move(callback);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void configure_args(argparse::ArgumentParser& args)
+	{
+
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

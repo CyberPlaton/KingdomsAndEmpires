@@ -1,7 +1,7 @@
 include (path.join(SCRIPTS_DIR, "utility.lua"))
 
 function engine()
-	add_target_static_library("engine",
+	add_target_static_library(ENGINE_NAME,
 		{}, -- build_options
 		{}, -- define_flags
 		{}, -- plugin_deps
@@ -10,6 +10,6 @@ function engine()
 		{}, -- plugin_headeronly_deps
 		{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "asio"}, -- thirdparty_headeronly_deps
 		{"src/physics", "../3rdparty/rttr/rttr/src", "../3rdparty/asio/include/asio/asio/include"}, -- additional_includes
-		true)
+		false)
 end
 engine()

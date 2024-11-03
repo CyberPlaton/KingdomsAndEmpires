@@ -395,9 +395,6 @@ namespace fs
 {
 	namespace
 	{
-		constexpr auto C_FILESYSTEMS_RESERVE_COUNT = 16;
-		constexpr auto C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT = 256;
-
 	} //- unnamed
 
 	//- @reference: raylib UnloadFileData.
@@ -731,11 +728,6 @@ namespace fs
 	{
 		m_filesystems.reserve(C_FILESYSTEMS_RESERVE_COUNT);
 		m_opened_files.reserve(C_FILESYSTEM_OPENED_FILES_RESERVE_COUNT);
-
-		if (core::serror_reporter::instance().m_callback)
-		{
-			core::serror_reporter::instance().m_callback(core::logging_verbosity_debug, "Created Virtual File System");
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
