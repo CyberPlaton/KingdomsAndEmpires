@@ -2,7 +2,6 @@
 #include "detail/sm_config.hpp"
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_layer.hpp"
-#include <argparse.h>
 
 namespace sm
 {
@@ -10,7 +9,7 @@ namespace sm
 	opresult	run(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync);
 	scontext&	ctx();
 	void		set_logger(core::error_report_function_t callback);
-	void		configure_args(argparse::ArgumentParser& args);
+	void		configure_args(const args_ref_t& args);
 
 	//-- FIXME: in raylib we have only one window, so this function makes sense. When transitioning to bgfx,
 	//-- we should have a window service that allows for querying of the main window size and any window size.

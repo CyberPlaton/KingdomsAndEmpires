@@ -1,7 +1,6 @@
 #pragma once
 #include "platform.hpp"
 #include <core.h>
-#include <argparse.h>
 #include "raylib_integration/raylib.hpp"
 #include "imgui_integration/imgui.hpp"
 #include "imgui_integration/imgui_scopes.hpp"

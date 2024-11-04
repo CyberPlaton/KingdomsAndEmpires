@@ -18,18 +18,18 @@ namespace engine
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cengine::configure_args(argparse::ArgumentParser& args)
+	void cengine::configure_args(const args_ref_t& args)
 	{
-		//- common arguments available everywhere
-		args.add_argument("--world")
-			.default_value("");
-
-		//- configuration specific arguments
+		auto& arguments = *args.get();
 #if DEBUG
-		args.add_argument("--console")
-			.default_value(true);
+		const auto show_console = true;
 #else
+		const auto show_console = false;
 #endif
+
+		arguments
+			.arg("--world",		"-w", std::string())
+			.flag("--console",	"-c", show_console);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

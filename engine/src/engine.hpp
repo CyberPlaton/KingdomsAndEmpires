@@ -2,7 +2,6 @@
 #include <core.h>
 #include <flecs.h>
 #include <spritemancer.h>
-#include <argparse.h>
 #include "physics/b2_physics.hpp"
 #include "ecs/ecs.hpp"
 #include "editor/editor_tool.hpp"
@@ -54,7 +53,7 @@ namespace engine
 		template<typename TResource>
 		static auto manager();
 
-		static void configure_args(argparse::ArgumentParser& args);
+		static void configure_args(const args_ref_t& args);
 		static void prepare(sconfig& cfg);
 
 		STATIC_INSTANCE_EX(cengine);

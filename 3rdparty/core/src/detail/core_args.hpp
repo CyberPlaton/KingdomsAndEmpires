@@ -18,12 +18,13 @@ namespace core
 
 		~cargs() = default;
 
+		bool parse(int argc, char* argv[]);
+
 		//- Add an optional argument that can only be true or false
-		template<typename TType>
-		cargs& add_flag(stringview_t name, stringview_t short_name);
+		cargs& flag(stringview_t name, stringview_t short_name, const bool default_value = false);
 
 		template<typename TType>
-		cargs& add(stringview_t name, stringview_t short_name, TType default_value);
+		cargs& arg(stringview_t name, stringview_t short_name, TType default_value);
 
 		//- Check whether argument has the value
 		template<typename TType>
@@ -64,19 +65,7 @@ namespace core
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TType>
-	cargs& cargs::add_flag(stringview_t name, stringview_t short_name)
-	{
-		m_parser
-			.add_argument(short_name.data(), name.data())
-			.default_value(false)
-			.implicit_value(true);
-
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TType>
-	cargs& cargs::add(stringview_t name, stringview_t short_name, TType default_value)
+	cargs& cargs::arg(stringview_t name, stringview_t short_name, TType default_value)
 	{
 		m_parser
 			.add_argument(short_name.data(), name.data())

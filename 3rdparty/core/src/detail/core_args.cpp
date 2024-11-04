@@ -32,4 +32,33 @@ namespace core
 		return m_parser.is_used(name.data());
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	cargs& cargs::flag(stringview_t name, stringview_t short_name, const bool default_value /*= false*/)
+	{
+		m_parser
+			.add_argument(short_name.data(), name.data())
+			.default_value(default_value)
+			.implicit_value(true);
+
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool cargs::parse(int argc, char* argv[])
+	{
+		try
+		{
+			if (argc > 0 && argv != nullptr)
+			{
+				m_parser.parse_args(argc, argv);
+			}
+		}
+		catch (...)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 } //- core

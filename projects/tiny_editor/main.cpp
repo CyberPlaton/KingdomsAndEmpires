@@ -10,13 +10,13 @@ void core_io_error_function(uint8_t level, const std::string& message);
 
 //- Configure possible arguments and their default values etc.
 //------------------------------------------------------------------------------------------------------------------------
-void configure_args(argparse::ArgumentParser& args)
+void configure_args(const args_ref_t& args)
 {
 
 }
 
 //------------------------------------------------------------------------------------------------------------------------
-engine::sconfig tiny_editor_main(argparse::ArgumentParser& args)
+engine::sconfig tiny_editor_main(const args_ref_t& args)
 {
 	//- Dummy. Otherwise unknown editor layer will be optimized away
 	{

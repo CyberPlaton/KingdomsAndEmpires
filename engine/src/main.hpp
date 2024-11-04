@@ -1,7 +1,6 @@
 #pragma once
 #include <core.h>
 #include "config.hpp"
-#include <argparse.h>
 
 #define ENGINE_MAIN_ENTRY(entry_function, args_config_function, argc, argv) \
 engine::detail::engine_main_entry(entry_function, args_config_function, argc, argv)
@@ -25,8 +24,8 @@ namespace engine
 {
 	namespace detail
 	{
-		using engine_main_func_t = core::cfunction<engine::sconfig(argparse::ArgumentParser&)>;
-		using engine_args_config_func_t = core::cfunction<void(argparse::ArgumentParser&)>;
+		using engine_main_func_t = core::cfunction<engine::sconfig(const args_ref_t&)>;
+		using engine_args_config_func_t = core::cfunction<void(const args_ref_t&)>;
 
 		extern int engine_main_entry(engine_main_func_t main_entry, engine_args_config_func_t args_config, int argc, char* argv[]);
 

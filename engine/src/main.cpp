@@ -19,20 +19,14 @@ namespace engine
 			core::sentry::init();
 
 			//- Parse arguments and create a configuration
-			argparse::ArgumentParser args;
+			args_ref_t args = core::cargs::make_ref(engine::sinfo::C_NAME, engine::sinfo::C_VERSION);
 
-			try
-			{
-				//- Let everyone configure arguments and then parse them
-				cengine::configure_args(args);
-				sm::configure_args(args);
-				args_config(args);
-				if (argc > 0 && argv != nullptr)
-				{
-					args.parse_args(argc, argv);
-				}
-			}
-			catch (const std::runtime_error& err)
+			//- Let everyone configure arguments and then parse them
+			cengine::configure_args(args);
+			sm::configure_args(args);
+			args_config(args);
+
+			if (!args->parse(argc, argv))
 			{
 				return -1;
 			}
