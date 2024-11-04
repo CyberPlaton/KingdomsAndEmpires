@@ -8,7 +8,6 @@ namespace core
 	//- Note: when initialized with an existing piece of memory, that piece is copied and the original memory is freed.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cmemory final :
-		public std::enable_shared_from_this<cmemory>,
 		private cnon_copyable,
 		private cnon_movable
 	{

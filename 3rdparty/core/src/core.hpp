@@ -2,6 +2,7 @@
 #include "detail/core_config.hpp"
 #include "detail/core_algorithm.hpp"
 #include "detail/core_allocator.hpp"
+#include "detail/core_args.hpp"
 #include "detail/core_any.hpp"
 #include "detail/core_async.hpp"
 #include "detail/core_color.hpp"

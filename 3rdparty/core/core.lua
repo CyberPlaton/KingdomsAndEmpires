@@ -8,7 +8,7 @@ function core()
 					{"spdlog", "mimalloc", "hwinfo", "rttr"},
 					"c++",
 					{}, -- plugin_headeronly_deps
-					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "asio"}, -- thirdparty_headeronly_deps
+					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "asio", "argparse"}, -- thirdparty_headeronly_deps
 					{"src", "../rttr/rttr/src", "../asio/include/asio/asio/include"} -- additional_includes
 					)
 end

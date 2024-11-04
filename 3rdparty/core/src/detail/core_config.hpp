@@ -245,6 +245,7 @@ void operator delete(void* p) { CORE_FREE(p); }
 namespace core
 {
 	class cmemory;
+	class cargs;
 
 } //- core
 
@@ -310,6 +311,7 @@ using quat_t = glm::quat;
 //------------------------------------------------------------------------------------------------------------------------
 using byte_t = char;
 using memory_ref_t = ref_t<core::cmemory>;
+using args_ref_t = ref_t<core::cargs>;
 
 namespace core
 {
