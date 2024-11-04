@@ -5,10 +5,10 @@ function tiny_editor()
 	build_options = {}
 	define_flags = {}
 	plugin_deps = {"plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human", "plugin_kingdoms_and_empires", "plugin_status_effects"}
-	thirdparty_deps = {"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "imgui", "raylib"}
+	thirdparty_deps = {"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "imgui", "raylib", "tree_sitter"}
 	plugin_headeronly_deps = {}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "pfd", "asio"}
-	additional_includes = {"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"}
+	additional_includes = {"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include", "../../3rdparty/tree_sitter/tree_sitter/include"}
 	name = "tiny_editor"
 
 	-- Creating the tiny_editor is a special case, so we duplicate functions from add_target_project and add_project_main_app

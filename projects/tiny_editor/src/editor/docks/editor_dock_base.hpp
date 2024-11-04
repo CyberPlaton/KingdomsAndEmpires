@@ -5,6 +5,8 @@ namespace editor
 {
 	//- Base class for any UI entity, such as asset browser or entity inspector etc. For windows and elements that can be
 	//- closed, use the 'active' function to indicate whether to close or not, thats important as other systems may depend on it.
+	//-
+	//- TODO: rename. Layer is a reserved name from engine and can lead to misunderstandings.
 	//------------------------------------------------------------------------------------------------------------------------
 	class clayer_base : public ccontext_holder
 	{
