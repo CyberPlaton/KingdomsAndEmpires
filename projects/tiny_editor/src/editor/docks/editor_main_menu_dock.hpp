@@ -1,7 +1,6 @@
 #pragma once
 #include "editor_dock_base.hpp"
 #include "../editor_element_stack_system.hpp"
-#include "material_editor/editor_material_editor.hpp"
 
 namespace editor
 {

@@ -17,10 +17,10 @@ namespace imgui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cchild_scope::cchild_scope(stringview_t name, const ImVec2& size /*= {0.0f, 0.0f}*/,
+	cchild_scope::cchild_scope(stringview_t name, const vec2_t& size /*= {0.0f, 0.0f}*/,
 		ImGuiChildFlags child_flags /*= ImGuiChildFlags_None*/, ImGuiWindowFlags window_flags /*= ImGuiWindowFlags_None*/)
 	{
-		m_result = ImGui::BeginChild(name.data(), size, child_flags, window_flags);
+		m_result = ImGui::BeginChild(name.data(), { size.x, size.y }, child_flags, window_flags);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

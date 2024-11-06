@@ -14,6 +14,7 @@ namespace sm
 	//-- FIXME: in raylib we have only one window, so this function makes sense. When transitioning to bgfx,
 	//-- we should have a window service that allows for querying of the main window size and any window size.
 	vec2_t		window_size();
+	vec2_t		window_position();
 
 	//- Create a new layer for rendering. Everything rendered on this layer are drawn on a separate render target and
 	//- are then drawn as a whole one previously drawn render targets (layers)

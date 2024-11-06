@@ -18,6 +18,8 @@ namespace editor::ui
 		m_id(id), m_open(open), m_flags(flags)
 	{
 		CORE_ASSERT(open, "Invalid operation");
+
+		m_flags = m_flags == ImGuiWindowFlags_None ? C_WINDOW_FLAGS : flags;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

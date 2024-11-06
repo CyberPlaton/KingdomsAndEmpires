@@ -19,7 +19,7 @@ namespace imgui
 		ImGui::CreateContext();
 
 		auto& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_ViewportsEnable;
 
 		rlImGuiSetup(true);
 

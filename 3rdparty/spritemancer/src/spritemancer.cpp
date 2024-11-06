@@ -317,6 +317,13 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t window_position()
+	{
+		const auto p = raylib::GetWindowPosition();
+		return vec2_t{ SCAST(float, p.x), SCAST(float, p.y) };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	unsigned create_layer()
 	{
 		auto& renderdata = ctx().m_render_data;
