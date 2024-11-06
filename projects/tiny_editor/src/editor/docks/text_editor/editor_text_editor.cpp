@@ -76,9 +76,8 @@ namespace editor
 		imgui::cid_scope id_scope(C_WINDOW_ID.data());
 
 		const auto position = ImGui::GetContentRegionAvail() * 0.5f;
-		const auto title = m_loaded_text_file.empty() ? "Text Editor" : fs::cfileinfo(m_loaded_text_file).filename().string();
 
-		if (const auto window_scope = imgui::cwindow_scope(title, &active(), C_TEXT_EDITOR_FLAGS, vec2_t(position.x, position.y), C_SIZE_MIN, C_SIZE_MAX))
+		if (const auto window_scope = imgui::cwindow_scope(assemble_title(), &active(), C_TEXT_EDITOR_FLAGS, vec2_t(position.x, position.y), C_SIZE_MIN, C_SIZE_MAX))
 		{
 			show_main_menu();
 			show_text_editor();
@@ -152,12 +151,14 @@ namespace editor
 		const auto s = ImGui::GetWindowSize();
 		const auto m = ImGui::GetMousePos();
 		const auto c = ImGui::GetCursorScreenPos();
+		const auto focused = ImGui::IsWindowFocused();
 
 		//- Do update variables
 		m_data.m_imgui_data.m_window_position = { p.x, p.y };
 		m_data.m_imgui_data.m_window_size = { s.x, s.y };
 		m_data.m_imgui_data.m_mouse_position = { m.x, m.y };
 		m_data.m_imgui_data.m_cursor_position = { c.x, c.y };
+		m_data.m_imgui_data.m_window_focused = focused;
 
 		//- Do update source text
 		if (dirty())
@@ -194,6 +195,13 @@ namespace editor
 	ivec2_t ctext_editor::mouse_to_line_column() const
 	{
 		return { 0, 0 };
+	}
+
+	//-------------------------------------------------------------------------------------------------------
+	string_t ctext_editor::assemble_title() const
+	{
+		const auto filename = fs::cfileinfo(m_loaded_text_file).filename().string();
+		return m_loaded_text_file.empty() ? "Text Editor" : fmt::format("{} {}", filename, readonly() ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN);
 	}
 
 } //- editor
