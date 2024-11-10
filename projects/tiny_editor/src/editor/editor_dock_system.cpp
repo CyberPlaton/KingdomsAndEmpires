@@ -70,12 +70,18 @@ namespace editor
 
 		//- As of now there is only one main window, so just query directly
 		const auto size = sm::window_size();
+		const auto pos = sm::window_position();
 
 		if (size.x != context.m_window_width || size.y != context.m_window_height)
 		{
 			imgui::cui::on_resize(size.x, size.y);
 			context.m_window_width = size.x;
 			context.m_window_height = size.y;
+		}
+		if (pos.x != context.m_window_position_x || pos.y != context.m_window_position_y)
+		{
+			context.m_window_position_x = pos.x;
+			context.m_window_position_y = pos.y;
 		}
 	}
 

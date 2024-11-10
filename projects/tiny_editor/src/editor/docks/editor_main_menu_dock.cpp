@@ -114,7 +114,7 @@ namespace editor
 				}
 				if (imgui::cmenu_item("Text Editor"))
 				{
-					m_elements_stack.push<ctext_editor>(ctx());
+					m_elements_stack.push<textedit::ctext_editor>(ctx());
 				}
 			}
 
