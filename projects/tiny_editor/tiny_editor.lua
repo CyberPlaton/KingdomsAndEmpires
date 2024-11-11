@@ -66,10 +66,9 @@ function tiny_editor()
 			set_include_path(THIRDPARTY_DIR, p)
 		end
 
-		-- include and link current active project
+		-- include active project, you cannot link to it, as it is an application itself,
+		-- what we might want to do is link and inlcude deps of the active project recursively, but thats harder
 		set_include_path(PROJECTS_DIR, ACTIVE_PROJECT)
-		links{ACTIVE_PROJECT}
-
 		configure()
 	group ""
 end
