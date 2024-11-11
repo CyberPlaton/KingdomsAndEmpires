@@ -7,13 +7,6 @@ namespace editor
 	namespace textedit
 	{
 		//-------------------------------------------------------------------------------------------------------
-		struct sstyle final
-		{
-			float m_line_spacing	= 1.0f;
-			float m_tab_size		= 4.0f;
-		};
-
-		//-------------------------------------------------------------------------------------------------------
 		struct sdata final
 		{
 			//- General data
@@ -45,6 +38,7 @@ namespace editor
 		private:
 			ctext_editor_backend m_backend;
 			sdata m_data;
+			sstyle m_style;
 
 			string_t m_loaded_text_file;
 			string_t m_selected_text_file;

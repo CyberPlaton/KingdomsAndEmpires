@@ -48,13 +48,25 @@ namespace editor
 			color_palette_editor_current_line_fill,
 			color_palette_editor_current_line_fill_inactive,
 			color_palette_editor_current_line_outline,
+
+			color_palette_count,
 		};
 
-		//- c must be a standalone character (<128) or a leading byte of a UTF-8 encoded code sequence
+		//-------------------------------------------------------------------------------------------------------
+		struct sstyle final
+		{
+			array_t<unsigned, color_palette_count> m_colors;
+			float m_line_spacing = 1.0f;
+			float m_tab_size = 4.0f;
+		};
+
+		//- character c must be a standalone character (<128) or a leading byte of a UTF-8 encoded code sequence
 		unsigned utf8_char_length(const char& c);
 
-		//- 
+		//- convert incoming character (from ImGui input) to UTF-8 encoded integer
 		unsigned char_to_utf8(char* buffer, unsigned buffer_length, char_t c);
+
+
 
 	}//- textedit
 

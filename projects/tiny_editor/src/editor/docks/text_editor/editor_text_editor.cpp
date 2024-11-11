@@ -33,6 +33,30 @@ namespace editor
 		{
 			m_backend.init();
 			m_data.m_current_string.reserve(1024);
+
+			//- Initialize default color style
+			//- Text editor source code colors
+			m_style.m_colors[color_palette_none]								= core::scolor(core::common_color_neutral800).abgr();
+			m_style.m_colors[color_palette_text_keyword]						= core::scolor(core::common_color_blue_dark).abgr();
+			m_style.m_colors[color_palette_text_number]							= core::scolor(core::common_color_green).abgr();
+			m_style.m_colors[color_palette_text_string]							= core::scolor(core::common_color_orange_light).abgr();
+			m_style.m_colors[color_palette_text_literal]						= core::scolor(core::common_color_neutral800).abgr();
+			m_style.m_colors[color_palette_text_punctuation]					= core::scolor(core::common_color_neutral600).abgr();
+			m_style.m_colors[color_palette_text_preprocessor]					= core::scolor(core::common_color_neutral300).abgr();
+			m_style.m_colors[color_palette_text_identifier]						= core::scolor(core::common_color_orange).abgr();
+			m_style.m_colors[color_palette_text_resolved_identifier]			= core::scolor(core::common_color_orange_light).abgr();
+			m_style.m_colors[color_palette_text_comment]						= core::scolor(core::common_color_green_dark).abgr();
+			m_style.m_colors[color_palette_text_multiline_comment]				= core::scolor(core::common_color_green_dark).abgr();
+			//- Text editor colors
+			m_style.m_colors[color_palette_editor_background]					= core::scolor(core::common_color_neutral100).abgr();
+			m_style.m_colors[color_palette_editor_cursor]						= core::scolor(core::common_color_neutral1000).abgr();
+			m_style.m_colors[color_palette_editor_selection]					= core::scolor(core::common_color_blue_light).abgr();
+			m_style.m_colors[color_palette_editor_error_marker]					= core::scolor(core::common_color_red_dark).abgr();
+			m_style.m_colors[color_palette_editor_line_number]					= core::scolor(core::common_color_green_light).abgr();
+			m_style.m_colors[color_palette_editor_current_line_fill]			= core::scolor(core::common_color_blue_light).abgr();
+			m_style.m_colors[color_palette_editor_current_line_fill_inactive]	= core::scolor(core::common_color_blue_dark).abgr();
+			m_style.m_colors[color_palette_editor_current_line_outline]			= core::scolor(core::common_color_neutral500).abgr();
+
 			return true;
 		}
 
@@ -45,7 +69,6 @@ namespace editor
 		//-------------------------------------------------------------------------------------------------------
 		void ctext_editor::on_update(float dt)
 		{
-			m_backend.update();
 		}
 
 		//-------------------------------------------------------------------------------------------------------
@@ -92,6 +115,9 @@ namespace editor
 				{
 					update();
 
+					auto scroll_x = ImGui::GetScrollX();
+					auto scroll_y = ImGui::GetScrollY();
+
 					//- Select range of lines to be displayed
 					unsigned from_line = 0;
 					unsigned to_line = m_backend.line_count();
@@ -109,8 +135,8 @@ namespace editor
 								glyph.m_char == '\t' ||
 								glyph.m_char == ' ') && !m_data.m_current_string.empty())
 							{
-								const ImVec2 new_offset(0.0f, 0.0f);
-								draw_list.AddText(new_offset, m_data.m_current_color, m_data.m_current_string.c_str());
+								const ImVec2 new_offset(scroll_x, scroll_y);
+								draw_list.AddText(new_offset, m_style.m_colors[m_data.m_current_color], m_data.m_current_string.c_str());
 
 								m_data.m_current_string_length = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, m_data.m_current_string.c_str(), nullptr, nullptr).x;
 								m_data.m_current_string.clear();
@@ -147,12 +173,14 @@ namespace editor
 
 						if (!m_data.m_current_string.empty())
 						{
-							const ImVec2 new_offset(0.0f, 0.0f);
-							draw_list.AddText(new_offset, m_data.m_current_color, m_data.m_current_string.c_str());
+							const ImVec2 new_offset(scroll_x, scroll_y);
+							draw_list.AddText(new_offset, m_style.m_colors[m_data.m_current_color], m_data.m_current_string.c_str());
 
 							m_data.m_current_string.clear();
 						}
 					}
+
+					ImGui::Dummy(ImVec2(from_line, to_line));
 				}
 			}
 		}
