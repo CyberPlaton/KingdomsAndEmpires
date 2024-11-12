@@ -42,16 +42,19 @@ static raylib::Texture2D FontTexture;
 static ImGuiMouseCursor CurrentMouseCursor = ImGuiMouseCursor_COUNT;
 static std::map<ImGuiMouseCursor, raylib::MouseCursor> MouseCursorMap;
 
+//-------------------------------------------------------------------------------------------------------
 static const char* rlImGuiGetClipText(void*)
 {
     return raylib::GetClipboardText();
 }
 
+//-------------------------------------------------------------------------------------------------------
 static void rlImGuiSetClipText(void*, const char* text)
 {
 	raylib::SetClipboardText(text);
 }
 
+//-------------------------------------------------------------------------------------------------------
 static void rlImGuiNewFrame()
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -132,6 +135,7 @@ static void rlImGuiNewFrame()
     }
 }
 
+//-------------------------------------------------------------------------------------------------------
 #define FOR_ALL_KEYS(X) \
     do { \
     X(KEY_APOSTROPHE); \
@@ -241,9 +245,10 @@ static void rlImGuiNewFrame()
     X(KEY_KP_EQUAL); \
     } while(0)
 
+//-------------------------------------------------------------------------------------------------------
 #define SET_KEY_DOWN(KEY) io.KeysDown[KEY] = IsKeyDown(KEY)
 
-
+//-------------------------------------------------------------------------------------------------------
 static void rlImGuiEvents()
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -254,6 +259,7 @@ static void rlImGuiEvents()
         io.AddInputCharacter(pressed);
 }
 
+//-------------------------------------------------------------------------------------------------------
 static void rlImGuiTriangleVert(ImDrawVert& idx_vert)
 {
     Color* c;
@@ -263,6 +269,7 @@ static void rlImGuiTriangleVert(ImDrawVert& idx_vert)
     raylib::rlVertex2f(idx_vert.pos.x, idx_vert.pos.y);
 }
 
+//-------------------------------------------------------------------------------------------------------
 static void rlImGuiRenderTriangles(unsigned int count, int indexStart, const ImVector<ImDrawIdx>& indexBuffer, const ImVector<ImDrawVert>& vertBuffer, void* texturePtr)
 {
     if (count < 3)
@@ -298,6 +305,7 @@ static void rlImGuiRenderTriangles(unsigned int count, int indexStart, const ImV
 	raylib::rlEnd();
 }
 
+//-------------------------------------------------------------------------------------------------------
 static void EnableScissor(float x, float y, float width, float height)
 {
 	raylib::rlEnableScissorTest();
@@ -305,6 +313,7 @@ static void EnableScissor(float x, float y, float width, float height)
 	raylib::rlScissor((int)x * io.DisplayFramebufferScale.x, (GetScreenHeight() - (int)(y + height)) * io.DisplayFramebufferScale.y, (int)width * io.DisplayFramebufferScale.x, (int)height * io.DisplayFramebufferScale.y);
 }
 
+//-------------------------------------------------------------------------------------------------------
 static void rlRenderData(ImDrawData* data)
 {
 	raylib::rlDrawRenderBatchActive();
@@ -334,6 +343,7 @@ static void rlRenderData(ImDrawData* data)
 	raylib::rlEnableBackfaceCulling();
 }
 
+//-------------------------------------------------------------------------------------------------------
 void SetupMouseCursors()
 {
     MouseCursorMap.clear();
@@ -348,11 +358,13 @@ void SetupMouseCursors()
     MouseCursorMap[ImGuiMouseCursor_NotAllowed] = raylib::MOUSE_CURSOR_NOT_ALLOWED;
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiBeginInitImGui()
 {
     ImGui::CreateContext(nullptr);
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiEndInitImGui()
 {
     SetupMouseCursors();
@@ -391,10 +403,10 @@ void rlImGuiEndInitImGui()
 
     io.ClipboardUserData = nullptr;
 
-
     rlImGuiReloadFonts();
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiSetup(bool dark)
 {
     /*rlImGuiBeginInitImGui();*/
@@ -418,6 +430,7 @@ void rlImGuiSetup(bool dark)
     rlImGuiEndInitImGui();
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiReloadFonts()
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -437,6 +450,7 @@ void rlImGuiReloadFonts()
     io.Fonts->TexID = &FontTexture;
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiBegin()
 {
     rlImGuiNewFrame();
@@ -444,12 +458,14 @@ void rlImGuiBegin()
     ImGui::NewFrame();
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiEnd()
 {
     ImGui::Render();
     rlRenderData(ImGui::GetDrawData());
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiShutdown()
 {
     for (const auto& tx : LoadedTextures)
@@ -459,25 +475,31 @@ void rlImGuiShutdown()
     LoadedTextures.clear();
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiImage(const raylib::Texture *image)
 {
     ImGui::Image((ImTextureID)image, ImVec2(float(image->width), float(image->height)));
 }
 
-bool rlImGuiImageButton(const raylib::Texture *image) {
+//-------------------------------------------------------------------------------------------------------
+bool rlImGuiImageButton(const raylib::Texture *image)
+{
     return ImGui::ImageButton((ImTextureID)image, ImVec2(float(image->width), float(image->height)));
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiImageSize(const raylib::Texture *image, int width, int height)
 {
     ImGui::Image((ImTextureID)image, ImVec2(float(width), float(height)));
 }
 
+//-------------------------------------------------------------------------------------------------------
 bool rlImGuiImageButtonSize(const raylib::Texture* image, int width, int height)
 {
     return ImGui::ImageButton((ImTextureID)image, ImVec2(float(width), float(height)));
 }
 
+//-------------------------------------------------------------------------------------------------------
 void rlImGuiImageRect(const raylib::Texture* image, int destWidth, int destHeight, raylib::Rectangle sourceRect)
 {
     ImVec2 uv0;

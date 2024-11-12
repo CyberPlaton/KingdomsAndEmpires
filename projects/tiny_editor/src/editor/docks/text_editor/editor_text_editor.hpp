@@ -15,12 +15,17 @@ namespace editor
 			vec2_t m_cursor_position= { 0.0f, 0.0f }; //- Position of the ImGui drawing cursor, i.e. screen space position where we will be drawing
 			float m_zoom			= 1.0f;
 			bool m_window_focused	= false;
+			float m_line_spacing	= 1.0f;
+			float m_font_size		= 1.0f;
+			float m_tab_size		= 4.0f;
 
 			//- Render state data
-			color_palette m_current_color	= color_palette_none;
+			color_palette m_previous_color	= color_palette_none;
 			string_t m_current_string;
 			float m_current_string_length	= 0.0f;
 			float m_current_longest_line	= 0.0f;
+			vec2_t m_character_advance		= { 0.0f, 0.0f };
+			float m_space_size				= 1.0f;
 		};
 
 		//- Window responsible for editing a source text. By default we target Lua script files to be edited in engine.
@@ -52,10 +57,8 @@ namespace editor
 			void show_main_menu();
 			void show_main_window();
 
-			void render_tabulator(const sglyph& g);
-			void render_whitespace(const sglyph& g);
-
 			float line_length(const text_line_t& line);
+			float text_length(char c) const;
 
 			void load_from_file(const fs::cfileinfo& info);
 			void save_to_file(const fs::cfileinfo& info);
