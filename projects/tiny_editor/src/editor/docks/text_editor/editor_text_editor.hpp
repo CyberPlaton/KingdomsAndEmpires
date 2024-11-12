@@ -20,6 +20,7 @@ namespace editor
 			color_palette m_current_color	= color_palette_none;
 			string_t m_current_string;
 			float m_current_string_length	= 0.0f;
+			float m_current_longest_line	= 0.0f;
 		};
 
 		//- Window responsible for editing a source text. By default we target Lua script files to be edited in engine.
@@ -53,6 +54,8 @@ namespace editor
 
 			void render_tabulator(const sglyph& g);
 			void render_whitespace(const sglyph& g);
+
+			float line_length(const text_line_t& line);
 
 			void load_from_file(const fs::cfileinfo& info);
 			void save_to_file(const fs::cfileinfo& info);

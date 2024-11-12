@@ -101,6 +101,12 @@ namespace editor
 		//-------------------------------------------------------------------------------------------------------
 		void ctext_editor::show_main_window()
 		{
+			//- Reset render data
+			m_data.m_current_color = color_palette_none;
+			m_data.m_current_string.clear();
+			m_data.m_current_string_length = 0.0f;
+			m_data.m_current_longest_line = 0.0f;
+
 			imgui::cid_scope id_scope(C_WINDOW_ID.data());
 
 			const auto position = ImGui::GetContentRegionAvail() * 0.5f;
@@ -115,8 +121,10 @@ namespace editor
 				{
 					update();
 
+
 					auto scroll_x = ImGui::GetScrollX();
 					auto scroll_y = ImGui::GetScrollY();
+					const auto cursor_screen_position = ImGui::GetCursorScreenPos();
 
 					//- Select range of lines to be displayed
 					unsigned from_line = 0;
@@ -125,6 +133,12 @@ namespace editor
 					for (auto line_idx = from_line; line_idx < to_line; ++line_idx)
 					{
 						const auto& line = m_backend.line_at(line_idx);
+
+						m_data.m_current_longest_line = std::max(m_data.m_current_longest_line, line_length(line));
+
+						auto line_start_screen_position = ImVec2(cursor_screen_position.x, cursor_screen_position.y);
+						auto text_screen_position = ImVec2(line_start_screen_position.x, line_start_screen_position.y);
+						auto text_buffer_offset = ImVec2(0.0f, 0.0f);
 
 						for (auto glyph_idx = 0; glyph_idx < line.size();)
 						{
@@ -135,11 +149,12 @@ namespace editor
 								glyph.m_char == '\t' ||
 								glyph.m_char == ' ') && !m_data.m_current_string.empty())
 							{
-								const ImVec2 new_offset(scroll_x, scroll_y);
-								draw_list.AddText(new_offset, m_style.m_colors[m_data.m_current_color], m_data.m_current_string.c_str());
+								const ImVec2 new_offset(text_screen_position.x + text_buffer_offset.x, text_screen_position.y + text_buffer_offset.y);
+								draw_list.AddText(new_offset, 0xff9999ff, m_data.m_current_string.c_str());
 
 								m_data.m_current_string_length = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, m_data.m_current_string.c_str(), nullptr, nullptr).x;
 								m_data.m_current_string.clear();
+								text_buffer_offset.x += m_data.m_current_string_length;
 							}
 
 							switch (glyph.m_char)
@@ -173,14 +188,14 @@ namespace editor
 
 						if (!m_data.m_current_string.empty())
 						{
-							const ImVec2 new_offset(scroll_x, scroll_y);
+							const ImVec2 new_offset(text_screen_position.x, text_screen_position.y);
 							draw_list.AddText(new_offset, m_style.m_colors[m_data.m_current_color], m_data.m_current_string.c_str());
 
 							m_data.m_current_string.clear();
 						}
 					}
 
-					ImGui::Dummy(ImVec2(from_line, to_line));
+					ImGui::Dummy(ImVec2(m_data.m_current_longest_line, C_SIZE_MAX.y));
 				}
 			}
 		}
@@ -195,6 +210,19 @@ namespace editor
 		void ctext_editor::render_whitespace(const sglyph& g)
 		{
 
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+		float ctext_editor::line_length(const text_line_t& line)
+		{
+			string_t s;
+
+			for (const auto& glyph : line)
+			{
+				s.push_back(glyph.m_char);
+			}
+
+			return ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, s.c_str(), nullptr, nullptr).x;
 		}
 
 		//-------------------------------------------------------------------------------------------------------
