@@ -304,7 +304,7 @@ namespace imgui
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cui::image(const raylib::Texture* texture, const vec2_t& size,
-		const core::scolor& bg /*= BLACK*/, const core::scolor& tint /*= RAYWHITE*/)
+		const core::scolor& bg /*= WHITE*/, const core::scolor& tint /*= RAYWHITE*/)
 	{
 		image(texture, size, { 0.0f, 0.0f }, { 1.0f, 1.0f }, bg, tint);
 	}

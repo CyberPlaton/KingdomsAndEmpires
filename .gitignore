@@ -38,19 +38,12 @@
 *.user
 *.sln
 *.xlsx
-*.project
+**/.project
 
 *.workspace
 *.mk
 compile_commands.json
 Makefile
-
-
-bin/
-tools/drmemory
-intermediate/
-GopnikCity/*.txt
-GopnikCity/GopnikCity/*.txt
 
 .vs/
 .git/

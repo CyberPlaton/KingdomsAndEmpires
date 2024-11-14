@@ -140,6 +140,9 @@ namespace editor
 		//-------------------------------------------------------------------------------------------------------
 		void ctext_editor::show_main_window()
 		{
+			//- Show reference text editor
+			m_text_editor_reference.Render("Reference Text Editor", ImVec2(0.0f, 0.0f), true);
+
 			//- Reset render data
 			m_data.m_previous_color = color_palette_none;
 			m_data.m_current_string.clear();
@@ -303,6 +306,7 @@ namespace editor
 
 				//- Copy source file text to buffer
 				m_backend.set_source((const char*)memory->data());
+				m_text_editor_reference.SetText((const char*)memory->data());
 			}
 			else
 			{

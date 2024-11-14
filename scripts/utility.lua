@@ -427,7 +427,7 @@ end
 function add_project_main_app(name, build_options, define_flags, plugin_deps, thirdparty_deps, plugin_headeronly_deps,
 	thirdparty_headeronly_deps, additional_includes)
 
-	app_name = name .. "_main"
+	app_name = name
 
 	if VERBOSE == true then
 		print("\tproject main application: " .. name .. " (".. app_name ..")")

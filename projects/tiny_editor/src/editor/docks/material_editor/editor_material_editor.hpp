@@ -18,6 +18,7 @@ namespace editor
 		void shutdown() override final;
 		void on_update(float dt) override final;
 		void on_ui_render() override final;
+		void on_world_render() override final;
 
 	private:
 		material_graph_ref_t m_graph;

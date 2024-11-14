@@ -51,6 +51,8 @@ namespace editor
 			language m_language = language_lua;
 			text_editor_flags_t m_flags = text_editor_flag_none;
 
+			TextEditor m_text_editor_reference;
+
 		private:
 			void update();
 			bool handle_io();

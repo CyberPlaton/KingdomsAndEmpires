@@ -1,6 +1,6 @@
 include "scripts/utility.lua"
 
-ENGINE_NAME		= "kokoro_engine"
+ENGINE_NAME		= "kokoro"
 VERBOSE			= true
 SCRIPTS_DIR		= "<undefined>"
 VENDOR_DIR		= "<undefined>"
@@ -15,14 +15,14 @@ THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann", "mimalloc", "imgu
 PLUGINS = {"plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human",
 			"plugin_status_effects", "plugin_kingdoms_and_empires", "plugin_ai", "plugin_rttr_example"}
 
-PROJECTS = {"kingdoms_and_empires", "tiny_editor"}
-ACTIVE_PROJECT = "kingdoms_and_empires"
+PROJECTS = {"kingdoms_and_empires", "tiny_editor", "kingdom_wars"}
+ACTIVE_PROJECT = "kingdom_wars"
 
 EXES = {"engine_launcher", "spritemancer_testbed", "unittest_launcher"}
 PLATFORM = "<undefined>"
 OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"
 
-workspace(ENGINE_NAME)
+workspace(ACTIVE_PROJECT)
 	startproject(ACTIVE_PROJECT)
 	architecture "x86_64"
 	configurations{"debug", "hybrid", "release"}
