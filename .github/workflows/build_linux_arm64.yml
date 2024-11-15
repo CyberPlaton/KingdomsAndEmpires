@@ -3,7 +3,7 @@ name: linux_arm64
 on: "push"
 
 jobs:
-  build_linux_arm16:
+  build_linux_arm64:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -11,8 +11,10 @@ jobs:
         arch: [ARM64]
 
     steps:
-      - name: Checkout code
+      - name: Checkout code with submodules
         uses: actions/checkout@v2
+        with:
+          submodules: 'true'
 
       - name: Install X11 development libraries
         run: |

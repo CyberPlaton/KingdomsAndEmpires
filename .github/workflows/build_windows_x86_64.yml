@@ -6,8 +6,11 @@ jobs:
   build_windows_x86_64:
     runs-on: windows-latest
     steps:
-      - name: Checkout code
+      - name: Checkout code with submodules
         uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
       - uses: microsoft/setup-msbuild@v1.1
         with:
           msbuild-architecture: x64

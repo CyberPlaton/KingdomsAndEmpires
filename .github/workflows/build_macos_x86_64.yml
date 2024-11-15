@@ -6,8 +6,10 @@ jobs:
   build_macos_x86_64:
     runs-on: macos-latest
     steps:
-      - name: Checkout code
+      - name: Checkout code with submodules
         uses: actions/checkout@v2
+        with:
+          submodules: 'true'
 
       - name: Set up Premake for macOS
         uses: abel0b/setup-premake@v2.3
