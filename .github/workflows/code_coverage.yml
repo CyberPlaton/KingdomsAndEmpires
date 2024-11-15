@@ -1,6 +1,6 @@
 name: Code Coverage
 
-on: 
+on:
   push:
     branches:
       - master
@@ -11,10 +11,20 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v2
 
-    - name: Set up Build Environment
-      run: sudo apt-get update && sudo apt-get install -y g++ lcov
+    - name: Install X11 development libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
+
+    - name: Set up Premake for Linux
+      uses: abel0b/setup-premake@v2.3
+      with:
+        version: "5.0.0-beta2"
+
+    - name: Generate Makefiles with Premake
+      run: premake5 gmake2
 
     - name: Build Project
       run: make
