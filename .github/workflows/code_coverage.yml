@@ -1,30 +1,40 @@
 name: Code Coverage
 
-on: 
-  push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   test:
-    name: Run tests and collect coverage
+    name: Run Tests and Collect Coverage
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'  # Specify the Python version you want to use
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: pip install pytest pytest-cov
+        run: sudo apt-get update && sudo apt-get install -y lcov g++
+
+      - name: Build project
+        run: |
+          make clean
+          make
 
       - name: Run tests
-        run: pytest --cov --cov-report=xml
+        run: ./run_tests # Replace with your test executable
 
-      - name: Upload results to Codecov
+      - name: Generate coverage report
+        run: |
+          lcov --capture --directory . --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/test/*' --output-file coverage.info
+          lcov --list coverage.info
+
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.info
+          flags: unittests
+          fail_ci_if_error: true
