@@ -1,5 +1,14 @@
 include "scripts/utility.lua"
 
+-- Postponed thirdparty:
+-- "slang"
+-- Postponed plugins:
+-- "plugin_kingdoms_core", "plugin_race_human", "plugin_kingdoms_and_empires"
+-- Postponed projects:
+-- "kingdoms_and_empires"
+-- Postponed exes:
+-- "engine_launcher", "spritemancer_testbed", "unittest_launcher"
+
 ENGINE_NAME		= "kokoro"
 VERBOSE			= true
 SCRIPTS_DIR		= "<undefined>"
@@ -10,15 +19,15 @@ PLUGINS_DIR		= "plugins"
 PROJECTS_DIR	= "projects"
 THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann", "mimalloc", "imgui", "pfd",
 			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua", "rttr", "raylib",
-			  "Tracy", "slang", "spritemancer", "tree_sitter", "unittest", "hwinfo", "asio"}
+			  "Tracy", "spritemancer", "tree_sitter", "unittest", "hwinfo", "asio"}
 
-PLUGINS = {"plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human",
-			"plugin_status_effects", "plugin_kingdoms_and_empires", "plugin_ai", "plugin_rttr_example"}
+PLUGINS = {"plugin_module_example", "plugin_camera_system",
+			"plugin_status_effects", "plugin_ai", "plugin_rttr_example"}
 
-PROJECTS = {"kingdoms_and_empires", "tiny_editor", "kingdom_wars"}
+PROJECTS = {"tiny_editor", "kingdom_wars"}
 ACTIVE_PROJECT = "kingdom_wars"
 
-EXES = {"engine_launcher", "spritemancer_testbed", "unittest_launcher"}
+EXES = {}
 PLATFORM = "<undefined>"
 OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"
 
