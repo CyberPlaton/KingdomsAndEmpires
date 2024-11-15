@@ -3,7 +3,7 @@ include "scripts/utility.lua"
 -- Postponed thirdparty:
 -- "slang"
 -- Postponed plugins:
--- "plugin_kingdoms_core", "plugin_race_human", "plugin_kingdoms_and_empires"
+-- "plugin_kingdoms_core", "plugin_race_human", "plugin_kingdoms_and_empires", "plugin_status_effects"
 -- Postponed projects:
 -- "kingdoms_and_empires"
 -- Postponed exes:
@@ -21,8 +21,7 @@ THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann", "mimalloc", "imgu
 			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua", "rttr", "raylib",
 			  "Tracy", "spritemancer", "tree_sitter", "unittest", "hwinfo", "asio"}
 
-PLUGINS = {"plugin_module_example", "plugin_camera_system",
-			"plugin_status_effects", "plugin_ai", "plugin_rttr_example"}
+PLUGINS = {"plugin_module_example", "plugin_camera_system", "plugin_ai", "plugin_rttr_example"}
 
 PROJECTS = {"tiny_editor", "kingdom_wars"}
 ACTIVE_PROJECT = "kingdom_wars"
