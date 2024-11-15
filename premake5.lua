@@ -22,7 +22,7 @@ EXES = {"engine_launcher", "spritemancer_testbed", "unittest_launcher"}
 PLATFORM = "<undefined>"
 OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"
 
-workspace(ACTIVE_PROJECT)
+workspace("Workspace")
 	startproject(ACTIVE_PROJECT)
 	architecture "x86_64"
 	configurations{"debug", "hybrid", "release"}
