@@ -25,4 +25,4 @@ jobs:
         run: |
           premake5 vs2022
           msbuild Workspace.sln -property:Configuration=release
-        working-directory: D:/a/Workspace/Workspace
+        working-directory: D:/a/KingdomsAndEmpires/KingdomsAndEmpires
