@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Run Tests and Collect Coverage
+    name: Collect Coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,13 +17,8 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y lcov g++
 
-      - name: Build project
-        run: |
-          make clean
-          make
-
       - name: Run tests
-        run: ./run_tests # Replace with your test executable
+        run: ./run_tests # Replace with your actual test executable
 
       - name: Generate coverage report
         run: |
