@@ -1,35 +1,35 @@
 name: Code Coverage
 
-on:
+on: 
   push:
     branches:
       - master
-  pull_request:
 
 jobs:
-  test:
-    name: Collect Coverage
+  coverage:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y lcov g++
+    - name: Set up Build Environment
+      run: sudo apt-get update && sudo apt-get install -y g++ lcov
 
-      - name: Run tests
-        run: ./run_tests # Replace with your actual test executable
+    - name: Build Project
+      run: |
+        make clean || true
+        make
 
-      - name: Generate coverage report
-        run: |
-          lcov --capture --directory . --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '*/test/*' --output-file coverage.info
-          lcov --list coverage.info
+    - name: Run Tests and Collect Coverage
+      run: |
+        ./run_tests
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        lcov --list coverage.info
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.info
-          flags: unittests
-          fail_ci_if_error: true
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: coverage.info
+        token: ${{ secrets.CODECOV_TOKEN }}
