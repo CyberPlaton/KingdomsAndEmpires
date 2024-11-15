@@ -13,25 +13,14 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: Install X11 development libraries
+    - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
-
-    - name: Set up Premake for Linux
-      uses: abel0b/setup-premake@v2.3
-      with:
-        version: "5.0.0-beta2"
-
-    - name: Generate Makefiles with Premake
-      run: premake5 gmake2
-
-    - name: Build Project
-      run: make
+        sudo apt-get install -y lcov
 
     - name: Run Tests and Collect Coverage
       run: |
-        ./run_tests
+        ./run_tests  # Run the tests (if already built or if building is unnecessary)
         lcov --capture --directory . --output-file coverage.info
         lcov --remove coverage.info '/usr/*' --output-file coverage.info
         lcov --list coverage.info
