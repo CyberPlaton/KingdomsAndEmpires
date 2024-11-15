@@ -36,7 +36,9 @@ namespace engine
 
 			if (cfg.m_show_console)
 			{
-				AllocConsole();
+#if CORE_PLATFORM_WINDOWS
+				AllocConsole();		
+#endif
 			}
 
 			//- Initialize logging as fast as possible and set reporters

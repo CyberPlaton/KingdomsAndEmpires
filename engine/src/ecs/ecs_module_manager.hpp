@@ -2,6 +2,7 @@
 #include "ecs_module.hpp"
 #include "ecs_system.hpp"
 #include "ecs_world_context_holder.hpp"
+#include "ecs_component.hpp"
 
 namespace ecs
 {
@@ -73,7 +74,7 @@ namespace ecs
 
 		auto system = builder.each(callback);
 
-		system.add<tag::ssystem>();
+		system.template add<ecs::tag::ssystem>();
 
 		//- Set options that are required after system entity creation
 		{

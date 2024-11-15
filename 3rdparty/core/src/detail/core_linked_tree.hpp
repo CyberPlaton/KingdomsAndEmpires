@@ -1,6 +1,7 @@
 #pragma once
 #include "core_config.hpp"
 #include "core_dynamic_pool.hpp"
+#include "core_algorithm.hpp"
 
 namespace core
 {

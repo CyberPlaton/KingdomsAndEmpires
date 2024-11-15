@@ -9,7 +9,7 @@ namespace editor
 	{
 	public:
 		template<typename TValueType>
-		cnode_constant(const id_t id, cmaterial_graph* graph, stringview_t name, const TValueType default = (TValueType)0);
+		cnode_constant(const id_t id, cmaterial_graph* graph, stringview_t name, const TValueType default_value = (TValueType)0);
 		~cnode_constant() = default;
 
 		void emit(cgeneration_context& ctx, const slot_idx_t idx) override final;
@@ -24,9 +24,9 @@ namespace editor
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TValueType>
 	cnode_constant::cnode_constant(const id_t id, cmaterial_graph* graph, stringview_t name,
-		const TValueType default /*= (TValueType)0*/) : cnode(id, graph)
+		const TValueType default_value /*= (TValueType)0*/) : cnode(id, graph)
 	{
-		create_slot<TValueType>(name, slot_type_output, default);
+		create_slot<TValueType>(name, slot_type_output, default_value);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

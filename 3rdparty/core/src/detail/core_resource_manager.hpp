@@ -1,6 +1,8 @@
 #pragma once
 #include "core_config.hpp"
 #include "core_future_type.hpp"
+#include "core_algorithm.hpp"
+#include "core_async.hpp"
 
 namespace core
 {

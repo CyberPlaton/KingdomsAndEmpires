@@ -59,7 +59,7 @@ namespace editor
 			if (const auto menu = imgui::cmenu_scope(ICON_FA_ADDRESS_BOOK " Add"))
 			{
 				const auto& world = ecs::cworld_manager::instance().active();
-				auto& e = world.em().entity(ctx().m_inspected_entity_uuid);
+				auto e = world.em().entity(ctx().m_inspected_entity_uuid);
 
 				for (const auto& c : world.cm().components())
 				{
@@ -76,7 +76,7 @@ namespace editor
 	void centity_inspector::show_inspected_entity()
 	{
 		const auto& world = ecs::cworld_manager::instance().active();
-		auto& e = world.em().entity(ctx().m_inspected_entity_uuid);
+		auto e = world.em().entity(ctx().m_inspected_entity_uuid);
 
 		for (const auto& c : world.cm().all(e))
 		{

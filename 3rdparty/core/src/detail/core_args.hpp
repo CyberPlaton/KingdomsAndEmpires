@@ -80,7 +80,7 @@ namespace core
 	{
 		try
 		{
-			m_parser.get(name.data()).store_into(value);
+			value = m_parser.get(name.data());
 		}
 		catch (...)
 		{

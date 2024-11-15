@@ -128,7 +128,7 @@ namespace rttr
 		template<typename... ARGS>
 		cregistrator& ctor(detail::constructor_policy policy = detail::constructor_policy::constructor_policy_as_object)
 		{
-			auto& c = m_object.template constructor<ARGS...>();
+			auto c = m_object.template constructor<ARGS...>();
 
 			switch (policy)
 			{

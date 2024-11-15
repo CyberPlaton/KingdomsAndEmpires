@@ -29,7 +29,7 @@ namespace editor
 
 		for (const auto& id : order)
 		{
-			auto& node = ctx.graph()->node_at(id);
+			auto node = ctx.graph()->node_at(id);
 
 			for (slot_idx_t idx = 0; idx < node->input_count(); ++idx)
 			{
@@ -63,7 +63,7 @@ namespace editor
 
 			sorted.push_back(id);
 
-			auto& node = m_material_graph->node_at(id);
+			auto node = m_material_graph->node_at(id);
 
 			for (auto idx = 0; idx < node->output_count(); ++idx)
 			{

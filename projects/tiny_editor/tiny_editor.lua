@@ -4,7 +4,7 @@ function tiny_editor()
 
 	build_options = {}
 	define_flags = {}
-	plugin_deps = {"plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_race_human", "plugin_kingdoms_and_empires", "plugin_status_effects"}
+	plugin_deps = {"plugin_module_example", "plugin_camera_system"}
 	thirdparty_deps = {"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "imgui", "raylib", "tree_sitter"}
 	plugin_headeronly_deps = {}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "pfd", "asio"}

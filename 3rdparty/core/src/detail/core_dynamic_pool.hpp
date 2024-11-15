@@ -1,5 +1,6 @@
 #pragma once
 #include "core_config.hpp"
+#include "core_allocator.hpp"
 
 namespace core
 {

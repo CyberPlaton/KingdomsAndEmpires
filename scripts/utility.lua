@@ -29,6 +29,9 @@ function set_basic_defines()
 			buildoptions{"/Zc:__cplusplus", "/Zc:preprocessor"}
 		filter{}
 	elseif PLATFORM == "linux" then
+		filter {"action:gmake*"}
+			buildoptions{"-fPIC"}
+		filter{}
 	elseif PLATFORM == "macosx" then
 	else
 	end
