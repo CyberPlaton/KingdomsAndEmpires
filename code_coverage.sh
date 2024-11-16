@@ -1,6 +1,6 @@
 @echo off
 # Generate Makefiles using Premake
-premake5 gmake2
+./premake5 gmake2
 
 # Compile the unittest_launcher target in release mode
 make unittest_launcher config=release
