@@ -27,8 +27,28 @@ PROJECTS = {"tiny_editor", "kingdom_wars"}
 ACTIVE_PROJECT = "kingdom_wars"
 
 EXES = {}
-PLATFORM = "<undefined>"
-OUTDIR = "%{cfg.buildcfg}-%{cfg.system}"
+PLATFORM		= "<undefined>"
+OUTDIR			= "%{cfg.buildcfg}-%{cfg.system}"
+SYSTEM_VERSION	= "<undefined>"
+
+-- determine available platforms
+if os.host() == "linux" then
+	SYSTEM_VERSION = "latest"
+	PLATFORM = "linux"
+	system "linux"
+elseif os.host() == "windows" then
+	SYSTEM_VERSION = "latest"
+	PLATFORM = "windows"
+	system "windows"
+elseif os.host() == "macosx" then
+	SYSTEM_VERSION = "10.13"
+	PLATFORM = "macosx"
+	system "macosx"
+else
+	print("Unrecognoized or unsupported platform: " .. os.host())
+	return
+end
+
 
 workspace("Workspace")
 	startproject(ACTIVE_PROJECT)
@@ -36,24 +56,9 @@ workspace("Workspace")
 	configurations{"debug", "hybrid", "release"}
 	language "C++"
 	cppdialect "C++17"
-	systemversion "latest"
+	systemversion(SYSTEM_VERSION)
 	staticruntime "Off"
 	flags{"MultiProcessorCompile"}
-
-	-- determine available platforms
-	if os.host() == "linux" then
-		PLATFORM = "linux"
-		system "linux"
-	elseif os.host() == "windows" then
-		PLATFORM = "windows"
-		system "windows"
-	elseif os.host() == "macosx" then
-		PLATFORM = "macosx"
-		system "macosx"
-	else
-		print("Unrecognoized or unsupported platform: " .. os.host())
-		return
-	end
 
 	-- setup variables
 	WORKSPACE_DIR = os.getcwd()

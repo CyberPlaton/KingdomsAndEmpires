@@ -17,7 +17,7 @@ function tiny_editor()
 	group("projects/" .. name)
 
 	-- Duplicate add_project_main_app
-	app_name = name .. "_main"
+	app_name = name
 
 	if VERBOSE == true then
 		print("\tproject main application: " .. name .. " (".. app_name ..")")
