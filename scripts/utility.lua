@@ -33,6 +33,7 @@ function set_basic_defines()
 			buildoptions{"-fPIC"}
 		filter{}
 	elseif PLATFORM == "macosx" then
+		buildoptions{"-mmacosx-version-min=10.12"}
 	else
 	end
 
@@ -77,7 +78,7 @@ function set_basic_links()
 	elseif PLATFORM == "linux" then
 		links{"GL", "rt", "m", "X11"}
 	elseif PLATFORM == "macosx" then
-		links{"Cocoa", "IOKit", "CoreFoundation"}
+		links{"Cocoa", "IOKit", "CoreFoundation", "OpenGL"}
 	else
 	end
 end

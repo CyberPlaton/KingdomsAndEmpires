@@ -15,10 +15,10 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: Install X11 development libraries
+      - name: Install OpenGL and X11 development libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
+          sudo apt-get install -y libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libgl1-mesa-dev xorg-dev
 
       - name: Set up Premake for Linux
         uses: abel0b/setup-premake@v2.3
