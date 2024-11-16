@@ -41,7 +41,7 @@ elseif os.host() == "windows" then
 	PLATFORM = "windows"
 	system "windows"
 elseif os.host() == "macosx" then
-	SYSTEM_VERSION = "10.13"
+	SYSTEM_VERSION = "10.15"
 	PLATFORM = "macosx"
 	system "macosx"
 else

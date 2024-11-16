@@ -33,7 +33,6 @@ function set_basic_defines()
 			buildoptions{"-fPIC"}
 		filter{}
 	elseif PLATFORM == "macosx" then
-		buildoptions{"-mmacosx-version-min=10.12"}
 	else
 	end
 
