@@ -4,12 +4,6 @@
 #include "tests/engine/unittest_engine.hpp"
 #include "tests/plugin_ai/unittest_plugin_ai.hpp"
 #include "tests/plugin_camera_system/unittest_plugin_camera_system.hpp"
-#include "tests/plugin_kingdoms_and_empires/unittest_plugin_kingdoms_and_empires.hpp"
-#include "tests/plugin_kingdoms_core/unittest_plugin_kingdoms_core.hpp"
-#include "tests/plugin_race_human/unittest_plugin_race_human.hpp"
-#include "tests/plugin_render_system/unittest_plugin_render_system.hpp"
-#include "tests/plugin_status_effects/unittest_plugin_status_effects.hpp"
-#include "tests/plugin_tiny_editor/unittest_plugin_tiny_editor.hpp"
 #include <iostream>
 
 //------------------------------------------------------------------------------------------------------------------------
