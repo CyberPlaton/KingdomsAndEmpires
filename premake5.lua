@@ -7,7 +7,7 @@ include "scripts/utility.lua"
 -- Postponed projects:
 -- "kingdoms_and_empires"
 -- Postponed exes:
--- "engine_launcher", "spritemancer_testbed", "unittest_launcher"
+-- "engine_launcher", "spritemancer_testbed"
 
 ENGINE_NAME		= "kokoro"
 VERBOSE			= true
@@ -26,7 +26,7 @@ PLUGINS = {"plugin_module_example", "plugin_camera_system", "plugin_ai", "plugin
 PROJECTS = {"tiny_editor", "kingdom_wars"}
 ACTIVE_PROJECT = "kingdom_wars"
 
-EXES = {}
+EXES			= { "unittest_launcher" }
 PLATFORM		= "<undefined>"
 OUTDIR			= "%{cfg.buildcfg}-%{cfg.system}"
 SYSTEM_VERSION	= "<undefined>"

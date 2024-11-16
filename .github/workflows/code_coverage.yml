@@ -28,12 +28,12 @@ jobs:
       - name: Generate Makefiles with Premake
         run: premake5 gmake2
 
-      - name: Build Project
-        run: make
+      - name: Build Unit Tests
+        run: make unittest_launcher config=release
 
       - name: Run Tests and Collect Coverage
         run: |
-          ./run_tests
+          ./vendor/release-linux/unittest_launcher
           lcov --capture --directory . --output-file coverage.info
           lcov --remove coverage.info '/usr/*' --output-file coverage.info
           lcov --list coverage.info
