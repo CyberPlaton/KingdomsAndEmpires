@@ -2,8 +2,8 @@ include (path.join(SCRIPTS_DIR, "utility.lua"))
 
 function unittest()
 	name = "unittest"
-	build_options = {}
-	define_flags = {"UNITTEST_NO_EXCEPTIONS", "UNITTEST_DISABLE_SHORT_MACROS"}
+	build_options = {"-fPIC"}
+	define_flags = {"UNITTEST_DISABLE_SHORT_MACROS"}
 
 	project(name)
 		language ("c++")
@@ -37,6 +37,10 @@ function unittest()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
+
+		if IS_WARNING_AND_ERRORS_ENABLED == false then
+			set_and_disable_common_warnings_errors()
+		end
 
 		configure()
 end

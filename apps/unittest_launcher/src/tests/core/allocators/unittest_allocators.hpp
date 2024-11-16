@@ -1,5 +1,6 @@
 #pragma once
 #include <core.h>
+#include <unittest.h>
 
 namespace unittest
 {
