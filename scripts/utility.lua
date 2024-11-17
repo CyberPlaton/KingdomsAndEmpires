@@ -14,7 +14,7 @@ function set_and_disable_common_warnings_errors()
 		filter {"action:vs*"}
 			buildoptions{"/wd4005"}						-- disable "macro redefined" warning
 		filter{"action:gmake*", "action:clang*"}
-			buildoptions{"-Wno-builtin-macro-redefined"}
+			buildoptions{"-Wno-builtin-macro-redefined", "-Wno-macro-redefined"}
 		filter{}
 end
 
@@ -33,6 +33,7 @@ function set_basic_defines()
 			buildoptions{"-fPIC"}
 		filter{}
 	elseif PLATFORM == "macosx" then
+        defines{"GL_SILENCE_DEPRECATED"}
 	else
 	end
 
@@ -77,7 +78,8 @@ function set_basic_links()
 	elseif PLATFORM == "linux" then
 		links{"GL", "rt", "m", "X11"}
 	elseif PLATFORM == "macosx" then
-		links{"Cocoa", "IOKit", "CoreFoundation", "OpenGL"}
+        -- setting macos built-in libraries is required to be done through linkoptions
+        linkoptions{"-framework Cocoa -framework CoreVideo -framework CoreFoundation -framework IOKit -framework OpenGL"}
 	else
 	end
 end

@@ -183,7 +183,7 @@ namespace sm
 			}
 
 			const auto w = (float)target.texture.width;
-			const auto h = target.texture.height;
+			const auto h = (float)target.texture.height;
 
 			raylib::Rectangle src = { 0.0f, 0.0f, w, -h };
 			raylib::Rectangle dst = { 0.0f, 0.0f, w * layer.m_scale.x, h * layer.m_scale.y };

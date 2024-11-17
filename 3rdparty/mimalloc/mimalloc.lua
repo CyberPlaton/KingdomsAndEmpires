@@ -23,20 +23,16 @@ function mimalloc()
 			  "src/stats.c",
 			  "src/prim/prim.c"}
 
-		buildoptions{build_options}
+		buildoptions{}
 		includedirs{"include"}
+        externalincludedirs{"include"}
 		set_include_path_to_engine()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
-
-		filter{"configurations:debug"}
-			symbols "On"
-			optimize "Off"
-
-		filter{"configurations:release"}
-			symbols "On"
-			optimize "Full"
 		filter{}
+  
+        set_basic_defines()
+        configure()
 end
 mimalloc()

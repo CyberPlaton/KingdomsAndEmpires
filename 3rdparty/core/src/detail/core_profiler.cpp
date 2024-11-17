@@ -1,5 +1,6 @@
 #include "core_profiler.hpp"
 #include "core_mutex.hpp"
+#include <mimalloc.h>
 
 namespace core
 {
@@ -68,14 +69,14 @@ namespace core
 					core::cscope_mutex m(S_MUTEX);
 
 					//- Gather and update current data
-					uint64_t elapsed;
-					uint64_t user_time;
-					uint64_t sys_time;
-					uint64_t current_rss;
-					uint64_t peak_rss;
-					uint64_t current_commit;
-					uint64_t peak_commit;
-					uint64_t page_faults;
+					size_t elapsed;
+                    size_t user_time;
+                    size_t sys_time;
+                    size_t current_rss;
+                    size_t peak_rss;
+                    size_t current_commit;
+                    size_t peak_commit;
+                    size_t page_faults;
 					mi_process_info(&elapsed, &user_time, &sys_time, &current_rss, &peak_rss, &current_commit, &peak_commit, &page_faults);
 
 					const auto* mistats = mi_stats_get_default();

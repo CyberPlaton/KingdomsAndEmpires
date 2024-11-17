@@ -668,11 +668,11 @@ namespace asio::detail
 {
 	//------------------------------------------------------------------------------------------------------------------------
 	template <typename Exception>
-	static inline void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_DEFAULTED_PARAM);
+	void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_DEFAULTED_PARAM);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template <typename Exception>
-	static inline void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_PARAM)
+	void throw_exception(const Exception& e ASIO_SOURCE_LOCATION_PARAM)
 	{
 		if (core::serror_reporter::instance().m_callback)
 		{

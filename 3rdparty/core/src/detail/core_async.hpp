@@ -16,7 +16,7 @@ namespace core
 
 	private:
 		template<typename TCallable>
-		static [[maybe_unused]] decltype(auto) launch(TCallable&& function)
+		static decltype(auto) launch(TCallable&& function)
 		{
 			static tf::Executor C_EXECUTOR;
 

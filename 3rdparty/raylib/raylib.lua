@@ -101,7 +101,10 @@ function raylib()
 				  path.join(glfw_path, "cocoa_window.m"),
 				  path.join(glfw_path, "nsgl_context.m"),
 			}
-			links{"Cocoa", "IOKit", "CoreFoundation"}
+   
+            -- Note: when using links on macosx premake creates a "-lLibrary", while for built-in
+            -- libraries we require the "framework" keyword
+            linkoptions{"-framework Cocoa -framework CoreVideo -framework IOKit -framework OpenGL -framework CoreFoundation"}
 		else
 			print("Critical failure generating spritemancer project: 'Unknown Platform'!")
 		end
