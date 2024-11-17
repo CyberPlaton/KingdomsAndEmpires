@@ -3,6 +3,7 @@
 #include <lua.h>
 #include <luabridge.h>
 #include <iostream>
+#include "src/kingdoms_module.hpp"
 
 void core_io_error_function(uint8_t level, const std::string& message);
 void configure_args(const args_ref_t& args);
@@ -12,13 +13,14 @@ engine::sconfig kingdom_wars_main(const args_ref_t& args)
 {
 	engine::sconfig cfg;
 
+	cfg.m_layers_cfg.emplace_back("ckingdoms");
 	cfg.m_mode = core::launch_context_client;
 	cfg.m_title = "kingdom wars";
 	cfg.m_fullscreen = true;
 	cfg.m_vsync = true;
 
 #if CORE_DEBUG
-	cfg.m_logging_verbosity = core::logging_verbosity_warn;
+	cfg.m_logging_verbosity = core::logging_verbosity_debug;
 	cfg.m_show_console = true;
 #else
 	cfg.m_logging_verbosity = core::logging_verbosity_error;

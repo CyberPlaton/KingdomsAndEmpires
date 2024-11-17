@@ -45,6 +45,7 @@
 compile_commands.json
 Makefile
 *.DS_Store
+**/concept
 
 .vs/
 .git/

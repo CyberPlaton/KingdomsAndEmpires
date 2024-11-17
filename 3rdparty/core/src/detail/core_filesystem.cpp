@@ -760,22 +760,25 @@ namespace fs
 	{
 		if (filesystem && filesystem->ready())
 		{
-			string_t _alias = alias.data();
+			string_t alias_string = alias.data();
 
-			if (!string_utils::ends_with(_alias, "/"))
+			if (!string_utils::ends_with(alias_string, "/"))
 			{
-				_alias += "/";
+				alias_string += "/";
 			}
 
-			if (const auto it = m_filesystems.find(_alias); it == m_filesystems.end())
+			if (const auto it = m_filesystems.find(alias_string); it == m_filesystems.end())
 			{
-				m_filesystems[_alias] = filesystem;
-				m_sorted_aliases[_alias] = filesystem;
+				m_filesystems[alias_string] = filesystem;
+				m_sorted_aliases[alias_string] = filesystem;
 
 				if (core::serror_reporter::instance().m_callback)
 				{
 					core::serror_reporter::instance().m_callback(core::logging_verbosity_info,
-						fmt::format("Filesystem alias '{}' added to Virtual File System", _alias));
+						fmt::format("Filesystem '{}' with alias '{}' for real path '{}' added to Virtual File System",
+							filesystem->filesystem_name().data(),
+							filesystem->base_path().data(),
+							alias_string.data()));
 				}
 			}
 		}
@@ -784,7 +787,7 @@ namespace fs
 			if (core::serror_reporter::instance().m_callback)
 			{
 				core::serror_reporter::instance().m_callback(core::logging_verbosity_error,
-					fmt::format("Filesystem with alias '{}' could not be added to Virtual File System, because it is not ready!", alias));
+					fmt::format("Filesystem with alias '{}' could not be added to Virtual File System, because it is not ready!", alias.data()));
 			}
 		}
 	}

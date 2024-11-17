@@ -4,8 +4,6 @@ namespace engine
 {
 	namespace
 	{
-		constexpr auto C_RESOURCES_PATH = "resources";
-
 		//- Default services required for engine and others
 		constexpr array_t<stringview_t, 7> C_SERVICES = { "cthread_service"
 														, "cvirtual_filesystem"
@@ -60,14 +58,14 @@ namespace engine
 		register_resource_managers();
 		register_layers();
 
-		//- set virtual path to resources
+		//- by default we set path to projects resources
+		//- TODO: this should be revised and more flexible, e.g. when the game is published the cwd will
+		//- certainly change and we must handle it
 		auto fs = core::cfilesystem(core::cfilesystem::cwd());
 		fs.backwards();
 		fs.backwards();
-		fs.backwards();
-		fs.backwards();
 
-		if (fs.forwards(C_RESOURCES_PATH))
+		if (fs.forwards("resources"))
 		{
 			const char* path = fs.current().view();
 
@@ -78,12 +76,14 @@ namespace engine
 			else
 			{
 				log_error(fmt::format("Failed initializing virtual file system at path '/' for real path '{}'", path));
+				m_result = engine_run_result_fail;
 			}
 		}
 		else
 		{
 			log_error(fmt::format("Failed locating default resources path at '{}'",
 				fs.current().view()));
+			m_result = engine_run_result_fail;
 		}
 
 		//- load startup project

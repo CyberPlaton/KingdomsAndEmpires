@@ -78,8 +78,7 @@ namespace engine
 		void register_layers();
 	};
 
-	//- Shortcuts for common operations
-	//- Find given service
+	//- Find given service, returns nullptr if non-existent
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TService>
 	auto engine::cengine::service()
@@ -87,12 +86,16 @@ namespace engine
 		return core::cservice_manager::find<TService>();
 	}
 
-	//- Find resource manager for given resource
+	//- Find resource manager for given resource, returns nullptr if non-existent
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource>
 	auto engine::cengine::manager()
 	{
-		return core::cservice_manager::find<cresource_service>()->manager<TResource>();
+		if (const auto* rs = core::cservice_manager::find<cresource_service>(); rs)
+		{
+			return rs->manager<TResource>();
+		}
+		return nullptr;
 	}
 
 } //- engine
