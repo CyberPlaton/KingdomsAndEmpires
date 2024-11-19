@@ -13,6 +13,7 @@ engine::sconfig kingdom_wars_main(const args_ref_t& args)
 {
 	engine::sconfig cfg;
 
+	cfg.m_startup_project = "/kingdom_wars.project";
 	cfg.m_layers_cfg.emplace_back("ckingdoms");
 	cfg.m_mode = core::launch_context_client;
 	cfg.m_title = "kingdom wars";

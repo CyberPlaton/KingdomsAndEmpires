@@ -777,8 +777,8 @@ namespace fs
 					core::serror_reporter::instance().m_callback(core::logging_verbosity_info,
 						fmt::format("Filesystem '{}' with alias '{}' for real path '{}' added to Virtual File System",
 							filesystem->filesystem_name().data(),
-							filesystem->base_path().data(),
-							alias_string.data()));
+							alias_string.data(),
+							filesystem->base_path().data()));
 				}
 			}
 		}
