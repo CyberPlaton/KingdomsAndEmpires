@@ -58,34 +58,6 @@ namespace engine
 		register_resource_managers();
 		register_layers();
 
-		//- by default we set path to projects resources
-		//- TODO: this should be revised and more flexible, e.g. when the game is published the cwd will
-		//- certainly change and we must handle it
-		auto fs = core::cfilesystem(core::cfilesystem::cwd());
-		fs.backwards();
-		fs.backwards();
-
-		if (fs.forwards("resources"))
-		{
-			const char* path = fs.current().view();
-
-			if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(path, "/"))
-			{
-				service<fs::cvirtual_filesystem>()->add_filesystem("/", filesystem);
-			}
-			else
-			{
-				log_error(fmt::format("Failed initializing virtual file system at path '/' for real path '{}'", path));
-				m_result = engine_run_result_fail;
-			}
-		}
-		else
-		{
-			log_error(fmt::format("Failed locating default resources path at '{}'",
-				fs.current().view()));
-			m_result = engine_run_result_fail;
-		}
-
 		//- load startup project
 		auto* project_service = service<cproject_service>();
 
@@ -250,6 +222,34 @@ namespace engine
 		}
 
 		core::cservice_manager::init();
+
+		//- by default we set path to projects resources
+		//- TODO: this should be revised and more flexible, e.g. when the game is published the cwd will
+		//- certainly change and we must handle it
+		auto fs = core::cfilesystem(core::cfilesystem::cwd());
+		fs.backwards();
+		fs.backwards();
+
+		if (fs.forwards("resources"))
+		{
+			const char* path = fs.current().view();
+
+			if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(path, "/"))
+			{
+				service<fs::cvirtual_filesystem>()->add_filesystem("/", filesystem);
+			}
+			else
+			{
+				log_error(fmt::format("Failed initializing virtual file system at path '/' for real path '{}'", path));
+				m_result = engine_run_result_fail;
+			}
+		}
+		else
+		{
+			log_error(fmt::format("Failed locating default resources path at '{}'",
+				fs.current().view()));
+			m_result = engine_run_result_fail;
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

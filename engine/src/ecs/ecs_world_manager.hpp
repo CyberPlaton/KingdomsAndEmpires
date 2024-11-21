@@ -3,7 +3,7 @@
 
 namespace ecs
 {
-	//- Central place for storing and accessing all worlds.
+	//- Central place for storing and accessing all worlds. Note: consider refactoring into a service type.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cworld_manager final
 	{

@@ -1,0 +1,14 @@
+{ "columns":64,
+ "image":"/maps/tileset/Tileset_Arranged_800pr.png",
+ "imageheight":8192,
+ "imagewidth":8192,
+ "margin":0,
+ "name":"Tileset_Arranged_800pr",
+ "spacing":0,
+ "tilecount":4096,
+ "tiledversion":"1.11.0",
+ "tileheight":128,
+ "tilewidth":128,
+ "type":"tileset",
+ "version":"1.10"
+}

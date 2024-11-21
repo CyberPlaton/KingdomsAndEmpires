@@ -21,10 +21,24 @@ RTTR_ENABLE();
 
 namespace ecs
 {
+	class centity final
+	{
+	public:
+		centity() = default;
+		centity(flecs::entity e) : m_self(e) {}
+
+		flecs::entity self() const noexcept { return m_self; }
+
+		operator flecs::entity() const noexcept { return m_self; }
+
+	private:
+		flecs::entity m_self;
+	};
+
 	namespace system
 	{
 		template<typename... TComps>
-		using system_callback_t = void(flecs::entity, TComps...);
+		using system_callback_t = void(centity, TComps...);
 		using task_callback_t = void(float);
 		using system_flags_t = int;
 

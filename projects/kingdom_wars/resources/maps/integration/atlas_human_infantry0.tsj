@@ -1,0 +1,14 @@
+{ "columns":1,
+ "image":"/race\/human\/atlas_human_infantry0.png",
+ "imageheight":2048,
+ "imagewidth":256,
+ "margin":0,
+ "name":"atlas_human_infantry0",
+ "spacing":0,
+ "tilecount":11,
+ "tiledversion":"1.11.0",
+ "tileheight":180,
+ "tilewidth":180,
+ "type":"tileset",
+ "version":"1.10"
+}

@@ -165,6 +165,12 @@ namespace string_utils
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	string_t join(string_t string, string_t other)
+	{
+		return fmt::format("{}{}", string, other);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	bool starts_with(stringview_t string, stringview_t substr)
 	{
 		if (string.length() >= substr.length())

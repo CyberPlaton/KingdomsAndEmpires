@@ -4,11 +4,11 @@
 
 namespace module_example
 {
-	void targeting_system(flecs::entity e, stargeting_component& target);
-	void targeting_system_2(flecs::entity e, stargeting_component& target);
-	void targeting_system_3(flecs::entity e, stargeting_component& target);
-	void transform_system(flecs::entity e, stransform_component& transform);
-	void replication_system(flecs::entity e, sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id);
+	void targeting_system(ecs::centity e, stargeting_component& target);
+	void targeting_system_2(ecs::centity e, stargeting_component& target);
+	void targeting_system_3(ecs::centity e, stargeting_component& target);
+	void transform_system(ecs::centity e, stransform_component& transform);
+	void replication_system(ecs::centity e, sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id);
 
 	//- Example module system
 	//------------------------------------------------------------------------------------------------------------------------

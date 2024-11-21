@@ -32,7 +32,7 @@ namespace render
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void scene_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
+	void scene_render_system(ecs::centity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
 		CORE_NAMED_ZONE("scene_render_system");
 
@@ -42,7 +42,7 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
+	void scene_debug_render_system(ecs::centity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
 		CORE_NAMED_ZONE("scene_debug_render_system");
 	}
@@ -136,7 +136,7 @@ namespace render
 		ecs::modules::sconfig cfg;
 		cfg.m_name = "srender_module";
 		cfg.m_components = { "stransform", "smaterial", "ssprite_renderer" };
-		cfg.m_systems = { "srender_frame_begin_system", "srender_frame_end_system"/*, "srender_system", "sdebug_render_system"*/ };
+		cfg.m_systems = { "srender_frame_begin_system", "srender_frame_end_system", "srender_system", "sdebug_render_system" };
 		cfg.m_modules = {};
 
 		return cfg;

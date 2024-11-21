@@ -50,13 +50,6 @@ Makefile
 .vs/
 .git/
 
-# Resources to be ignored
-*.png
-*.dds
-*.qoi
-*.world
-*.plugin
-*.json
-
 # Resources not to be ignored
 !resources/*
+!**resources/**

@@ -1,5 +1,7 @@
+#pragma once
 #include "kingdoms/map/kingdoms_map_generator.hpp"
 #include "kingdoms/map/kingdoms_tileset_generator.hpp"
+#include "kingdoms_game_context.hpp"
 
 namespace kingdoms
 {

@@ -7,7 +7,7 @@
 
 namespace animation
 {
-	void animation_system(flecs::entity e, ecs::sanimation& animation);
+	void animation_system(ecs::centity e, ecs::sanimation& animation);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sanimation_system final

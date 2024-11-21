@@ -1,0 +1,14 @@
+{ "columns":40,
+ "image":"/maps/tileset/Tileset_Overworld_800pr.png",
+ "imageheight":4864,
+ "imagewidth":5120,
+ "margin":0,
+ "name":"Tileset_Overworld_800pr",
+ "spacing":0,
+ "tilecount":1520,
+ "tiledversion":"1.11.0",
+ "tileheight":128,
+ "tilewidth":128,
+ "type":"tileset",
+ "version":"1.10"
+}

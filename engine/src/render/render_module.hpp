@@ -7,8 +7,8 @@
 
 namespace render
 {
-	void scene_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer);
-	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer);
+	void scene_render_system(ecs::centity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer);
+	void scene_debug_render_system(ecs::centity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct srender_frame_begin_system final

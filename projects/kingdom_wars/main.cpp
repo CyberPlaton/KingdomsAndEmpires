@@ -4,6 +4,7 @@
 #include <luabridge.h>
 #include <iostream>
 #include "src/kingdoms_module.hpp"
+#include "src/kingdoms_layer_ui.hpp"
 
 void core_io_error_function(uint8_t level, const std::string& message);
 void configure_args(const args_ref_t& args);
@@ -15,6 +16,7 @@ engine::sconfig kingdom_wars_main(const args_ref_t& args)
 
 	cfg.m_startup_project = "/kingdom_wars.project";
 	cfg.m_layers_cfg.emplace_back("ckingdoms");
+	cfg.m_layers_cfg.emplace_back("ckingdoms_layer_ui");
 	cfg.m_mode = core::launch_context_client;
 	cfg.m_title = "kingdom wars";
 	cfg.m_fullscreen = true;
