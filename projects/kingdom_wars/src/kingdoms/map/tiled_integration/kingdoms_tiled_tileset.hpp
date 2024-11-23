@@ -56,12 +56,4 @@ namespace kingdoms
 
 	} //- tiled
 
-	//- Responsible for generating and loading a spriteatlas from Tiled '.tsj' json data.
-	//------------------------------------------------------------------------------------------------------------------------
-	struct stileset_generator final
-	{
-		static bool load_from_file(stringview_t tilesetname);
-		static bool load_from_memory(const uint8_t* string, unsigned size);
-	};
-
 } //- kingdoms

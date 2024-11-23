@@ -1,4 +1,5 @@
 #include "kingdoms_module.hpp"
+#include "kingdoms_common.hpp"
 #include "kingdoms_layer_ui.hpp"
 #include "kingdoms/map/tiled_integration/kingdoms_tiled_map.hpp"
 #include "kingdoms/map/tiled_integration/kingdoms_tiled_tileset.hpp"
@@ -8,10 +9,6 @@ namespace kingdoms
 {
 	namespace
 	{
-		constexpr stringview_t C_RACE_FILEPATH = "/race";
-		constexpr stringview_t C_MAPS_FILEPATH = "/maps";
-		constexpr stringview_t C_TILESET_FILEPATH = "/maps/tileset";
-
 		sgame_context S_CTX;
 
 	} //- unnamed
@@ -29,19 +26,15 @@ namespace kingdoms
 
 		auto races_fs = std::make_shared<io::cnative_filesystem>();
 		auto maps_fs = std::make_shared<io::cnative_filesystem>();
-		auto tilesets_fs = std::make_shared<io::cnative_filesystem>();
 
-		const auto races_path = string_utils::join(path, C_RACE_FILEPATH.data());
-		const auto maps_path = string_utils::join(path, C_MAPS_FILEPATH.data());
-		const auto tilesets_path = string_utils::join(path, C_TILESET_FILEPATH.data());
+		const auto races_path = string_utils::join(path, sgame::C_RACE_DATA_FILEPATH.data());
+		const auto maps_path = string_utils::join(path, sgame::C_MAP_DATA_FILEPATH.data());
 
-		if (races_fs->init(races_path, C_RACE_FILEPATH) &&
-			maps_fs->init(maps_path, C_MAPS_FILEPATH) &&
-			tilesets_fs->init(tilesets_path, C_TILESET_FILEPATH))
+		if (races_fs->init(races_path, sgame::C_RACE_DATA_FILEPATH) &&
+			maps_fs->init(maps_path, sgame::C_MAP_DATA_FILEPATH))
 		{
-			vfs->add_filesystem(C_RACE_FILEPATH, races_fs);
-			vfs->add_filesystem(C_MAPS_FILEPATH, maps_fs);
-			vfs->add_filesystem(C_TILESET_FILEPATH, tilesets_fs);
+			vfs->add_filesystem(sgame::C_RACE_DATA_FILEPATH, races_fs);
+			vfs->add_filesystem(sgame::C_MAP_DATA_FILEPATH, maps_fs);
 		}
 		else
 		{

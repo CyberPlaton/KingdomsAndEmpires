@@ -1,6 +1,6 @@
 #pragma once
 #include <core.h>
-#include "tiled_integration/kingdoms_tiled_map.hpp"
+#include "kingdoms_map_generation_context.hpp"
 
 namespace kingdoms
 {
@@ -11,16 +11,13 @@ namespace kingdoms
 	public:
 		static void destroy(cmap& map);
 
-		explicit cmap(stringview_t mapname);
-		explicit cmap(const uint8_t* string, unsigned size);
+		explicit cmap(map_generation_context_ref_t& ctx, stringview_t mapname);
+		explicit cmap(map_generation_context_ref_t& ctx, const uint8_t* string, unsigned size);
 		cmap();
 		~cmap();
 
-		bool load_from_file(stringview_t mapname);
-		bool load_from_memory(const uint8_t* string, unsigned size);
-
-	private:
-		tiled::stiled_map_data m_data;
+		bool load_from_file(map_generation_context_ref_t& ctx, stringview_t mapname);
+		bool load_from_memory(map_generation_context_ref_t& ctx, const uint8_t* string, unsigned size);
 
 		RTTR_ENABLE(core::cresource);
 	};
