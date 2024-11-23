@@ -201,7 +201,7 @@ namespace core
 
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(logging_verbosity_debug,
+				serror_reporter::instance().m_callback(logging_verbosity_trace,
 					fmt::format("Extracting RTTR type '{}'from JSON Object", type.get_name().data()));
 			}
 
@@ -214,7 +214,7 @@ namespace core
 
 					if (serror_reporter::instance().m_callback)
 					{
-						serror_reporter::instance().m_callback(logging_verbosity_debug,
+						serror_reporter::instance().m_callback(logging_verbosity_trace,
 							fmt::format("\tDeserializing property '{}' with type '{}'", name, prop_type));
 					}
 
@@ -270,7 +270,7 @@ namespace core
 
 			if (serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(logging_verbosity_debug,
+				serror_reporter::instance().m_callback(logging_verbosity_trace,
 					fmt::format("Deserializing JSON object into expected RTTR type '{}', with JSON type '{}'",
 						expected.get_name().data(), algorithm::enum_to_string(json.type())));
 			}
@@ -299,7 +299,7 @@ namespace core
 			{
 				if (expected.is_enumeration() && serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(logging_verbosity_debug,
+					serror_reporter::instance().m_callback(logging_verbosity_trace,
 						fmt::format("\tExtracting stringified enum of type '{}'",
 							expected.get_name().data()));
 				}
@@ -449,7 +449,7 @@ namespace core
 				//- but just in case report quietly
 				if (serror_reporter::instance().m_callback)
 				{
-					serror_reporter::instance().m_callback(logging_verbosity_debug,
+					serror_reporter::instance().m_callback(logging_verbosity_trace,
 						fmt::format("Not processing unknown (fundamental) type '{}'", type.get_name().data()));
 				}
 			}
