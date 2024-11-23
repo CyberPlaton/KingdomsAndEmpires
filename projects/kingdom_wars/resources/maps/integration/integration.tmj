@@ -183,27 +183,27 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"..\/..\/..\/..\/..\/..\/..\/..\/Downloads\/Tileset_Overworld_800pr.tsx"
+         "source":"Tileset_Overworld_800pr.tsx"
         }, 
         {
          "firstgid":1521,
-         "source":"..\/..\/..\/..\/..\/..\/..\/..\/Downloads\/Tileset_Arranged_800pr.tsx"
+         "source":"Tileset_Arranged_800pr.tsx"
         }, 
         {
          "firstgid":5617,
-         "source":"..\/..\/..\/..\/..\/..\/..\/atlas_human_infantry0.tsx"
+         "source":"atlas_human_infantry0.tsx"
         }, 
         {
          "firstgid":5628,
-         "source":"..\/..\/..\/..\/..\/..\/..\/atlas_orc_infantry0.tsx"
+         "source":"atlas_orc_infantry0.tsx"
         }, 
         {
          "firstgid":5639,
-         "source":"..\/..\/..\/..\/..\/..\/..\/atlas_dark_elf_infantry0.tsx"
+         "source":"atlas_dark_elf_infantry0.tsx"
         }, 
         {
          "firstgid":5650,
-         "source":"..\/..\/..\/..\/..\/..\/..\/atlas_high_elf_infantry0.tsx"
+         "source":"atlas_high_elf_infantry0.tsx"
         }],
  "tilewidth":128,
  "type":"map",
