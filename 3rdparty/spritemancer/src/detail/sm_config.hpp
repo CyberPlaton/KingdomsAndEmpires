@@ -38,12 +38,13 @@ namespace sm
 	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT	= 64;
 
 	//------------------------------------------------------------------------------------------------------------------------
-	using image_handle_t = unsigned;
-	using texture_handle_t = unsigned;
-	using shader_handle_t = unsigned;
-	using spriteatlas_handle_t = unsigned;
-	using rendertarget_handle_t = unsigned;
-	static constexpr auto C_INVALID_HANDLE = MAX(unsigned);
+	using handle_type_t = unsigned;
+	using image_handle_t = handle_type_t;
+	using texture_handle_t = handle_type_t;
+	using shader_handle_t = handle_type_t;
+	using spriteatlas_handle_t = handle_type_t;
+	using rendertarget_handle_t = handle_type_t;
+	static constexpr auto C_INVALID_HANDLE = MAX(handle_type_t);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct scontext;
@@ -73,6 +74,7 @@ namespace sm
 	bool is_valid(const ccamera& camera);
 	bool is_valid(const cmaterial& material);
 	bool is_valid(const cspriteatlas& atlas);
+	bool is_valid(handle_type_t handle);
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum window_flag : uint32_t

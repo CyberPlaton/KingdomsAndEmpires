@@ -150,6 +150,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	bool is_valid(handle_type_t handle)
+	{
+		return handle != C_INVALID_HANDLE;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void ccommand::create(render_callback_t&& callback)
 	{
 		m_callback = std::move(callback);

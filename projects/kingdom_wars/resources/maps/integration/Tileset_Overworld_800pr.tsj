@@ -1,5 +1,5 @@
 { "columns":40,
- "image":"/maps/tileset/Tileset_Overworld_800pr.png",
+ "image":"/tileset/Tileset_Overworld_800pr.png",
  "imageheight":4864,
  "imagewidth":5120,
  "margin":0,

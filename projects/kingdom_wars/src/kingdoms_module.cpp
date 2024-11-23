@@ -3,6 +3,7 @@
 #include "kingdoms_layer_ui.hpp"
 #include "kingdoms/map/tiled_integration/kingdoms_tiled_map.hpp"
 #include "kingdoms/map/tiled_integration/kingdoms_tiled_tileset.hpp"
+#include "kingdoms/services/kingdoms_map_gid_name_mapping_service.hpp"
 #include <engine.h>
 
 namespace kingdoms
@@ -41,8 +42,9 @@ namespace kingdoms
 			result = false;
 		}
 
-		//- Create resource managers
+		//- Create resource managers and services
 		core::cservice_manager::emplace<cmap_manager>();
+		core::cservice_manager::emplace<cmap_gid_name_mapping_service>();
 
 		return result;
 	}
@@ -183,6 +185,14 @@ RTTR_REGISTRATION
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::registration::class_<cmap_manager>("cmap_manager")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+		)
+		;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::registration::class_<cmap_gid_name_mapping_service>("cmap_gid_name_mapping_service")
 		.constructor<>()
 		(
 			rttr::policy::ctor::as_raw_ptr

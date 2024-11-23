@@ -78,9 +78,13 @@ namespace kingdoms
 			ctx->m_map_data = var.get_value<tiled::stiled_map_data>();
 
 			//- Resolve tileset references and request them to be loaded
-			for (const auto& tileset : ctx->m_map_data.m_tilesets)
+			for (auto i = 0; i < ctx->m_map_data.m_tilesets.size(); ++i)
 			{
+				const auto& tileset = ctx->m_map_data.m_tilesets.at(i);
+
 				log_trace(fmt::format("Loading tileset: '{}'", tileset.m_source));
+
+				ctx->m_processed_tileset_index = i;
 
 				//- Load the tileset texture and create a tileset. For the tileset path, we take the name and resolve it in same directory
 				//- as we are in

@@ -10,10 +10,14 @@ namespace kingdoms
 		//------------------------------------------------------------------------------------------------------------------------
 		struct smap_generation_context final
 		{
+			//- General information and storage
 			string_t m_name;
 			string_t m_relative_path;
 			string_t m_path;
 			tiled::stiled_map_data m_map_data;
+
+			//- Dynamic data changed frequently on generation
+			unsigned m_processed_tileset_index = 0; //- Refers to the index of the tileset currently being generated
 		};
 
 	} //- detail

@@ -1,5 +1,5 @@
 { "columns":64,
- "image":"/maps/tileset/Tileset_Arranged_800pr.png",
+ "image":"/tileset/Tileset_Arranged_800pr.png",
  "imageheight":8192,
  "imagewidth":8192,
  "margin":0,
