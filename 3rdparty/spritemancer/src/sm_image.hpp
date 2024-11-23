@@ -3,6 +3,26 @@
 
 namespace sm
 {
+	namespace extensions
+	{
+		constexpr stringview_t C_PNG = ".png";
+		constexpr stringview_t C_BMP = ".bmp";
+		constexpr stringview_t C_TGA = ".tga";
+		constexpr stringview_t C_JPG = ".jpg";
+		constexpr stringview_t C_GIF = ".gif";
+		constexpr stringview_t C_PIC = ".pic";
+		constexpr stringview_t C_PSD = ".psd";
+		constexpr stringview_t C_HDR = ".hdr";
+		constexpr stringview_t C_QOI = ".qoi";
+		constexpr stringview_t C_SVG = ".svg";
+		constexpr stringview_t C_DDS = ".dds";
+		constexpr stringview_t C_PKM = ".pkm";
+		constexpr stringview_t C_KTX = ".ktx";
+		constexpr stringview_t C_PVR = ".pvr";
+		constexpr stringview_t C_ASTC = ".astc";
+
+	} //- extensions
+
 	//- CPU resident image representation
 	//------------------------------------------------------------------------------------------------------------------------
 	class cimage final : public core::cresource

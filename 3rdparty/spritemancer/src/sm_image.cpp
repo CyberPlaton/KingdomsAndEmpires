@@ -4,22 +4,6 @@ namespace sm
 {
 	namespace
 	{
-		constexpr stringview_t C_PNG = ".png";
-		constexpr stringview_t C_BMP = ".bmp";
-		constexpr stringview_t C_TGA = ".tga";
-		constexpr stringview_t C_JPG = ".jpg";
-		constexpr stringview_t C_GIF = ".gif";
-		constexpr stringview_t C_PIC = ".pic";
-		constexpr stringview_t C_PSD = ".psd";
-		constexpr stringview_t C_HDR = ".hdr";
-		constexpr stringview_t C_QOI = ".qoi";
-		constexpr stringview_t C_SVG = ".svg";
-		constexpr stringview_t C_DDS = ".dds";
-		constexpr stringview_t C_PKM = ".pkm";
-		constexpr stringview_t C_KTX = ".ktx";
-		constexpr stringview_t C_PVR = ".pvr";
-		constexpr stringview_t C_ASTC = ".astc";
-
 		//------------------------------------------------------------------------------------------------------------------------
 		image_type image_type_from_filepath(stringview_t filepath)
 		{
@@ -27,63 +11,63 @@ namespace sm
 
 			const auto ext = path.extension();
 
-			if (string_utils::compare(ext, C_PNG.data()))
+			if (string_utils::compare(ext, extensions::C_PNG.data()))
 			{
 				return image_type_png;
 			}
-			else if (string_utils::compare(ext, C_BMP.data()))
+			else if (string_utils::compare(ext, extensions::C_BMP.data()))
 			{
 				return image_type_bmp;
 			}
-			else if (string_utils::compare(ext, C_TGA.data()))
+			else if (string_utils::compare(ext, extensions::C_TGA.data()))
 			{
 				return image_type_tga;
 			}
-			else if (string_utils::compare(ext, C_JPG.data()))
+			else if (string_utils::compare(ext, extensions::C_JPG.data()))
 			{
 				return image_type_jpg;
 			}
-			else if (string_utils::compare(ext, C_GIF.data()))
+			else if (string_utils::compare(ext, extensions::C_GIF.data()))
 			{
 				return image_type_gif;
 			}
-			else if (string_utils::compare(ext, C_PIC.data()))
+			else if (string_utils::compare(ext, extensions::C_PIC.data()))
 			{
 				return image_type_pic;
 			}
-			else if (string_utils::compare(ext, C_PSD.data()))
+			else if (string_utils::compare(ext, extensions::C_PSD.data()))
 			{
 				return image_type_psd;
 			}
-			else if (string_utils::compare(ext, C_HDR.data()))
+			else if (string_utils::compare(ext, extensions::C_HDR.data()))
 			{
 				return image_type_hdr;
 			}
-			else if (string_utils::compare(ext, C_QOI.data()))
+			else if (string_utils::compare(ext, extensions::C_QOI.data()))
 			{
 				return image_type_qoi;
 			}
-			else if (string_utils::compare(ext, C_SVG.data()))
+			else if (string_utils::compare(ext, extensions::C_SVG.data()))
 			{
 				return image_type_svg;
 			}
-			else if (string_utils::compare(ext, C_DDS.data()))
+			else if (string_utils::compare(ext, extensions::C_DDS.data()))
 			{
 				return image_type_dds;
 			}
-			else if (string_utils::compare(ext, C_PKM.data()))
+			else if (string_utils::compare(ext, extensions::C_PKM.data()))
 			{
 				return image_type_pkm;
 			}
-			else if (string_utils::compare(ext, C_KTX.data()))
+			else if (string_utils::compare(ext, extensions::C_KTX.data()))
 			{
 				return image_type_ktx;
 			}
-			else if (string_utils::compare(ext, C_PVR.data()))
+			else if (string_utils::compare(ext, extensions::C_PVR.data()))
 			{
 				return image_type_pvr;
 			}
-			else if (string_utils::compare(ext, C_ASTC.data()))
+			else if (string_utils::compare(ext, extensions::C_ASTC.data()))
 			{
 				return image_type_astc;
 			}
@@ -104,105 +88,105 @@ namespace sm
 			case image_type_png:
 			{
 #ifdef SUPPORT_FILEFORMAT_PNG
-				return C_PNG.data();
+				return extensions::C_PNG.data();
 #endif
 				break;
 			}
 			case image_type_bmp:
 			{
 #ifdef SUPPORT_FILEFORMAT_BMP
-				return C_BMP.data();
+				return extensions::C_BMP.data();
 #endif
 				break;
 			}
 			case image_type_tga:
 			{
 #ifdef SUPPORT_FILEFORMAT_TGA
-				return C_TGA.data();
+				return extensions::C_TGA.data();
 #endif
 				break;
 			}
 			case image_type_jpg:
 			{
 #ifdef SUPPORT_FILEFORMAT_JPG
-				return C_JPG.data();
+				return extensions::C_JPG.data();
 #endif
 				break;
 			}
 			case image_type_gif:
 			{
 #ifdef SUPPORT_FILEFORMAT_GIF
-				return C_GIF.data();
+				return extensions::C_GIF.data();
 #endif
 				break;
 			}
 			case image_type_pic:
 			{
 #ifdef SUPPORT_FILEFORMAT_PIC
-				return C_PIC.data();
+				return extensions::C_PIC.data();
 #endif
 				break;
 			}
 			case image_type_psd:
 			{
 #ifdef SUPPORT_FILEFORMAT_PSD
-				return C_PSD.data();
+				return extensions::C_PSD.data();
 #endif
 				break;
 			}
 			case image_type_hdr:
 			{
 #ifdef SUPPORT_FILEFORMAT_HDR
-				return C_HDR.data();
+				return extensions::C_HDR.data();
 #endif
 				break;
 			}
 			case image_type_qoi:
 			{
 #ifdef SUPPORT_FILEFORMAT_QOI
-				return C_QOI.data();
+				return extensions::C_QOI.data();
 #endif
 				break;
 			}
 			case image_type_svg:
 			{
 #ifdef SUPPORT_FILEFORMAT_SVG
-				return C_SVG.data();
+				return extensions::C_SVG.data();
 #endif
 				break;
 			}
 			case image_type_dds:
 			{
 #ifdef SUPPORT_FILEFORMAT_DDS
-				return C_DDS.data();
+				return extensions::C_DDS.data();
 #endif
 				break;
 			}
 			case image_type_pkm:
 			{
 #ifdef SUPPORT_FILEFORMAT_PKM
-				return C_PKM.data();
+				return extensions::C_PKM.data();
 #endif
 				break;
 			}
 			case image_type_ktx:
 			{
 #ifdef SUPPORT_FILEFORMAT_KTX
-				return C_KTX.data();
+				return extensions::C_KTX.data();
 #endif
 				break;
 			}
 			case image_type_pvr:
 			{
 #ifdef SUPPORT_FILEFORMAT_PVR
-				return C_PVR.data();
+				return extensions::C_PVR.data();
 #endif
 				break;
 			}
 			case image_type_astc:
 			{
 #ifdef SUPPORT_FILEFORMAT_ASTC
-				return C_ASTC.data();
+				return extensions::C_ASTC.data();
 #endif
 				break;
 			}

@@ -95,8 +95,10 @@ namespace sm
 		void on_update(float) override final;
 
 		spriteatlas_handle_t load_sync(stringview_t name, unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
+		spriteatlas_handle_t load_sync(stringview_t name, const cspriteatlas& other);
 
 		core::cfuture_type<spriteatlas_handle_t> load_async(stringview_t name, unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
+		core::cfuture_type<spriteatlas_handle_t> load_async(stringview_t name, const cspriteatlas& other);
 
 	private:
 		RTTR_ENABLE(core::cservice, core::cresource_manager<cspriteatlas>);

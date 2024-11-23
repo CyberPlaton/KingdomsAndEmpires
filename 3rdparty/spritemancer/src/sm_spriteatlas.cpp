@@ -21,6 +21,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	cspriteatlas::cspriteatlas(const cspriteatlas& other) :
+		m_size(other.m_size), m_subtextures(other.m_subtextures)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cspriteatlas::create(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
 	{
 		const auto _w = (float)w;

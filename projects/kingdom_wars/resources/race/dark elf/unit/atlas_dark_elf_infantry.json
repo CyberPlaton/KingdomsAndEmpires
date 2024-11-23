@@ -1,0 +1,18 @@
+{
+	"textures":[
+		{
+			"name":"atlas_dark_elf_infantry0",
+			"images":[
+				{ "n":"unit_dark_elf_swordsinger", "x":0, "y":0, "w":180, "h":180 },
+				{ "n":"unit_dark_elf_swordman", "x":0, "y":181, "w":180, "h":180 },
+				{ "n":"unit_dark_elf_spearman", "x":0, "y":362, "w":180, "h":180 },
+				{ "n":"unit_dark_elf_scout", "x":0, "y":543, "w":180, "h":180 },
+				{ "n":"unit_dark_elf_mage", "x":0, "y":724, "w":180, "h":180 },
+				{ "n":"unit_dark_elf_guard", "x":0, "y":905, "w":180, "h":180 },
+				{ "n":"unit_dark_elf_battlemage", "x":0, "y":1086, "w":180, "h":180 },
+				{ "n":"unit_dark_elf_archer", "x":0, "y":1267, "w":180, "h":180 },
+				{ "n":"unit_dark_ekf_poison_archer", "x":0, "y":1448, "w":180, "h":180 }
+			]
+		}
+	]
+}

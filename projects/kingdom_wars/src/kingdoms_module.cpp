@@ -27,15 +27,19 @@ namespace kingdoms
 
 		auto races_fs = std::make_shared<io::cnative_filesystem>();
 		auto maps_fs = std::make_shared<io::cnative_filesystem>();
+		auto tileset_fs = std::make_shared<io::cnative_filesystem>();
 
 		const auto races_path = string_utils::join(path, sgame::C_RACE_DATA_FILEPATH.data());
 		const auto maps_path = string_utils::join(path, sgame::C_MAP_DATA_FILEPATH.data());
+		const auto tilesets_path = string_utils::join(path, sgame::C_TILESET_FILEPATH.data());
 
 		if (races_fs->init(races_path, sgame::C_RACE_DATA_FILEPATH) &&
-			maps_fs->init(maps_path, sgame::C_MAP_DATA_FILEPATH))
+			maps_fs->init(maps_path, sgame::C_MAP_DATA_FILEPATH) &&
+			tileset_fs->init(tilesets_path, sgame::C_TILESET_FILEPATH))
 		{
 			vfs->add_filesystem(sgame::C_RACE_DATA_FILEPATH, races_fs);
 			vfs->add_filesystem(sgame::C_MAP_DATA_FILEPATH, maps_fs);
+			vfs->add_filesystem(sgame::C_TILESET_FILEPATH, tileset_fs);
 		}
 		else
 		{
@@ -95,6 +99,8 @@ RTTR_REGISTRATION
 	rttr::detail::default_constructor<vector_t<stiled_map_layer>>();
 	rttr::detail::default_constructor<vector_t<stiled_map_chunk>>();
 	rttr::detail::default_constructor<vector_t<stiled_tileset_reference>>();
+	rttr::detail::default_constructor<vector_t<stileset_image_data::simages>>();
+	rttr::detail::default_constructor<vector_t<stileset_image_data::stextures>>();
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::cregistrator<stiled_tileset_reference>("stiled_tileset_reference")
@@ -165,7 +171,7 @@ RTTR_REGISTRATION
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::cregistrator<stileset_image_data::simages>("stileset_image_data::simages")
-		.prop("name", &stileset_image_data::simages::m_name)
+		.prop("n", &stileset_image_data::simages::m_name)
 		.prop("x", &stileset_image_data::simages::m_x)
 		.prop("y", &stileset_image_data::simages::m_y)
 		.prop("w", &stileset_image_data::simages::m_width)

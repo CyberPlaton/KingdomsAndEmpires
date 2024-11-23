@@ -188,7 +188,7 @@ namespace string_utils
 				return is_numeric(c);
 			}));
 
-		return join(dir, filename);
+		return join(fmt::format("{}/", dir), filename);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

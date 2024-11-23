@@ -1,0 +1,16 @@
+{
+	"textures":[
+		{
+			"name":"atlas_human_infantry0",
+			"images":[
+				{ "n":"unit_human_swordman", "x":0, "y":0, "w":180, "h":180 },
+				{ "n":"unit_human_spearman", "x":0, "y":181, "w":180, "h":180 },
+				{ "n":"unit_human_scout", "x":0, "y":362, "w":180, "h":180 },
+				{ "n":"unit_human_paladin", "x":0, "y":543, "w":180, "h":180 },
+				{ "n":"unit_human_mage", "x":0, "y":724, "w":180, "h":180 },
+				{ "n":"unit_human_knight", "x":0, "y":905, "w":180, "h":180 },
+				{ "n":"unit_human_archer", "x":0, "y":1086, "w":180, "h":180 }
+			]
+		}
+	]
+}

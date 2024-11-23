@@ -200,6 +200,7 @@ namespace sm
 		return opresult_ok;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult ctexture::load_from_file(stringview_t filepath)
 	{
 		cimage image(filepath);

@@ -10,6 +10,7 @@ namespace sm
 		static void destroy(cspriteatlas& atlas);
 
 		explicit cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
+		explicit cspriteatlas(const cspriteatlas& other);
 		cspriteatlas();
 		~cspriteatlas() = default;
 

@@ -223,10 +223,22 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::spriteatlas_handle_t cspriteatlas_manager::load_sync(stringview_t name, const cspriteatlas& other)
+	{
+		return load_of_sync<spriteatlas_handle_t>(name, m_data, other);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::spriteatlas_handle_t> cspriteatlas_manager::load_async(stringview_t name,
 		unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
 	{
 		return load_of_async<spriteatlas_handle_t>(name, m_data, w, h, names, frames);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cfuture_type<sm::spriteatlas_handle_t> cspriteatlas_manager::load_async(stringview_t name, const cspriteatlas& other)
+	{
+		return load_of_async<spriteatlas_handle_t>(name, m_data, other);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
