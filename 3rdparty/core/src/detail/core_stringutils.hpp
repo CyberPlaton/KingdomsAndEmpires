@@ -20,7 +20,8 @@ namespace string_utils
 	bool compare(const string_t& first, const string_t& second);
 	bool starts_with(stringview_t string, stringview_t substr);
 	bool ends_with(stringview_t string, stringview_t substr);
-	string_t join(string_t string, string_t other);
+	string_t join(const string_t& string, const string_t& other);
+	string_t erase_numeric_in_path(const string_t& string);
 	bool is_in_range(char c, char from, char to);
 	bool is_space(char c);
 	bool is_upper(char c);

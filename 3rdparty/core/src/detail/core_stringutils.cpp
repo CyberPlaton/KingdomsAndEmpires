@@ -165,9 +165,30 @@ namespace string_utils
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	string_t join(string_t string, string_t other)
+	string_t join(const string_t& string, const string_t& other)
 	{
 		return fmt::format("{}{}", string, other);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	string_t erase_numeric_in_path(const string_t& string)
+	{
+		size_t position = 0;
+
+		if (const auto p = string.find_last_of("/"); p != std::string::npos)
+		{
+			position = p;
+		}
+
+		string_t dir = string.substr(0, position);
+		string_t filename = string.substr(position + 1);
+
+		filename.erase(std::remove_if(filename.begin(), filename.end(), [](const char& c)
+			{
+				return is_numeric(c);
+			}));
+
+		return join(dir, filename);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

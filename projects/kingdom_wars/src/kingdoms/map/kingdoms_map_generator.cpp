@@ -1,82 +1,6 @@
 #include "kingdoms_map_generator.hpp"
 #include <engine.h>
-
-RTTR_REGISTRATION
-{
-	using namespace kingdoms;
-	using namespace kingdoms::detail;
-
-	rttr::cregistrator<stiled_tileset_data>("stiled_tileset_data")
-		.prop("m_name", &stiled_tileset_data::m_name)
-		.prop("m_type", &stiled_tileset_data::m_type)
-		.prop("m_image", &stiled_tileset_data::m_image)
-		.prop("m_version", &stiled_tileset_data::m_version)
-		.prop("m_tiled_version", &stiled_tileset_data::m_tiled_version)
-		.prop("m_columns", &stiled_tileset_data::m_columns)
-		.prop("m_image_height", &stiled_tileset_data::m_image_height)
-		.prop("m_image_width", &stiled_tileset_data::m_image_width)
-		.prop("m_margin", &stiled_tileset_data::m_margin)
-		.prop("m_spacing", &stiled_tileset_data::m_spacing)
-		.prop("m_tile_count", &stiled_tileset_data::m_tile_count)
-		.prop("m_tile_height", &stiled_tileset_data::m_tile_height)
-		.prop("m_tile_width", &stiled_tileset_data::m_tile_width)
-		;
-
-	rttr::cregistrator<stiled_tileset_reference>("stiled_tileset_reference")
-		.prop("m_first_gid", &stiled_tileset_reference::m_first_gid)
-		.prop("m_source", &stiled_tileset_reference::m_source)
-		;
-
-	rttr::cregistrator<stiled_map_chunk>("stiled_map_chunk")
-		.prop("m_data", &stiled_map_chunk::m_data)
-		.prop("m_height", &stiled_map_chunk::m_height)
-		.prop("m_width", &stiled_map_chunk::m_width)
-		.prop("m_x", &stiled_map_chunk::m_x)
-		.prop("m_y", &stiled_map_chunk::m_y)
-		;
-
-	rttr::cregistrator<stiled_map_layer>("stiled_map_layer")
-		.prop("m_chunks", &stiled_map_layer::m_chunks)
-		.prop("m_name", &stiled_map_layer::m_name)
-		.prop("m_type", &stiled_map_layer::m_type)
-		.prop("m_id", &stiled_map_layer::m_id)
-		.prop("m_height", &stiled_map_layer::m_height)
-		.prop("m_width", &stiled_map_layer::m_width)
-		.prop("m_x", &stiled_map_layer::m_x)
-		.prop("m_y", &stiled_map_layer::m_y)
-		.prop("m_opacity", &stiled_map_layer::m_opacity)
-		.prop("m_startx", &stiled_map_layer::m_startx)
-		.prop("m_starty", &stiled_map_layer::m_starty)
-		.prop("m_visible", &stiled_map_layer::m_visible)
-		;
-
-	rttr::cregistrator<stiled_map_data>("stiled_map_data")
-		.prop("m_layers", &stiled_map_data::m_layers)
-		.prop("m_tilesets", &stiled_map_data::m_tilesets)
-		.prop("m_orientation", &stiled_map_data::m_orientation)
-		.prop("m_render_order", &stiled_map_data::m_render_order)
-		.prop("m_tiled_version", &stiled_map_data::m_tiled_version)
-		.prop("m_type", &stiled_map_data::m_type)
-		.prop("m_version", &stiled_map_data::m_version)
-		.prop("m_compression_level", &stiled_map_data::m_compression_level)
-		.prop("m_next_layer_id", &stiled_map_data::m_next_layer_id)
-		.prop("m_next_object_id", &stiled_map_data::m_next_object_id)
-		.prop("m_width", &stiled_map_data::m_width)
-		.prop("m_height", &stiled_map_data::m_height)
-		.prop("m_tile_height", &stiled_map_data::m_tile_height)
-		.prop("m_tile_width", &stiled_map_data::m_tile_width)
-		.prop("m_infinite", &stiled_map_data::m_infinite)
-		;
-
-	//------------------------------------------------------------------------------------------------------------------------
-	rttr::registration::class_<cmap_manager>("cmap_manager")
-		.constructor<>()
-		(
-			rttr::policy::ctor::as_raw_ptr
-		)
-		;
-}
-
+#include "tiled_integration/kingdoms_tiled_tileset.hpp"
 
 namespace kingdoms
 {
@@ -142,15 +66,33 @@ namespace kingdoms
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cmap::load_from_memory(const uint8_t* string, unsigned size)
 	{
+		auto result = true;
+
 		//- Expected is a json data string for the map file
-		if (const auto var = core::io::from_json_blob(rttr::type::get<detail::stiled_map_data>(), (const byte_t*)string, size); var.is_valid())
+		if (const auto var = core::io::from_json_blob(rttr::type::get<tiled::stiled_map_data>(), (const byte_t*)string, size); var.is_valid())
 		{
-			const auto& data = var.get_value<detail::stiled_map_data>();
+			m_data = var.get_value<tiled::stiled_map_data>();
 
 			log_debug(fmt::format("Map Data: '{}'", string_t((const char*)string, size)));
+
+			//- Resolve tileset references and request them to be loaded
+			for (const auto& tileset : m_data.m_tilesets)
+			{
+				//- Load the tileset texture and create a tileset
+				if (!stileset_generator::load_from_file(tileset.m_source))
+				{
+					result = false;
+				}
+			}
+
+			//- Iterate map layers
+			for (const auto& layer : m_data.m_layers)
+			{
+
+			}
 		}
 
-		return false;
+		return result;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
