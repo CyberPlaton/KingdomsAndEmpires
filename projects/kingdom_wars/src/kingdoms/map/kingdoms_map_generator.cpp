@@ -180,10 +180,15 @@ namespace kingdoms
 
 							log_debug(fmt::format("Created entity '{}'", identifier->m_name));
 
-							auto* transform = e.add<ecs::stransform>().get_mut<ecs::stransform>();
-							auto* material = e.add<ecs::smaterial>().get_mut<ecs::smaterial>();
-							auto* sprite_renderer = e.add<ecs::ssprite_renderer>().get_mut<ecs::ssprite_renderer>();
-							auto* hierarchy = e.add<ecs::shierarchy>().get_mut<ecs::shierarchy>();
+							e.add<ecs::stransform>();
+							e.add<ecs::smaterial>();
+							e.add<ecs::ssprite_renderer>();
+							e.add<ecs::shierarchy>();
+
+							auto* transform = e.get_mut<ecs::stransform>();
+							auto* material = e.get_mut<ecs::smaterial>();
+							auto* sprite_renderer = e.get_mut<ecs::ssprite_renderer>();
+							auto* hierarchy = e.get_mut<ecs::shierarchy>();
 
 							sprite_renderer->m_source_rect = {0.0f, 0.0f, 1.0f, 1.0f};
 							sprite_renderer->m_layer = current_layer_index;

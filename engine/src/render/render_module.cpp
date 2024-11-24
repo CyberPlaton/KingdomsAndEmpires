@@ -36,10 +36,6 @@ namespace render
 	{
 		CORE_NAMED_ZONE("scene_render_system");
 
-		auto* __t = e.get_mut<ecs::stransform>();
-		auto* __m = e.get_mut<ecs::smaterial>();
-		auto* __s = e.get_mut<ecs::ssprite_renderer>();
-
 		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture);
 
 		//draw_texture(transform, material, renderer);
