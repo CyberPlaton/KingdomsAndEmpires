@@ -45,6 +45,8 @@ namespace kingdoms
 	//------------------------------------------------------------------------------------------------------------------------
 	void ckingdoms_layer_ui::on_ui_render()
 	{
+		ImGui::ShowDemoWindow(nullptr);
+
 		S_OPEN = true;
 
 		if (const auto windowScope = imgui::cwindow_scope("##debug", &S_OPEN))

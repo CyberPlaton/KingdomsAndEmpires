@@ -340,7 +340,7 @@ namespace sm
 			layer.m_flags = 0;
 			layer.m_show = true;
 
-			return ++layerdata.m_layer_count;
+			return layerdata.m_layer_count++;
 		}
 		return MAX(unsigned);
 	}

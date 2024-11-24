@@ -37,7 +37,7 @@ namespace engine
 			if (cfg.m_show_console)
 			{
 #if CORE_PLATFORM_WINDOWS
-				AllocConsole();		
+				AllocConsole();
 #endif
 			}
 

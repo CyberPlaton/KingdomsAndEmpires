@@ -34,6 +34,8 @@ namespace ecs
 		//- create runtime ecs entity uniquely identifiable by uuid
 		auto e = world().ecs().entity(uuid.data());
 
+		CORE_ASSERT(e.is_valid(), "Invalid operation. Created entity is invalid!");
+
 		//- emplace default components
 		auto* id = e.add<sidentifier>().get_mut<sidentifier>();
 

@@ -67,6 +67,8 @@ namespace engine
 			{
 				aggregator->update();
 			}
+
+			S_TIMER.start();
 		}
 	}
 

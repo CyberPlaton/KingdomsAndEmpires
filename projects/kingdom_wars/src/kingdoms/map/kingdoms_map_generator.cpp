@@ -114,17 +114,45 @@ namespace kingdoms
 			//- Create an active world
 			ecs::world::sconfig cfg;
 			cfg.m_name = ctx->m_name;
-			cfg.m_threads = 1;
+			cfg.m_threads = 2;
 
 			ecs::cworld_manager::instance().create(cfg, true);
 			auto& world = ecs::cworld_manager::instance().active();
 			auto& em = world.em();
+
+			//- Create camera entity
+			//- TODO: this is not functional currently, spritemancer camera is not updated with entity camera data, we
+			//- need a camera system for that
+			auto e = em.create_entity();
+			auto* camera = e.add<ecs::scamera>().get_mut<ecs::scamera>();
+			camera->m_position = { 0.0f, 0.0f };
+			camera->m_offset = { 0.0f, 0.0f };
+			camera->m_zoom = 1.0f;
+			camera->m_rotation = 0.0f;
+			const auto window_size = sm::window_size();
+			camera->m_viewrect = { 0.0f, 0.0f, window_size.x, window_size.y };
+			camera->m_active = true;
+			camera->m_renderlayer = 0;
+
+			//- As a fix to TODO from above, we define a default camera for testing purposes
+			sm::ccamera __camera__;
+			__camera__.m_position = { 0.0f, 0.0f };
+			__camera__.m_offset = { 0.0f, 0.0f };
+			__camera__.m_zoom = 1.0f;
+			__camera__.m_rotation = 0.0f;
+			__camera__.m_ready = true;
 
 			//- Iterate map layers
 			for (auto i = 0; i < ctx->m_map_data.m_layers.size(); ++i)
 			{
 				const auto& layer = ctx->m_map_data.m_layers.at(i);
 				const auto current_layer_index = sm::create_layer();
+				auto& current_sm_layer = sm::get_layer(current_layer_index);
+
+				//- Specify default settings for spritemancer layer
+				current_sm_layer.m_flags = sm::layer_flags_2d;
+				current_sm_layer.m_show = true;
+				current_sm_layer.m_camera = __camera__;
 
 				for (auto j = 0; j < layer.m_chunks.size(); ++j)
 				{
@@ -148,6 +176,9 @@ namespace kingdoms
 
 							//- Create actual entities that will populate the world
 							auto e = em.create_entity();
+							auto* identifier = e.get_mut<ecs::sidentifier>();
+
+							log_debug(fmt::format("Created entity '{}'", identifier->m_name));
 
 							auto* transform = e.add<ecs::stransform>().get_mut<ecs::stransform>();
 							auto* material = e.add<ecs::smaterial>().get_mut<ecs::smaterial>();
@@ -171,18 +202,6 @@ namespace kingdoms
 					}
 				}
 			}
-
-			//- Create camera entity
-			auto e = em.create_entity();
-			auto* camera = e.add<ecs::scamera>().get_mut<ecs::scamera>();
-			camera->m_position = { 0.0f, 0.0f };
-			camera->m_offset = { 0.0f, 0.0f };
-			camera->m_zoom = 1.0f;
-			camera->m_rotation = 0.0f;
-			const auto window_size = sm::window_size();
-			camera->m_viewrect = { 0.0f, 0.0f, window_size.x, window_size.y };
-			camera->m_active = true;
-			camera->m_renderlayer = 0;
 		}
 
 		return result;
