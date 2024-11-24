@@ -19,8 +19,10 @@ engine::sconfig kingdom_wars_main(const args_ref_t& args)
 	cfg.m_layers_cfg.emplace_back("ckingdoms_layer_ui");
 	cfg.m_mode = core::launch_context_client;
 	cfg.m_title = "kingdom wars";
-	cfg.m_fullscreen = true;
-	cfg.m_vsync = true;
+	cfg.m_fullscreen = false;
+	cfg.m_vsync = false;
+	cfg.m_window_width = 1680;
+	cfg.m_window_height = 920;
 
 #if CORE_DEBUG
 	cfg.m_logging_verbosity = core::logging_verbosity_debug;

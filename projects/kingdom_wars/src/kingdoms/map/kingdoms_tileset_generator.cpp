@@ -63,7 +63,7 @@ namespace kingdoms
 			auto* vfs = core::cservice_manager::find<fs::cvirtual_filesystem>();
 			auto* sm = core::cservice_manager::find<sm::cspriteatlas_manager>();
 
-			vector_t<string_t> names; names.reserve(data.m_tile_count);
+			vector_t<string_t> subtexture_names;
 			auto tile_count_x = data.m_image_width / data.m_tile_width;
 			auto tile_count_y = data.m_image_height / data.m_tile_height;
 			auto crunch_tileset = false;
@@ -117,8 +117,6 @@ namespace kingdoms
 
 								atlas_width = glm::max(atlas_width, img.m_x + img.m_width);
 								atlas_height = glm::max(atlas_height, img.m_y + img.m_height);
-
-								names.emplace_back(img.m_name);
 							}
 						}
 
@@ -150,23 +148,24 @@ namespace kingdoms
 				//- Tileset created using external tools. Proceed without additional data.
 				string_t tile_name; tile_name.reserve(32);
 
+				auto gid = map_first_gid;
+
 				for (auto i = 0; i < tile_count_x; ++i)
 				{
 					for (auto j = 0; j < tile_count_y; ++j)
 					{
-						const auto id = map_first_gid + i + j;
+						const auto id = gid++;
 
 						ctx->m_map_layer_mapping_data[map_name][id] = layer_info.m_name;
 						ctx->m_map_mapping_data[map_name][id] = fmt::to_string(id);
-
-						names.emplace_back(fmt::to_string(id));
+						subtexture_names.emplace_back(fmt::to_string(id));
 					}
 				}
 			}
 
 			if(!crunch_tileset)
 			{
-				const auto spriteatlas_handle = sm->load_sync(data.m_name, data.m_image_width, data.m_image_height, names,
+				const auto spriteatlas_handle = sm->load_sync(data.m_name, data.m_image_width, data.m_image_height, subtexture_names,
 					{ (float)tile_count_x, (float)tile_count_y });
 
 				if (!sm::is_valid(spriteatlas_handle))

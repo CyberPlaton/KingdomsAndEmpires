@@ -117,18 +117,14 @@ namespace kingdoms
 			cfg.m_threads = 1;
 
 			ecs::cworld_manager::instance().create(cfg, true);
+			auto& world = ecs::cworld_manager::instance().active();
+			auto& em = world.em();
 
 			//- Iterate map layers
 			for (auto i = 0; i < ctx->m_map_data.m_layers.size(); ++i)
 			{
 				const auto& layer = ctx->m_map_data.m_layers.at(i);
-				
-				log_debug(fmt::format("Creating Layer: '{}'", layer.m_name));
-
-				sm::create_layer();
-
-				auto& world = ecs::cworld_manager::instance().active();
-				auto& em = world.em();
+				const auto current_layer_index = sm::create_layer();
 
 				for (auto j = 0; j < layer.m_chunks.size(); ++j)
 				{
@@ -140,7 +136,13 @@ namespace kingdoms
 						for (auto y = 0; y < chunk.m_height; ++y)
 						{
 							const auto& map_gid = chunk.m_data.at(x + y);
-							const auto& texture_name = texture_names.at(map_gid);
+
+							//- No entity at this location, continue
+							if (map_gid == 0)
+							{
+								continue;
+							}
+
 							const auto& associated_layer_name = ctx->m_map_layer_mapping_data.at(ctx->m_name).at(map_gid);
 							const auto& associated_layer = ctx->m_layer_info_data.at(ctx->m_name).at(associated_layer_name);
 
@@ -152,10 +154,35 @@ namespace kingdoms
 							auto& sprite_renderer = *e.add<ecs::ssprite_renderer>().get_mut<ecs::ssprite_renderer>();
 							auto& hierarchy = *e.add<ecs::shierarchy>().get_mut<ecs::shierarchy>();
 
+							sprite_renderer.m_source_rect = {0.0f, 0.0f, 1.0f, 1.0f};
+							sprite_renderer.m_layer = current_layer_index;
+
+							material.m_texture = associated_layer.m_atlas_texture_handle;
+							material.m_flags = sm::renderable_flag_origin_center;
+
+							const auto positionx = x * associated_layer.m_tile_width;
+							const auto positiony = y * associated_layer.m_tile_height;
+							const auto rect = { positionx, positiony, associated_layer.m_tile_width, associated_layer.m_tile_height };
+
+							transform.m_position = { positionx, positiony };
+							transform.m_scale = { 1.0f, 1.0f };
+							transform.m_rotation = 0.0f;
 						}
 					}
 				}
 			}
+
+			//- Create camera entity
+			auto e = em.create_entity();
+			auto& camera = *e.add<ecs::scamera>().get_mut<ecs::scamera>();
+			camera.m_position = { 0.0f, 0.0f };
+			camera.m_offset = { 0.0f, 0.0f };
+			camera.m_zoom = 1.0f;
+			camera.m_rotation = 0.0f;
+			const auto window_size = sm::window_size();
+			camera.m_viewrect = { 0.0f, 0.0f, window_size.x, window_size.y };
+			camera.m_active = true;
+			camera.m_renderlayer = 0;
 		}
 
 		return result;
