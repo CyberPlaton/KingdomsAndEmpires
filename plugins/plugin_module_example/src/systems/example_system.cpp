@@ -9,7 +9,7 @@ namespace module_example
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void targeting_system(ecs::centity e, stargeting_component& target)
+	void targeting_system(flecs::entity e, stargeting_component& target)
 	{
 		CORE_NAMED_ZONE("Targeting System");
 
@@ -28,7 +28,7 @@ namespace module_example
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void targeting_system_2(ecs::centity e, stargeting_component& target)
+	void targeting_system_2(flecs::entity e, stargeting_component& target)
 	{
 		CORE_NAMED_ZONE("Targeting System #2");
 
@@ -50,7 +50,7 @@ namespace module_example
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void targeting_system_3(ecs::centity e, stargeting_component& target)
+	void targeting_system_3(flecs::entity e, stargeting_component& target)
 	{
 		CORE_NAMED_ZONE("Targeting System #3");
 
@@ -72,7 +72,7 @@ namespace module_example
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void transform_system(ecs::centity e, stransform_component& transform)
+	void transform_system(flecs::entity e, stransform_component& transform)
 	{
 		static core::ctimer transform_timer(false);
 
@@ -94,7 +94,7 @@ namespace module_example
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void replication_system(ecs::centity e, sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id)
+	void replication_system(flecs::entity e, sreplicable_component& rep, const stransform_component& trans, const sidentifier_component& id)
 	{
 		static core::ctimer network_timer(false);
 
@@ -111,7 +111,7 @@ namespace module_example
 
 			//- example: showing firstly that entity name is equal to his uuid.
 			log_debug(fmt::format("[{}][Network] Replicated '{}' entities. Master \"{} ({})\":\n\t[{}:{}:{}]",
-				logging::clog::instance().runtime_ms(), n, id.uuid.string(), e.self().name(), trans.x, trans.y, trans.rotation));
+				logging::clog::instance().runtime_ms(), n, id.uuid.string(), e.name(), trans.x, trans.y, trans.rotation));
 
 			network_timer.start();
 		}

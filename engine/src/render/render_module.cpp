@@ -32,9 +32,13 @@ namespace render
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void scene_render_system(ecs::centity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
+	void scene_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
 		CORE_NAMED_ZONE("scene_render_system");
+
+		auto* __t = e.get_mut<ecs::stransform>();
+		auto* __m = e.get_mut<ecs::smaterial>();
+		auto* __s = e.get_mut<ecs::ssprite_renderer>();
 
 		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture);
 
@@ -42,7 +46,7 @@ namespace render
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void scene_debug_render_system(ecs::centity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
+	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
 		CORE_NAMED_ZONE("scene_debug_render_system");
 	}

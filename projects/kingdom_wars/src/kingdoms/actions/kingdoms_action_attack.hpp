@@ -8,8 +8,8 @@ namespace kingdoms
 	class iattack : public iaction
 	{
 	public:
-		virtual bool can_attack(const ecs::cworld& world, ecs::centity attacker, ecs::centity attacked, float dt) = 0;
-		virtual void do_attack(const ecs::cworld& world, ecs::centity attacker, ecs::centity attacked, float dt) = 0;
+		virtual bool can_attack(const ecs::cworld& world, flecs::entity attacker, flecs::entity attacked, float dt) = 0;
+		virtual void do_attack(const ecs::cworld& world, flecs::entity attacker, flecs::entity attacked, float dt) = 0;
 
 		void do_execute(const sgame_context& ctx, float dt) override final;
 

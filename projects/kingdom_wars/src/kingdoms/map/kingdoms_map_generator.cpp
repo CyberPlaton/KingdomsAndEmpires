@@ -149,24 +149,24 @@ namespace kingdoms
 							//- Create actual entities that will populate the world
 							auto e = em.create_entity();
 
-							auto& transform = *e.add<ecs::stransform>().get_mut<ecs::stransform>();
-							auto& material = *e.add<ecs::smaterial>().get_mut<ecs::smaterial>();
-							auto& sprite_renderer = *e.add<ecs::ssprite_renderer>().get_mut<ecs::ssprite_renderer>();
-							auto& hierarchy = *e.add<ecs::shierarchy>().get_mut<ecs::shierarchy>();
+							auto* transform = e.add<ecs::stransform>().get_mut<ecs::stransform>();
+							auto* material = e.add<ecs::smaterial>().get_mut<ecs::smaterial>();
+							auto* sprite_renderer = e.add<ecs::ssprite_renderer>().get_mut<ecs::ssprite_renderer>();
+							auto* hierarchy = e.add<ecs::shierarchy>().get_mut<ecs::shierarchy>();
 
-							sprite_renderer.m_source_rect = {0.0f, 0.0f, 1.0f, 1.0f};
-							sprite_renderer.m_layer = current_layer_index;
+							sprite_renderer->m_source_rect = {0.0f, 0.0f, 1.0f, 1.0f};
+							sprite_renderer->m_layer = current_layer_index;
 
-							material.m_texture = associated_layer.m_atlas_texture_handle;
-							material.m_flags = sm::renderable_flag_origin_center;
+							material->m_texture = associated_layer.m_atlas_texture_handle;
+							material->m_flags = sm::renderable_flag_origin_center;
 
 							const auto positionx = x * associated_layer.m_tile_width;
 							const auto positiony = y * associated_layer.m_tile_height;
 							const auto rect = { positionx, positiony, associated_layer.m_tile_width, associated_layer.m_tile_height };
 
-							transform.m_position = { positionx, positiony };
-							transform.m_scale = { 1.0f, 1.0f };
-							transform.m_rotation = 0.0f;
+							transform->m_position = { positionx, positiony };
+							transform->m_scale = { 1.0f, 1.0f };
+							transform->m_rotation = 0.0f;
 						}
 					}
 				}
@@ -174,15 +174,15 @@ namespace kingdoms
 
 			//- Create camera entity
 			auto e = em.create_entity();
-			auto& camera = *e.add<ecs::scamera>().get_mut<ecs::scamera>();
-			camera.m_position = { 0.0f, 0.0f };
-			camera.m_offset = { 0.0f, 0.0f };
-			camera.m_zoom = 1.0f;
-			camera.m_rotation = 0.0f;
+			auto* camera = e.add<ecs::scamera>().get_mut<ecs::scamera>();
+			camera->m_position = { 0.0f, 0.0f };
+			camera->m_offset = { 0.0f, 0.0f };
+			camera->m_zoom = 1.0f;
+			camera->m_rotation = 0.0f;
 			const auto window_size = sm::window_size();
-			camera.m_viewrect = { 0.0f, 0.0f, window_size.x, window_size.y };
-			camera.m_active = true;
-			camera.m_renderlayer = 0;
+			camera->m_viewrect = { 0.0f, 0.0f, window_size.x, window_size.y };
+			camera->m_active = true;
+			camera->m_renderlayer = 0;
 		}
 
 		return result;
