@@ -1,5 +1,4 @@
 #include "kingdoms_tileset_generator.hpp"
-#include "../services/kingdoms_map_gid_name_mapping_service.hpp"
 #include <engine.h>
 #include <spritemancer.h>
 
@@ -63,12 +62,19 @@ namespace kingdoms
 
 			auto* vfs = core::cservice_manager::find<fs::cvirtual_filesystem>();
 			auto* sm = core::cservice_manager::find<sm::cspriteatlas_manager>();
-			auto* nms = core::cservice_manager::find<cmap_gid_name_mapping_service>();
 
 			vector_t<string_t> names; names.reserve(data.m_tile_count);
 			auto tile_count_x = data.m_image_width / data.m_tile_width;
 			auto tile_count_y = data.m_image_height / data.m_tile_height;
 			auto crunch_tileset = false;
+
+			//- Cache layer information to be cached
+			detail::smap_generation_context::slayer_information layer_info;
+			layer_info.m_name = data.m_name;
+			layer_info.m_tile_width = data.m_tile_width;
+			layer_info.m_tile_height = data.m_tile_height;
+			layer_info.m_tile_count_x = tile_count_x;
+			layer_info.m_tile_count_y = tile_count_y;
 
 			//- Resolve tileset texture data JSON file
 			auto stripped_path = string_utils::erase_numeric_in_path(data.m_image);
@@ -99,7 +105,8 @@ namespace kingdoms
 
 								const auto id = map_first_gid + idx;
 
-								nms->map(map_name, id, img.m_name);
+								ctx->m_map_layer_mapping_data[map_name][id] = layer_info.m_name;
+								ctx->m_map_mapping_data[map_name][id] = img.m_name;
 
 								const auto x = (float)img.m_x / data.m_image_width;
 								const auto y = (float)img.m_y / data.m_image_height;
@@ -149,7 +156,8 @@ namespace kingdoms
 					{
 						const auto id = map_first_gid + i + j;
 
-						nms->map(map_name, id, fmt::to_string(id));
+						ctx->m_map_layer_mapping_data[map_name][id] = layer_info.m_name;
+						ctx->m_map_mapping_data[map_name][id] = fmt::to_string(id);
 
 						names.emplace_back(fmt::to_string(id));
 					}
@@ -158,31 +166,41 @@ namespace kingdoms
 
 			if(!crunch_tileset)
 			{
-				if (const auto spriteatlas_handle = sm->load_sync(data.m_name, data.m_image_width, data.m_image_height, names,
-					{ (float)tile_count_x, (float)tile_count_y }); !sm::is_valid(spriteatlas_handle))
+				const auto spriteatlas_handle = sm->load_sync(data.m_name, data.m_image_width, data.m_image_height, names,
+					{ (float)tile_count_x, (float)tile_count_y });
+
+				if (!sm::is_valid(spriteatlas_handle))
 				{
 					//- TODO: Erase the last created mappings, as the atlas was not valid
 					log_error(fmt::format("Failed generating spriteatlas from Tiled tileset data at '{}', because the spriteatlas failed to load!", data.m_name));
 					result = false;
 				}
+
+				layer_info.m_atlas_handle = spriteatlas_handle;
 			}
 
 			auto* tm = core::cservice_manager::find<sm::ctexture_manager>();
 
 			if (const auto file = vfs->open({ data.m_image }, core::file_mode_read); file && file->opened())
 			{
-				if (const auto texture_handle = tm->load_sync(file->info().stem(), file->info().path()); !sm::is_valid(texture_handle))
+				const auto texture_handle = tm->load_sync(file->info().stem(), file->info().path());
+
+				if (!sm::is_valid(texture_handle))
 				{
 					//- TODO: Erase the last created spriteatals and mappings, as the image was not valid
 					log_error(fmt::format("Failed generating spriteatlas from Tiled tileset data at '{}', because the image '{}' failed to load", data.m_name, data.m_image));
 					result = false;
 				}
+
+				layer_info.m_atlas_texture_handle = texture_handle;
 			}
 			else
 			{
 				log_error(fmt::format("Failed generating spriteatlas from Tiled tileset data at '{}', because the image file '{}' could not be found", data.m_name, data.m_image));
 				result = false;
 			}
+
+			ctx->m_layer_info_data[ctx->m_name][layer_info.m_name] = std::move(layer_info);
 
 			result = true;
 		}

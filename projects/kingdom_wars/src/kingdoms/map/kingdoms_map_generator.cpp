@@ -105,14 +105,56 @@ namespace kingdoms
 			{
 				ps->gpu_force_update();
 				const auto draw_data = ps->gpu_drawcall_data();
-				log_trace(fmt::format("Loaded textures count '{}' ({}mb", draw_data.m_textures_count, algorithm::bytes_to_megabytes(draw_data.m_textures_bytes)));
+				log_trace(fmt::format("Loaded textures count '{}' ({})mb", draw_data.m_textures_count, algorithm::bytes_to_megabytes(draw_data.m_textures_bytes)));
 			}
 #endif
 
-			//- Iterate map layers
-			for (const auto& layer : ctx->m_map_data.m_layers)
-			{
+			const auto& texture_names = ctx->m_map_mapping_data.at(ctx->m_name);
 
+			//- Create an active world
+			ecs::world::sconfig cfg;
+			cfg.m_name = ctx->m_name;
+			cfg.m_threads = 1;
+
+			ecs::cworld_manager::instance().create(cfg, true);
+
+			//- Iterate map layers
+			for (auto i = 0; i < ctx->m_map_data.m_layers.size(); ++i)
+			{
+				const auto& layer = ctx->m_map_data.m_layers.at(i);
+				
+				log_debug(fmt::format("Creating Layer: '{}'", layer.m_name));
+
+				sm::create_layer();
+
+				auto& world = ecs::cworld_manager::instance().active();
+				auto& em = world.em();
+
+				for (auto j = 0; j < layer.m_chunks.size(); ++j)
+				{
+					const auto& layer_name = layer.m_name;
+					const auto& chunk = layer.m_chunks.at(j);
+
+					for (auto x = 0; x < chunk.m_width; ++x)
+					{
+						for (auto y = 0; y < chunk.m_height; ++y)
+						{
+							const auto& map_gid = chunk.m_data.at(x + y);
+							const auto& texture_name = texture_names.at(map_gid);
+							const auto& associated_layer_name = ctx->m_map_layer_mapping_data.at(ctx->m_name).at(map_gid);
+							const auto& associated_layer = ctx->m_layer_info_data.at(ctx->m_name).at(associated_layer_name);
+
+							//- Create actual entities that will populate the world
+							auto e = em.create_entity();
+
+							auto& transform = *e.add<ecs::stransform>().get_mut<ecs::stransform>();
+							auto& material = *e.add<ecs::smaterial>().get_mut<ecs::smaterial>();
+							auto& sprite_renderer = *e.add<ecs::ssprite_renderer>().get_mut<ecs::ssprite_renderer>();
+							auto& hierarchy = *e.add<ecs::shierarchy>().get_mut<ecs::shierarchy>();
+
+						}
+					}
+				}
 			}
 		}
 
