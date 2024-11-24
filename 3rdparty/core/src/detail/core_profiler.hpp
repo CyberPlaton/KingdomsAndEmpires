@@ -76,27 +76,27 @@ namespace core
 			class iaggregator;
 			using aggregator_ref_t = ref_t<iaggregator>;
 
-			//- Basic information about a function
+			//- Basic information about a function. Used internal.
 			//------------------------------------------------------------------------------------------------------------------------
 			struct sfunction_data final
 			{
-				uint64_t m_thread = 0;
-				float m_time = 0.0f;		//- microsecs
-				const char* m_name = nullptr;
-				const char* m_category = nullptr;
-				const char* m_file = nullptr;
-				unsigned m_file_line = 0;
+				uint64_t m_thread		= 0;
+				float m_time			= 0.0f; //- microsecs
+				const char* m_name		= nullptr;
+				const char* m_category	= nullptr;
+				const char* m_file		= nullptr;
+				unsigned m_file_line	= 0;
 			};
 
 			//- Refined function data gathered and accumulated over time
 			//------------------------------------------------------------------------------------------------------------------------
 			struct saggregated_function_data final
 			{
-				sfunction_data m_data;	//- Contains only the latest data about the function
-				unsigned m_callcount = 0;
+				sfunction_data m_data;			//- Contains only the latest data about the function
+				unsigned m_callcount	= 0;
 				float m_time_cumulative = 0.0f;	//- microsecs
-				float m_time_peak = 0.0f;	//- microsecs
-				float m_time_average = 0.0f;	//- microsecs
+				float m_time_peak		= 0.0f;	//- microsecs
+				float m_time_average	= 0.0f;	//- microsecs
 			};
 
 			//- Scoped object that stores information about current scope and measures time it lived, meaning the time required to
@@ -124,7 +124,7 @@ namespace core
 
 				int64_t m_core_max_clock_speed;	//- MHz
 				int64_t m_core_clock_speed;		//- MHz
-				float m_load;					//- %
+				float m_load = 0.0f;			//- %
 
 				int64_t m_cache_size_L1 = 0;	//- Bytes
 				int64_t m_cache_size_L2 = 0;	//- Bytes
@@ -152,8 +152,8 @@ namespace core
 
 		} //- cpu
 
-		//- Helper class to push and retrieve profiling data from any used library, app or engine. Make sure to call the init
-		//- function as soon as possible.
+		//- Note: do not use directly, use profiler service instead, he will have data if PROFILE_ENABLE was defined and he
+		//- also does necessary initialization.
 		//------------------------------------------------------------------------------------------------------------------------
 		class cprofiler final
 		{

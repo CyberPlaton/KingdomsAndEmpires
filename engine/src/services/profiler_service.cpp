@@ -13,10 +13,11 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cprofiler_service::init()
 	{
+#if PROFILE_ENABLE
 		core::profile::cpu::set_default_aggregator();
 		core::profile::memory::set_default_aggregator();
 		sm::profile::gpu::set_default_aggregator();
-
+#endif
 		return true;
 	}
 
@@ -29,6 +30,12 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cprofiler_service::on_start()
 	{
+		//- If we have profile enabled, make sure that we have created aggregators
+#if PROFILE_ENABLE
+		CORE_ASSERT(core::profile::memory::get_aggregator(), "Invalid operation. No memory profiler set!");
+		CORE_ASSERT(core::profile::cpu::get_aggregator(), "Invalid operation. No CPU profiler set!");
+		CORE_ASSERT(sm::profile::gpu::get_aggregator(), "Invalid operation. No GPU profiler set!");
+#endif
 		return true;
 	}
 
@@ -45,7 +52,7 @@ namespace engine
 			S_TIMER.start(); return;
 		}
 
-		//- Update data every so often
+		//- Update data every so many seconds
 		if (S_TIMER.secs() > S_UPDATE_INTERVAL)
 		{
 			if (auto aggregator = core::profile::memory::get_aggregator(); aggregator)
@@ -56,11 +63,81 @@ namespace engine
 			{
 				aggregator->update();
 			}
+			if (auto aggregator = sm::profile::gpu::get_aggregator(); aggregator)
+			{
+				aggregator->update();
+			}
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::profile::memory::smemory_stats cprofiler_service::memory_stats() const
+	void cprofiler_service::force_update()
+	{
+		memory_force_update();
+		cpu_force_update();
+		gpu_force_update();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cprofiler_service::memory_force_update()
+	{
+		if (auto aggregator = core::profile::memory::get_aggregator(); aggregator)
+		{
+			aggregator->update();
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpu_function_t cprofiler_service::cpu_function_data(stringview_t function_name) const
+	{
+		if (auto aggregator = core::profile::cpu::get_aggregator(); aggregator)
+		{
+			return aggregator->function_data(function_name);
+		}
+		return {};
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpu_function_data_t cprofiler_service::cpu_function_data() const
+	{
+		if (auto aggregator = core::profile::cpu::get_aggregator(); aggregator)
+		{
+			return aggregator->function_data();
+		}
+		return {};
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cprofiler_service::gpu_force_update()
+	{
+		if (auto aggregator = sm::profile::gpu::get_aggregator(); aggregator)
+		{
+			aggregator->update();
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	gpu_stats_t cprofiler_service::gpu_stats() const
+	{
+		if (auto aggregator = sm::profile::gpu::get_aggregator(); aggregator)
+		{
+			return aggregator->stats();
+		}
+		return {};
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	gpu_drawcall_data_t cprofiler_service::gpu_drawcall_data() const
+	{
+		if (auto aggregator = sm::profile::gpu::get_aggregator(); aggregator)
+		{
+			return aggregator->drawcall_data();
+		}
+		return {};
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	memory_stats_t cprofiler_service::memory_stats() const
 	{
 		if (auto aggregator = core::profile::memory::get_aggregator(); aggregator)
 		{
@@ -70,7 +147,16 @@ namespace engine
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	vector_t<core::profile::cpu::scpu_stats> cprofiler_service::cpu_stats() const
+	void cprofiler_service::cpu_force_update()
+	{
+		if (auto aggregator = core::profile::cpu::get_aggregator(); aggregator)
+		{
+			return aggregator->update();
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cpu_stats_t cprofiler_service::cpu_stats() const
 	{
 		if (auto aggregator = core::profile::cpu::get_aggregator(); aggregator)
 		{

@@ -99,6 +99,16 @@ namespace kingdoms
 				}
 			}
 
+			//- DEBUG: check how many textures we have loaded so far
+#if PROFILE_ENABLE
+			if (auto* ps = core::cservice_manager::find<engine::cprofiler_service>(); ps)
+			{
+				ps->gpu_force_update();
+				const auto draw_data = ps->gpu_drawcall_data();
+				log_trace(fmt::format("Loaded textures count '{}' ({}mb", draw_data.m_textures_count, algorithm::bytes_to_megabytes(draw_data.m_textures_bytes)));
+			}
+#endif
+
 			//- Iterate map layers
 			for (const auto& layer : ctx->m_map_data.m_layers)
 			{

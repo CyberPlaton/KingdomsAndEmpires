@@ -194,6 +194,10 @@ namespace engine
 
 		m_config.m_services_cfg.assign(C_SERVICES.begin(), C_SERVICES.end());
 
+#if PROFILE_ENABLE
+		m_config.m_services_cfg.emplace_back("cprofiler_service");
+#endif
+
 		for (const auto& name : m_config.m_services_cfg)
 		{
 			log_info(fmt::format("\t'{}'", name));
