@@ -16,11 +16,15 @@ namespace kingdoms
 		static bool S_OPEN = true;
 		scontext S_CTX;
 
+		ref_t<editor::cprofiler_visualizer> profiler_visualizer;
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool ckingdoms_layer_ui::init()
 	{
+		profiler_visualizer = std::make_shared<editor::cprofiler_visualizer>();
+
 		return true;
 	}
 
@@ -33,7 +37,7 @@ namespace kingdoms
 	//------------------------------------------------------------------------------------------------------------------------
 	void ckingdoms_layer_ui::on_update(float dt)
 	{
-
+		profiler_visualizer->on_update(dt);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -70,6 +74,8 @@ namespace kingdoms
 			S_CTX.m_selecting_map = false;
 			S_CTX.m_selected_map.clear();
 		}
+
+		profiler_visualizer->on_ui_render();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

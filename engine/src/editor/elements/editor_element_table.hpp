@@ -32,7 +32,7 @@ namespace editor::ui
 														| options_outer_vertical_borders
 		};
 
-		using table_column_data_t = std::pair<ImGuiTableColumnFlags, float>;
+		using table_column_data_t = std::tuple<string_t, ImGuiTableColumnFlags, float>;
 
 		ctable(stringview_t id, bool* enabled = nullptr, ImGuiTableFlags flags = ImGuiTableFlags_None);
 		~ctable() = default;

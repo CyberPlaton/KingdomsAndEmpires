@@ -44,18 +44,18 @@ namespace editor::ui
 		}
 
 		imgui::cdisabled_scope disabled_scope(!m_enabled);
-		ImGui::BeginGroup();
 		m_result = ImGui::BeginTable(m_id.data(), m_columns, m_flags, m_size);
 
 		if (!data.empty())
 		{
 			for (auto i = 0; i < data.size(); ++i)
 			{
-				const auto& pair = data[i];
-				ImGui::TableSetupColumn(fmt::format("##table_column_{}", i).data(),
-					pair.first, pair.second);
+				const auto& [name, flag, weight] = data[i];
+				ImGui::TableSetupColumn(name.data(), flag, weight);
 			}
 		}
+
+		ImGui::TableHeadersRow();
 
 		return m_result;
 	}
@@ -63,7 +63,7 @@ namespace editor::ui
 	//------------------------------------------------------------------------------------------------------------------------
 	ctable& ctable::begin_next_row()
 	{
-		ImGui::TableNextRow();
+		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 		return *this;
 	}
 
@@ -81,8 +81,6 @@ namespace editor::ui
 		{
 			ImGui::EndTable();
 		}
-
-		ImGui::EndGroup();
 
 		if (m_show_tooltip)
 		{

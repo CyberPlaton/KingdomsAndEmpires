@@ -102,4 +102,14 @@ namespace imgui
 		~cdisabled_scope();
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	class cgroup_scope final :
+		private core::cnon_copyable,
+		private core::cnon_movable
+	{
+	public:
+		cgroup_scope();
+		~cgroup_scope();
+	};
+
 } //- imgui

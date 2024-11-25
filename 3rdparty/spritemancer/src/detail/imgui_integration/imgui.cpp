@@ -993,7 +993,7 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void cui::help_marker_no_question_mark(const string_t& desc, tooltip_hovering_delay delay /*= tooltip_hovering_delay_none*/)
 	{
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenOverlappedByWindow))
 		{
 			ImGui::BeginTooltip();
 			ImGui::PushTextWrapPos(ImGui::GetFontSize() * desc.size());

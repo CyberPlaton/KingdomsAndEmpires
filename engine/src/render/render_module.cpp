@@ -120,6 +120,7 @@ namespace render
 		cfg.m_name = "srender_system";
 		cfg.m_run_after = { "srender_frame_begin_system" };
 		cfg.m_run_before = { "srender_frame_end_system" };
+		cfg.m_flags = ecs::system::system_flag_multithreaded;
 
 		return cfg;
 	}

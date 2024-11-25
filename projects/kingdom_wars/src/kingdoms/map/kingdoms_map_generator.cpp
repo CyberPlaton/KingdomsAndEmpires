@@ -114,7 +114,7 @@ namespace kingdoms
 			//- Create an active world
 			ecs::world::sconfig cfg;
 			cfg.m_name = ctx->m_name;
-			cfg.m_threads = 2;
+			cfg.m_threads = engine::cthread_service::hardware_threads() / 2;
 
 			ecs::cworld_manager::instance().create(cfg, true);
 			auto& world = ecs::cworld_manager::instance().active();

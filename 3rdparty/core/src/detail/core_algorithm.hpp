@@ -3,26 +3,6 @@
 
 namespace algorithm
 {
-	namespace detail
-	{
-		//- @reference: https://gist.github.com/khvorov/cd626ea3685fd5e8bf14
-		//------------------------------------------------------------------------------------------------------------------------
-		template <typename F>
-		struct function_traits : public function_traits<decltype(&F::operator())> {};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		template <typename R, typename C, typename... ARGS>
-		struct function_traits<R(C::*)(ARGS...) const>
-		{
-			using function_type = std::function<R(ARGS...)>;
-		};
-
-		//------------------------------------------------------------------------------------------------------------------------
-		template<typename F>
-		using function_type_t = typename detail::function_traits<F>::function_type;
-
-	} //- detail
-
 	namespace matching
 	{
 		//- Direct matching algorithm that matches any number of words and returns true if
@@ -34,13 +14,6 @@ namespace algorithm
 		bool fuzzy(stringview_t pattern, stringview_t text, vector_t<int>& matches_out);
 
 	} //- matching
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename F>
-	detail::function_type_t<F> convert_to_function(F& lambda)
-	{
-		return static_cast<detail::function_type_t<F>>(lambda);
-	}
 
 	unsigned hash(stringview_t string);
 	unsigned percentage(float total_value, float part_value);
