@@ -10,10 +10,7 @@ namespace engine
 		{
 			//- Enable profiler, either tracy or engine one
 #if PROFILE_ENABLE
-	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-	#else
 			engine::cprofiler_service::init();
-	#endif
 			CORE_NAMED_ZONE(engine_main_entry);
 #endif
 			core::sentry::init();

@@ -41,25 +41,25 @@ namespace ecs
 			set_t<string_t> visited;
 			set_t<string_t> recursion_stack;
 
-			core::cfunction<bool(stringview_t)> dfs = [&](stringview_t node)
+			std::function<bool(const string_t&)> dfs = [&](const string_t& node)
 				{
-					if (recursion_stack.count(node.data()))
+					if (recursion_stack.count(node))
 					{
 						return true; //- Cycle detected
 					}
-					if (visited.count(node.data()))
+					if (visited.count(node))
 					{
 						return false; //- Already visited, skip
 					}
 
 					// Mark node as visited and add to recursion stack
-					visited.insert(node.data());
-					recursion_stack.insert(node.data());
+					visited.insert(node);
+					recursion_stack.insert(node);
 
 					// Process dependencies (neighbors)
-					if (module_map.count(node.data()))
+					if (module_map.count(node))
 					{
-						for (const auto& dependency : module_map.at(node.data()))
+						for (const auto& dependency : module_map.at(node))
 						{
 							if (dfs(dependency))
 							{
@@ -69,8 +69,8 @@ namespace ecs
 					}
 
 					//- Add to sorted order and remove from recursion stack
-					recursion_stack.erase(node.data());
-					sorted_order.push_back(node.data());
+					recursion_stack.erase(node);
+					sorted_order.push_back(node);
 					return false;
 				};
 

@@ -1,4 +1,4 @@
-IS_TRACY_ENABLED				= false
+IS_TRACY_ENABLED				= true
 IS_MIMALLOC_ENABLED				= true
 IS_PROFILE_ENABLED				= true
 IS_LOGGING_ENABLED				= true

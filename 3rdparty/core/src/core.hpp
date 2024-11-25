@@ -9,7 +9,6 @@
 #include "detail/core_dynamic_pool.hpp"
 #include "detail/core_event_service.hpp"
 #include "detail/core_filesystem.hpp"
-#include "detail/core_function.hpp"
 #include "detail/core_future_type.hpp"
 #include "detail/core_general_allocator.hpp"
 #include "detail/core_input.hpp"

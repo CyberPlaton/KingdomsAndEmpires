@@ -24,8 +24,8 @@ namespace engine
 {
 	namespace detail
 	{
-		using engine_main_func_t = core::cfunction<engine::sconfig(const args_ref_t&)>;
-		using engine_args_config_func_t = core::cfunction<void(const args_ref_t&)>;
+		using engine_main_func_t = std::function<engine::sconfig(const args_ref_t&)>;
+		using engine_args_config_func_t = std::function<void(const args_ref_t&)>;
 
 		extern int engine_main_entry(engine_main_func_t main_entry, engine_args_config_func_t args_config, int argc, char* argv[]);
 

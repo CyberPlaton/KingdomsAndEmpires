@@ -138,7 +138,7 @@ namespace kingdoms
 			sm::ccamera __camera__;
 			__camera__.m_position = { 0.0f, 0.0f };
 			__camera__.m_offset = { 0.0f, 0.0f };
-			__camera__.m_zoom = 1.0f;
+			__camera__.m_zoom = 0.5f;
 			__camera__.m_rotation = 0.0f;
 			__camera__.m_ready = true;
 

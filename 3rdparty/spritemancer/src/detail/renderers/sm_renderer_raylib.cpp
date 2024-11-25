@@ -62,7 +62,7 @@ namespace sm
 		static uint16_t S_X = 0;
 		static uint16_t S_Y = 0;
 		static core::scolor S_CLEAR_COLOR = { 50, 50, 155, 255 };
-		static raylib::Camera2D S_CAMERA = {{0.0f, 0.0f}, {0.0f, 0.0f}, 0.0f, 1.0f};
+		static raylib::Camera2D S_CAMERA = {{0.0f, 0.0f}, {0.0f, 0.0f}, 0.0f, 0.5f};
 
 	} //- unnamed
 

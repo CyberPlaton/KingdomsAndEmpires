@@ -203,8 +203,8 @@ inline static void tracy_free_trace(void* ptr)
 //------------------------------------------------------------------------------------------------------------------------
 #if defined(core_EXPORTS)
 #if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-void* operator new(unsigned long long n) { return CORE_MALLOC(n); }
-void operator delete(void* p) { CORE_FREE(p); }
+void* operator new(unsigned long long n);
+void operator delete(void* p);
 #endif
 #endif
 
@@ -212,7 +212,7 @@ void operator delete(void* p) { CORE_FREE(p); }
 #if PROFILE_ENABLE
 	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
 		#define CORE_ZONE ZoneScoped
-		#define CORE_NAMED_ZONE(name) ZoneScopedN(name)
+		#define CORE_NAMED_ZONE(name) ZoneScopedN(SSTRING(name))
 	#else
 		//- TODO: Currently we have no way of setting the category of a function
 		//------------------------------------------------------------------------------------------------------------------------

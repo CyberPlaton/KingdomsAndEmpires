@@ -1,5 +1,13 @@
 #include "core_config.hpp"
 
+//------------------------------------------------------------------------------------------------------------------------
+#if defined(core_EXPORTS)
+#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
+void* operator new(unsigned long long n) { return CORE_MALLOC(n); }
+void operator delete(void* p) { CORE_FREE(p); }
+#endif
+#endif
+
 namespace core
 {
 	//------------------------------------------------------------------------------------------------------------------------

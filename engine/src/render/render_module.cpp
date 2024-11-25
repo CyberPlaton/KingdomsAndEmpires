@@ -34,7 +34,7 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	void scene_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
-		CORE_NAMED_ZONE("scene_render_system");
+		CORE_ZONE;
 
 		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture);
 
@@ -44,7 +44,7 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
-		CORE_NAMED_ZONE("scene_debug_render_system");
+		CORE_ZONE;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

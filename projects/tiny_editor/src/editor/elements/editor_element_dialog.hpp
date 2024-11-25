@@ -10,8 +10,8 @@ namespace editor::ui
 	class cdialog final
 	{
 	public:
-		using dialog_display_callback_t = core::cfunction<void()>;
-		using dialog_button_callback_t = core::cfunction<void()>;
+		using dialog_display_callback_t = std::function<void()>;
+		using dialog_button_callback_t = std::function<void()>;
 
 		cdialog(bool* open, stringview_t id = {}, ImGuiWindowFlags flags = ImGuiWindowFlags_None);
 		~cdialog();

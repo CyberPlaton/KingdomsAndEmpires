@@ -6,7 +6,7 @@ namespace animation
 	//------------------------------------------------------------------------------------------------------------------------
 	void animation_system(flecs::entity e, ecs::sanimation& animation)
 	{
-		CORE_NAMED_ZONE("Animation System");
+		CORE_ZONE;
 
 		//- TODO: we do it like this for now. But intended was to use world().visible_entities()
 		//- and update their animations only, as it does not make sense to compute so much stuff

@@ -26,7 +26,7 @@ namespace engine
 #elif CORE_PLATFORM_LINUX
 					pthread_setname_np(thread.native_handle(), name.data());
 #elif CORE_PLATFORM_OSX
-                    //- nothing to be done here. Names are set in threads individual context
+					//- nothing to be done here. Names are set in threads individual context
 #endif
 				}
 				catch (const std::exception& err)
@@ -55,13 +55,13 @@ namespace engine
 				const auto name = fmt::format("{}{}", m_prefix, id);
 
 				//- called before worker enters a loop
-                //- set name for each thread individually from their context
+				//- set name for each thread individually from their context
 #if CORE_PLATFORM_OSX
-                pthread_setname_np(name.c_str());
+				pthread_setname_np(name.c_str());
 #endif
-#if TRACY_ENABLE
-                //- set name for tracy if we are profiling
-                TracyCSetThreadName(name.c_str());
+#if PROFILE_ENABLE && TRACY_ENABLE
+				//- set name for tracy if we are profiling
+				TracyCSetThreadName(name.c_str());
 #endif
 
 				m_threads[id] = std::this_thread::get_id();

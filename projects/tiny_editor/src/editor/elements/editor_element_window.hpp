@@ -9,7 +9,7 @@ namespace editor::ui
 	class cwindow final
 	{
 	public:
-		using window_display_callback_t = core::cfunction<bool()>;
+		using window_display_callback_t = std::function<bool()>;
 
 		cwindow(bool* open, stringview_t id = {}, ImGuiWindowFlags flags = ImGuiWindowFlags_None);
 		~cwindow();

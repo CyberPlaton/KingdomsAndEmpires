@@ -74,7 +74,7 @@ namespace engine
 	//------------------------------------------------------------------------------------------------------------------------
 	void cengine::on_update(float dt)
 	{
-		CORE_NAMED_ZONE("cengine::on_update");
+		ZoneScoped;
 
 		core::cservice_manager::on_update(dt);
 
