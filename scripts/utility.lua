@@ -1,4 +1,3 @@
-IS_TRACY_ENABLED				= true
 IS_MIMALLOC_ENABLED				= true
 IS_PROFILE_ENABLED				= true
 IS_LOGGING_ENABLED				= true
@@ -37,9 +36,6 @@ function set_basic_defines()
 	else
 	end
 
-	if IS_TRACY_ENABLED == true then
-		defines{"TRACY_ENABLE"}
-	end
 	if IS_MIMALLOC_ENABLED == true then
 		defines{"MIMALLOC_ENABLE"}
 	end

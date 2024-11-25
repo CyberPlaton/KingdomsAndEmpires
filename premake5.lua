@@ -19,7 +19,7 @@ PLUGINS_DIR		= "plugins"
 PROJECTS_DIR	= "projects"
 THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann", "mimalloc", "imgui", "pfd",
 			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua", "rttr", "raylib",
-			  "Tracy", "spritemancer", "tree_sitter", "unittest", "hwinfo", "asio"}
+			  "spritemancer", "tree_sitter", "unittest", "hwinfo", "asio"}
 
 PLUGINS = {"plugin_module_example", "plugin_camera_system", "plugin_ai", "plugin_rttr_example"}
 

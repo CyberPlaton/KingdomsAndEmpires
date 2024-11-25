@@ -18,7 +18,6 @@ namespace stl = std;
 #include <rttr.h>
 #include <nlohmann.h>
 #include <../src/simdjson.h>
-#include <../src/tracy.hpp>
 #define ASIO_NO_EXCEPTIONS
 #include <asio.h>
 namespace miniz
@@ -135,108 +134,48 @@ namespace miniz
 #define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
 #define STATIC_INSTANCE_EX(__class) STATIC_INSTANCE(__class, s_instance)
 
-//------------------------------------------------------------------------------------------------------------------------
-#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-//------------------------------------------------------------------------------------------------------------------------
-inline static void* tracy_malloc_trace(std::size_t size)
-{
-	void* p = std::malloc(size);
-
-	TracyAlloc(p, size);
-
-	return p;
-}
-
-//------------------------------------------------------------------------------------------------------------------------
-inline static void* tracy_calloc_trace(std::size_t n, std::size_t size)
-{
-	void* p = std::calloc(n, size);
-
-	TracyAlloc(p, n * size);
-
-	return p;
-}
-
-//------------------------------------------------------------------------------------------------------------------------
-inline static void* tracy_realloc_trace(void* ptr, std::size_t size)
-{
-	TracyFree(ptr);
-
-	void* p = std::realloc(ptr, size);
-
-	TracyAlloc(p, size);
-
-	return p;
-}
-
-//------------------------------------------------------------------------------------------------------------------------
-inline static void tracy_free_trace(void* ptr)
-{
-	TracyFree(ptr);
-	std::free(ptr);
-}
-
-//------------------------------------------------------------------------------------------------------------------------
-#define CORE_MALLOC(size)		tracy_malloc_trace(size)
-#define CORE_CALLOC(n, size)	tracy_calloc_trace(n, size)
-#define CORE_REALLOC(p, size)	tracy_realloc_trace(p, size)
-#define CORE_FREE(p)			tracy_free_trace(p)
-#define CORE_FREEN(p, n)		tracy_free_trace(p)
-#elif MIMALLOC_ENABLE
+#if MIMALLOC_ENABLE
 	//------------------------------------------------------------------------------------------------------------------------
-#define CORE_MALLOC(size)		mi_malloc(size)
-#define CORE_CALLOC(n, size)	mi_calloc(n, size)
-#define CORE_REALLOC(p, size)	mi_realloc(p, size)
-#define CORE_MALLOCA(size, a)	mi_aligned_alloc(a, size)
-#define CORE_FREE(p)			mi_free(p)
-#define CORE_FREEN(p, n)		CORE_FREE(p)
+	#define CORE_MALLOC(size)		mi_malloc(size)
+	#define CORE_CALLOC(n, size)	mi_calloc(n, size)
+	#define CORE_REALLOC(p, size)	mi_realloc(p, size)
+	#define CORE_MALLOCA(size, a)	mi_aligned_alloc(a, size)
+	#define CORE_FREE(p)			mi_free(p)
+	#define CORE_FREEN(p, n)		CORE_FREE(p)
 #else
 	//------------------------------------------------------------------------------------------------------------------------
-#define CORE_MALLOC(size)		std::malloc(size)
-#define CORE_CALLOC(n, size)	std::calloc(n, size)
-#define CORE_REALLOC(p, size)	std::realloc(p, size)
-#define CORE_MALLOCA(size, a)	std::aligned_alloc(a, size)
-#define CORE_FREE(p)			std::free(p)
-#define CORE_FREEN(p, n)		CORE_FREE(p)
-#endif
-
-//------------------------------------------------------------------------------------------------------------------------
-#if defined(core_EXPORTS)
-#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-void* operator new(unsigned long long n);
-void operator delete(void* p);
-#endif
+	#define CORE_MALLOC(size)		std::malloc(size)
+	#define CORE_CALLOC(n, size)	std::calloc(n, size)
+	#define CORE_REALLOC(p, size)	std::realloc(p, size)
+	#define CORE_MALLOCA(size, a)	std::aligned_alloc(a, size)
+	#define CORE_FREE(p)			std::free(p)
+	#define CORE_FREEN(p, n)		CORE_FREE(p)
 #endif
 
 //------------------------------------------------------------------------------------------------------------------------
 #if PROFILE_ENABLE
-	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
-		#define CORE_ZONE ZoneScoped
-		#define CORE_NAMED_ZONE(name) ZoneScopedN(SSTRING(name))
-	#else
-		//- TODO: Currently we have no way of setting the category of a function
-		//------------------------------------------------------------------------------------------------------------------------
-		#define CORE_ZONE core::profile::cpu::cscoped_function			\
-		ANONYMOUS_VARIABLE(cpu_profile_function)						\
-		(																\
-			std::hash<std::thread::id>{}(std::this_thread::get_id()),	\
-			CORE_FUNC_SIG,												\
-			nullptr,													\
-			__FILE__,													\
-			__LINE__													\
-		)
-		//- Create a named zone
-		//------------------------------------------------------------------------------------------------------------------------
-		#define CORE_NAMED_ZONE(name) core::profile::cpu::cscoped_function			\
-		ANONYMOUS_VARIABLE(cpu_profile_function)									\
-		(																			\
-			std::hash<std::thread::id>{}(std::this_thread::get_id()),				\
-			SSTRING(name),															\
-			nullptr,																\
-			__FILE__,																\
-			__LINE__																\
-		)
-	#endif
+	//- TODO: Currently we have no way of setting the category of a function
+	//------------------------------------------------------------------------------------------------------------------------
+	#define CORE_ZONE core::profile::cpu::cscoped_function			\
+	ANONYMOUS_VARIABLE(cpu_profile_function)						\
+	(																\
+		std::hash<std::thread::id>{}(std::this_thread::get_id()),	\
+		CORE_FUNC_SIG,												\
+		nullptr,													\
+		__FILE__,													\
+		__LINE__													\
+	)
+	//- Create a named zone
+	//------------------------------------------------------------------------------------------------------------------------
+	#define CORE_NAMED_ZONE(name) core::profile::cpu::cscoped_function			\
+	ANONYMOUS_VARIABLE(cpu_profile_function)									\
+	(																			\
+		std::hash<std::thread::id>{}(std::this_thread::get_id()),				\
+		SSTRING(name),															\
+		nullptr,																\
+		__FILE__,																\
+		__LINE__																\
+	)
 #else
 	#define CORE_ZONE
 	#define CORE_NAMED_ZONE(name)

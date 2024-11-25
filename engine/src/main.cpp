@@ -8,7 +8,7 @@ namespace engine
 		//------------------------------------------------------------------------------------------------------------------------
 		int engine_main_entry(engine_main_func_t function, engine_args_config_func_t args_config, int argc, char* argv[])
 		{
-			//- Enable profiler, either tracy or engine one
+			//- Enable in-engine profiler
 #if PROFILE_ENABLE
 			engine::cprofiler_service::init();
 			CORE_NAMED_ZONE(engine_main_entry);

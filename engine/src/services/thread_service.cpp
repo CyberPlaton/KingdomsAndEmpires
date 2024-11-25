@@ -59,11 +59,6 @@ namespace engine
 #if CORE_PLATFORM_OSX
 				pthread_setname_np(name.c_str());
 #endif
-#if PROFILE_ENABLE && TRACY_ENABLE
-				//- set name for tracy if we are profiling
-				TracyCSetThreadName(name.c_str());
-#endif
-
 				m_threads[id] = std::this_thread::get_id();
 
 				log_debug(fmt::format("\tworker '{}' entered loop...", name));
