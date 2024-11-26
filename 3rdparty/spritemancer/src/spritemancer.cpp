@@ -83,6 +83,7 @@ namespace sm
 		{
 			CORE_ZONE;
 
+			bool frame_begin_result = false;
 			auto& osdata = ctx().m_os_data;
 			auto& renderdata = ctx().m_render_data;
 			auto& layerdata = renderdata.m_layer_data;
@@ -90,9 +91,12 @@ namespace sm
 			osdata.m_delta_time = entry::get_os()->frametime();
 
 			//- platforms may need to handle events
-			if (entry::get_os()->process_events() == opresult_fail)
 			{
-				S_RUNNING = false;
+				CORE_NAMED_ZONE(os_process_events);
+				if (entry::get_os()->process_events() == opresult_fail)
+				{
+					S_RUNNING = false;
+				}
 			}
 
 			//- check for resize of most basic layer. Other layers are not our responsibility
@@ -104,51 +108,76 @@ namespace sm
 			}
 
 			//- update HID state, such as keyboard and mouse
-			entry::get_app()->on_update(osdata.m_delta_time);
+			{
+				CORE_NAMED_ZONE(app_on_update);
+				entry::get_app()->on_update(osdata.m_delta_time);
+			}
 
 			//- render frame
 			entry::get_renderer()->update_viewport({ osdata.m_window_x, osdata.m_window_y }, { osdata.m_window_w, osdata.m_window_h });
 
 			//- most basic layer, does always exist
-			layerdata.m_layers[0].m_show = true;
-			entry::get_renderer()->prepare_frame();
-			entry::get_renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
+			{
+				CORE_NAMED_ZONE(renderer_prepare_frame);
+				layerdata.m_layers[0].m_show = true;
+				entry::get_renderer()->prepare_frame();
+				entry::get_renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
+			}
 
 			//- layered rendering, from bottom to top
-			for (auto i = 0u; i < layerdata.m_layer_count; ++i)
 			{
-				auto& layer = layerdata.m_layers[i];
-
-				if (layer.m_show &&
-					entry::get_renderer()->begin(layer))
+				CORE_NAMED_ZONE(renderer_layered_rendering);
+				for (auto i = 0u; i < layerdata.m_layer_count; ++i)
 				{
-					entry::get_renderer()->clear(layer, true);
+					auto& layer = layerdata.m_layers[i];
 
-					entry::get_renderer()->draw(layer);
+					{
+						CORE_NAMED_ZONE(renderer_frame_begin);
+						frame_begin_result = layer.m_show && entry::get_renderer()->begin(layer);
+					}
 
-					entry::get_renderer()->end(layer);
+					{
+						CORE_NAMED_ZONE(renderer_frame_draw);
+						if (frame_begin_result)
+						{
+							entry::get_renderer()->clear(layer, true);
+
+							entry::get_renderer()->draw(layer);
+
+							entry::get_renderer()->end(layer);
+						}
+					}
+
+					layer.m_commands.clear();
 				}
-
-				layer.m_commands.clear();
 			}
 
 			//- layered rendering, combine them upon each other
-			for (auto i = 0u; i < layerdata.m_layer_count; ++i)
 			{
-				auto& layer = layerdata.m_layers[i];
-
-				if (layer.m_show &&
-					entry::get_renderer()->combine(layer))
+				CORE_NAMED_ZONE(renderer_combine_layers);
+				for (auto i = 0u; i < layerdata.m_layer_count; ++i)
 				{
-					//- do postprocess or whatever
+					auto& layer = layerdata.m_layers[i];
+
+					if (layer.m_show &&
+						entry::get_renderer()->combine(layer))
+					{
+						//- do postprocess or whatever
+					}
 				}
 			}
 
 			//- finalize rendering with imgui on top
-			entry::get_app()->on_imgui();
+			{
+				CORE_NAMED_ZONE(renderer_frame_imgui);
+				entry::get_app()->on_imgui();
+			}
 
 			//- present everything
-			entry::get_renderer()->display_frame();
+			{
+				CORE_NAMED_ZONE(renderer_frame_present);
+				entry::get_renderer()->display_frame();
+			}
 
 #if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
 			FrameMark;
@@ -488,6 +517,8 @@ namespace sm
 
 			ctx().m_render_data.m_layer_data.m_layers[layer].m_commands.emplace_back().create([=]()
 				{
+					CORE_NAMED_ZONE(spritemancer_draw_texture);
+
 					auto& renderdata = ctx().m_render_data;
 					auto& statedata = renderdata.m_state_data;
 

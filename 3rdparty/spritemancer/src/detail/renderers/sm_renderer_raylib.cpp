@@ -141,7 +141,10 @@ namespace sm
 	{
 		if (is_valid(layer.m_target))
 		{
-			raylib::BeginTextureMode(layer.m_target.target());
+			{
+				CORE_NAMED_ZONE(renderer_begin_texture_mode);
+				raylib::BeginTextureMode(layer.m_target.target());
+			}
 
 			//- check some flags and do adjustments
 			if (algorithm::bit_check(layer.m_flags, layer_flags_2d))
