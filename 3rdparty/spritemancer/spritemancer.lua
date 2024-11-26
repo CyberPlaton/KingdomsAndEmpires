@@ -8,7 +8,7 @@ function spritemancer()
 					{"spdlog", "core", "mimalloc", "hwinfo", "rttr", "imgui", "raylib"},
 					"c++",
 					{}, -- plugin_headeronly_deps
-					{"nlohmann", "glm", "magic_enum", "taskflow", "Tracy", "argparse", "asio"}, -- thirdparty_headeronly_deps
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "asio"}, -- thirdparty_headeronly_deps
 					{"src", "../rttr/rttr/src", "../asio/include/asio/asio/include"} -- additional_includes
 					)
 end

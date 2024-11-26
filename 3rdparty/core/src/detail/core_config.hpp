@@ -24,6 +24,9 @@ namespace miniz
 {
 #include <../src/miniz.hpp>
 } //- miniz
+#if PROFILE_ENABLE && TRACY_ENABLE
+#include <tracy.h>
+#endif
 #include <mimalloc.h>
 #include <mimalloc/types.h>
 #include <hwinfo.h>		//- Used only for CPU information at this time
@@ -154,28 +157,33 @@ namespace miniz
 
 //------------------------------------------------------------------------------------------------------------------------
 #if PROFILE_ENABLE
-	//- TODO: Currently we have no way of setting the category of a function
-	//------------------------------------------------------------------------------------------------------------------------
-	#define CORE_ZONE core::profile::cpu::cscoped_function			\
-	ANONYMOUS_VARIABLE(cpu_profile_function)						\
-	(																\
-		std::hash<std::thread::id>{}(std::this_thread::get_id()),	\
-		CORE_FUNC_SIG,												\
-		nullptr,													\
-		__FILE__,													\
-		__LINE__													\
-	)
-	//- Create a named zone
-	//------------------------------------------------------------------------------------------------------------------------
-	#define CORE_NAMED_ZONE(name) core::profile::cpu::cscoped_function			\
-	ANONYMOUS_VARIABLE(cpu_profile_function)									\
-	(																			\
-		std::hash<std::thread::id>{}(std::this_thread::get_id()),				\
-		SSTRING(name),															\
-		nullptr,																\
-		__FILE__,																\
-		__LINE__																\
-	)
+	#if CORE_PLATFORM_WINDOWS && TRACY_ENABLE
+		#define CORE_ZONE ZoneScoped
+		#define CORE_NAMED_ZONE(name) ZoneScopedN(SSTRING(name))
+	#else
+		//- TODO: Currently we have no way of setting the category of a function
+		//------------------------------------------------------------------------------------------------------------------------
+		#define CORE_ZONE core::profile::cpu::cscoped_function					\
+				ANONYMOUS_VARIABLE(cpu_profile_function)						\
+				(																\
+					std::hash<std::thread::id>{}(std::this_thread::get_id()),	\
+					CORE_FUNC_SIG,												\
+					nullptr,													\
+					__FILE__,													\
+					__LINE__													\
+				)
+		//- Create a named zone
+		//------------------------------------------------------------------------------------------------------------------------
+		#define CORE_NAMED_ZONE(name) core::profile::cpu::cscoped_function					\
+				ANONYMOUS_VARIABLE(cpu_profile_function)									\
+				(																			\
+					std::hash<std::thread::id>{}(std::this_thread::get_id()),				\
+					SSTRING(name),															\
+					nullptr,																\
+					__FILE__,																\
+					__LINE__																\
+				)
+	#endif
 #else
 	#define CORE_ZONE
 	#define CORE_NAMED_ZONE(name)

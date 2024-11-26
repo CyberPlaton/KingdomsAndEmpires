@@ -1,5 +1,8 @@
 #pragma once
 #include <core.h>
+#if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
+	#include <tracy.h>
+#endif
 #include "version.hpp"
 
 namespace engine

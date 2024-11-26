@@ -7,7 +7,7 @@ function tiny_editor()
 	plugin_deps = {"plugin_module_example", "plugin_camera_system"}
 	thirdparty_deps = {"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "imgui", "raylib", "tree_sitter"}
 	plugin_headeronly_deps = {}
-	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "pfd", "asio"}
+	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "pfd", "asio"}
 	additional_includes = {"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include", "../../3rdparty/tree_sitter/tree_sitter/include"}
 	name = "tiny_editor"
 

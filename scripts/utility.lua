@@ -1,7 +1,8 @@
-IS_MIMALLOC_ENABLED				= true
-IS_PROFILE_ENABLED				= true
-IS_LOGGING_ENABLED				= true
-IS_WARNING_AND_ERRORS_ENABLED	= false
+IS_MIMALLOC_ENABLED				= true -- Manage allocations/deallocations using mimalloc library
+IS_PROFILE_ENABLED				= true -- Enable profiling, either with in-engine or external tools
+IS_TRACY_ENABLED				= true -- Enable profiling with Tracy
+IS_LOGGING_ENABLED				= true -- Enable log output
+IS_WARNING_AND_ERRORS_ENABLED	= false-- Enable compiler warnings and warning as errors messages
 
 ------------------------------------------------------------------------------------------------------------------------
 function isempty(s)
@@ -32,7 +33,7 @@ function set_basic_defines()
 			buildoptions{"-fPIC"}
 		filter{}
 	elseif PLATFORM == "macosx" then
-        defines{"GL_SILENCE_DEPRECATED"}
+		defines{"GL_SILENCE_DEPRECATED"}
 	else
 	end
 
@@ -41,6 +42,10 @@ function set_basic_defines()
 	end
 	if IS_PROFILE_ENABLED == true then
 		defines{"PROFILE_ENABLE"}
+	end
+	if IS_TRACY_ENABLED == true then
+		defines{"TRACY_ENABLE"}
+		set_tracy_includes()
 	end
 	if IS_LOGGING_ENABLED == true then
 		defines{"LOGGING_ENABLE"}
@@ -149,6 +154,12 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_tracy_includes()
+	set_include_path(THIRDPARTY_DIR, "tracy")
+	externalincludedirs {path.join(WORKSPACE_DIR, THIRDPARTY_DIR, "tracy", "tracy", "public")}
 end
 
 -- Creates a static library project. By default c sources are compiled too.

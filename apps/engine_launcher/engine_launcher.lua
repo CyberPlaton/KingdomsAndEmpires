@@ -8,7 +8,7 @@ function engine_launcher()
 					{"plugin_module_example", "plugin_kingdoms_core", "plugin_camera_system", "plugin_ai",
 					"plugin_status_effects", "plugin_race_human"},
 					{},
-					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "Tracy", "asio"},
+					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "asio"},
 					{"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"}
 					)
 end

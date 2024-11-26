@@ -20,3 +20,6 @@
 [submodule "3rdparty/rttr/rttr"]
 	path = 3rdparty/rttr/rttr
 	url = https://github.com/CyberPlaton/rttr.git
+[submodule "3rdparty/tracy/tracy"]
+	path = 3rdparty/tracy/tracy
+	url = https://github.com/wolfpld/tracy.git

@@ -108,7 +108,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::tick(float dt)
 	{
-		CORE_NAMED_ZONE("cworld::tick");
+		CORE_NAMED_ZONE(cworld::tick);
 
 		prepare();
 
@@ -122,7 +122,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::prepare()
 	{
-		CORE_NAMED_ZONE("cworld::prepare");
+		CORE_NAMED_ZONE(cworld::prepare);
 
 		//- observe changes and update internal AABB tree
 		if (m_transform_change_tracker.changed())

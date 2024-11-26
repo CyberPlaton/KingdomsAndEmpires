@@ -5,6 +5,7 @@
 #include "detail/os/sm_os_raylib.hpp"
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_embedded_shaders.hpp"
+#include <tracy.h>
 
 namespace sm
 {
@@ -148,6 +149,10 @@ namespace sm
 
 			//- present everything
 			entry::get_renderer()->display_frame();
+
+#if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
+			FrameMark;
+#endif
 		}
 
 		//- Main engine thread where the update and rendering happens. Created from outside
