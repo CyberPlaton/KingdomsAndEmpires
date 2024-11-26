@@ -52,7 +52,7 @@ namespace sm
 	class iplatform;
 	class ios;
 	class iapp;
-	struct slayer;
+	struct srendering_layer;
 	class cshader;
 	class crendertarget;
 	class cimage;
@@ -287,7 +287,8 @@ namespace sm
 			blending_factor_one_minus_constant_alpha	= RL_ONE_MINUS_CONSTANT_ALPHA,
 		};
 
-
+		sblending();
+		sblending(mode m, equation e, factor src, factor dst);
 		bool operator==(const sblending& other) const;
 		bool operator!=(const sblending& other) const;
 
@@ -379,17 +380,31 @@ namespace sm
 		virtual void		prepare_device() = 0;
 		virtual opresult	init_device(void* nwh, unsigned w, unsigned h, bool fullscreen, bool vsync) = 0;
 		virtual opresult	shutdown_device() = 0;
-		virtual void		prepare_frame() = 0;
-		virtual void		display_frame() = 0;
 		virtual void		update_viewport(const vec2_t& position, const vec2_t& size) = 0;
 		virtual void		blendmode(sblending mode) = 0;
-		virtual void		clear(const slayer& layer, bool depth) = 0;
-		virtual bool		begin(const slayer& layer) = 0;
-		virtual void		draw(const slayer& layer) = 0;
-		virtual void		end(const slayer& layer) = 0;
-		virtual bool		combine(const slayer& layer) = 0;
-		virtual void		update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) = 0;
-		virtual void		update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) = 0;
+		virtual void		blendmode_end() = 0;
+
+		//- Function to reset any blending, used shaders or rendertargets etc. basically reset to clean state without leakage
+		virtual void		state_reset_to_default() = 0;
+
+		//- Functions concerning the render texture that everything is drawn into
+		virtual void begin_main_render_texture(const crendertarget&) = 0;
+		virtual void end_main_render_texture(const crendertarget&) = 0;
+		virtual void clear_main_render_texture(const crendertarget&, bool depth) = 0;
+		virtual void draw_main_render_texture(const crendertarget&) = 0;
+
+		//- Functions concerning the default backbuffer we draw the main render texture into
+		virtual void begin_default_backbuffer_drawing() = 0;
+		virtual void end_default_backbuffer_drawing() = 0;
+
+		//- Function responsible for drawing commands of a layer
+		virtual void layer_draw(const srendering_layer& layer) = 0;
+
+		virtual bool imgui_begin() = 0;
+		virtual void imgui_end() = 0;
+
+		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) = 0;
+		virtual void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) = 0;
 
 		RTTR_ENABLE();
 	};

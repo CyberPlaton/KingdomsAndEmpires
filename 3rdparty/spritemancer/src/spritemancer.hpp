@@ -19,8 +19,8 @@ namespace sm
 
 	//- Create a new layer for rendering. Everything rendered on this layer are drawn on a separate render target and
 	//- are then drawn as a whole one previously drawn render targets (layers)
-	unsigned	create_layer();
-	slayer&		get_layer(unsigned layer);
+	unsigned			create_layer();
+	srendering_layer&	get_layer(unsigned layer);
 
 	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color);
 	void draw_circle(unsigned layer, const vec2_t& center, float radius, const core::scolor& color);

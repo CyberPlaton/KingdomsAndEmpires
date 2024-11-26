@@ -184,4 +184,16 @@ namespace sm
 			m_dst_factor == other.m_dst_factor && m_src_factor == other.m_src_factor;
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	sblending::sblending() : m_mode(blending_mode_alpha), m_equation(blending_equation_add),
+		m_src_factor(blending_factor_src_alpha), m_dst_factor(blending_factor_one_minus_src_alpha)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sblending::sblending(mode m, equation e, factor src, factor dst) : m_mode(m), m_equation(e),
+		m_src_factor(src), m_dst_factor(dst)
+	{
+	}
+
 } //- sm

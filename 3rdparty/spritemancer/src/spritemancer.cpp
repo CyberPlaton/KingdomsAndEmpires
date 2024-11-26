@@ -23,15 +23,16 @@ namespace sm
 			};
 
 			//- layered rendering data
-			struct slayers
+			struct srendering_layers
 			{
 				static constexpr unsigned C_LAYER_COUNT_MAX = 256;
 
-				array_t<slayer, C_LAYER_COUNT_MAX> m_layers;
+				array_t<srendering_layer, C_LAYER_COUNT_MAX> m_rendering_layers;
 				unsigned m_layer_count = 0;
 			};
 
-			slayers m_layer_data;
+			srendering_layers m_layer_data;
+			crendertarget m_main_render_target;
 			sstate m_state_data;
 			srenderstate m_default_renderstate;
 			shader_handle_t m_default_shader;
@@ -100,10 +101,10 @@ namespace sm
 			}
 
 			//- check for resize of most basic layer. Other layers are not our responsibility
-			if (S_RESIZE_REQUIRED)
+			if (S_RESIZE_REQUIRED || !is_valid(renderdata.m_main_render_target))
 			{
-				layerdata.m_layers[0].m_target.resize(osdata.m_window_w, osdata.m_window_h);
-
+				entry::get_renderer()->update_viewport({ osdata.m_window_x, osdata.m_window_y }, { osdata.m_window_w, osdata.m_window_h });
+				renderdata.m_main_render_target.resize(osdata.m_window_w, osdata.m_window_h);
 				S_RESIZE_REQUIRED = false;
 			}
 
@@ -114,13 +115,12 @@ namespace sm
 			}
 
 			//- render frame
-			entry::get_renderer()->update_viewport({ osdata.m_window_x, osdata.m_window_y }, { osdata.m_window_w, osdata.m_window_h });
-
 			//- most basic layer, does always exist
 			{
 				CORE_NAMED_ZONE(renderer_prepare_frame);
-				layerdata.m_layers[0].m_show = true;
-				entry::get_renderer()->prepare_frame();
+				layerdata.m_rendering_layers[0].m_show = true;
+				entry::get_renderer()->begin_main_render_texture(renderdata.m_main_render_target);
+				entry::get_renderer()->clear_main_render_texture(renderdata.m_main_render_target, true);
 				entry::get_renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
 			}
 
@@ -129,54 +129,37 @@ namespace sm
 				CORE_NAMED_ZONE(renderer_layered_rendering);
 				for (auto i = 0u; i < layerdata.m_layer_count; ++i)
 				{
-					auto& layer = layerdata.m_layers[i];
+					auto& layer = layerdata.m_rendering_layers[i];
 
 					{
-						CORE_NAMED_ZONE(renderer_frame_begin);
-						frame_begin_result = layer.m_show && entry::get_renderer()->begin(layer);
-					}
-
-					{
-						CORE_NAMED_ZONE(renderer_frame_draw);
-						if (frame_begin_result)
-						{
-							entry::get_renderer()->clear(layer, true);
-
-							entry::get_renderer()->draw(layer);
-
-							entry::get_renderer()->end(layer);
-						}
+						CORE_NAMED_ZONE(renderer_layer_draw);
+						entry::get_renderer()->layer_draw(layer);
 					}
 
 					layer.m_commands.clear();
 				}
 			}
 
-			//- layered rendering, combine them upon each other
-			{
-				CORE_NAMED_ZONE(renderer_combine_layers);
-				for (auto i = 0u; i < layerdata.m_layer_count; ++i)
-				{
-					auto& layer = layerdata.m_layers[i];
-
-					if (layer.m_show &&
-						entry::get_renderer()->combine(layer))
-					{
-						//- do postprocess or whatever
-					}
-				}
-			}
-
-			//- finalize rendering with imgui on top
-			{
-				CORE_NAMED_ZONE(renderer_frame_imgui);
-				entry::get_app()->on_imgui();
-			}
-
 			//- present everything
 			{
 				CORE_NAMED_ZONE(renderer_frame_present);
-				entry::get_renderer()->display_frame();
+				entry::get_renderer()->end_main_render_texture(renderdata.m_main_render_target);
+
+				entry::get_renderer()->begin_default_backbuffer_drawing();
+				entry::get_renderer()->draw_main_render_texture(renderdata.m_main_render_target);
+
+				//- finalize rendering with imgui on top of everything
+				{
+					CORE_NAMED_ZONE(renderer_imgui_draw);
+					if (entry::get_renderer()->imgui_begin())
+					{
+						entry::get_renderer()->state_reset_to_default();
+						entry::get_app()->on_imgui();
+						entry::get_renderer()->imgui_end();
+					}
+				}
+
+				entry::get_renderer()->end_default_backbuffer_drawing();
 			}
 
 #if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
@@ -235,8 +218,6 @@ namespace sm
 			core::cservice_manager::emplace<crendertarget_manager>();
 
 			auto& renderdata = ctx().m_render_data;
-			renderdata.m_default_renderstate.m_blending = { sblending::blending_mode_alpha, sblending::blending_equation_blend_color,
-				sblending::blending_factor_src_color, sblending::blending_factor_one_minus_src_color };
 			renderdata.m_default_renderstate.m_flags = 0;
 
 			ctx().m_render_data.m_default_shader = core::cservice_manager::find<cshader_manager>()->load_sync("sprite",
@@ -363,14 +344,11 @@ namespace sm
 		auto& renderdata = ctx().m_render_data;
 		auto& layerdata = renderdata.m_layer_data;
 
-		if (layerdata.m_layer_count < scontext::srender::slayers::C_LAYER_COUNT_MAX)
+		if (layerdata.m_layer_count < scontext::srender::srendering_layers::C_LAYER_COUNT_MAX)
 		{
-			auto& layer = layerdata.m_layers[layerdata.m_layer_count];
+			auto& layer = layerdata.m_rendering_layers[layerdata.m_layer_count];
 
 			//- create with reasonable defaults
-			layer.m_target.create(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h);
-			layer.m_combine_tint = S_WHITE;
-			layer.m_clear_tint = S_WHITE;
 			layer.m_flags = 0;
 			layer.m_show = true;
 
@@ -380,14 +358,14 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::slayer& get_layer(unsigned layer)
+	sm::srendering_layer& get_layer(unsigned layer)
 	{
 		auto& renderdata = ctx().m_render_data;
 		auto& layerdata = renderdata.m_layer_data;
 
 		CORE_ASSERT(layer < layerdata.m_layer_count, "Invalid operation. Accessed layer does not exist!");
 
-		return layerdata.m_layers[layer];
+		return layerdata.m_rendering_layers[layer];
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -397,7 +375,7 @@ namespace sm
 
 		auto& renderdata = ctx().m_render_data;
 		auto& layerdata = renderdata.m_layer_data;
-		auto& command = layerdata.m_layers[layer].m_commands.emplace_back();
+		auto& command = layerdata.m_rendering_layers[layer].m_commands.emplace_back();
 
 		command.create([=]()
 			{
@@ -412,7 +390,7 @@ namespace sm
 
 		auto& renderdata = ctx().m_render_data;
 		auto& layerdata = renderdata.m_layer_data;
-		auto& command = layerdata.m_layers[layer].m_commands.emplace_back();
+		auto& command = layerdata.m_rendering_layers[layer].m_commands.emplace_back();
 
 		command.create([=]()
 			{
@@ -427,7 +405,7 @@ namespace sm
 
 		auto& renderdata = ctx().m_render_data;
 		auto& layerdata = renderdata.m_layer_data;
-		auto& command = layerdata.m_layers[layer].m_commands.emplace_back();
+		auto& command = layerdata.m_rendering_layers[layer].m_commands.emplace_back();
 
 		command.create([=]()
 			{
@@ -515,7 +493,7 @@ namespace sm
 		{
 			core::cscope_mutex m(S_MUTEX);
 
-			ctx().m_render_data.m_layer_data.m_layers[layer].m_commands.emplace_back().create([=]()
+			ctx().m_render_data.m_layer_data.m_rendering_layers[layer].m_commands.emplace_back().create([=]()
 				{
 					CORE_NAMED_ZONE(spritemancer_draw_texture);
 
