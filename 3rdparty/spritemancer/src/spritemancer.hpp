@@ -1,7 +1,7 @@
 #pragma once
 #include "detail/sm_config.hpp"
 #include "detail/sm_resource_manager.hpp"
-#include "detail/sm_layer.hpp"
+#include "detail/sm_rendering_layer.hpp"
 #include "detail/sm_profiler.hpp"
 
 namespace sm

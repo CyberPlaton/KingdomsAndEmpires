@@ -145,10 +145,7 @@ struct __VA_ARGS__ c final : public ecs::icomponent \
 
 namespace ecs
 {
-	//- Base class for all components
-	//- TODO: we do not want to have to define serialize and set etc methods for each component,
-	//- this should be done automatically, for which we require a 'RTTR Object' concept and
-	//- specializations for components, visualizers etc.
+	//- Base class for all components. See components below as examples on how to define new components.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct icomponent
 	{
@@ -169,7 +166,7 @@ namespace ecs
 		vec2_t m_offset				= { 0.0f, 0.0f };
 		float m_zoom				= 0.0f;
 		float m_rotation			= 0.0f;
-		core::srect m_viewrect		= { 0.0f, 0.0f, 0.0f, 0.0f };
+		core::srect m_viewrect		= { 0.0f, 0.0f, 0.0f, 0.0f }; //- Unnecessary?!
 		bool m_active				= false;
 		unsigned m_renderlayer		= 0;
 

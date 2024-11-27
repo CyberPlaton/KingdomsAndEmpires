@@ -1,6 +1,7 @@
 #include "ecs_world.hpp"
 #include "../animation/animation_module.hpp"
 #include "../render/render_module.hpp"
+#include "../camera/camera_module.hpp"
 
 namespace ecs
 {
@@ -82,6 +83,7 @@ namespace ecs
 			.build();
 
 		//- Import default modules
+		mm().import_module<camera::scamera_module>();
 		mm().import_module<render::srender_module>();
 		mm().import_module<animation::sanimation_module>();
 
