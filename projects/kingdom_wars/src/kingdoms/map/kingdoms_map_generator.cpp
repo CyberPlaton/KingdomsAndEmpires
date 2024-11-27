@@ -116,6 +116,7 @@ namespace kingdoms
 				auto e = em.create_entity();
 
 				e.add<ecs::scamera>();
+				e.add<camera::tag::seditor_camera_controller>();
 
 				auto* camera = e.get_mut<ecs::scamera>();
 				camera->m_position = { 0.0f, 0.0f };

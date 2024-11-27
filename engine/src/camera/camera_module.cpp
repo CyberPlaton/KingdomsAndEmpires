@@ -10,6 +10,57 @@ namespace camera
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void camera_editor_controller_system(flecs::entity e, ecs::scamera& camera, const tag::seditor_camera_controller& controller)
+	{
+		//- FIXME: we require an input service, for now we use raylib directly.
+
+		auto translation_speed_modifier = 1.0f;
+		auto zoom_speed_modifier = 0.1f;
+		auto translation_speed = 50.0f * raylib::GetFrameTime();
+
+		if (raylib::IsKeyDown(raylib::KEY_LEFT_SHIFT))
+		{
+			translation_speed_modifier = 0.25f;
+			zoom_speed_modifier = 0.01f;
+		}
+
+		if (raylib::IsKeyDown(raylib::KEY_A))
+		{
+			camera.m_position.x += translation_speed * translation_speed_modifier;
+		}
+		if (raylib::IsKeyDown(raylib::KEY_D))
+		{
+			camera.m_position.x -= translation_speed * translation_speed_modifier;
+		}
+		if (raylib::IsKeyDown(raylib::KEY_W))
+		{
+			camera.m_position.y += translation_speed * translation_speed_modifier;
+		}
+		if (raylib::IsKeyDown(raylib::KEY_S))
+		{
+			camera.m_position.y -= translation_speed * translation_speed_modifier;
+		}
+
+		if (raylib::IsMouseButtonDown(raylib::MOUSE_BUTTON_MIDDLE))
+		{
+			auto mouse_delta = raylib::GetMouseDelta();
+			auto inverse_zoom = 1.0f / camera.m_zoom;
+			camera.m_position.x += mouse_delta.x * inverse_zoom;
+			camera.m_position.y += mouse_delta.y * inverse_zoom;
+		}
+
+		if (const auto wheel_delta = raylib::GetMouseWheelMove(); wheel_delta != 0.0f)
+		{
+			camera.m_zoom += wheel_delta * zoom_speed_modifier;
+
+			if (camera.m_zoom < 0.0f)
+			{
+				camera.m_zoom = 0.1f;
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	scamera_sync_system::scamera_sync_system(ecs::cworld* w)
 	{
 		w->create_system(config(), &camera_sync_system);
@@ -40,8 +91,27 @@ namespace camera
 		ecs::modules::sconfig cfg;
 		cfg.m_name = "scamera_module";
 		cfg.m_components = { "scamera" };
-		cfg.m_systems = { "scamera_sync_system" };
+		cfg.m_systems = { "scamera_editor_controller_system", "scamera_sync_system" };
 		cfg.m_modules = {};
+
+		return cfg;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	scamera_editor_controller_system::scamera_editor_controller_system(ecs::cworld* w)
+	{
+		w->create_system(config(), &camera_editor_controller_system);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	ecs::system::sconfig scamera_editor_controller_system::config()
+	{
+		ecs::system::sconfig cfg;
+
+		cfg.m_name = "scamera_editor_controller_system";
+		cfg.m_run_after = {};
+		cfg.m_run_before = { "scamera_sync_system" };
+		cfg.m_flags = ecs::system::system_flag_immediate;
 
 		return cfg;
 	}

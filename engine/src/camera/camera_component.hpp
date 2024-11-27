@@ -17,4 +17,12 @@ namespace camera
 		RTTR_ENABLE(ecs::icomponent);
 	};
 
+	namespace tag
+	{
+		//- Tag indicating that camera can be controlled with a default control scheme. Designed for editor and debugging purposes.
+		//------------------------------------------------------------------------------------------------------------------------
+		DECLARE_TAG(seditor_camera_controller);
+
+	} //- tag
+
 } //- camera
