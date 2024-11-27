@@ -112,14 +112,14 @@ namespace core
 	template<typename TResource>
 	const TResource& core::cresource_manager<TResource>::at(stringview_t name) const
 	{
-		return m_data.at(algorithm::hash(name));
+		return at(algorithm::hash(name));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource>
 	TResource& core::cresource_manager<TResource>::get(stringview_t name)
 	{
-		return m_data[algorithm::hash(name)];
+		return get(algorithm::hash(name));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

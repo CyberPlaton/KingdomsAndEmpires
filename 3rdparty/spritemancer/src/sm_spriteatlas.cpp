@@ -35,6 +35,7 @@ namespace sm
 
 		begin(w, h);
 
+		auto name_idx = 0;
 		for (auto y = 0u; y < frames.y; ++y)
 		{
 			for (auto x = 0u; x < frames.x; ++x)
@@ -44,7 +45,7 @@ namespace sm
 				const auto pw = framesize.x / _w;
 				const auto ph = framesize.y / _h;
 
-				subtexture(names[x + y], { px, py, pw, ph });
+				subtexture(names[name_idx++], { px, py, pw, ph });
 			}
 		}
 
@@ -56,7 +57,12 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	const core::srect& cspriteatlas::at(stringview_t name) const
 	{
-		return m_subtextures.at(algorithm::hash(name));
+		if (const auto it = m_subtextures.find(algorithm::hash(name)); it != m_subtextures.end())
+		{
+			return it->second;
+		}
+
+		return { 0.0f, 0.0f, 1.0f, 1.0f };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

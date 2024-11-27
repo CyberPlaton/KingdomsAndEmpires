@@ -99,16 +99,7 @@ namespace kingdoms
 				}
 			}
 
-			//- DEBUG: check how many textures we have loaded so far
-#if PROFILE_ENABLE
-			if (auto* ps = core::cservice_manager::find<engine::cprofiler_service>(); ps)
-			{
-				ps->gpu_force_update();
-				const auto draw_data = ps->gpu_drawcall_data();
-				log_trace(fmt::format("Loaded textures count '{}' ({})mb", draw_data.m_textures_count, algorithm::bytes_to_megabytes(draw_data.m_textures_bytes)));
-			}
-#endif
-
+			auto* sm = core::cservice_manager::find<sm::cspriteatlas_manager>();
 			const auto& texture_names = ctx->m_map_mapping_data.at(ctx->m_name);
 
 			//- Create an active world
@@ -158,52 +149,59 @@ namespace kingdoms
 				{
 					const auto& layer_name = layer.m_name;
 					const auto& chunk = layer.m_chunks.at(j);
+					auto x = 0;
+					auto y = 0;
 
-					for (auto x = 0; x < chunk.m_width; ++x)
+					for (auto idx = 0; idx < chunk.m_data.size(); ++idx, ++x)
 					{
-						for (auto y = 0; y < chunk.m_height; ++y)
+						if (idx != 0 && (idx + x) % chunk.m_width == 0) //- check whether we have reached end of current line and should advance to next
 						{
-							const auto& map_gid = chunk.m_data.at(x + y);
-
-							//- No entity at this location, continue
-							if (map_gid == 0)
-							{
-								continue;
-							}
-
-							const auto& associated_layer_name = ctx->m_map_layer_mapping_data.at(ctx->m_name).at(map_gid);
-							const auto& associated_layer = ctx->m_layer_info_data.at(ctx->m_name).at(associated_layer_name);
-
-							//- Create actual entities that will populate the world
-							auto e = em.create_entity();
-							auto* identifier = e.get_mut<ecs::sidentifier>();
-
-							log_debug(fmt::format("Created entity '{}'", identifier->m_name));
-
-							e.add<ecs::stransform>();
-							e.add<ecs::smaterial>();
-							e.add<ecs::ssprite_renderer>();
-							e.add<ecs::shierarchy>();
-
-							auto* transform = e.get_mut<ecs::stransform>();
-							auto* material = e.get_mut<ecs::smaterial>();
-							auto* sprite_renderer = e.get_mut<ecs::ssprite_renderer>();
-							auto* hierarchy = e.get_mut<ecs::shierarchy>();
-
-							sprite_renderer->m_source_rect = {0.0f, 0.0f, 1.0f, 1.0f};
-							sprite_renderer->m_layer = current_layer_index;
-
-							material->m_texture = associated_layer.m_atlas_texture_handle;
-							material->m_flags = sm::renderable_flag_origin_center;
-
-							const auto positionx = x * associated_layer.m_tile_width;
-							const auto positiony = y * associated_layer.m_tile_height;
-							const auto rect = { positionx, positiony, associated_layer.m_tile_width, associated_layer.m_tile_height };
-
-							transform->m_position = { positionx, positiony };
-							transform->m_scale = { 1.0f, 1.0f };
-							transform->m_rotation = 0.0f;
+							x = 0;
+							++y;
 						}
+
+						const auto& map_gid = chunk.m_data.at(idx);
+
+						//- No entity at this location, continue
+						if (map_gid == 0)
+						{
+							continue;
+						}
+
+						const auto& associated_layer_name = ctx->m_map_layer_mapping_data.at(ctx->m_name).at(map_gid);
+						const auto& associated_layer = ctx->m_layer_info_data.at(ctx->m_name).at(associated_layer_name);
+
+						//- Create actual entities that will populate the world
+						auto e = em.create_entity();
+
+						e.add<ecs::stransform>();
+						e.add<ecs::smaterial>();
+						e.add<ecs::ssprite_renderer>();
+						e.add<ecs::shierarchy>();
+
+						auto* transform = e.get_mut<ecs::stransform>();
+						auto* material = e.get_mut<ecs::smaterial>();
+						auto* sprite_renderer = e.get_mut<ecs::ssprite_renderer>();
+						auto* hierarchy = e.get_mut<ecs::shierarchy>();
+
+						const auto& atlas = sm->at(associated_layer.m_atlas_handle);
+						const auto& subtexture_name = ctx->m_map_mapping_data.at(ctx->m_name).at(map_gid);
+						const auto& subtexture_rect = atlas.at(subtexture_name);
+
+						sprite_renderer->m_source_rect = subtexture_rect;
+						sprite_renderer->m_layer = current_layer_index;
+						sprite_renderer->m_origin = { associated_layer.m_tile_width, associated_layer.m_tile_height };
+
+						material->m_program = sm::C_INVALID_HANDLE; //- use default shader
+						material->m_texture = associated_layer.m_atlas_texture_handle;
+						material->m_flags = sm::renderable_flag_origin_center;
+
+						const auto positionx = x * associated_layer.m_tile_width;
+						const auto positiony = y * associated_layer.m_tile_height;
+
+						transform->m_position = { positionx, positiony };
+						transform->m_scale = { 1.0f, 1.0f };
+						transform->m_rotation = 0.0f;
 					}
 				}
 			}

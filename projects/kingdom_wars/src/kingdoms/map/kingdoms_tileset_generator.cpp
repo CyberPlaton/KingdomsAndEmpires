@@ -123,13 +123,16 @@ namespace kingdoms
 						atlas.begin(atlas_width, atlas_height);
 						atlas.end();
 
-						if (const auto spriteatlas_handle = sm->load_sync(data.m_name, atlas); !sm::is_valid(spriteatlas_handle))
+						const auto spriteatlas_handle = sm->load_sync(data.m_name, atlas);
+
+						if (!sm::is_valid(spriteatlas_handle))
 						{
 							//- TODO: Erase the last created mappings, as the atlas was not valid
 							log_error(fmt::format("Failed generating spriteatlas from 'crunch' tileset data at '{}', because the spriteatlas failed to load!", data.m_name));
 							result = false;
 						}
 
+						layer_info.m_atlas_handle = spriteatlas_handle;
 						crunch_tileset = true;
 					}
 					else

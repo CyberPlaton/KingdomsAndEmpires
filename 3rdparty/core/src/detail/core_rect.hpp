@@ -23,6 +23,8 @@ namespace core
 		void position(float x, float y);
 		void dimension(float w, float h);
 
+		inline bool operator==(const srect& other) const { return m_x == other.m_x && m_y == other.m_y && m_w == other.m_w && m_h == other.m_h; }
+
 		float m_x, m_y, m_w, m_h;
 
 		RTTR_ENABLE();

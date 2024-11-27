@@ -401,6 +401,7 @@ RTTR_REGISTRATION
 
 	rttr::ccomponent<ssprite_renderer>("ssprite_renderer")
 		.prop("m_source_rect", &ssprite_renderer::m_source_rect)
+		.prop("m_origin", &ssprite_renderer::m_origin)
 		.prop("m_tint", &ssprite_renderer::m_tint)
 		.prop("m_layer", &ssprite_renderer::m_layer)
 		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ssprite_renderer::show_ui)

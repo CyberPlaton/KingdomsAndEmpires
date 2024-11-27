@@ -230,6 +230,7 @@ namespace ecs
 
 		core::srect m_source_rect	= { 0.0f, 0.0f, 0.0f, 0.0f };
 		core::scolor m_tint			= core::scolor(core::common_color_neutral1000);
+		vec2_t m_origin				= { 0.0f, 0.0f };
 		unsigned m_layer			= 0;
 
 		RTTR_ENABLE(icomponent);

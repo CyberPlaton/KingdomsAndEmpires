@@ -36,15 +36,21 @@ namespace render
 	{
 		CORE_ZONE;
 
-		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture);
-
-		//draw_texture(transform, material, renderer);
+		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture,
+			renderer.m_tint, transform.m_rotation, transform.m_scale, material.m_program, material.m_renderstate, renderer.m_origin, renderer.m_source_rect);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
 	{
 		CORE_ZONE;
+
+		const auto& tm = *core::cservice_manager::find<sm::ctexture_manager>();
+		const auto& _texture = tm.at(material.m_texture == sm::C_INVALID_HANDLE ? S_PLACEHOLDER_TEXTURE : material.m_texture);
+		const auto w = _texture.w();
+		const auto h = _texture.h();
+
+		sm::draw_rect(renderer.m_layer, transform.m_position, { transform.m_scale.x * w, transform.m_scale.y * h}, core::scolor(core::common_color_magenta_light));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

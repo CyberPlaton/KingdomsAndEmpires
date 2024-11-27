@@ -521,10 +521,6 @@ namespace sm
 					{
 						orig = { w * 0.5f, h * 0.5f };
 					}
-					if (algorithm::bit_check(state.m_flags, renderable_flag_origin_custom))
-					{
-						orig = { origin.x, origin.y };
-					}
 					if (algorithm::bit_check(state.m_flags, renderable_flag_flipx))
 					{
 						src.width = -src.width;
@@ -541,7 +537,7 @@ namespace sm
 					}
 
 					//- setting shader is always enabled as we set default shader manually
-					const auto& _shader = sm.at(statedata.m_shader);
+					const auto& _shader = sm.at(statedata.m_shader == C_INVALID_HANDLE ? renderdata.m_default_shader : statedata.m_shader);
 					raylib::BeginShaderMode(_shader.shader());
 
 					//- check if renderstate has changed since last draw command
