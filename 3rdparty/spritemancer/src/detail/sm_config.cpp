@@ -102,12 +102,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool is_valid(const ccamera& camera)
-	{
-		return camera.ready();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cmaterial& material)
 	{
 		CORE_ASSERT(false, "Invalid operation. Not supported");
@@ -149,7 +143,7 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	ccamera::ccamera() :
-		m_position({ 0 }), m_offset({ 0 }), m_zoom(0.0f), m_rotation(0.0f), m_ready(false)
+		m_position({ 0 }), m_offset({ 0 }), m_zoom(0.0f), m_rotation(0.0f)
 	{
 	}
 

@@ -6,15 +6,7 @@ namespace camera
 	//------------------------------------------------------------------------------------------------------------------------
 	void camera_sync_system(flecs::entity e, const ecs::scamera& camera)
 	{
-		if (camera.m_active)
-		{
-			auto& layer = sm::get_layer(camera.m_renderlayer);
-			layer.m_camera.m_position = camera.m_position;
-			layer.m_camera.m_offset = camera.m_offset;
-			layer.m_camera.m_zoom = camera.m_zoom;
-			layer.m_camera.m_rotation = camera.m_rotation;
-			layer.m_camera.m_ready = true;
-		}
+		sm::update_frame_camera(camera.m_position, camera.m_offset, camera.m_zoom, camera.m_rotation);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

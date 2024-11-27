@@ -166,9 +166,6 @@ namespace ecs
 		vec2_t m_offset				= { 0.0f, 0.0f };
 		float m_zoom				= 0.0f;
 		float m_rotation			= 0.0f;
-		core::srect m_viewrect		= { 0.0f, 0.0f, 0.0f, 0.0f }; //- Unnecessary?!
-		bool m_active				= false;
-		unsigned m_renderlayer		= 0;
 
 		RTTR_ENABLE(icomponent);
 	};

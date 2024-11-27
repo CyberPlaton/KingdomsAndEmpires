@@ -112,26 +112,17 @@ namespace kingdoms
 			auto& em = world.em();
 
 			//- Create camera entity
-			//- TODO: this is not functional currently, spritemancer camera is not updated with entity camera data, we
-			//- need a camera system for that
-			auto e = em.create_entity();
-			auto* camera = e.add<ecs::scamera>().get_mut<ecs::scamera>();
-			camera->m_position = { 0.0f, 0.0f };
-			camera->m_offset = { 0.0f, 0.0f };
-			camera->m_zoom = 1.0f;
-			camera->m_rotation = 0.0f;
-			const auto window_size = sm::window_size();
-			camera->m_viewrect = { 0.0f, 0.0f, window_size.x, window_size.y };
-			camera->m_active = true;
-			camera->m_renderlayer = 0;
+			{
+				auto e = em.create_entity();
 
-			//- As a fix to TODO from above, we define a default camera for testing purposes
-			sm::ccamera __camera__;
-			__camera__.m_position = { 0.0f, 0.0f };
-			__camera__.m_offset = { 0.0f, 0.0f };
-			__camera__.m_zoom = 0.5f;
-			__camera__.m_rotation = 0.0f;
-			__camera__.m_ready = true;
+				e.add<ecs::scamera>();
+
+				auto* camera = e.get_mut<ecs::scamera>();
+				camera->m_position = { 0.0f, 0.0f };
+				camera->m_offset = { 0.0f, 0.0f };
+				camera->m_zoom = 0.5f;
+				camera->m_rotation = 0.0f;
+			}
 
 			//- Iterate map layers
 			for (auto i = 0; i < ctx->m_map_data.m_layers.size(); ++i)
@@ -143,7 +134,6 @@ namespace kingdoms
 				//- Specify default settings for spritemancer layer
 				current_sm_layer.m_flags = sm::layer_flags_2d;
 				current_sm_layer.m_show = true;
-				current_sm_layer.m_camera = __camera__;
 
 				for (auto j = 0; j < layer.m_chunks.size(); ++j)
 				{

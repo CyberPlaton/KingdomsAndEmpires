@@ -34,6 +34,7 @@ namespace sm
 			srendering_layers m_layer_data;
 			crendertarget m_main_render_target;
 			sstate m_state_data;
+			ccamera m_frame_camera;
 			srenderstate m_default_renderstate;
 			shader_handle_t m_default_shader;
 			texture_handle_t m_placeholder_texture;
@@ -119,6 +120,7 @@ namespace sm
 			{
 				CORE_NAMED_ZONE(renderer_prepare_frame);
 				layerdata.m_rendering_layers[0].m_show = true;
+				entry::get_renderer()->update_frame_camera(renderdata.m_frame_camera);
 				entry::get_renderer()->begin_main_render_texture(renderdata.m_main_render_target);
 				entry::get_renderer()->clear_main_render_texture(renderdata.m_main_render_target, true);
 				entry::get_renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
@@ -366,6 +368,16 @@ namespace sm
 		CORE_ASSERT(layer < layerdata.m_layer_count, "Invalid operation. Accessed layer does not exist!");
 
 		return layerdata.m_rendering_layers[layer];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void update_frame_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation)
+	{
+		auto& renderdata = ctx().m_render_data;
+		renderdata.m_frame_camera.m_position = position;
+		renderdata.m_frame_camera.m_offset = position;
+		renderdata.m_frame_camera.m_zoom = zoom;
+		renderdata.m_frame_camera.m_rotation = rotation;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

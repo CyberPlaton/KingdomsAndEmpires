@@ -71,7 +71,6 @@ namespace sm
 	bool is_valid(const cimage& image);
 	bool is_valid(const ctexture& texture);
 	bool is_valid(const crendertarget& target);
-	bool is_valid(const ccamera& camera);
 	bool is_valid(const cmaterial& material);
 	bool is_valid(const cspriteatlas& atlas);
 	bool is_valid(handle_type_t handle);
@@ -298,34 +297,6 @@ namespace sm
 		factor m_src_factor;
 	};
 
-	//- TODO: Reworking camera system
-	//- Following an entity: camera locks on to an in-game entity
-	//- Edge-Snapping: camera can not move farther or below some coordinate
-	//- Camera Window: camera locks on to an in-game entity and pushes camera
-	//- position as the entity hits the window edge (4-sides)
-	//- Smooth position change: lerping from current position to desired one,
-	//- with different easing options
-	//- Projected Focus: depending on controller input and velocity pan in some direction
-	//- Target Focus: depending on looking direction/mouse position pan in that direction
-	//- Camera Path: camera follows a predefined path throughout the level
-	//- Zoom-To-Fit: zoom in or zoom out depending on some context, in order
-	//- to provide a wide view or close up of something
-	//- Attractors/Detractors: attractors pull camera view towards something and
-	//- detractors push camera view away from something.
-	//- Those attractors/detractors can be attached to different entities.
-	//- Region Focus: position of camera is mostly based on a region anchor point
-	//- but shifts slightly as the player entity moves
-	//- Gesture Focus: camera does something when a specific in-game event happens,
-	//- i.e. zoom in when the player does a special attack on an enemy
-	//- Cinematic Paths: suspend normal function to show something special
-	//- Multi-Focal: camera focuses on several entities and maintains a position
-	//- centered between them and a zoom so that all of them are visible at once
-	//- Manual Control: camera can be controlled directly by input
-	//- Camera Shake (Screen Shake): change position/rotation slightly to create an effect
-	//- Average-Oriented Region: position averaging between closest regions
-	//- Cues: while in a camera region, some entities can activate/deactivate
-	//- their attraction/detraction behavior
-	//-
 	//- Camera class designed to be lighweight and copied around and to be a thin layer over raylib::Camera2D.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ccamera final
@@ -335,13 +306,11 @@ namespace sm
 		~ccamera() = default;
 
 		raylib::Camera2D camera() const;
-		inline bool ready() const { return m_ready; }
 
 		vec2_t m_position;
 		vec2_t m_offset;
 		float m_zoom;
 		float m_rotation;
-		bool m_ready;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -383,6 +352,7 @@ namespace sm
 		virtual void		update_viewport(const vec2_t& position, const vec2_t& size) = 0;
 		virtual void		blendmode(sblending mode) = 0;
 		virtual void		blendmode_end() = 0;
+		virtual void		update_frame_camera(const ccamera&) = 0;
 
 		//- Function to reset any blending, used shaders or rendertargets etc. basically reset to clean state without leakage
 		virtual void		state_reset_to_default() = 0;

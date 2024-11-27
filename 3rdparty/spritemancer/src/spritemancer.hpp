@@ -22,6 +22,9 @@ namespace sm
 	unsigned			create_layer();
 	srendering_layer&	get_layer(unsigned layer);
 
+	//- Sync point of application camera data and spritemancer internal camera data used per frame drawing
+	void update_frame_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation);
+
 	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color);
 	void draw_circle(unsigned layer, const vec2_t& center, float radius, const core::scolor& color);
 	void draw_rect(unsigned layer, const vec2_t& position, const vec2_t& dimension, const core::scolor& color);

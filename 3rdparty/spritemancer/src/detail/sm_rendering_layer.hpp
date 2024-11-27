@@ -10,10 +10,10 @@ namespace sm
 	struct srendering_layer
 	{
 		vector_t<ccommand> m_commands;
-		ccamera m_camera;					//- optional: camera to be used when rendering
-		unsigned m_flags = 0;				//- bitwise concated layer_flags
-		bool m_show = false;
-		unsigned m_id = 0;
+
+		unsigned m_flags= 0; //- bitwise concated layer_flags
+		unsigned m_id	= 0;
+		bool m_show		= false;
 	};
 
 } //- sm

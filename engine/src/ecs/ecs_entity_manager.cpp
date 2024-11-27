@@ -37,7 +37,9 @@ namespace ecs
 		CORE_ASSERT(e.is_valid(), "Invalid operation. Created entity is invalid!");
 
 		//- emplace default components
-		auto* id = e.add<sidentifier>().get_mut<sidentifier>();
+		e.add<sidentifier>();
+
+		auto* id = e.get_mut<sidentifier>();
 
 		id->m_uuid = string_t(uuid.data());
 		id->m_name = uuid.data();

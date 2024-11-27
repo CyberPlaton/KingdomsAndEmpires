@@ -143,7 +143,7 @@ namespace ecs
 		//- get current viewing rect for active camera
 		if (auto e = query_one<const scamera>([](const scamera& c)
 			{
-				return c.m_active == true;
+				return true;
 
 			}); e.is_valid())
 		{

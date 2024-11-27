@@ -25,6 +25,7 @@
 #include "io/io_native_filesystem.hpp"
 #include "animation/animation_module.hpp"
 #include "render/render_module.hpp"
+#include "camera/camera_module.hpp"
 #include "main.hpp"
 
 namespace engine

@@ -312,6 +312,7 @@ RTTR_REGISTRATION
 	using namespace editor;
 	using namespace ecs;
 	using namespace render;
+	using namespace camera;
 	using namespace animation;
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -363,9 +364,6 @@ RTTR_REGISTRATION
 		.prop("m_offset", &scamera::m_offset)
 		.prop("m_zoom", &scamera::m_zoom)
 		.prop("m_rotation", &scamera::m_rotation)
-		.prop("m_viewrect", &scamera::m_viewrect)
-		.prop("m_active", &scamera::m_active)
-		.prop("m_renderlayer", &scamera::m_renderlayer)
 		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &scamera::show_ui)
 		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME, &scamera::add)
 		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME, &scamera::remove)
@@ -451,4 +449,9 @@ RTTR_REGISTRATION
 	//------------------------------------------------------------------------------------------------------------------------
 	REGISTER_MODULE(sanimation_module);
 	REGISTER_SYSTEM(sanimation_system);
+
+	//- Camera
+	//------------------------------------------------------------------------------------------------------------------------
+	REGISTER_MODULE(scamera_module);
+	REGISTER_SYSTEM(scamera_sync_system);
 }

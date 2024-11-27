@@ -18,6 +18,7 @@ namespace sm
 		void update_viewport(const vec2_t& position, const vec2_t& size) override final;
 		void blendmode(sblending mode) override final;
 		void blendmode_end() override final;
+		void update_frame_camera(const ccamera& camera) override final;
 		void state_reset_to_default() override final;
 
 		void begin_main_render_texture(const crendertarget& target) override final;

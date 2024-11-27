@@ -63,7 +63,7 @@ namespace sm
 		static uint16_t S_Y = 0;
 		static core::scolor S_RT_CLEAR_COLOR = { 50, 50, 155, 255 };
 		static core::scolor S_FBO_CLEAR_COLOR = { 155, 50, 50, 255 };
-		static raylib::Camera2D S_CAMERA = {{0.0f, 0.0f}, {0.0f, 0.0f}, 0.0f, 1.0f};
+		static raylib::Camera2D S_FRAME_CAMERA;
 
 	} //- unnamed
 
@@ -101,7 +101,9 @@ namespace sm
 		S_W = (uint16_t)size.x;
 		S_H = (uint16_t)size.y;
 
-		S_CAMERA.offset = { -S_W * 0.5f, -S_H * 0.5f };
+		//- FIXME: we set the camera to be centralized on target, while this probably should not be our responsibility, but that
+		//- of the camera system.
+		S_FRAME_CAMERA.offset = { S_W * 0.5f, S_H * 0.5f };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -119,6 +121,12 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_raylib::update_frame_camera(const ccamera& camera)
+	{
+		S_FRAME_CAMERA = camera.camera();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_raylib::state_reset_to_default()
 	{
 		raylib::EndMode2D();
@@ -130,7 +138,7 @@ namespace sm
 	void crenderer_raylib::begin_main_render_texture(const crendertarget& target)
 	{
 		raylib::BeginTextureMode(target.target());
-		raylib::BeginMode2D(S_CAMERA);
+		raylib::BeginMode2D(S_FRAME_CAMERA);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
