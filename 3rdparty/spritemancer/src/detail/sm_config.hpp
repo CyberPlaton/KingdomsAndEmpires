@@ -350,22 +350,16 @@ namespace sm
 		virtual opresult	init_device(void* nwh, unsigned w, unsigned h, bool fullscreen, bool vsync) = 0;
 		virtual opresult	shutdown_device() = 0;
 		virtual void		update_viewport(const vec2_t& position, const vec2_t& size) = 0;
-		virtual void		blendmode(sblending mode) = 0;
-		virtual void		blendmode_end() = 0;
 		virtual void		update_frame_camera(const ccamera&) = 0;
 
 		//- Function to reset any blending, used shaders or rendertargets etc. basically reset to clean state without leakage
-		virtual void		state_reset_to_default() = 0;
+		//- Note: use with care, expensive.
+		virtual void state_reset_to_default() = 0;
 
-		//- Functions concerning the render texture that everything is drawn into
-		virtual void begin_main_render_texture(const crendertarget&) = 0;
-		virtual void end_main_render_texture(const crendertarget&) = 0;
-		virtual void clear_main_render_texture(const crendertarget&, bool depth) = 0;
-		virtual void draw_main_render_texture(const crendertarget&) = 0;
-
-		//- Functions concerning the default backbuffer we draw the main render texture into
-		virtual void begin_default_backbuffer_drawing() = 0;
-		virtual void end_default_backbuffer_drawing() = 0;
+		virtual void begin() = 0;
+		virtual void blendmode(sblending mode) = 0;
+		virtual void clear() = 0;
+		virtual void end() = 0;
 
 		//- Function responsible for drawing commands of a layer
 		virtual void layer_draw(const srendering_layer& layer) = 0;

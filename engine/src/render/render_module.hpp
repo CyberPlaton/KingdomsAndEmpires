@@ -44,7 +44,8 @@ namespace render
 		RTTR_ENABLE();
 	};
 
-	//- System responsible for debug rendering on top of rendered sprites in current world
+	//- System responsible for debug rendering on top of rendered sprites in current world.
+	//- Note: Eats up a lot of frame time.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sdebug_render_system final
 	{

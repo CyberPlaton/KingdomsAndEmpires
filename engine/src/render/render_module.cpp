@@ -50,7 +50,10 @@ namespace render
 		const auto w = _texture.w();
 		const auto h = _texture.h();
 
-		sm::draw_rect(renderer.m_layer, transform.m_position, { transform.m_scale.x * w, transform.m_scale.y * h}, core::scolor(core::common_color_magenta_light));
+		sm::draw_rect(sm::get_layer_debug().m_id, transform.m_position,
+			{ transform.m_scale.x * renderer.m_source_rect.w() * w - renderer.m_origin.x * 0.5f,
+			transform.m_scale.y * renderer.m_source_rect.h() * h - renderer.m_origin.y * 0.5f },
+			core::scolor(core::common_color_red));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -69,6 +72,7 @@ namespace render
 
 		cfg.m_name = "srender_frame_begin_system";
 		cfg.m_run_after = { "OnUpdate" };
+		cfg.m_flags = ecs::system::system_flag_immediate;
 
 		return cfg;
 	}
@@ -90,6 +94,7 @@ namespace render
 		cfg.m_name = "srender_frame_end_system";
 		cfg.m_run_after = { "srender_frame_begin_system" };
 		cfg.m_run_after = { "PreStore" };
+		cfg.m_flags = ecs::system::system_flag_immediate;
 
 		return cfg;
 	}
@@ -108,6 +113,7 @@ namespace render
 		cfg.m_name = "sdebug_render_system";
 		cfg.m_run_after = { "srender_system" };
 		cfg.m_run_before = { "srender_frame_end_system" };
+		cfg.m_flags = ecs::system::system_flag_immediate;
 
 		return cfg;
 	}
@@ -126,7 +132,7 @@ namespace render
 		cfg.m_name = "srender_system";
 		cfg.m_run_after = { "srender_frame_begin_system" };
 		cfg.m_run_before = { "srender_frame_end_system" };
-		cfg.m_flags = ecs::system::system_flag_multithreaded;
+		cfg.m_flags = ecs::system::system_flag_immediate;
 
 		return cfg;
 	}
@@ -143,7 +149,7 @@ namespace render
 		ecs::modules::sconfig cfg;
 		cfg.m_name = "srender_module";
 		cfg.m_components = { "stransform", "smaterial", "ssprite_renderer" };
-		cfg.m_systems = { "srender_frame_begin_system", "srender_frame_end_system", "srender_system", "sdebug_render_system" };
+		cfg.m_systems = { "srender_frame_begin_system", "srender_frame_end_system", "srender_system"/*, "sdebug_render_system"*/ };
 		cfg.m_modules = {};
 
 		return cfg;

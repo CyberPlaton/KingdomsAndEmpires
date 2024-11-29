@@ -1,6 +1,6 @@
 IS_MIMALLOC_ENABLED				= true -- Manage allocations/deallocations using mimalloc library
-IS_PROFILE_ENABLED				= true -- Enable profiling, either with in-engine or external tools
-IS_TRACY_ENABLED				= true -- Enable profiling with Tracy
+IS_PROFILE_ENABLED				= false -- Enable profiling, either with in-engine or external tools
+IS_TRACY_ENABLED				= false -- Enable profiling with Tracy
 IS_LOGGING_ENABLED				= true -- Enable log output
 IS_WARNING_AND_ERRORS_ENABLED	= false-- Enable compiler warnings and warning as errors messages
 

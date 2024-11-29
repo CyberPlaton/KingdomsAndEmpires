@@ -145,7 +145,7 @@ namespace kingdoms
 
 					for (auto idx = 0; idx < chunk.m_data.size(); ++idx, ++x)
 					{
-						if (idx != 0 && (idx + x) % chunk.m_width == 0) //- check whether we have reached end of current line and should advance to next
+						if (idx != 0 && idx % chunk.m_width == 0) //- check whether we have reached end of current line and should advance to next
 						{
 							x = 0;
 							++y;
@@ -189,6 +189,9 @@ namespace kingdoms
 
 						const auto positionx = x * associated_layer.m_tile_width;
 						const auto positiony = y * associated_layer.m_tile_height;
+
+						log_debug(fmt::format("Entity Position: '[{}:{}] = {}:{}'",
+							x, y, positionx, positiony));
 
 						transform->m_position = { positionx, positiony };
 						transform->m_scale = { 1.0f, 1.0f };

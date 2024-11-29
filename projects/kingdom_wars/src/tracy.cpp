@@ -1,8 +1,7 @@
+#ifdef TRACY_ENABLE
 #include <tracy.h>
 
 #include <common/TracySystem.cpp>
-
-#ifdef TRACY_ENABLE
 
 #ifdef _MSC_VER
 #  pragma warning(push, 0)

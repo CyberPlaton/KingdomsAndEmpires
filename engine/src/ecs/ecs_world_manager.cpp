@@ -8,25 +8,34 @@ namespace ecs
 		//------------------------------------------------------------------------------------------------------------------------
 		ecs_os_thread_t thread_new(ecs_os_thread_callback_t callback, void* arg)
 		{
-			auto* thread_service = core::cservice_manager::find<engine::cthread_service>();
+			std::thread* thread = new std::thread{ callback,arg };
+			return reinterpret_cast<ecs_os_thread_t>(thread);
 
-			auto future = thread_service->push_foreground_job("", [=]()
-				{
-					callback(arg);
-				});
-
-			//return reinterpret_cast<ecs_os_thread_t>(new std::future<void>(std::move(future)));
-			return reinterpret_cast<ecs_os_thread_t>(&future);
+// 			auto* thread_service = core::cservice_manager::find<engine::cthread_service>();
+// 
+// 			auto future = thread_service->push_foreground_job("", [=]()
+// 				{
+// 					callback(arg);
+// 				});
+// 
+// 			//return reinterpret_cast<ecs_os_thread_t>(new std::future<void>(std::move(future)));
+// 			return reinterpret_cast<ecs_os_thread_t>(&future);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		void* thread_join(ecs_os_thread_t thread)
 		{
-			if (auto future = reinterpret_cast<std::future<void>*>(thread); future)
-			{
-				future->wait();
-			}
-			return nullptr;
+			void* arg = nullptr;
+			std::thread* thr = reinterpret_cast<std::thread*>(thread);
+			thr->join();
+			delete thr;
+			return arg;
+
+// 			if (auto future = reinterpret_cast<std::future<void>*>(thread); future)
+// 			{
+// 				future->wait();
+// 			}
+// 			return nullptr;
 		}
 
 	} //- unnamed

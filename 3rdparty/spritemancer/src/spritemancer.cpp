@@ -5,7 +5,9 @@
 #include "detail/os/sm_os_raylib.hpp"
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_embedded_shaders.hpp"
+#if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
 #include <tracy.h>
+#endif
 
 namespace sm
 {
@@ -26,13 +28,14 @@ namespace sm
 			struct srendering_layers
 			{
 				static constexpr unsigned C_LAYER_COUNT_MAX = 256;
+				static constexpr unsigned C_LAYER_DEBUG		= 255;
 
 				array_t<srendering_layer, C_LAYER_COUNT_MAX> m_rendering_layers;
 				unsigned m_layer_count = 0;
+				bool m_layer_debug_enabled = false;
 			};
 
 			srendering_layers m_layer_data;
-			crendertarget m_main_render_target;
 			sstate m_state_data;
 			ccamera m_frame_camera;
 			srenderstate m_default_renderstate;
@@ -102,10 +105,9 @@ namespace sm
 			}
 
 			//- check for resize of most basic layer. Other layers are not our responsibility
-			if (S_RESIZE_REQUIRED || !is_valid(renderdata.m_main_render_target))
+			if (S_RESIZE_REQUIRED)
 			{
 				entry::get_renderer()->update_viewport({ osdata.m_window_x, osdata.m_window_y }, { osdata.m_window_w, osdata.m_window_h });
-				renderdata.m_main_render_target.resize(osdata.m_window_w, osdata.m_window_h);
 				S_RESIZE_REQUIRED = false;
 			}
 
@@ -121,8 +123,8 @@ namespace sm
 				CORE_NAMED_ZONE(renderer_prepare_frame);
 				layerdata.m_rendering_layers[0].m_show = true;
 				entry::get_renderer()->update_frame_camera(renderdata.m_frame_camera);
-				entry::get_renderer()->begin_main_render_texture(renderdata.m_main_render_target);
-				entry::get_renderer()->clear_main_render_texture(renderdata.m_main_render_target, true);
+				entry::get_renderer()->begin();
+				entry::get_renderer()->clear();
 				entry::get_renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
 			}
 
@@ -140,16 +142,17 @@ namespace sm
 
 					layer.m_commands.clear();
 				}
+
+				//- layered debug rendering if enabled
+				if (layerdata.m_layer_debug_enabled)
+				{
+					entry::get_renderer()->layer_draw(get_layer_debug());
+				}
 			}
 
 			//- present everything
 			{
 				CORE_NAMED_ZONE(renderer_frame_present);
-				entry::get_renderer()->end_main_render_texture(renderdata.m_main_render_target);
-
-				entry::get_renderer()->begin_default_backbuffer_drawing();
-				entry::get_renderer()->draw_main_render_texture(renderdata.m_main_render_target);
-
 				//- finalize rendering with imgui on top of everything
 				{
 					CORE_NAMED_ZONE(renderer_imgui_draw);
@@ -161,7 +164,7 @@ namespace sm
 					}
 				}
 
-				entry::get_renderer()->end_default_backbuffer_drawing();
+				entry::get_renderer()->end();
 			}
 
 #if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
@@ -351,6 +354,7 @@ namespace sm
 			auto& layer = layerdata.m_rendering_layers[layerdata.m_layer_count];
 
 			//- create with reasonable defaults
+			layer.m_id = layerdata.m_layer_count;
 			layer.m_flags = 0;
 			layer.m_show = true;
 
@@ -368,6 +372,16 @@ namespace sm
 		CORE_ASSERT(layer < layerdata.m_layer_count, "Invalid operation. Accessed layer does not exist!");
 
 		return layerdata.m_rendering_layers[layer];
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::srendering_layer& get_layer_debug()
+	{
+		auto& renderdata = ctx().m_render_data;
+		renderdata.m_layer_data.m_layer_debug_enabled = true;
+		auto& debug_layer = renderdata.m_layer_data.m_rendering_layers[scontext::srender::srendering_layers::C_LAYER_DEBUG];
+		debug_layer.m_id = scontext::srender::srendering_layers::C_LAYER_DEBUG;
+		return debug_layer;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -421,7 +435,7 @@ namespace sm
 
 		command.create([=]()
 			{
-				raylib::DrawRectangleV({ position.x, position.y }, { dimension.x, dimension.y }, to_cliteral(color));
+				raylib::DrawRectangleLines(position.x, position.y, dimension.x, dimension.y, to_cliteral(color));
 			});
 	}
 
@@ -503,7 +517,7 @@ namespace sm
 
 		//- create a sprite draw command
 		{
-			core::cscope_mutex m(S_MUTEX);
+			/*core::cscope_mutex m(S_MUTEX);*/
 
 			ctx().m_render_data.m_layer_data.m_rendering_layers[layer].m_commands.emplace_back().create([=]()
 				{
@@ -525,7 +539,7 @@ namespace sm
 
 					//- construct rectangles for where to sample from and where to draw
 					raylib::Rectangle src = { source.x(), source.y(), source.w() * w, source.h() * h };
-					raylib::Rectangle dst = { position.x, position.y, scale.x * w, scale.y * h };
+					raylib::Rectangle dst = { position.x, position.y, scale.x * source.w() * w, scale.y * source.h() * h };
 					raylib::Vector2 orig = { origin.x, origin.y };
 
 					//- check some flags and do adjustments

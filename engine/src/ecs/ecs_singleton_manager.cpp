@@ -8,14 +8,17 @@ namespace ecs
 		iworld_context_holder(w)
 	{
 		//- gather all singleton component types registered to RTTR
-		for (auto type : rttr::type::get_types())
+		for (const auto& type : rttr::type::get_types())
 		{
-			for (auto base : type.get_base_classes())
+			if (type.is_valid())
 			{
-				if (base == rttr::type::get<isingleton>())
+				for (const auto& base : type.get_base_classes())
 				{
-					m_registered_singletons.emplace_back(type.get_name().data());
-					break;
+					if (base == rttr::type::get<isingleton>())
+					{
+						m_registered_singletons.emplace_back(type.get_name().data());
+						break;
+					}
 				}
 			}
 		}

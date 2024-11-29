@@ -137,7 +137,54 @@ namespace miniz
 #define STATIC_INSTANCE(__class, __member) static __class& instance() { static __class __member; return __member; }
 #define STATIC_INSTANCE_EX(__class) STATIC_INSTANCE(__class, s_instance)
 
-#if MIMALLOC_ENABLE
+//------------------------------------------------------------------------------------------------------------------------
+#if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
+//------------------------------------------------------------------------------------------------------------------------
+inline static void* tracy_malloc_trace(std::size_t size)
+{
+	void* p = std::malloc(size);
+
+	TracyAlloc(p, size);
+
+	return p;
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+inline static void* tracy_calloc_trace(std::size_t n, std::size_t size)
+{
+	void* p = std::calloc(n, size);
+
+	TracyAlloc(p, n * size);
+
+	return p;
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+inline static void* tracy_realloc_trace(void* ptr, std::size_t size)
+{
+	TracyFree(ptr);
+
+	void* p = std::realloc(ptr, size);
+
+	TracyAlloc(p, size);
+
+	return p;
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+inline static void tracy_free_trace(void* ptr)
+{
+	TracyFree(ptr);
+	std::free(ptr);
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+#define CORE_MALLOC(size)		tracy_malloc_trace(size)
+#define CORE_CALLOC(n, size)	tracy_calloc_trace(n, size)
+#define CORE_REALLOC(p, size)	tracy_realloc_trace(p, size)
+#define CORE_FREE(p)			tracy_free_trace(p)
+#define CORE_FREEN(p, n)		tracy_free_trace(p)
+#elif MIMALLOC_ENABLE
 	//------------------------------------------------------------------------------------------------------------------------
 	#define CORE_MALLOC(size)		mi_malloc(size)
 	#define CORE_CALLOC(n, size)	mi_calloc(n, size)

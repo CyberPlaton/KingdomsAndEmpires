@@ -115,12 +115,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::blendmode_end()
-	{
-		raylib::EndBlendMode();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_raylib::update_frame_camera(const ccamera& camera)
 	{
 		S_FRAME_CAMERA = camera.camera();
@@ -135,45 +129,20 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::begin_main_render_texture(const crendertarget& target)
+	void crenderer_raylib::begin()
 	{
-		raylib::BeginTextureMode(target.target());
+		raylib::BeginDrawing();
 		raylib::BeginMode2D(S_FRAME_CAMERA);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::end_main_render_texture(const crendertarget& /*target*/)
-	{
-		raylib::EndTextureMode();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::clear_main_render_texture(const crendertarget& target, bool depth)
+	void crenderer_raylib::clear()
 	{
 		raylib::ClearBackground(to_cliteral(S_RT_CLEAR_COLOR));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::draw_main_render_texture(const crendertarget& target)
-	{
-		const auto w = (float)target.target().texture.width;
-		const auto h = (float)target.target().texture.height;
-
-		raylib::Rectangle src = { 0.0f, 0.0f, w, -h };
-		raylib::Rectangle dst = { 0.0f, 0.0f, w, h };
-
-		raylib::DrawTexturePro(target.target().texture, src, dst, { 0.0f, 0.0f }, 0.0f, { 255, 255, 255, 255 });
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::begin_default_backbuffer_drawing()
-	{
-		raylib::BeginDrawing();
-		raylib::ClearBackground(to_cliteral(S_FBO_CLEAR_COLOR));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void crenderer_raylib::end_default_backbuffer_drawing()
+	void crenderer_raylib::end()
 	{
 		raylib::EndDrawing();
 	}

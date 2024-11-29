@@ -98,7 +98,7 @@ namespace engine
 	{
 		const auto bg_thread_prefix = "Background Worker #";
 		const auto fg_thread_prefix = "Foreground Worker #";
-		const auto thread_count = hardware_threads();
+		const auto thread_count = hardware_threads() / 2;
 		const auto bg_count = thread_count / 2;
 		const auto fg_count = thread_count / 2;
 
