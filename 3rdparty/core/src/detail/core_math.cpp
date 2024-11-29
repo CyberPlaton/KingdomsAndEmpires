@@ -3,6 +3,12 @@
 namespace math
 {
 	//------------------------------------------------------------------------------------------------------------------------
+	bool inbetween(float value, float min, float max)
+	{
+		return value >= min && value <= max;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	bool almost_equal(float a, float b, float e /*= C_ALMOST_EQUAL_EPSILON*/)
 	{
 		return glm::distance(glm::abs(a), glm::abs(b)) < C_ALMOST_EQUAL_EPSILON;

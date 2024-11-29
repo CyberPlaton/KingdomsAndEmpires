@@ -8,34 +8,27 @@ namespace ecs
 		iworld_context_holder(w)
 	{
 		//- gather all singleton component types registered to RTTR
-		for (const auto& type : rttr::type::get_types())
+		log_trace("Register ecs singletons:");
+
+		for (const auto& type : rttr::type::get<isingleton>().get_derived_classes())
 		{
-			if (type.is_valid())
-			{
-				for (const auto& base : type.get_base_classes())
-				{
-					if (base == rttr::type::get<isingleton>())
-					{
-						m_registered_singletons.emplace_back(type.get_name().data());
-						break;
-					}
-				}
-			}
+			log_trace(fmt::format("\t'{}'", type.get_name().data()));
+
+			m_registered_singletons.emplace_back(type.get_name().data());
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	csingleton_manager& csingleton_manager::add_singleton(rttr::type type)
 	{
-          if(type.is_valid())
-		  {
-		      auto var = type.create({ &world() });
-          }
-          else
-          {
-		      log_error("Could not add singleton component to world because the RTTR type is not reflected or invalid!");
-          }
-
+		if(type.is_valid())
+		{
+			auto var = type.create({ &world() });
+		}
+		else
+		{
+			log_error("Could not add singleton component to world because the RTTR type is not reflected or invalid!");
+		}
 		return *this;
 	};
 

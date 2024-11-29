@@ -3,6 +3,12 @@
 
 namespace camera
 {
+	namespace
+	{
+		constexpr auto C_CAMERA_ZOOM_MIN = math::C_ALMOST_EQUAL_EPSILON;
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
 	void camera_sync_system(flecs::entity e, const ecs::scamera& camera)
 	{
@@ -15,13 +21,18 @@ namespace camera
 		//- FIXME: we require an input service, for now we use raylib directly.
 
 		auto translation_speed_modifier = 1.0f;
-		auto zoom_speed_modifier = 0.1f;
+		auto zoom_speed_modifier = 0.01f;
 		auto translation_speed = 50.0f * raylib::GetFrameTime();
+
+		if (!math::inbetween(camera.m_zoom, C_CAMERA_ZOOM_MIN, 1.0f))
+		{
+			translation_speed = (-translation_speed);
+		}
 
 		if (raylib::IsKeyDown(raylib::KEY_LEFT_SHIFT))
 		{
-			translation_speed_modifier = 0.25f;
-			zoom_speed_modifier = 0.01f;
+			translation_speed_modifier = 150.0f;
+			zoom_speed_modifier = 0.1f;
 		}
 
 		if (raylib::IsKeyDown(raylib::KEY_A))
@@ -44,19 +55,25 @@ namespace camera
 		if (raylib::IsMouseButtonDown(raylib::MOUSE_BUTTON_MIDDLE))
 		{
 			auto mouse_delta = raylib::GetMouseDelta();
-			auto inverse_zoom = 1.0f / camera.m_zoom;
-			camera.m_position.x += mouse_delta.x * inverse_zoom;
-			camera.m_position.y += mouse_delta.y * inverse_zoom;
+
+			if (math::inbetween(camera.m_zoom, C_CAMERA_ZOOM_MIN, 1.0f))
+			{
+				auto inverse_zoom = 1.0f / camera.m_zoom;
+				camera.m_position.x += mouse_delta.x * inverse_zoom;
+				camera.m_position.y += mouse_delta.y * inverse_zoom;
+			}
+			else
+			{
+				camera.m_position.x += mouse_delta.x * (-camera.m_zoom);
+				camera.m_position.y += mouse_delta.y * (-camera.m_zoom);
+			}
 		}
 
 		if (const auto wheel_delta = raylib::GetMouseWheelMove(); wheel_delta != 0.0f)
 		{
 			camera.m_zoom += wheel_delta * zoom_speed_modifier;
 
-			if (camera.m_zoom < 0.0f)
-			{
-				camera.m_zoom = 0.1f;
-			}
+			camera.m_zoom = glm::max(camera.m_zoom, C_CAMERA_ZOOM_MIN);
 		}
 	}
 

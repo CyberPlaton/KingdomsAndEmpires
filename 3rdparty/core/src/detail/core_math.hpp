@@ -11,6 +11,7 @@ namespace math
 	constexpr float C_PI = 3.1415927f;
 	constexpr float C_PI2 = C_PI * C_PI;
 
+	bool inbetween(float value, float min, float max);
 	bool almost_equal(float a, float b, float e = C_ALMOST_EQUAL_EPSILON);
 	bool almost_equal(const vec2_t& a, const vec2_t& b, float e = C_ALMOST_EQUAL_EPSILON);
 	vec2_t rotate_point_around_origin(const vec2_t& point, const vec2_t& origin, const float degrees);

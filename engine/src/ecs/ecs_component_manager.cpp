@@ -10,7 +10,7 @@ namespace ecs
 		//- gather all component types registered to RTTR
 		log_trace("Register ecs components:");
 
-		for (const auto type : rttr::type::get<icomponent>().get_derived_classes())
+		for (const auto& type : rttr::type::get<icomponent>().get_derived_classes())
 		{
 			log_trace(fmt::format("\t'{}'", type.get_name().data()));
 

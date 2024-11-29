@@ -538,7 +538,7 @@ namespace sm
 					const auto h = _texture.h();
 
 					//- construct rectangles for where to sample from and where to draw
-					raylib::Rectangle src = { source.x(), source.y(), source.w() * w, source.h() * h };
+					raylib::Rectangle src = { source.x() * w, source.y() * h, source.w() * w, source.h() * h };
 					raylib::Rectangle dst = { position.x, position.y, scale.x * source.w() * w, scale.y * source.h() * h };
 					raylib::Vector2 orig = { origin.x, origin.y };
 
