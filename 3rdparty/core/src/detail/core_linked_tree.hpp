@@ -71,7 +71,7 @@ namespace core
 		template<typename TCallable>
 		void visit_depth_first(TCallable&& lambda)
 		{
-			visit_depth_first(algorithm::convert_to_function(lambda));
+			visit_depth_first(lambda);
 		}
 
 		snode* append_to(snode* node = nullptr, uint64_t* index_out = nullptr)
