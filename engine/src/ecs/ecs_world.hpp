@@ -7,6 +7,7 @@
 #include "ecs_query_manager.hpp"
 #include "ecs_singleton_manager.hpp"
 #include "ecs_prefab_manager.hpp"
+#include "ecs_proxy_manager.hpp"
 
 namespace ecs
 {
@@ -29,16 +30,14 @@ namespace ecs
 	//- Note that a world is not intended to be constructed on its own, rather through the world manager.
 	//- Systems, tasks and modules can be added though the world object.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cworld final :
-		protected b2DynamicTree,
-		private core::cnon_copyable
+	class cworld final : private core::cnon_copyable
 	{
 	public:
 		cworld(world::sconfig cfg);
 		~cworld();
 
 		void tick(float dt);
-		[[nodiscard]] inline const vector_t<flecs::entity>& visible_entities() const { return m_visible_entities; }
+		[[nodiscard]] const auto& visible_entities() const { return prm().visible_entities(); }
 
 		stringview_t name() const { return m_name; }
 
@@ -63,23 +62,23 @@ namespace ecs
 		const cquery_manager& qm() const { return m_query_manager; }
 		cquery_manager& qm() { return m_query_manager; }
 
-		template<typename... TComps, typename TCallable>
-		flecs::entity query_one(TCallable callback) const;
+		const cprefab_manager& pm() const { return m_prefab_manager; }
+		cprefab_manager& pm() { return m_prefab_manager; }
 
 		const csingleton_manager& sm() const { return m_singleton_manager; }
 		csingleton_manager& sm() { return m_singleton_manager; }
+
+		const cproxy_manager& prm() const { return m_proxy_manager; }
+		cproxy_manager& prm() { return m_proxy_manager; }
+
+		template<typename... TComps, typename TCallable>
+		flecs::entity query_one(TCallable callback) const;
 
 		template<typename TSingleton>
 		TSingleton& singleton();
 
 		template<typename TSingleton>
 		const TSingleton& singleton() const;
-
-		const cprefab_manager& pm() const { return m_prefab_manager; }
-		cprefab_manager& pm() { return m_prefab_manager; }
-
-		bool QueryCallback(int proxy_id);
-		float RayCastCallback(const b2RayCastInput& ray_input, int proxy_id);
 
 		template<typename... TComps>
 		void create_system(const system::sconfig& cfg, system::system_callback_t<TComps...> callback);
@@ -96,6 +95,7 @@ namespace ecs
 		csingleton_manager m_singleton_manager;
 		centity_manager m_entity_manager;
 		cmodule_manager m_module_manager;
+		cproxy_manager m_proxy_manager;
 
 		//- TODO: where to use mutex
 		core::cmutex m_mutex;
@@ -103,28 +103,6 @@ namespace ecs
 
 		stringview_t m_name;
 		flecs::world m_world;
-
-		struct sentity_proxy
-		{
-			flecs::entity m_entity;
-			entity_proxy_t m_proxy_id = -1;
-			unsigned m_proxy_query_key = 0;
-		};
-
-		struct sworld_query
-		{
-			vector_t<flecs::entity> m_entity_array;
-			unsigned m_entity_count;
-			bool m_any;
-		};
-
-		static constexpr auto C_MASTER_QUERY_KEY_MAX = engine::cfg::C_ECS_QUERY_COUNT_MAX;
-		umap_t<flecs::id_t, sentity_proxy> m_proxies;
-		query_type m_master_query_type;
-		unsigned m_master_query_key;
-		sworld_query m_master_query_result;
-
-		vector_t<flecs::entity> m_visible_entities;
 
 		unsigned m_used_threads;
 
@@ -143,8 +121,7 @@ namespace ecs
 		core::srect world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom);
 	};
 
-	//- example usage:
-	//-
+	//- Example usage:
 	//- auto e = w.qm().query_one<ecs::stransform>([](const ecs::stransform& transform)
 	//- {
 	//-		return transform.m_rotation > 45;

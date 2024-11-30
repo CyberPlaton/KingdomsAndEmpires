@@ -40,6 +40,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	class cquery
 	{
+		friend class cproxy_manager;
 		friend class cworld;
 	public:
 		cquery(query_type type, physics::ray_t ray);

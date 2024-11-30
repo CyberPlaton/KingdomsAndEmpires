@@ -2,6 +2,42 @@
 
 namespace math
 {
+	namespace
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		mat4_t camera_matrix_2d(const vec2_t& target, const vec2_t& offset, float zoom, float rotation = 0.0f)
+		{
+			const auto t = glm::translate(math::C_MAT4_ID, vec3_t(-target.x, -target.y, 0.0f));
+			const auto r = glm::rotate(math::C_MAT4_ID, glm::radians(rotation), vec3_t(0.0f, 0.0f, 1.0f));
+			const auto s = glm::scale(math::C_MAT4_ID, vec3_t(zoom, zoom, 1.0f));
+			const auto o = glm::translate(math::C_MAT4_ID, vec3_t(offset.x, offset.y, 0.0f));
+			return t * r * s * o;
+		}
+
+	} //- unnamed
+
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t camera_screen_to_world(const vec2_t& position, const vec2_t& target, const vec2_t& offset, float zoom,
+		float rotation /*= 0.0f*/)
+	{
+		const auto inverse = glm::inverse(camera_matrix_2d(target, offset, zoom, rotation));
+		const auto x = inverse[0][0] * position.x + inverse[0][1] * position.y + inverse[0][2];
+		const auto y = inverse[1][0] * position.x + inverse[1][1] * position.y + inverse[1][2];
+
+		return { x, y };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	vec2_t camera_world_to_screen(const vec2_t& position, const vec2_t& target, const vec2_t& offset, float zoom,
+		float rotation /*= 0.0f*/)
+	{
+		const auto matrix = camera_matrix_2d(target, offset, zoom, rotation);
+		const auto x = matrix[0][0] * position.x + matrix[0][1] * position.y + matrix[0][2];
+		const auto y = matrix[1][0] * position.x + matrix[1][1] * position.y + matrix[1][2];
+
+		return { x, y };
+	}
+
 	//------------------------------------------------------------------------------------------------------------------------
 	bool inbetween(float value, float min, float max)
 	{

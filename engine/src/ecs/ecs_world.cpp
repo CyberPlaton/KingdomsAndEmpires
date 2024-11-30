@@ -23,6 +23,7 @@ namespace ecs
 		m_query_manager(this),
 		m_singleton_manager(this),
 		m_module_manager(this),
+		m_proxy_manager(this),
 		m_used_threads(cfg.m_threads)
 	{
 		use_threads(m_used_threads);
@@ -32,14 +33,17 @@ namespace ecs
 		ecs().observer<stransform, sidentifier>()
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
-			.each([&](flecs::iter& it, size_t i, stransform& transform, sidentifier& id)
+			.ctx(this)
+			.each([](flecs::iter& it, size_t i, stransform& transform, sidentifier& id)
 				{
+					auto* world = reinterpret_cast<cworld*>(it.ctx());
+
 					auto e = it.entity(i);
 
 					if (it.event() == flecs::OnAdd)
 					{
 						//- add aabb proxy for entity to b2DynamicTree
-						create_proxy(e);
+						world->create_proxy(e);
 
 						//- name of the component will be in form 'ecs.transform', we have to format the name first
 						//cm().on_component_added(e, c);
@@ -47,7 +51,7 @@ namespace ecs
 					else if (it.event() == flecs::OnRemove)
 					{
 						//- remove aabb proxy of entity from b2DynamicTree
-						destroy_proxy(e);
+						world->destroy_proxy(e);
 					}
 				});
 
@@ -56,8 +60,10 @@ namespace ecs
 			.event(flecs::OnAdd)
 			.event(flecs::OnRemove)
 			.with(flecs::Wildcard)
-			.each([&](flecs::iter& it, size_t i)
+			.ctx(this)
+			.each([](flecs::iter& it, size_t i)
 				{
+					auto* world = reinterpret_cast<cworld*>(it.ctx());
 					auto entity = it.entity(i);
 					auto string = it.event_id().str();
 
@@ -69,11 +75,11 @@ namespace ecs
 						if (it.event() == flecs::OnAdd)
 						{
 							//- name of the component will be in form 'ecs.transform', we have to format the name first
-							cm().on_component_added(entity, c);
+							world->cm().on_component_added(entity, c);
 						}
 						else if (it.event() == flecs::OnRemove)
 						{
-							cm().on_component_removed(entity, c);
+							world->cm().on_component_removed(entity, c);
 						}
 					}
 				});
@@ -105,6 +111,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	cworld::~cworld()
 	{
+		m_transform_change_tracker.destruct();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -131,11 +138,15 @@ namespace ecs
 		{
 			m_transform_change_tracker.run([this](flecs::iter& it)
 				{
-					for (auto i : it)
+					//- Note: this is necessary in order to avoid a crash, I assume this cleans up the iteration stack correctly
+					while (it.next())
 					{
-						auto e = it.entity(i);
+						for (auto i : it)
+						{
+							auto e = it.entity(i);
 
-						if (has_proxy(e)) { update_proxy(e); }
+							if (has_proxy(e)) { update_proxy(e); }
+						}
 					}
 				});
 		}
@@ -151,20 +162,14 @@ namespace ecs
 
 			math::caabb aabb(world_visible_area(c.m_position, c.m_offset, c.m_zoom));
 
-			//- perform a query for all currently visible entities
-			m_master_query_type = query_type_entity_array;
-			m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
-
-			Query(this, aabb);
-
-			m_visible_entities = std::move(m_master_query_result.m_entity_array);
+			prm().prepare(aabb);
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::process_queries()
 	{
-		CORE_NAMED_ZONE("cworld::process_queries");
+		CORE_NAMED_ZONE(cworld::process_queries);
 
 		for (auto* query = qm().fetch(); query != nullptr; query = qm().fetch())
 		{
@@ -172,167 +177,22 @@ namespace ecs
 		}
 
 		qm().tick();
-
-		//- reset
-		m_master_query_type = query_type_none;
-		m_master_query_result.m_entity_array.clear();
-		m_master_query_result.m_entity_count = 0;
-		m_master_query_result.m_any = false;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::process_query(cquery& q)
 	{
-		CORE_NAMED_ZONE("cworld::process_query");
-
-		if (CORE_UNLIKELY(q.type() == query_type_none || q.intersection_type() == query_intersection_type_none))
-		{
-			return;
-		}
-
-		//- prepare query and let it run
-		m_master_query_type = q.type();
-		m_master_query_key = (m_master_query_key + 1) % C_MASTER_QUERY_KEY_MAX;
-
-		if (q.intersection_type() == query_intersection_type_aabb)
-		{
-			Query(this, q.aabb());
-		}
-		else if (q.intersection_type() == query_intersection_type_raycast)
-		{
-			RayCast(this, q.raycast());
-		}
-
-		//- store back the results
-		switch (q.type())
-		{
-		case query_type_any_occurance:
-		{
-			q.m_any = m_master_query_result.m_any;
-			break;
-		}
-		case query_type_entity_array:
-		{
-			q.m_entities = m_master_query_result.m_entity_array;
-			break;
-		}
-		case query_type_entity_count:
-		{
-			q.m_count = m_master_query_result.m_entity_count;
-			break;
-		}
-		default:
-		case query_type_none:
-		{
-			break;
-		}
-		}
-		q.finish();
+		prm().process_query(q);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::srect cworld::world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom)
 	{
-		return {0.0f, 0.0f, 1.0f, 1.0f};
+		const auto window_size = sm::window_size();
+		const auto topleft = math::camera_screen_to_world({ 0.0f, 0.0f }, target, offset, zoom);
+		const auto bottomright = math::camera_screen_to_world({ window_size.x, window_size.y }, target, offset, zoom);
 
-// 		raylib::Camera2D camera;
-// 		camera.target = { target.x, target.y };
-// 		camera.offset = { offset.x, offset.y };
-// 		camera.zoom = zoom;
-// 		camera.rotation = 0;
-// 
-// 		auto tl = raylib::GetScreenToWorld2D({ 0.0f, 0.0f }, camera);
-// 		auto br = raylib::GetScreenToWorld2D({ 1280.0f, 1024.0f }, camera);
-// 
-// 		return { tl.x, tl.y, br.x, br.y };
-
-// 		return { target.x - (1.0f / zoom) * offset.x + 5.0f, target.y - (1.0f / zoom) * offset.y + 5.0f,
-// 				(1.0f / zoom) * offset.x * 2.0f - 5.0f, (1.0f / zoom) * offset.y * 2.0f - 5.0f };
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool cworld::QueryCallback(int proxy_id)
-	{
-		CORE_NAMED_ZONE("cworld::QueryCallback");
-
-		bool result = false;
-
-		switch (m_master_query_type)
-		{
-		case query_type_entity_count: { result = true; break; }
-		case query_type_entity_array: { result = true; break; }
-		case query_type_any_occurance: { result = false; break; }
-		default:
-		case query_type_none:
-			return false;
-		}
-
-		//- assign query key to proxy and avaoid duplicate queries
-		auto& proxy = *reinterpret_cast<sentity_proxy*>(GetUserData(proxy_id));
-
-		if (proxy.m_proxy_query_key == m_master_query_key)
-		{
-			return result;
-		}
-
-		proxy.m_proxy_query_key = m_master_query_key;
-
-		//- TODO: apply filter
-
-		switch (m_master_query_type)
-		{
-		case query_type_entity_count: { ++m_master_query_result.m_entity_count; break; }
-		case query_type_entity_array: { m_master_query_result.m_entity_array.push_back(proxy.m_entity); break; }
-		case query_type_any_occurance: { m_master_query_result.m_any = true; break; }
-		default:
-		case query_type_none:
-			return false;
-		}
-
-		return result;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	float cworld::RayCastCallback(const b2RayCastInput& ray_input, int proxy_id)
-	{
-		CORE_NAMED_ZONE("cworld::RayCastCallback");
-
-		//- 0.0f signals to stop and 1.0f signals to continue
-		float result = 0.0f;
-
-		switch (m_master_query_type)
-		{
-		case query_type_entity_count: {result = 1.0f; break; }
-		case query_type_entity_array: {result = 1.0f; break; }
-		case query_type_any_occurance: {result = 0.0f; break; }
-		default:
-		case query_type_none:
-			return false;
-		}
-
-		//- assign query key to proxy and avaoid duplicate queries
-		auto& proxy = *reinterpret_cast<sentity_proxy*>(GetUserData(proxy_id));
-
-		if (proxy.m_proxy_query_key == m_master_query_key)
-		{
-			return result;
-		}
-
-		proxy.m_proxy_query_key = m_master_query_key;
-
-		//- TODO: apply filter
-
-		switch (m_master_query_type)
-		{
-		case query_type_entity_count: {++m_master_query_result.m_entity_count; break; }
-		case query_type_entity_array: {m_master_query_result.m_entity_array.push_back(proxy.m_entity); break; }
-		case query_type_any_occurance: {m_master_query_result.m_any = true; break; }
-		default:
-		case query_type_none:
-			return false;
-		}
-
-		return result;
+		return { topleft.x, topleft.y, bottomright.x, bottomright.y };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -415,7 +275,7 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::serialize_entity(const flecs::entity e, nlohmann::json& json)
 	{
-		CORE_NAMED_ZONE("cworld::serialize_entity");
+		CORE_NAMED_ZONE(cworld::serialize_entity);
 
 		json = nlohmann::json::object();
 
@@ -445,47 +305,31 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::update_proxy(flecs::entity e)
 	{
-		CORE_NAMED_ZONE("cworld::update_proxy");
-
-		const auto& proxy = m_proxies.at(e.id());
-		const auto& transform = *e.get<stransform>();
-
-		MoveProxy(proxy.m_proxy_id, math::caabb(transform.m_position.x, transform.m_position.y,
-			transform.m_scale.x * 0.5f, transform.m_scale.y * 0.5f), { 0.0f, 0.0f });
+		prm().update_proxy(e);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::destroy_proxy(flecs::entity e)
 	{
-		CORE_NAMED_ZONE("cworld::destroy_proxy");
-
-		const auto& proxy = m_proxies.at(e.id());
-
-		DestroyProxy(proxy.m_proxy_id);
+		prm().destroy_proxy(e);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::create_proxy(flecs::entity e)
 	{
-		CORE_NAMED_ZONE("cworld::create_proxy");
-
-		auto* id = e.get_mut<sidentifier>();
-
-		auto& proxy = m_proxies.emplace(e.id(), sentity_proxy{ e, 0, 0 }).first->second;
-
-		proxy.m_proxy_id = CreateProxy(math::caabb(0.0f, 0.0f, 0.0f, 0.0f), (void*)&proxy);
+		prm().create_proxy(e);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cworld::has_proxy(flecs::entity e)
 	{
-		return m_proxies.find(e.id()) != m_proxies.end();
+		return prm().has_proxy(e);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::deserialize_entity(const simdjson::dom::object& json)
 	{
-		CORE_NAMED_ZONE("cworld::deserialize_entity");
+		CORE_NAMED_ZONE(cworld::deserialize_entity);
 
 		simdjson::dom::array components_array;
 		simdjson::dom::element component_element;

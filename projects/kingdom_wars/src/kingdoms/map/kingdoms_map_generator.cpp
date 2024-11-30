@@ -125,6 +125,9 @@ namespace kingdoms
 				camera->m_rotation = 0.0f;
 			}
 
+			const auto& map_base_tile_width = ctx->m_map_data.m_tile_width;
+			const auto& map_base_tile_height = ctx->m_map_data.m_tile_height;
+
 			//- Iterate map layers
 			for (auto i = 0; i < ctx->m_map_data.m_layers.size(); ++i)
 			{
@@ -187,8 +190,8 @@ namespace kingdoms
 						material->m_texture = associated_layer.m_atlas_texture_handle;
 						material->m_flags = sm::renderable_flag_origin_center;
 
-						const auto positionx = x * associated_layer.m_tile_width;
-						const auto positiony = y * associated_layer.m_tile_height;
+						const auto positionx = x * map_base_tile_width;
+						const auto positiony = y * map_base_tile_height;
 
 						log_debug(fmt::format("Entity Position: '[{}:{}] = {}:{}'",
 							x, y, positionx, positiony));
