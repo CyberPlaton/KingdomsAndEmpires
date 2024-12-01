@@ -12,6 +12,17 @@ namespace ecs
 		constexpr std::string_view C_MODULES_PROP		= "modules";
 		constexpr std::string_view C_COMPONENTS_PROP	= "components";
 
+		//------------------------------------------------------------------------------------------------------------------------
+		raylib::Camera2D to_raylib_camera(const vec2_t& target, const vec2_t& offset, float zoom, float rotation)
+		{
+			sm::ccamera camera;
+			camera.m_position = target;
+			camera.m_offset = offset;
+			camera.m_zoom = zoom;
+			camera.m_rotation = rotation;
+			return camera.camera();
+		}
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -27,6 +38,8 @@ namespace ecs
 		m_used_threads(cfg.m_threads)
 	{
 		use_threads(m_used_threads);
+
+		ecs().set_ctx(this);
 
 		//- setup observers
 		//- observe transform changes for AABB tree
@@ -186,13 +199,18 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::srect cworld::world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom)
+	core::srect cworld::world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom) const
 	{
 		const auto window_size = sm::window_size();
+
+		const auto raylib_camera = to_raylib_camera(target, offset, zoom, 0.0f);
+		const auto tl = raylib::GetScreenToWorld2D({ 0.0f, 0.0f }, raylib_camera);
+		const auto br = raylib::GetScreenToWorld2D({ window_size.x, window_size.y }, raylib_camera);
+
 		const auto topleft = math::camera_screen_to_world({ 0.0f, 0.0f }, target, offset, zoom);
 		const auto bottomright = math::camera_screen_to_world({ window_size.x, window_size.y }, target, offset, zoom);
 
-		return { topleft.x, topleft.y, bottomright.x, bottomright.y };
+		return { tl.x, tl.y, br.x, br.y };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

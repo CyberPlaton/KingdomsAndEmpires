@@ -37,7 +37,9 @@ namespace ecs
 		~cworld();
 
 		void tick(float dt);
+		core::srect world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom) const;
 		[[nodiscard]] const auto& visible_entities() const { return prm().visible_entities(); }
+		inline bool is_visible(const flecs::entity& e) const { return prm().is_visible(e); };
 
 		stringview_t name() const { return m_name; }
 
@@ -118,7 +120,6 @@ namespace ecs
 		bool has_proxy(flecs::entity e);
 		void process_queries();
 		void process_query(cquery& q);
-		core::srect world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom);
 	};
 
 	//- Example usage:

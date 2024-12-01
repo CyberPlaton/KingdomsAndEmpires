@@ -190,11 +190,10 @@ namespace kingdoms
 						material->m_texture = associated_layer.m_atlas_texture_handle;
 						material->m_flags = sm::renderable_flag_origin_center;
 
-						const auto positionx = x * map_base_tile_width;
-						const auto positiony = y * map_base_tile_height;
-
-						log_debug(fmt::format("Entity Position: '[{}:{}] = {}:{}'",
-							x, y, positionx, positiony));
+						const auto chunk_offset_x = chunk.m_x * map_base_tile_width;
+						const auto chunk_offset_y = chunk.m_y * map_base_tile_height;
+						const auto positionx = chunk_offset_x + x * map_base_tile_width;
+						const auto positiony = chunk_offset_y + y * map_base_tile_height;
 
 						transform->m_position = { positionx, positiony };
 						transform->m_scale = { 1.0f, 1.0f };

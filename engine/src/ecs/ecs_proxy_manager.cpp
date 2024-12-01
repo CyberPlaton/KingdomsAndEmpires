@@ -20,7 +20,10 @@ namespace ecs
 	//------------------------------------------------------------------------------------------------------------------------
 	void cproxy_manager::prepare(const math::caabb& aabb)
 	{
+		CORE_NAMED_ZONE(cproxy_manager::prepare);
+
 		//- reset
+		m_visible_entities.clear();
 		m_master_query_type = query_type_none;
 		m_master_query_result.m_entity_array.clear();
 		m_master_query_result.m_entity_count = 0;
@@ -32,7 +35,10 @@ namespace ecs
 
 		Query(this, aabb);
 
-		m_visible_entities = std::move(m_master_query_result.m_entity_array);
+		for (const auto& e : m_master_query_result.m_entity_array)
+		{
+			m_visible_entities.insert(e.id());
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

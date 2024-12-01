@@ -12,7 +12,7 @@ namespace camera
 	//------------------------------------------------------------------------------------------------------------------------
 	void camera_sync_system(flecs::entity e, const ecs::scamera& camera)
 	{
-		sm::update_frame_camera(camera.m_position, camera.m_offset, camera.m_zoom, camera.m_rotation);
+		sm::update_frame_camera(camera.m_offset, camera.m_offset, camera.m_zoom, camera.m_rotation);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -37,19 +37,19 @@ namespace camera
 
 		if (raylib::IsKeyDown(raylib::KEY_A))
 		{
-			camera.m_position.x += translation_speed * translation_speed_modifier;
+			camera.m_offset.x += translation_speed * translation_speed_modifier;
 		}
 		if (raylib::IsKeyDown(raylib::KEY_D))
 		{
-			camera.m_position.x -= translation_speed * translation_speed_modifier;
+			camera.m_offset.x -= translation_speed * translation_speed_modifier;
 		}
 		if (raylib::IsKeyDown(raylib::KEY_W))
 		{
-			camera.m_position.y += translation_speed * translation_speed_modifier;
+			camera.m_offset.y += translation_speed * translation_speed_modifier;
 		}
 		if (raylib::IsKeyDown(raylib::KEY_S))
 		{
-			camera.m_position.y -= translation_speed * translation_speed_modifier;
+			camera.m_offset.y -= translation_speed * translation_speed_modifier;
 		}
 
 		if (raylib::IsMouseButtonDown(raylib::MOUSE_BUTTON_MIDDLE))
@@ -59,13 +59,13 @@ namespace camera
 			if (math::inbetween(camera.m_zoom, C_CAMERA_ZOOM_MIN, 1.0f))
 			{
 				auto inverse_zoom = 1.0f / camera.m_zoom;
-				camera.m_position.x += mouse_delta.x * inverse_zoom;
-				camera.m_position.y += mouse_delta.y * inverse_zoom;
+				camera.m_offset.x += mouse_delta.x * inverse_zoom;
+				camera.m_offset.y += mouse_delta.y * inverse_zoom;
 			}
 			else
 			{
-				camera.m_position.x += mouse_delta.x * (-camera.m_zoom);
-				camera.m_position.y += mouse_delta.y * (-camera.m_zoom);
+				camera.m_offset.x += mouse_delta.x * (-camera.m_zoom);
+				camera.m_offset.y += mouse_delta.y * (-camera.m_zoom);
 			}
 		}
 

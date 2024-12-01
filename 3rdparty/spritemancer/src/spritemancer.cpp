@@ -517,7 +517,7 @@ namespace sm
 
 		//- create a sprite draw command
 		{
-			/*core::cscope_mutex m(S_MUTEX);*/
+			core::cscope_mutex m(S_MUTEX);
 
 			ctx().m_render_data.m_layer_data.m_rendering_layers[layer].m_commands.emplace_back().create([=]()
 				{

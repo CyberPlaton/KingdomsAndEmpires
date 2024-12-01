@@ -30,7 +30,8 @@ namespace ecs
 		cproxy_manager(cworld* w);
 		~cproxy_manager();
 
-		[[nodiscard]] inline const vector_t<flecs::entity>& visible_entities() const { return m_visible_entities; }
+		[[nodiscard]] inline const uset_t<flecs::entity_t>& visible_entities() const { return m_visible_entities; }
+		inline bool is_visible(const flecs::entity& e) const { return m_visible_entities.find(e.id()) != m_visible_entities.end();}
 		void prepare(const math::caabb& aabb);
 		void process_query(cquery& q);
 
@@ -54,7 +55,7 @@ namespace ecs
 
 		umap_t<flecs::id_t, world::sproxy> m_proxies;
 		sworld_query m_master_query_result;
-		vector_t<flecs::entity> m_visible_entities;
+		uset_t<flecs::entity_t> m_visible_entities;
 		query_type m_master_query_type;
 		unsigned m_master_query_key;
 	};

@@ -62,6 +62,7 @@ namespace kingdoms
 		vec2_t offset;
 		float zoom;
 		float rotation;
+		core::srect world_rect;
 
 		if (ecs::cworld_manager::instance().has_active())
 		{
@@ -72,6 +73,7 @@ namespace kingdoms
 					offset = c.m_offset;
 					zoom = c.m_zoom;
 					rotation = c.m_rotation;
+					world_rect = world.world_visible_area(c.m_position, c.m_offset, c.m_zoom);
 					return true;
 				});
 		}
@@ -91,6 +93,7 @@ namespace kingdoms
 			ImGui::Text(fmt::format("Camera Offset: {}:{}", offset.x, offset.y).data());
 			ImGui::Text(fmt::format("Camera Zoom: {}", zoom).data());
 			ImGui::Text(fmt::format("Camera Rotation: {}", rotation).data());
+			ImGui::Text(fmt::format("Visible Area: {}:{}:{}:{}", world_rect.x(), world_rect.y(), world_rect.w(), world_rect.h()).data());
 		}
 	}
 
