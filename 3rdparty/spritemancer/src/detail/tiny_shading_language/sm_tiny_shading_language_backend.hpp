@@ -15,45 +15,6 @@ namespace sm
 	};
 
 	//- Interface class responsible for compiling tiny shader language to target shading language.
-	//- BNF:
-	//-<program> ::= { <directive> | <function> }
-	//- <directive> :: = "#include" < string >
-	//- <string> :: = '"' < filename > '"'
-	//- < filename > :: = <char>{ <char> }
-	//- <char> :: = any valid file name character
-	//- 
-	//- <annotated_function> ::= <annotations> <function>
-	//- <annotations> :: = ( "@" < identifier > )*;
-	//- 
-	//- <function> :: = "fn" < identifier > "("[<parameters>] ")" "->" < type > "{" < body > "}"
-	//- 
-	//- < parameters > :: = <parameter> ( "," < parameter > )*
-	//- <parameter> :: = < identifier> ":" < type >
-	//- 
-	//- <body> :: = { <statement> }
-	//- <statement> :: = <variable_declaration> | <return_statement> | < expression> ";"
-	//- 
-	//- < variable_declaration > :: = "let" < identifier > "=" < expression > ";"
-	//- 
-	//- < return_statement > :: = "return" < expression > ";"
-	//- 
-	//- < expression > :: = <term>{ <operator> <term> }
-	//- <term> :: = <identifier> | <literal> | <function_call>
-	//- <function_call> :: = < identifier> "("[<arguments>] ")"
-	//- < arguments > :: = <expression>{ "," < expression > }
-	//- 
-	//- <type> :: = "vec2" | "vec3" | "vec4" | "mat4" | "float" | "int" | "void"
-	//- 
-	//- < operator> :: = "+" | "-" | "*" | "/" | "%"
-	//- < identifier > :: = <letter>{ <letter_or_digit> }
-	//- <letter> :: = "a" | "b" | ... | "z" | "A" | "B" | ... | "Z" | "_"
-	//- < letter_or_digit > :: = <letter> | "0" | "1" | ... | "9"
-	//- 
-	//- < literal > :: = <numeric_literal>
-	//- <numeric_literal> :: = <integer_literal> | <floating_point_literal>
-	//- <integer_literal> :: = <digit>{ <digit> }
-	//- <floating_point_literal> :: = < integer_literal> "." < integer_literal >
-	//- <digit> :: = "0" | "1" | ... | "9"
 	//------------------------------------------------------------------------------------------------------------------------
 	class itiny_shader_compiler
 	{

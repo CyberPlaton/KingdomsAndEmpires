@@ -1,0 +1,31 @@
+#include "/common/base.tsl"
+
+fn lerp(a:vec2, b:vec2, t:vec2) -> vec2
+@
+    string name = "Lerp";
+    int expose = 1;
+    string group = "Math";
+@
+{
+};
+
+invariant in vec3 gl_Position
+@
+    string name = "Lerp";
+    int expose = 1;
+    string group = "Math";
+@;
+
+in sampler2D in_tex;
+uniform vec2 u_uv;
+
+@ vertex
+fn main()
+{
+};
+
+@ pixel
+fn main() -> void
+{
+    let color = texture(in_tex, u_uv);
+};
