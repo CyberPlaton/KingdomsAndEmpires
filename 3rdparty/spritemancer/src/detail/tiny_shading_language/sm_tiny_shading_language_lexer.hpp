@@ -9,13 +9,12 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		enum token_type : uint8_t
 		{
+			//- literals
 			token_type_none = 0,
-			token_type_eof,
-			token_type_error,
-
-			token_type_identifier,		//- i.e. variable, function, struct names etc.
-			token_type_number,			//- i.e. 1.2, 0, 0.25
-			token_type_string,			//- i.e. "Hello World"
+			token_type_equality,		//- ==
+			token_type_smaller_equal,	//- <=
+			token_type_greater_equal,	//- >=
+			token_type_not_equality,	//- !=
 			token_type_equal,			//- =
 			token_type_exclamation,		//- !
 			token_type_colon,			//- :
@@ -36,10 +35,9 @@ namespace sm
 
 			token_type_smaller,			//- <
 			token_type_greater,			//- >
-			token_type_equality,		//- ==
-			token_type_not_equality,	//- !=
-			token_type_smaller_equal,	//- <=
-			token_type_greater_equal,	//- >=
+			token_type_directive,		//- #
+			token_type_at,				//- @
+			token_type_quote,			//- "
 
 			//- types
 			token_type_void,
@@ -93,8 +91,6 @@ namespace sm
 			token_type_inout,
 			token_type_struct,
 			token_type_layout,
-			token_type_true,
-			token_type_false,
 			token_type_invariant,
 			token_type_precision,
 			token_type_highp,
@@ -138,6 +134,14 @@ namespace sm
 			token_type_fvec3,
 			token_type_fvec4,
 			token_type_filter,
+			token_type_true,
+			token_type_false,
+
+			token_type_eof,
+			token_type_error,
+			token_type_identifier,		//- i.e. variable, function, struct names etc.
+			token_type_number,			//- i.e. 1.2, 0, 0.25
+			token_type_string,			//- i.e. "Hello World"
 
 			token_type_count,
 		};
@@ -145,8 +149,8 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		struct slanguage final
 		{
+			//- Literals
 			static constexpr stringview_t C_INVALID_OR_UNDEFINED	= "";
-			static constexpr stringview_t C_LITERAL_EOF				= "\0";
 			static constexpr stringview_t C_LITERAL_EQUAL_EQUAL		= "==";
 			static constexpr stringview_t C_LITERAL_SMALLER_EQUAL	= "<=";
 			static constexpr stringview_t C_LITERAL_GREATER_EQUAL	= ">=";
@@ -169,6 +173,9 @@ namespace sm
 			static constexpr stringview_t C_LITERAL_SLASH			= "/";
 			static constexpr stringview_t C_LITERAL_SMALLER			= "<";
 			static constexpr stringview_t C_LITERAL_GREATER			= ">";
+			static constexpr stringview_t C_LITERAL_DIRECTIVE		= "#";
+			static constexpr stringview_t C_LITERAL_AT				= "@";
+			static constexpr stringview_t C_LITERAL_QUOTE			= "\"";
 
 			//- Types
 			static constexpr stringview_t C_TOKEN_VOID		= "void";
@@ -183,6 +190,9 @@ namespace sm
 			static constexpr stringview_t C_TOKEN_IVEC2		= "ivec2";
 			static constexpr stringview_t C_TOKEN_IVEC3		= "ivec3";
 			static constexpr stringview_t C_TOKEN_IVEC4		= "ivec4";
+			static constexpr stringview_t C_TOKEN_UVEC2		= "uvec2";
+			static constexpr stringview_t C_TOKEN_UVEC3		= "uvec3";
+			static constexpr stringview_t C_TOKEN_UVEC4		= "uvec4";
 			static constexpr stringview_t C_TOKEN_DVEC2		= "dvec2";
 			static constexpr stringview_t C_TOKEN_DVEC3		= "dvec3";
 			static constexpr stringview_t C_TOKEN_DVEC4		= "dvec4";
@@ -221,8 +231,6 @@ namespace sm
 			static constexpr stringview_t C_TOKEN_HIGHP		= "highp";
 			static constexpr stringview_t C_TOKEN_MEDIUMP	= "mediump";
 			static constexpr stringview_t C_TOKEN_LOWP		= "lowp";
-			static constexpr stringview_t C_TOKEN_TRUE		= "true";
-			static constexpr stringview_t C_TOKEN_FALSE		= "false";
 			static constexpr stringview_t C_TOKEN_RETURN	= "return";
 
 			//- Reserved keywords for future use
@@ -262,10 +270,14 @@ namespace sm
 			static constexpr stringview_t C_TOKEN_FVEC4		= "fvec4";
 			static constexpr stringview_t C_TOKEN_FILTER	= "filter";
 
+			static constexpr stringview_t C_TOKEN_TRUE = "true";
+			static constexpr stringview_t C_TOKEN_FALSE = "false";
+
+			static constexpr stringview_t C_LITERAL_EOF		= "\0";
+
 			static constexpr array_t<stringview_t, token_type_count> C_TOKENS =
 			{
 				C_INVALID_OR_UNDEFINED,
-				C_LITERAL_EOF,
 				C_LITERAL_EQUAL_EQUAL,
 				C_LITERAL_SMALLER_EQUAL,
 				C_LITERAL_GREATER_EQUAL,
@@ -288,6 +300,9 @@ namespace sm
 				C_LITERAL_SLASH,
 				C_LITERAL_SMALLER,
 				C_LITERAL_GREATER,
+				C_LITERAL_DIRECTIVE,
+				C_LITERAL_AT,
+				C_LITERAL_QUOTE,
 
 				//- Types
 				C_TOKEN_VOID,
@@ -302,6 +317,9 @@ namespace sm
 				C_TOKEN_IVEC2,
 				C_TOKEN_IVEC3,
 				C_TOKEN_IVEC4,
+				C_TOKEN_UVEC2,
+				C_TOKEN_UVEC3,
+				C_TOKEN_UVEC4,
 				C_TOKEN_DVEC2,
 				C_TOKEN_DVEC3,
 				C_TOKEN_DVEC4,
@@ -340,8 +358,6 @@ namespace sm
 				C_TOKEN_HIGHP,
 				C_TOKEN_MEDIUMP,
 				C_TOKEN_LOWP,
-				C_TOKEN_TRUE,
-				C_TOKEN_FALSE,
 				C_TOKEN_RETURN,
 
 				//- Keywords reserved for future use
@@ -380,10 +396,16 @@ namespace sm
 				C_TOKEN_FVEC3,
 				C_TOKEN_FVEC4,
 				C_TOKEN_FILTER,
+				C_TOKEN_TRUE,
+				C_TOKEN_FALSE,
+
+				C_LITERAL_EOF
 			};
 
 			static const array_t<stringview_t, token_type_count>& tokens();
 			static constexpr char token_character(token_type type) { return C_TOKENS[type][0]; }
+			static string_t token_type_text(token_type type);
+			static void validate_token_mapping();
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -452,6 +474,10 @@ namespace sm
 		//- 
 		//- <function_call> := <identifier> "(" ()* ")";
 		//- 
+		//- <qualifiers> ::= ( "in" | "out" | "inout" | "uniform" | "attribute" | "invariant" )+;
+		//-
+		//- <declaration_qualified_variable> ::= <qualifiers> <type> <identifier> ( "=" <expression> )? ";";
+		//-
 		//- <operator_binary> := "+"
 		//- 				| "-"
 		//- 				| "*"
@@ -532,7 +558,7 @@ namespace sm
 				inline token_stream_t& stream() { return m_stream; }
 				[[nodiscard]] token_stream_t&& take_stream() { return std::move(m_stream); }
 				inline lexing::sconfig& cfg() { return m_cfg; }
-				inline stringview_t& code() { return m_code; }
+				inline string_t& code() { return m_code; }
 				inline bool& result() { return m_result; }
 
 				stoken next_token();
@@ -544,7 +570,7 @@ namespace sm
 				scursor m_cursor;
 				token_stream_t m_stream;
 				lexing::sconfig m_cfg;
-				stringview_t m_code;
+				string_t m_code;
 				bool m_result;
 			};
 

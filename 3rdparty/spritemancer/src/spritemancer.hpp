@@ -3,6 +3,7 @@
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_rendering_layer.hpp"
 #include "detail/sm_profiler.hpp"
+#include "detail/tiny_shading_language/sm_tiny_shading_language.hpp"
 
 namespace sm
 {

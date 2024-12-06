@@ -11,6 +11,41 @@ namespace kingdoms
 	{
 		sgame_context S_CTX;
 
+		constexpr stringview_t C_SOURCE = 
+			"#include \"/ common / base.tsl\"							\n"
+			"#include \"/common/math.tsl\"								\n"
+			"fn lerp(a:float, b : float, t : float) -> float			\n"
+			"{															\n"
+			"	return (1 - t) * a + t * b;								\n"
+			"}															\n"
+			"															\n"
+			"fn lerp(a:vec2, b : vec2, t : vec2) -> vec2				\n"
+			"{															\n"
+			"	return vec2(lerp(a.x, b.x, t.x), lerp(a.y, b.y, t.y));	\n"
+			"};															\n"
+			"															\n"
+			"invariant in vec3 gl_Position								\n"
+			"	@														\n"
+			"	string name = \"Lerp\";									\n"
+			"int expose = 1;											\n"
+			"string group = \"Vertex\";									\n"
+			"@;															\n"
+			"															\n"
+			"in sampler2D in_tex;										\n"
+			"uniform vec2 u_uv;											\n"
+			"															\n"
+			"@ vertex													\n"
+			"	fn main()												\n"
+			"{															\n"
+			"};															\n"
+			"															\n"
+			"@ pixel													\n"
+			"	fn main() -> void										\n"
+			"{															\n"
+			"	vec4 color = texture(in_tex, u_uv);						\n"
+			"};															\n"
+			;
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -47,6 +82,12 @@ namespace kingdoms
 
 		//- Create resource managers and services
 		core::cservice_manager::emplace<cmap_manager>();
+
+
+		//- Testing shading language.
+		sm::tsl::ctiny_shader_language_lexer lexer(C_SOURCE.data());
+
+		lexer.scan();
 
 		return result;
 	}

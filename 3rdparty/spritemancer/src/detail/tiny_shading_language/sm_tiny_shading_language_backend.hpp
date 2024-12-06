@@ -1,6 +1,7 @@
 #pragma once
 #include <core.h>
 #include "../sm_config.hpp"
+#include "sm_tiny_shading_language_lexer.hpp"
 
 namespace sm
 {

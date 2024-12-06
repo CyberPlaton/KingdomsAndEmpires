@@ -15,7 +15,7 @@ invariant in vec3 gl_Position
 @
     string name = "Lerp";
     int expose = 1;
-    string group = "Math";
+    string group = "Vertex";
 @;
 
 in sampler2D in_tex;

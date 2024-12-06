@@ -103,7 +103,11 @@ namespace algorithm
 	template<class TEnum>
 	TEnum string_to_enum(stringview_t value)
 	{
-		return magic_enum::enum_cast<TEnum>(value);
+		if (const auto opt = magic_enum::enum_cast<TEnum>(std::string_view(value.data())); opt.has_value())
+		{
+			return opt.value();
+		}
+		return (TEnum)0;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
