@@ -1,12 +1,14 @@
 #include "/common/base.tsl"
+#include "/common/math.tsl"
+
+fn lerp(a:float, b:float, t:float) -> float
+{
+    return (1 - t) * a + t * b;
+}
 
 fn lerp(a:vec2, b:vec2, t:vec2) -> vec2
-@
-    string name = "Lerp";
-    int expose = 1;
-    string group = "Math";
-@
 {
+    return vec2(lerp(a.x, b.x, t.x), lerp(a.y, b.y, t.y));
 };
 
 invariant in vec3 gl_Position
@@ -27,5 +29,5 @@ fn main()
 @ pixel
 fn main() -> void
 {
-    let color = texture(in_tex, u_uv);
+    vec4 color = texture(in_tex, u_uv);
 };
