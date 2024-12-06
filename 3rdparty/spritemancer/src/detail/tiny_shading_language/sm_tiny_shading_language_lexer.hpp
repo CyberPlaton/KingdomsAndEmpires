@@ -528,7 +528,7 @@ namespace sm
 		{
 			//- Configuration of source scanning.
 			//------------------------------------------------------------------------------------------------------------------------
-			struct sconfig
+			struct sconfig final
 			{
 
 			};
