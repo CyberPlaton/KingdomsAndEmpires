@@ -3,14 +3,18 @@
 
 namespace sm
 {
-	//- Interface class responsible for compiling tiny shader language OpenGL GLSL.
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctiny_shader_compiler_glsl final : public itiny_shader_compiler
+	namespace tsl
 	{
-	public:
-		compile_result	compile(stringview_t source) override final;
-		compile_result	compile(const memory_ref_t& source) override final;
-		string_t		emit() override final;
-	};
+		//- Interface class responsible for compiling tiny shader language OpenGL GLSL.
+		//------------------------------------------------------------------------------------------------------------------------
+		class ctiny_shader_compiler_glsl final : public itiny_shader_compiler
+		{
+		public:
+			compile_result	compile(stringview_t source) override final;
+			compile_result	compile(const memory_ref_t& source) override final;
+			string_t		emit() override final;
+		};
+
+	} //- tsl
 
 } //- sm

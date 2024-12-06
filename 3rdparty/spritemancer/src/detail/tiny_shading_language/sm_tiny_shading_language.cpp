@@ -4,51 +4,55 @@
 
 namespace sm
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	ctiny_shader_language::ctiny_shader_language(shader_language language)
+	namespace tsl
 	{
-		switch (language)
+		//------------------------------------------------------------------------------------------------------------------------
+		ctiny_shader_language::ctiny_shader_language(shader_language language)
 		{
-		default:
+			switch (language)
+			{
+			default:
+			{
+				log_error(fmt::format("Unsupported shader language: '{}'", algorithm::enum_to_string(language)));
+				break;
+			}
+			case shader_language_glsl:
+			{
+				m_compiler = std::make_shared<ctiny_shader_compiler_glsl>();
+				break;
+			}
+			case shader_language_essl:
+			{
+				m_compiler = std::make_shared<ctiny_shader_compiler_essl>();
+				break;
+			}
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		compile_result ctiny_shader_language::compile(stringview_t source)
 		{
-			log_error(fmt::format("Unsupported shader language: '{}'", algorithm::enum_to_string(language)));
-			break;
+			CORE_ASSERT(m_compiler, "Invalid operation. A compiler was not set!");
+
+			return m_compiler->compile(source);
 		}
-		case shader_language_glsl:
+
+		//------------------------------------------------------------------------------------------------------------------------
+		compile_result ctiny_shader_language::compile(const memory_ref_t& source)
 		{
-			m_compiler = std::make_shared<ctiny_shader_compiler_glsl>();
-			break;
+			CORE_ASSERT(m_compiler, "Invalid operation. A compiler was not set!");
+
+			return m_compiler->compile(source);
 		}
-		case shader_language_essl:
+
+		//------------------------------------------------------------------------------------------------------------------------
+		string_t ctiny_shader_language::emit()
 		{
-			m_compiler = std::make_shared<ctiny_shader_compiler_essl>();
-			break;
+			CORE_ASSERT(m_compiler, "Invalid operation. A compiler was not set!");
+
+			return m_compiler->emit();
 		}
-		}
-	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	compile_result ctiny_shader_language::compile(stringview_t source)
-	{
-		CORE_ASSERT(m_compiler, "Invalid operation. A compiler was not set!");
-
-		return m_compiler->compile(source);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	compile_result ctiny_shader_language::compile(const memory_ref_t& source)
-	{
-		CORE_ASSERT(m_compiler, "Invalid operation. A compiler was not set!");
-
-		return m_compiler->compile(source);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	string_t ctiny_shader_language::emit()
-	{
-		CORE_ASSERT(m_compiler, "Invalid operation. A compiler was not set!");
-
-		return m_compiler->emit();
-	}
+	} //- tsl
 
 } //- sm

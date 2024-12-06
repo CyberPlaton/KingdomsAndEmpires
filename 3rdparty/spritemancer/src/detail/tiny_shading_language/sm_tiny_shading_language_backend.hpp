@@ -4,24 +4,28 @@
 
 namespace sm
 {
-	class itiny_shader_compiler;
-	using tiny_shader_compiler_ref_t = ref_t<itiny_shader_compiler>;
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum compile_result : uint8_t
+	namespace tsl
 	{
-		compile_result_ok = 0,
-		compile_result_fail = 255,
-	};
+		class itiny_shader_compiler;
+		using tiny_shader_compiler_ref_t = ref_t<itiny_shader_compiler>;
 
-	//- Interface class responsible for compiling tiny shader language to target shading language.
-	//------------------------------------------------------------------------------------------------------------------------
-	class itiny_shader_compiler
-	{
-	public:
-		virtual compile_result	compile(stringview_t) = 0;
-		virtual compile_result	compile(const memory_ref_t&) = 0;
-		virtual string_t		emit() = 0;
-	};
+		//------------------------------------------------------------------------------------------------------------------------
+		enum compile_result : uint8_t
+		{
+			compile_result_ok = 0,
+			compile_result_fail = 255,
+		};
+
+		//- Interface class responsible for compiling tiny shader language to target shading language.
+		//------------------------------------------------------------------------------------------------------------------------
+		class itiny_shader_compiler
+		{
+		public:
+			virtual compile_result	compile(stringview_t) = 0;
+			virtual compile_result	compile(const memory_ref_t&) = 0;
+			virtual string_t		emit() = 0;
+		};
+
+	} //- tsl
 
 } //- sm

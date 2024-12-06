@@ -2,5 +2,9 @@
 
 namespace sm
 {
+	namespace tsl
+	{
+
+	} //- tsl
 
 } //- sm
