@@ -15,10 +15,17 @@ namespace sm
 			string_t		emit() override final;
 
 		private:
-
-
-		private:
 			compile_result do_compile();
+
+			void do_directive(const stoken& instruction, const stoken& string);
+
+			void do_declaration_function();
+			void do_declaration_structure();
+			void do_declaration_variable();
+
+			void do_function_parameters();
+			void do_annotations_body();
+			void do_function_body();
 		};
 
 	} //- tsl

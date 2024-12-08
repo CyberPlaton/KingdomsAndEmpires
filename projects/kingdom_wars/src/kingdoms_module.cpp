@@ -85,9 +85,10 @@ namespace kingdoms
 
 
 		//- Testing shading language.
-		sm::tsl::ctiny_shader_language_lexer lexer(C_SOURCE.data());
+		sm::tsl::ctiny_shader_language compiler(sm::shader_language_glsl);
 
-		lexer.scan();
+		auto r = compiler.compile(C_SOURCE);
+		auto out = compiler.emit();
 
 		return result;
 	}

@@ -38,6 +38,7 @@ namespace sm
 			token_type_directive,		//- #
 			token_type_at,				//- @
 			token_type_quote,			//- "
+			token_type_eof,				//- \0
 
 			//- types
 			token_type_void,
@@ -56,13 +57,12 @@ namespace sm
 			token_type_uvec2,
 			token_type_uvec3,
 			token_type_uvec4,
-			token_type_vec2,
-			token_type_vec3,
-			token_type_vec4,
 			token_type_dvec2,
 			token_type_dvec3,
 			token_type_dvec4,
-
+			token_type_vec2,
+			token_type_vec3,
+			token_type_vec4,
 			token_type_mat2,
 			token_type_mat3,
 			token_type_mat4,
@@ -89,7 +89,6 @@ namespace sm
 			token_type_in,
 			token_type_out,
 			token_type_inout,
-			token_type_struct,
 			token_type_layout,
 			token_type_invariant,
 			token_type_precision,
@@ -97,8 +96,6 @@ namespace sm
 			token_type_mediump,
 			token_type_lowp,
 			token_type_return,
-
-			//- keywords, reserved for future use
 			token_type_common,
 			token_type_partition,
 			token_type_active,
@@ -136,12 +133,13 @@ namespace sm
 			token_type_filter,
 			token_type_true,
 			token_type_false,
+			token_type_fn,			//- 'fn'
+			token_type_struct,		//- 'struct'
 
-			token_type_eof,
 			token_type_error,
-			token_type_identifier,		//- i.e. variable, function, struct names etc.
-			token_type_number,			//- i.e. 1.2, 0, 0.25
-			token_type_string,			//- i.e. "Hello World"
+			token_type_identifier,	//- i.e. variable, function, struct names etc.
+			token_type_number,		//- i.e. 1.2, 0, 0.25
+			token_type_string,		//- i.e. "Hello World"
 
 			token_type_count,
 		};
@@ -176,6 +174,7 @@ namespace sm
 			static constexpr stringview_t C_LITERAL_DIRECTIVE		= "#";
 			static constexpr stringview_t C_LITERAL_AT				= "@";
 			static constexpr stringview_t C_LITERAL_QUOTE			= "\"";
+			static constexpr stringview_t C_LITERAL_EOF				= "\0";
 
 			//- Types
 			static constexpr stringview_t C_TOKEN_VOID		= "void";
@@ -224,7 +223,6 @@ namespace sm
 			static constexpr stringview_t C_TOKEN_IN		= "in";
 			static constexpr stringview_t C_TOKEN_OUT		= "out";
 			static constexpr stringview_t C_TOKEN_INOUT		= "inout";
-			static constexpr stringview_t C_TOKEN_STRUCT	= "struct";
 			static constexpr stringview_t C_TOKEN_LAYOUT	= "layout";
 			static constexpr stringview_t C_TOKEN_INVARIANT	= "invariant";
 			static constexpr stringview_t C_TOKEN_PRECISION	= "precision";
@@ -270,10 +268,15 @@ namespace sm
 			static constexpr stringview_t C_TOKEN_FVEC4		= "fvec4";
 			static constexpr stringview_t C_TOKEN_FILTER	= "filter";
 
-			static constexpr stringview_t C_TOKEN_TRUE = "true";
-			static constexpr stringview_t C_TOKEN_FALSE = "false";
+			static constexpr stringview_t C_TOKEN_TRUE		= "true";
+			static constexpr stringview_t C_TOKEN_FALSE		= "false";
+			static constexpr stringview_t C_TOKEN_FN		= "fn";
+			static constexpr stringview_t C_TOKEN_STRUCT	= "struct";
 
-			static constexpr stringview_t C_LITERAL_EOF		= "\0";
+			static constexpr stringview_t C_TOKEN_ERROR		= "error";
+			static constexpr stringview_t C_TOKEN_STRING	= "string";
+			static constexpr stringview_t C_TOKEN_IDENTIFIER = "identifier";
+			static constexpr stringview_t C_TOKEN_NUMBER	= "number";
 
 			static constexpr array_t<stringview_t, token_type_count> C_TOKENS =
 			{
@@ -303,6 +306,7 @@ namespace sm
 				C_LITERAL_DIRECTIVE,
 				C_LITERAL_AT,
 				C_LITERAL_QUOTE,
+				C_LITERAL_EOF,
 
 				//- Types
 				C_TOKEN_VOID,
@@ -351,7 +355,6 @@ namespace sm
 				C_TOKEN_IN,
 				C_TOKEN_OUT,
 				C_TOKEN_INOUT,
-				C_TOKEN_STRUCT,
 				C_TOKEN_LAYOUT,
 				C_TOKEN_INVARIANT,
 				C_TOKEN_PRECISION,
@@ -398,8 +401,13 @@ namespace sm
 				C_TOKEN_FILTER,
 				C_TOKEN_TRUE,
 				C_TOKEN_FALSE,
+				C_TOKEN_FN,
+				C_TOKEN_STRUCT,
 
-				C_LITERAL_EOF
+				C_TOKEN_ERROR,
+				C_TOKEN_IDENTIFIER,
+				C_TOKEN_NUMBER,
+				C_TOKEN_STRING
 			};
 
 			static const array_t<stringview_t, token_type_count>& tokens();
@@ -576,6 +584,9 @@ namespace sm
 
 		} //- detail
 
+		//- TODO:
+		//- 1. Process "fn" to token_type_function and "struct" to token_type_struct
+		//- 2. Process data  types such as "vec2" or "float" into correct token_type´s
 		//------------------------------------------------------------------------------------------------------------------------
 		class ctiny_shader_language_lexer final
 		{

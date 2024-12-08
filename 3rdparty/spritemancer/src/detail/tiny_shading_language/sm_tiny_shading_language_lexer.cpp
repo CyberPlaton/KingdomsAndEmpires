@@ -81,10 +81,7 @@ RTTR_REGISTRATION
 		rttr::value("token_type_in", token_type_in),
 		rttr::value("token_type_out", token_type_out),
 		rttr::value("token_type_inout", token_type_inout),
-		rttr::value("token_type_struct", token_type_struct),
 		rttr::value("token_type_layout", token_type_layout),
-		rttr::value("token_type_true", token_type_true),
-		rttr::value("token_type_false", token_type_false),
 		rttr::value("token_type_invariant", token_type_invariant),
 		rttr::value("token_type_precision", token_type_precision),
 		rttr::value("token_type_highp", token_type_highp),
@@ -127,10 +124,13 @@ RTTR_REGISTRATION
 		rttr::value("token_type_fvec3", token_type_fvec3),
 		rttr::value("token_type_fvec4", token_type_fvec4),
 		rttr::value("token_type_filter", token_type_filter),
+		rttr::value("token_type_true", token_type_true),
+		rttr::value("token_type_false", token_type_false),
+		rttr::value("token_type_fn", token_type_fn),
+		rttr::value("token_type_struct", token_type_struct),
 
 		rttr::value("token_type_eof", token_type_eof),
 		rttr::value("token_type_error", token_type_error),
-
 		rttr::value("token_type_identifier", token_type_identifier),
 		rttr::value("token_type_number", token_type_number),
 		rttr::value("token_type_string", token_type_string),
@@ -198,7 +198,27 @@ namespace sm
 			inline static std::pair<bool, token_type> is_keyword(stringview_t text)
 			{
 				static constexpr auto C_TOKENS_RANGE_START = token_type_attribute;
-				static constexpr auto C_TOKENS_RANGE_END = token_type_false;
+				static constexpr auto C_TOKENS_RANGE_END = token_type_struct;
+				static const auto compare = [](stringview_t a, stringview_t b) -> const bool
+					{
+						return a.size() == b.size() && std::memcmp(a.data(), b.data(), a.size()) == 0;
+					};
+
+				for (auto i = (byte_t)C_TOKENS_RANGE_START; i <= (byte_t)C_TOKENS_RANGE_END; ++i)
+				{
+					if (compare(slanguage::tokens()[i], text))
+					{
+						return { true, (token_type)i };
+					}
+				}
+				return { false, token_type_none };
+			}
+
+			//------------------------------------------------------------------------------------------------------------------------
+			inline static std::pair<bool, token_type> is_data_type(stringview_t text)
+			{
+				static constexpr auto C_TOKENS_RANGE_START = token_type_void;
+				static constexpr auto C_TOKENS_RANGE_END = token_type_sampler2D;
 				static const auto compare = [](stringview_t a, stringview_t b) -> const bool
 					{
 						return a.size() == b.size() && std::memcmp(a.data(), b.data(), a.size()) == 0;
@@ -243,8 +263,12 @@ namespace sm
 
 				stringview_t text = ctx.cursor().m_text.c_str();
 
-				//- identify keywords or return as normal identifier
+				//- identify keywords and data types or return as normal identifier
 				if (const auto [result, type] = is_keyword(text); result)
+				{
+					return make_token(ctx.cursor().m_line, text, type);
+				}
+				else if (const auto [result, type] = is_data_type(text); result)
 				{
 					return make_token(ctx.cursor().m_line, text, type);
 				}
@@ -626,18 +650,18 @@ namespace sm
 					return a.size() == b.size() && std::memcmp(a.data(), b.data(), a.size()) == 0;
 				};
 
-			//- Ignore the first and last helper tokens
-			for (auto i = (byte_t)1; i < (byte_t)token_type_count; ++i)
+			log_debug("Validating tiny shader language token mapping");
+
+			//- Ignore the starting literal tokens as they dont change and last helper token
+			for (auto i = (byte_t)(((int)token_type_eof) + 1); i < (byte_t)token_type_count; ++i)
 			{
-				const auto enum_string = algorithm::enum_to_string((token_type)i);
-				const auto enum_value = algorithm::string_to_enum<token_type>(enum_string);
+				const auto& token = slanguage::tokens()[i];
+				const auto token_text = fmt::format("token_type_{}", token);
+				const auto enum_text = algorithm::enum_to_string((token_type)i);
 
-				const auto& token_type_text = slanguage::tokens()[(int)enum_value];
-				const auto& token_text = slanguage::tokens()[i];
-
-				if (!compare(token_text, token_type_text))
+				if (!compare(token_text, enum_text))
 				{
-					log_critical(fmt::format("Language token mapping mismatch for  '{}':'{}'", token_type_text, token_text));
+					log_critical(fmt::format("Language token mapping mismatch for  '{}':'{}'", enum_text, token_text));
 					CORE_ASSERT(false, "Invalid operation. C_TOKENS mismatch with token_type enum");
 				}
 			}

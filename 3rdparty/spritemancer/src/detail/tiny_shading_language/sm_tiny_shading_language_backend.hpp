@@ -45,7 +45,16 @@ namespace sm
 
 				struct sdata
 				{
+					vector_t<string_t> m_includes;
+				};
 
+				struct sstack
+				{
+					void push(stoken token);
+					void pop();
+					void reduce(stoken with_token, unsigned count = MAX(unsigned));
+
+					vector_t<stoken> m_tokens;
 				};
 
 				ccompiling_context();
@@ -56,17 +65,22 @@ namespace sm
 				inline compiling::sconfig& cfg() { return m_cfg; }
 
 				stoken consume(token_type expect, const string_t& message);
+				stoken consume(token_type expect_range_start, token_type expect_range_end, const string_t& message);
 				inline stoken advance() { return m_stream[++m_cursor.m_current]; }
 				inline const stoken& peek(unsigned lookahead = 0) const { return m_stream[m_cursor.m_current + lookahead]; }
-				inline bool at_end() const { return m_stream.end()->m_type == token_type_eof; }
+				inline bool at_end() const { return peek().m_type == token_type_eof; }
 				inline bool& result() { return m_result; }
 				inline sdata& data() { return m_data; }
 				inline scursor& cursor() { return m_cursor; }
+				inline sstack& stack() { return m_stack; }
 
 				void emit_error(const string_t& message);
 
+				bool is_data_type_token(const stoken& token);
+
 			private:
 				sdata m_data;
+				sstack m_stack;
 				scursor m_cursor;
 				token_stream_t m_stream;
 				compiling::sconfig m_cfg;
