@@ -1,5 +1,4 @@
 #include "editor_text_editor.hpp"
-#include "../../elements/editor_element_window.hpp"
 
 namespace editor
 {

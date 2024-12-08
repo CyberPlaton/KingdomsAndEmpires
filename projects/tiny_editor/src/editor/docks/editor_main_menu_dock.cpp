@@ -1,7 +1,5 @@
 #include "editor_main_menu_dock.hpp"
 #include "../elements/editor_element_context_menu.hpp"
-#include "../elements/editor_element_dialog.hpp"
-#include "../elements/editor_element_text_input.hpp"
 #include "material_editor/editor_material_editor.hpp"
 #include "text_editor/editor_text_editor.hpp"
 #include <pfd.h>

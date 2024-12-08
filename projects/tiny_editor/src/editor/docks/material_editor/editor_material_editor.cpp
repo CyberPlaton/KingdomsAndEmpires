@@ -1,5 +1,4 @@
 #include "editor_material_editor.hpp"
-#include "../../elements/editor_element_window.hpp"
 /*#include "../../nodes/editor_basic_node.hpp"*/
 
 namespace editor

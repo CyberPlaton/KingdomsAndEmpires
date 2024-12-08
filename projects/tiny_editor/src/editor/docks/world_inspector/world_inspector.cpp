@@ -50,8 +50,8 @@ namespace editor
 				.options(ui::ctable::options_borders_all)
 				.begin(2,
 					{
-						{ImGuiTableColumnFlags_WidthStretch, 0.9f},
-						{ImGuiTableColumnFlags_WidthStretch, 0.1f}
+						{"##first", ImGuiTableColumnFlags_WidthStretch, 0.9f},
+						{"##second", ImGuiTableColumnFlags_WidthStretch, 0.1f}
 					}))
 			{
 				switch (state().m_view_type)

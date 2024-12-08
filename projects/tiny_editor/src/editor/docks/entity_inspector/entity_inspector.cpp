@@ -38,8 +38,8 @@ namespace editor
 						.options(ui::ctable::options_borders_all)
 						.begin(2,
 							{
-								{ImGuiTableColumnFlags_WidthStretch, 0.95f},
-								{ImGuiTableColumnFlags_WidthStretch, 0.05f}
+								{"##first", ImGuiTableColumnFlags_WidthStretch, 0.95f},
+								{"##second", ImGuiTableColumnFlags_WidthStretch, 0.05f}
 							}))
 					{
 						show_inspected_entity();

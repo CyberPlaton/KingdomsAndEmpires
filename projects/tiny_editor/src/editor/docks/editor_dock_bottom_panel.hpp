@@ -1,7 +1,6 @@
 #pragma once
 #include "editor_dock_base.hpp"
 #include "asset_browser/asset_browser.hpp"
-#include "../elements/editor_element_tab_bar.hpp"
 #include "../editor_element_stack_system.hpp"
 
 namespace editor

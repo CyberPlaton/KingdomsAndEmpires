@@ -1,6 +1,5 @@
 #pragma once
 #include "../editor_dock_base.hpp"
-#include "../../elements/editor_element_table.hpp"
 
 namespace editor
 {

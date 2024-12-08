@@ -1,6 +1,5 @@
 #pragma once
 #include "../editor_dock_base.hpp"
-#include "../../elements/editor_element_table.hpp"
 #include "../entity_context_menu/entity_context_menu.hpp"
 
 namespace editor

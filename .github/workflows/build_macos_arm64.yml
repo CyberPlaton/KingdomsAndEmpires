@@ -1,6 +1,9 @@
 name: macOS_arm64
 
-on: "push"
+on:
+  schedule:
+    # Run nightly at 2:00 AM UTC
+    - cron: "0 2 * * *"
 
 jobs:
   build_macos_arm64:
