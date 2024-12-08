@@ -21,7 +21,7 @@ namespace sm
 			string_t		emit();
 
 		private:
-			tiny_shader_compiler_ref_t m_compiler;
+			ctiny_shader_compiler m_compiler;
 			shader_language m_language;
 		};
 

@@ -126,6 +126,8 @@ RTTR_REGISTRATION
 		rttr::value("token_type_filter", token_type_filter),
 		rttr::value("token_type_true", token_type_true),
 		rttr::value("token_type_false", token_type_false),
+		rttr::value("token_type_VERTEX", token_type_VERTEX),
+		rttr::value("token_type_PIXEL", token_type_PIXEL),
 		rttr::value("token_type_fn", token_type_fn),
 		rttr::value("token_type_struct", token_type_struct),
 

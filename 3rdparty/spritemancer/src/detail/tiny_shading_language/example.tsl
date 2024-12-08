@@ -1,6 +1,8 @@
 #include "/common/base.tsl"
 #include "/common/math.tsl"
 
+-- everything defined in global scope go into both shaders
+-- note that includes go too into both shaders, expect when defined in a shader scope
 fn lerp(a:float, b:float, t:float) -> float
 {
     return (1 - t) * a + t * b;
@@ -11,6 +13,8 @@ fn lerp(a:vec2, b:vec2, t:vec2) -> vec2
     return vec2(lerp(a.x, b.x, t.x), lerp(a.y, b.y, t.y));
 };
 
+-- everything defined in this scope goes into the vertex shader
+@ VERTEX
 invariant in vec3 gl_Position
 @
     string name = "Lerp";
@@ -21,13 +25,18 @@ invariant in vec3 gl_Position
 in sampler2D in_tex;
 uniform vec2 u_uv;
 
-@ vertex
-fn main()
+------------------------------------------------------------------------------------------------------------------------
+fn main() -> void
 {
 };
+@
 
-@ pixel
+--everything defined in this scope goes into the pixel shader
+@ PIXEL
+
+------------------------------------------------------------------------------------------------------------------------
 fn main() -> void
 {
     vec4 color = texture(in_tex, u_uv);
 };
+@

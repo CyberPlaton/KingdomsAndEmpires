@@ -133,6 +133,8 @@ namespace sm
 			token_type_filter,
 			token_type_true,
 			token_type_false,
+			token_type_VERTEX,		//- 'VERTEX'
+			token_type_PIXEL,		//- 'PIXEL'
 			token_type_fn,			//- 'fn'
 			token_type_struct,		//- 'struct'
 
@@ -270,6 +272,8 @@ namespace sm
 
 			static constexpr stringview_t C_TOKEN_TRUE		= "true";
 			static constexpr stringview_t C_TOKEN_FALSE		= "false";
+			static constexpr stringview_t C_TOKEN_VERTEX	= "VERTEX";
+			static constexpr stringview_t C_TOKEN_PIXEL		= "PIXEL";
 			static constexpr stringview_t C_TOKEN_FN		= "fn";
 			static constexpr stringview_t C_TOKEN_STRUCT	= "struct";
 
@@ -401,6 +405,8 @@ namespace sm
 				C_TOKEN_FILTER,
 				C_TOKEN_TRUE,
 				C_TOKEN_FALSE,
+				C_TOKEN_VERTEX,
+				C_TOKEN_PIXEL,
 				C_TOKEN_FN,
 				C_TOKEN_STRUCT,
 
@@ -420,8 +426,8 @@ namespace sm
 		struct stoken final
 		{
 			string_t m_text;
-			unsigned m_line = 0;
-			token_type m_type = token_type_none;
+			unsigned m_line		= 1;
+			token_type m_type	= token_type_none;
 		};
 
 		using token_stream_t = vector_t<stoken>;
@@ -433,8 +439,17 @@ namespace sm
 		//- | <declaration_function>
 		//- | <declaration_structure>
 		//- | <declaration_variable>
+		//- | <shader_scope>
+		//- | e
 		//- ;
 		//- 
+		//- <shader_scope> := "@" <shader_type> <shader_body> "@";
+		//- <shader_type> := "VERTEX" | "PIXEL";
+		//- <shader_body> := ( <directive>
+		//-					| <declaration_function>
+		//-					| <declaration_structure>
+		//-					| <declaration_variable>)*;
+		//-
 		//- <directive> := "#include" <literal_string>
 		//- 			| "#pragma" <identifier>
 		//- 			;
