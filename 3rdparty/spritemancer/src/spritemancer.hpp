@@ -1,9 +1,6 @@
 #pragma once
 #include "detail/sm_config.hpp"
 #include "detail/sm_resource_manager.hpp"
-#include "detail/sm_rendering_layer.hpp"
-#include "detail/sm_profiler.hpp"
-#include "detail/tiny_shading_language/sm_tiny_shading_language.hpp"
 
 namespace sm
 {
@@ -21,8 +18,6 @@ namespace sm
 	//- Create a new layer for rendering. Everything rendered on this layer are drawn on a separate render target and
 	//- are then drawn as a whole one previously drawn render targets (layers)
 	unsigned			create_layer();
-	srendering_layer&	get_layer(unsigned layer);
-	srendering_layer&	get_layer_debug();
 
 	//- Sync point of application camera data and spritemancer internal camera data used per frame drawing
 	void update_frame_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation);

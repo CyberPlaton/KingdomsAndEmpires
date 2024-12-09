@@ -1,10 +1,5 @@
 #pragma once
 #include "sm_config.hpp"
-#include "../sm_image.hpp"
-#include "../sm_texture.hpp"
-#include "../sm_spriteatlas.hpp"
-#include "../sm_rendertarget.hpp"
-#include "../sm_shader.hpp"
 
 namespace sm
 {

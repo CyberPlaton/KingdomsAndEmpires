@@ -1,8 +1,8 @@
 #include "spritemancer.hpp"
 #include "detail/os/sm_os_headless.hpp"
 #include "detail/renderers/sm_renderer_headless.hpp"
-#include "detail/renderers/sm_renderer_raylib.hpp"
-#include "detail/os/sm_os_raylib.hpp"
+#include "detail/renderers/sm_renderer_bgfx.hpp"
+#include "detail/os/sm_os_glfw.hpp"
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_embedded_shaders.hpp"
 #if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
@@ -15,48 +15,6 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	struct scontext final
 	{
-		struct srender
-		{
-			//- current rendering state with used blending and shader
-			struct sstate
-			{
-				srenderstate m_renderstate;
-				shader_handle_t m_shader;
-			};
-
-			//- layered rendering data
-			struct srendering_layers
-			{
-				static constexpr unsigned C_LAYER_COUNT_MAX = 256;
-				static constexpr unsigned C_LAYER_DEBUG		= 255;
-
-				array_t<srendering_layer, C_LAYER_COUNT_MAX> m_rendering_layers;
-				unsigned m_layer_count = 0;
-				bool m_layer_debug_enabled = false;
-			};
-
-			srendering_layers m_layer_data;
-			sstate m_state_data;
-			ccamera m_frame_camera;
-			srenderstate m_default_renderstate;
-			shader_handle_t m_default_shader;
-			texture_handle_t m_placeholder_texture;
-		};
-
-		//- window etc. related data
-		struct sos
-		{
-			unsigned m_window_x = 0;
-			unsigned m_window_y = 0;
-			unsigned m_window_w = 0;
-			unsigned m_window_h = 0;
-			float m_delta_time = 0.0f;
-			bool m_fullscreen = false;
-			bool m_vsync = false;
-		};
-
-		srender m_render_data;
-		sos m_os_data;
 	};
 
 	namespace
@@ -79,7 +37,7 @@ namespace sm
 		void engine_configure_platform_and_renderer(iapp* app)
 		{
 			entry::set_app(app);
-			entry::set_os(std::make_unique<cos_raylib>());
+			entry::set_os(std::make_unique<cos_glfw>());
 			entry::set_renderer(std::make_unique<crenderer_raylib>());
 		}
 
@@ -88,12 +46,7 @@ namespace sm
 		{
 			CORE_ZONE;
 
-			bool frame_begin_result = false;
-			auto& osdata = ctx().m_os_data;
-			auto& renderdata = ctx().m_render_data;
-			auto& layerdata = renderdata.m_layer_data;
-
-			osdata.m_delta_time = entry::get_os()->frametime();
+			entry::get_os()->frametime();
 
 			//- platforms may need to handle events
 			{
@@ -364,27 +317,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::srendering_layer& get_layer(unsigned layer)
-	{
-		auto& renderdata = ctx().m_render_data;
-		auto& layerdata = renderdata.m_layer_data;
-
-		CORE_ASSERT(layer < layerdata.m_layer_count, "Invalid operation. Accessed layer does not exist!");
-
-		return layerdata.m_rendering_layers[layer];
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::srendering_layer& get_layer_debug()
-	{
-		auto& renderdata = ctx().m_render_data;
-		renderdata.m_layer_data.m_layer_debug_enabled = true;
-		auto& debug_layer = renderdata.m_layer_data.m_rendering_layers[scontext::srender::srendering_layers::C_LAYER_DEBUG];
-		debug_layer.m_id = scontext::srender::srendering_layers::C_LAYER_DEBUG;
-		return debug_layer;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	void update_frame_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation)
 	{
 		auto& renderdata = ctx().m_render_data;
@@ -397,46 +329,16 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_line(unsigned layer, const vec2_t& start, const vec2_t& end, float thick, const core::scolor& color)
 	{
-		SM_DRAW_CALL(6);
-
-		auto& renderdata = ctx().m_render_data;
-		auto& layerdata = renderdata.m_layer_data;
-		auto& command = layerdata.m_rendering_layers[layer].m_commands.emplace_back();
-
-		command.create([=]()
-			{
-				raylib::DrawLineEx({ start.x, start.y }, { end.x, end.y }, thick, to_cliteral(color));
-			});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_circle(unsigned layer, const vec2_t& center, float radius, const core::scolor& color)
 	{
-		SM_DRAW_CALL(4);
-
-		auto& renderdata = ctx().m_render_data;
-		auto& layerdata = renderdata.m_layer_data;
-		auto& command = layerdata.m_rendering_layers[layer].m_commands.emplace_back();
-
-		command.create([=]()
-			{
-				raylib::DrawCircle(center.x, center.y, radius, to_cliteral(color));
-			});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_rect(unsigned layer, const vec2_t& position, const vec2_t& dimension, const core::scolor& color)
 	{
-		SM_DRAW_CALL(4);
-
-		auto& renderdata = ctx().m_render_data;
-		auto& layerdata = renderdata.m_layer_data;
-		auto& command = layerdata.m_rendering_layers[layer].m_commands.emplace_back();
-
-		command.create([=]()
-			{
-				raylib::DrawRectangleLines(position.x, position.y, dimension.x, dimension.y, to_cliteral(color));
-			});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -508,82 +410,9 @@ namespace sm
 	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
 		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin, const core::srect& source)
 	{
-		SM_DRAW_CALL(4);
-
 		if (algorithm::bit_check(state.m_flags, renderable_flag_invisible))
 		{
 			return;
-		}
-
-		//- create a sprite draw command
-		{
-			core::cscope_mutex m(S_MUTEX);
-
-			ctx().m_render_data.m_layer_data.m_rendering_layers[layer].m_commands.emplace_back().create([=]()
-				{
-					CORE_NAMED_ZONE(spritemancer_draw_texture);
-
-					auto& renderdata = ctx().m_render_data;
-					auto& statedata = renderdata.m_state_data;
-
-					//- TODO: think of a better way to get actual shaders, textures etc. from resource managers,
-					//- Note: these command are executed on main thread, but other threads may still post load/unload
-					//- requests, so we have to account for that and make them thread-safe.
-					const auto& tm = *core::cservice_manager::find<ctexture_manager>();
-					const auto& sm = *core::cservice_manager::find<cshader_manager>();
-
-					//- texture and dimension
-					const auto& _texture = tm.at(texture == C_INVALID_HANDLE ? renderdata.m_placeholder_texture : texture);
-					const auto w = _texture.w();
-					const auto h = _texture.h();
-
-					//- construct rectangles for where to sample from and where to draw
-					raylib::Rectangle src = { source.x() * w, source.y() * h, source.w() * w, source.h() * h };
-					raylib::Rectangle dst = { position.x, position.y, scale.x * source.w() * w, scale.y * source.h() * h };
-					raylib::Vector2 orig = { origin.x, origin.y };
-
-					//- check some flags and do adjustments
-					if (algorithm::bit_check(state.m_flags, renderable_flag_origin_center))
-					{
-						orig = { w * 0.5f, h * 0.5f };
-					}
-					if (algorithm::bit_check(state.m_flags, renderable_flag_flipx))
-					{
-						src.width = -src.width;
-					}
-					if (algorithm::bit_check(state.m_flags, renderable_flag_flipy))
-					{
-						src.height = -src.height;
-					}
-
-					//- check if shader has changed since last draw command
-					if (shader != statedata.m_shader)
-					{
-						statedata.m_shader = shader;
-					}
-
-					//- setting shader is always enabled as we set default shader manually
-					const auto& _shader = sm.at(statedata.m_shader == C_INVALID_HANDLE ? renderdata.m_default_shader : statedata.m_shader);
-					raylib::BeginShaderMode(_shader.shader());
-
-					//- check if renderstate has changed since last draw command
-					if (state != statedata.m_renderstate)
-					{
-						statedata.m_renderstate = state;
-					}
-
-					//- set blending mode only if enabled for this draw command
-					if (algorithm::bit_check(state.m_flags, renderable_flag_blending_custom))
-					{
-						auto& renderstate = statedata.m_renderstate;
-
-						raylib::rlSetBlendMode(renderstate.m_blending.m_mode);
-						raylib::rlSetBlendFactors(renderstate.m_blending.m_src_factor, renderstate.m_blending.m_dst_factor, renderstate.m_blending.m_equation);
-						raylib::rlSetBlendMode(raylib::BLEND_CUSTOM);
-					}
-
-					raylib::DrawTexturePro(_texture.texture(), src, dst, orig, rotation, tint.cliteral<raylib::Color>());
-				});
 		}
 	}
 
