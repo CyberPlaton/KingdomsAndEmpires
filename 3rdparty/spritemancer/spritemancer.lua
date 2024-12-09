@@ -5,7 +5,7 @@ function spritemancer()
 					{},
 					{"spritemancer_EXPORTS"},
 					{},
-					{"spdlog", "core", "mimalloc", "hwinfo", "rttr", "imgui", "raylib"},
+					{"spdlog", "core", "mimalloc", "hwinfo", "rttr", "imgui", "raylib", "bimg", "bx", "bgfx"},
 					"c++",
 					{}, -- plugin_headeronly_deps
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "asio"}, -- thirdparty_headeronly_deps

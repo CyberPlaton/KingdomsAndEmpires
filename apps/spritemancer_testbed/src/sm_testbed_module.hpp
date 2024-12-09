@@ -7,7 +7,7 @@
 #include <unittest.h>
 
 //------------------------------------------------------------------------------------------------------------------------
-class cexample_app_layer final
+class cspritemancer final
 {
 public:
 	static bool init();
@@ -16,15 +16,4 @@ public:
 	static void on_world_render();
 	static void on_ui_render();
 	static void on_post_update(float dt);
-};
-
-//------------------------------------------------------------------------------------------------------------------------
-class cexample_bad_app_layer final
-{
-public:
-	bool init()						{ return true;}
-	static void shutdown()			{}
-	static void on_update(float dt) {}
-	static void on_world_render()	{}
-	static void on_ui_render()		{}
 };

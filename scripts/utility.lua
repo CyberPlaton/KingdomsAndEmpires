@@ -52,7 +52,7 @@ function set_basic_defines()
 	end
 
 	filter{"configurations:debug"}
-		defines{"DEBUG=1"}
+		defines{"DEBUG=1", "BX_CONFIG_DEBUG"}
 	filter{"configurations:release"}
 		defines{"NDEBUG", "RELEASE=1"}
 	filter{"configurations:hybrid"}
@@ -152,6 +152,71 @@ function set_include_path(type_name, name)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+function set_bx_includes()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
+	if PLATFORM == "windows" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
+	elseif PLATFORM == "linux" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
+	elseif PLATFORM == "macosx" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
+	else
+		print("Unknown platform!")
+	end
+
+	set_glfw_deps()
+	set_bgfx_3rd_party_includes()
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_bgfx_3rd_party_includes()
+
+	bgfx_3rd_party_dir = path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "3rdparty")
+
+	externalincludedirs{bgfx_3rd_party_dir,
+						path.join(bgfx_3rd_party_dir, "directx-headers/include"),
+						path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
+						path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
+
+						path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
+						path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
+
+						path.join(bgfx_3rd_party_dir, "glslang"),
+						
+						path.join(bgfx_3rd_party_dir, "spirv-cross"),
+						path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
+						path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
+						path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
+	}
+
+	includedirs{bgfx_3rd_party_dir,
+				path.join(bgfx_3rd_party_dir, "directx-headers/include"),
+				path.join(bgfx_3rd_party_dir, "directx-headers/include/directx"),
+				path.join(bgfx_3rd_party_dir, "directx-headers/include/wsl"),
+				
+				path.join(bgfx_3rd_party_dir, "glsl-optimizer"),
+				path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
+
+				path.join(bgfx_3rd_party_dir, "glslang"),
+
+				path.join(bgfx_3rd_party_dir, "spirv-cross"),
+				path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
+				path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
+				path.join(bgfx_3rd_party_dir, "spirv-tools/include"),
+	}
+
+	-- some things required includes to files contained in src directory
+	externalincludedirs{path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx"),
+						path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "include")}
+end
+
+------------------------------------------------------------------------------------------------------------------------
+function set_glfw_deps()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "glfw", "include")}
+	links{"glfw"}
+end
+
+------------------------------------------------------------------------------------------------------------------------
 function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
 end
@@ -217,6 +282,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		-- link with engine by default, if not explicitly disabled
 		if depends_on_engine == true then
 			link_with_engine()
+			set_bx_includes()
 		end
 
 		configure()
@@ -370,6 +436,7 @@ function add_target_plugin(name, build_options, define_flags, plugin_deps, third
 		-- link with engine by default, if not explicitly disabled
 		if depends_on_engine == true then
 			link_with_engine()
+			set_bx_includes()
 		end
 
 		defines{name.. "_EXPORTS"}
@@ -405,6 +472,7 @@ function add_target_app(name, build_options, define_flags, thirdparty_deps, plug
 		includedirs{additional_includes}
 		set_include_path_to_engine()
 		link_with_engine()
+		set_bx_includes()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()
