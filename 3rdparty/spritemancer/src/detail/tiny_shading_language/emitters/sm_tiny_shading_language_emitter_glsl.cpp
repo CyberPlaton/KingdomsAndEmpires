@@ -1,4 +1,4 @@
-#include "sm_tiny_shading_language_backend_glsl.hpp"
+#include "sm_tiny_shading_language_emitter_glsl.hpp"
 
 namespace sm
 {

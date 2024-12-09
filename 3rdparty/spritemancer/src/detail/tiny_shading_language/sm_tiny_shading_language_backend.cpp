@@ -289,7 +289,7 @@ namespace sm
 			//- Emit the function return type and function name
 			//- FIXME: to get the return type we have to lookahead and retrieve the type set after '->', and we have to do it here
 			//- because we start potentially writing for function parameters...
-			const auto func_return_type = m_emitter->emit_data_type(...);
+			// const auto func_return_type = m_emitter->emit_data_type(...);
 
 			m_ctx.consume(token_type_left_paren, "Opening '(' expected for function declaration!");
 

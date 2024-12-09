@@ -1,6 +1,6 @@
 #include "sm_tiny_shading_language.hpp"
-#include "backends/sm_tiny_shading_language_backend_essl.hpp"
-#include "backends/sm_tiny_shading_language_backend_glsl.hpp"
+#include "emitters/sm_tiny_shading_language_emitter_essl.hpp"
+#include "emitters/sm_tiny_shading_language_emitter_glsl.hpp"
 
 namespace sm
 {
