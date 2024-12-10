@@ -6,6 +6,7 @@ namespace sm
 	class irenderer;
 	class iplatform;
 	class iapp;
+	class ios;
 	class cshader;
 	class cprogram;
 	class crendertarget;
@@ -117,12 +118,15 @@ namespace sm
 
 	namespace entry
 	{
-		irenderer*			renderer();
-		iplatform*			platform();
-		iapp*				app();
-		void				set_platform(ptr_t<iplatform>&& platform);
-		void				set_app(iapp* app);
-		void				set_renderer(ptr_t<irenderer>&& renderer);
+		bool		has_platform();
+		irenderer*	renderer();
+		ios*		os();
+		iapp*		app();
+		iplatform*	platform();
+		void		set_os(ptr_t<ios>&& os);
+		void		set_platform(ptr_t<iplatform>&& platform);
+		void		set_app(iapp* app);
+		void		set_renderer(ptr_t<irenderer>&& renderer);
 
 	} //- entry
 
@@ -139,7 +143,7 @@ namespace sm
 	//- TODO: As of now, we can only load embedded shader types compiled externally. Each function to load a shader expects
 	//- that exactly format.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cshader final
+	class cshader final : public core::cresource
 	{
 	public:
 		static void destroy(cshader& shader);
@@ -169,20 +173,24 @@ namespace sm
 
 	private:
 		bgfx::ShaderHandle m_handle;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//- Container for vertex and fragment shader. Destroying destroys individual shaders.
 	//------------------------------------------------------------------------------------------------------------------------
-	class cprogram final
+	class cprogram final : public core::cresource
 	{
 	public:
-		static bgfx::ProgramHandle create(const cshader& shader);
 		static void destroy(cprogram& program);
 
+		explicit cprogram(shader_handle_t shader);
 		explicit cprogram(const cshader& vertex, const cshader& fragment);
+		explicit cprogram(shader_handle_t vertex, shader_handle_t fragment);
 		cprogram();
 		~cprogram();
 
+		opresult load_from_shader(shader_handle_t shader);
 		opresult load_from_shaders(const cshader& vertex, const cshader& fragment);
 		opresult load_from_handles(shader_handle_t vertex, shader_handle_t fragment);
 
@@ -194,11 +202,13 @@ namespace sm
 		cshader m_vertex;
 		cshader m_fragment;
 		bgfx::ProgramHandle m_handle;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//- CPU resident image representation
 	//------------------------------------------------------------------------------------------------------------------------
-	class cimage final
+	class cimage final : public core::cresource
 	{
 	public:
 		static void destroy(cimage& image);
@@ -219,12 +229,14 @@ namespace sm
 
 	private:
 		bimg::ImageContainer* m_container;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//- GPU resident image representation.
 	//- TODO: information does not need to be held by each texture. Store it somewhere else and in texture only the handle.
 	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture final
+	class ctexture final : public core::cresource
 	{
 	public:
 		static void destroy(ctexture& texture);
@@ -250,10 +262,12 @@ namespace sm
 	private:
 		bgfx::TextureHandle m_texture;
 		bgfx::TextureInfo m_info;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class crendertarget final
+	class crendertarget final : public core::cresource
 	{
 	public:
 		static void destroy(crendertarget& target);
@@ -275,6 +289,8 @@ namespace sm
 		bgfx::TextureHandle m_texture;
 		uint16_t m_width;
 		uint16_t m_height;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//- Camera class designed to be lighweight and copied around and to be a thin layer over raylib::Camera2D.
@@ -293,7 +309,7 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas final
+	class cspriteatlas final : public core::cresource
 	{
 	public:
 		static void destroy(cspriteatlas& atlas);
@@ -315,6 +331,8 @@ namespace sm
 	private:
 		umap_t<unsigned, core::srect> m_subtextures;
 		vec2_t m_size;
+
+		RTTR_ENABLE(core::cresource);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -338,20 +356,10 @@ namespace sm
 	public:
 		virtual ~iplatform() = default;
 
-		virtual opresult init() = 0;						//- create and init of client application
-		virtual opresult shutdown() = 0;					//- destroy and clean of client application
-
-		virtual opresult init_gfx(unsigned w, unsigned h,
-			bool fullscreen, bool vsync) = 0;				//- create graphical context
-
-		virtual opresult init_mainwindow(stringview_t title,
-			unsigned w, unsigned h, bool fullscreen) = 0;	//- create application main window
-
-		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
-		virtual opresult optional_process_event() = 0;				//- process one hardware event
-
-		virtual void main_window_position(unsigned* x, unsigned* y) = 0;
-		virtual void main_window_size(unsigned* x, unsigned* y) = 0;
+		virtual opresult	pre_init() = 0;		//- perform setup before os and graphics context are created
+		virtual opresult	init() = 0;			//- initialize in turn after os and graphics context
+		virtual void		shutdown() = 0;		//- shutdown before os and graphics context
+		virtual void		post_shutdown() = 0;//- shutdown after os and graphics context
 
 		RTTR_ENABLE();
 	};
@@ -364,24 +372,27 @@ namespace sm
 	public:
 		virtual ~ios() = default;
 
-		virtual opresult init() = 0;						//- create and init of client application
-		virtual opresult shutdown() = 0;					//- destroy and clean of client application
+		//- create and init of client application
+		virtual opresult init() = 0;
 
-		virtual opresult init_gfx(int w, int h,
-			bool fullscreen, bool vsync) = 0;				//- create graphical context
+		//- destroy and clean of client application
+		virtual opresult shutdown() = 0;
 
-		virtual opresult init_mainwindow(stringview_t title,
-			int w, int h, bool fullscreen) = 0;				//- create application main window
+		//- create graphical context
+		virtual opresult init_gfx(int w, int h, bool fullscreen, bool vsync) = 0;
 
-		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
-		virtual opresult optional_process_event() = 0;		//- process one hardware event
+		//- create application main window
+		virtual opresult init_mainwindow(stringview_t title, int w, int h, bool fullscreen) = 0;
 
-		virtual void on_event(const rttr::variant& event) = 0; //- handle a hardware event from glfw or SDL etc.
+		//- handle a hardware event from glfw or SDL etc.
+		virtual void on_event(const rttr::variant& event) = 0;
+		virtual opresult process_events() = 0;
 
 		virtual core::smouse_state mouse_state() const = 0;
 		virtual core::skeyboard_state keyboard_state() const = 0;
 		virtual core::sgamepad_state gamepad_state() const = 0;
 
+		virtual float frametime() const = 0;
 		virtual unsigned read_input_character() = 0;
 
 		virtual void main_window_position(int* x, int* y) = 0;

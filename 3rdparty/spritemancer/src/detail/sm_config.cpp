@@ -22,9 +22,10 @@ namespace sm
 
 	namespace entry
 	{
-		static ptr_t<iplatform> S_PLATFORM = nullptr;
-		static iapp* S_APP = nullptr;
-		static ptr_t<irenderer> S_RENDERER = nullptr;
+		static ptr_t<ios> S_OS				= nullptr;
+		static ptr_t<iplatform> S_PLATFORM	= nullptr;
+		static iapp* S_APP					= nullptr;
+		static ptr_t<irenderer> S_RENDERER	= nullptr;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		sm::irenderer* renderer()
@@ -39,9 +40,27 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		bool has_platform()
+		{
+			return platform() != nullptr;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		sm::ios* os()
+		{
+			return S_OS.get();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		sm::iapp* app()
 		{
 			return S_APP;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void set_os(ptr_t<ios>&& os)
+		{
+			S_OS = std::move(os);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -196,22 +215,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bgfx::ProgramHandle cprogram::create(const cshader& shader)
-	{
-		bgfx::ProgramHandle handle; handle.idx = bgfx::kInvalidHandle;
-
-		if (handle = bgfx::createProgram(shader.shader(), false); !bgfx::isValid(handle))
-		{
-			if (serror_reporter::instance().m_callback)
-			{
-				serror_reporter::instance().m_callback(core::logging_verbosity_error,
-					"Failed loading program");
-			}
-		}
-		return handle;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	void cprogram::destroy(cprogram& program)
 	{
 		cshader::destroy(program.m_vertex);
@@ -233,9 +236,37 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram(shader_handle_t shader)
+	{
+		load_from_shader(shader);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cprogram::cprogram(shader_handle_t vertex, shader_handle_t fragment)
+	{
+		load_from_handles(vertex, fragment);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	cprogram::~cprogram()
 	{
 
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cprogram::load_from_shader(shader_handle_t shader)
+	{
+		bgfx::ProgramHandle handle{ bgfx::kInvalidHandle };
+
+		if (handle = bgfx::createProgram(bgfx::ShaderHandle{ shader }, false); !bgfx::isValid(handle))
+		{
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					"Failed loading program");
+			}
+		}
+		return bgfx::isValid(handle) ? opresult_ok : opresult_fail;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

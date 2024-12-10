@@ -18,8 +18,7 @@ namespace sm
 		opresult init_mainwindow(stringview_t title,
 			int w, int h, bool fullscreen) override final;			//- create application main window
 
-		opresult optional_init_event_mainloop() override final;		//- process hardware events in a loop; use where required
-		opresult optional_process_event() override final;			//- process one hardware event
+		opresult process_events() override final;
 
 		void on_event(const rttr::variant& event) override final;
 

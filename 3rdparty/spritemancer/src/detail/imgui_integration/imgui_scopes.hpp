@@ -1,7 +1,7 @@
 #pragma once
 #include <core.h>
 #include <imgui.h>
-#include "imgui/rlImGui.h"
+#include "imgui.h"
 
 namespace imgui
 {

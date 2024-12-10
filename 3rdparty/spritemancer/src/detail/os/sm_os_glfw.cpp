@@ -241,13 +241,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cos_glfw::optional_init_event_mainloop()
-	{
-		return opresult_ok;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cos_glfw::optional_process_event()
+	sm::opresult cos_glfw::process_events()
 	{
 		glfwPollEvents();
 		m_scroll_dt_x = 0.0;

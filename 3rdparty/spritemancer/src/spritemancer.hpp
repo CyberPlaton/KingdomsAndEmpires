@@ -6,7 +6,6 @@ namespace sm
 {
 	opresult	prepare(iapp* app, void* config);
 	opresult	run(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync);
-	scontext&	ctx();
 	void		set_logger(core::error_report_function_t callback);
 	void		configure_args(const args_ref_t& args);
 

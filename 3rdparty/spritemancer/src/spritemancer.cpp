@@ -38,7 +38,7 @@ namespace sm
 		{
 			entry::set_app(app);
 			entry::set_os(std::make_unique<cos_glfw>());
-			entry::set_renderer(std::make_unique<crenderer_raylib>());
+			entry::set_renderer(std::make_unique<crenderer_bgfx>());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -46,12 +46,12 @@ namespace sm
 		{
 			CORE_ZONE;
 
-			entry::get_os()->frametime();
+			entry::os()->frametime();
 
 			//- platforms may need to handle events
 			{
 				CORE_NAMED_ZONE(os_process_events);
-				if (entry::get_os()->process_events() == opresult_fail)
+				if (entry::os()->process_events() == opresult_fail)
 				{
 					S_RUNNING = false;
 				}
@@ -60,14 +60,14 @@ namespace sm
 			//- check for resize of most basic layer. Other layers are not our responsibility
 			if (S_RESIZE_REQUIRED)
 			{
-				entry::get_renderer()->update_viewport({ osdata.m_window_x, osdata.m_window_y }, { osdata.m_window_w, osdata.m_window_h });
+				entry::renderer()->update_viewport({ osdata.m_window_x, osdata.m_window_y }, { osdata.m_window_w, osdata.m_window_h });
 				S_RESIZE_REQUIRED = false;
 			}
 
 			//- update HID state, such as keyboard and mouse
 			{
 				CORE_NAMED_ZONE(app_on_update);
-				entry::get_app()->on_update(osdata.m_delta_time);
+				entry::app()->on_update(osdata.m_delta_time);
 			}
 
 			//- render frame
@@ -75,10 +75,10 @@ namespace sm
 			{
 				CORE_NAMED_ZONE(renderer_prepare_frame);
 				layerdata.m_rendering_layers[0].m_show = true;
-				entry::get_renderer()->update_frame_camera(renderdata.m_frame_camera);
-				entry::get_renderer()->begin();
-				entry::get_renderer()->clear();
-				entry::get_renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
+				entry::renderer()->update_frame_camera(renderdata.m_frame_camera);
+				entry::renderer()->begin();
+				entry::renderer()->clear();
+				entry::renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
 			}
 
 			//- layered rendering, from bottom to top
@@ -90,7 +90,7 @@ namespace sm
 
 					{
 						CORE_NAMED_ZONE(renderer_layer_draw);
-						entry::get_renderer()->layer_draw(layer);
+						entry::renderer()->layer_draw(layer);
 					}
 
 					layer.m_commands.clear();
@@ -99,7 +99,7 @@ namespace sm
 				//- layered debug rendering if enabled
 				if (layerdata.m_layer_debug_enabled)
 				{
-					entry::get_renderer()->layer_draw(get_layer_debug());
+					entry::renderer()->layer_draw(get_layer_debug());
 				}
 			}
 
@@ -109,15 +109,15 @@ namespace sm
 				//- finalize rendering with imgui on top of everything
 				{
 					CORE_NAMED_ZONE(renderer_imgui_draw);
-					if (entry::get_renderer()->imgui_begin())
+					if (entry::renderer()->imgui_begin())
 					{
-						entry::get_renderer()->state_reset_to_default();
-						entry::get_app()->on_imgui();
-						entry::get_renderer()->imgui_end();
+						entry::renderer()->state_reset_to_default();
+						entry::app()->on_imgui();
+						entry::renderer()->imgui_end();
 					}
 				}
 
-				entry::get_renderer()->end();
+				entry::renderer()->end();
 			}
 
 #if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
@@ -129,7 +129,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_thread(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync)
 		{
-			if (entry::get_os()->init_mainwindow(title.data(), w, h, fullscreen) != opresult_ok)
+			if (entry::os()->init_mainwindow(title.data(), w, h, fullscreen) != opresult_ok)
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -139,7 +139,7 @@ namespace sm
 				return;
 			}
 
-			if (entry::has_platform() && entry::get_platform()->init() != opresult_ok)
+			if (entry::has_platform() && entry::platform()->init() != opresult_ok)
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -149,12 +149,12 @@ namespace sm
 				return;
 			}
 
-			entry::get_os()->main_window_position(&ctx().m_os_data.m_window_x, &ctx().m_os_data.m_window_y);
-			entry::get_os()->main_window_size(&ctx().m_os_data.m_window_w, &ctx().m_os_data.m_window_h);
+			entry::os()->main_window_position(&ctx().m_os_data.m_window_x, &ctx().m_os_data.m_window_y);
+			entry::os()->main_window_size(&ctx().m_os_data.m_window_w, &ctx().m_os_data.m_window_h);
 			ctx().m_os_data.m_fullscreen = fullscreen;
 			ctx().m_os_data.m_vsync = vsync;
 
-			if (entry::get_os()->init_gfx(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h,
+			if (entry::os()->init_gfx(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h,
 				fullscreen, vsync) != opresult_ok)
 			{
 				if (serror_reporter::instance().m_callback)
@@ -165,7 +165,7 @@ namespace sm
 				return;
 			}
 
-			entry::get_renderer()->update_viewport({ ctx().m_os_data.m_window_x, ctx().m_os_data.m_window_y },
+			entry::renderer()->update_viewport({ ctx().m_os_data.m_window_x, ctx().m_os_data.m_window_y },
 				{ ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h });
 
 			//- create resource managers and load default data
@@ -194,7 +194,7 @@ namespace sm
 			create_layer();
 
 			//- initialize client application
-			if (!entry::get_app()->on_init(S_CONFIG))
+			if (!entry::app()->on_init(S_CONFIG))
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -222,10 +222,10 @@ namespace sm
 			}
 
 			//- shutting down
-			entry::get_app()->on_shutdown();
+			entry::app()->on_shutdown();
 			imgui::shutdown();
-			entry::get_os()->shutdown();
-			if (entry::has_platform()) { entry::get_platform()->shutdown(); }
+			entry::os()->shutdown();
+			if (entry::has_platform()) { entry::platform()->shutdown(); }
 		}
 
 	} //- unnamed
@@ -244,7 +244,7 @@ namespace sm
 	sm::opresult run(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync)
 	{
 		//- setup and initialize things that do not require a window and graphics context
-		if (entry::has_platform() && entry::get_platform()->pre_init() != opresult_ok)
+		if (entry::has_platform() && entry::platform()->pre_init() != opresult_ok)
 		{
 			if (serror_reporter::instance().m_callback)
 			{
@@ -253,7 +253,7 @@ namespace sm
 			}
 			return opresult_fail;
 		}
-		if (entry::get_os()->init() != opresult_ok)
+		if (entry::os()->init() != opresult_ok)
 		{
 			if (serror_reporter::instance().m_callback)
 			{
@@ -271,7 +271,7 @@ namespace sm
 		thread.join();
 
 		//- end of the thread and cleanup without requiring window and graphics context
-		if (entry::has_platform()) { entry::get_platform()->post_shutdown(); }
+		if (entry::has_platform()) { entry::platform()->post_shutdown(); }
 
 		return opresult_ok;
 	}
@@ -456,11 +456,11 @@ rttr::cregistrator<cimage>("cimage")
 rttr::cregistrator<cshader>("cshader")
 	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cshader::destroy)
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
-;
+	;
 
 //------------------------------------------------------------------------------------------------------------------------
-rttr::cregistrator<cshader>("cprogram")
-.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cprogram::destroy)
-.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
-;
+rttr::cregistrator<cprogram>("cprogram")
+	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cprogram::destroy)
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
+	;
 }

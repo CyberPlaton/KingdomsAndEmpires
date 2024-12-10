@@ -180,7 +180,7 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void begin()
 	{
-		if (auto os = sm::entry::get_os(); os)
+		if (auto os = sm::entry::os(); os)
 		{
 			static int64_t S_LAST = 0;
 			ImGuiIO& io = ImGui::GetIO();

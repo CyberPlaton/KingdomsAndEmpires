@@ -13,8 +13,8 @@ namespace core
 	class cresource
 	{
 	public:
-		static constexpr stringview_t C_META_SUPPORTED_EXTENSIONS = "RESOURCE_EXTENSIONS";
-		static constexpr stringview_t C_DESTROY_FUNCTION_NAME = "destroy";
+		static constexpr stringview_t C_META_SUPPORTED_EXTENSIONS	= "RESOURCE_EXTENSIONS";
+		static constexpr stringview_t C_DESTROY_FUNCTION_NAME		= "destroy";
 
 		cresource() = default;
 		virtual ~cresource() = default;

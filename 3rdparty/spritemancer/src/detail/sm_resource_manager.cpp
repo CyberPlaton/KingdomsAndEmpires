@@ -213,7 +213,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::program_handle_t cprogram_manager::load_sync(stringview_t name, const shader_handle_t vs, const shader_handle_t fs)
+	sm::program_handle_t cprogram_manager::load_sync(stringview_t name, shader_handle_t vs, shader_handle_t fs)
 	{
 		return load_of_sync<program_handle_t>(name, m_data, vs, fs);
 	}
@@ -225,7 +225,13 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, const shader_handle_t vs, const shader_handle_t fs)
+	sm::program_handle_t cprogram_manager::load_sync(stringview_t name, shader_handle_t shader)
+	{
+		return load_of_sync<program_handle_t>(name, m_data, shader);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, shader_handle_t vs, shader_handle_t fs)
 	{
 		return load_of_async<program_handle_t>(name, m_data, vs, fs);
 	}
@@ -234,6 +240,12 @@ namespace sm
 	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, const cshader& vs, const cshader& fs)
 	{
 		return load_of_async<program_handle_t>(name, m_data, vs, fs);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, shader_handle_t shader)
+	{
+		return load_of_async<program_handle_t>(name, m_data, shader);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

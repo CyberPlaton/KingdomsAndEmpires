@@ -91,10 +91,12 @@ namespace sm
 		void on_shutdown() override final;
 		void on_update(float) override final;
 
-		program_handle_t load_sync(stringview_t name, const shader_handle_t vs, const shader_handle_t fs);
+		program_handle_t load_sync(stringview_t name, shader_handle_t shader);
+		program_handle_t load_sync(stringview_t name, shader_handle_t vs, shader_handle_t fs);
 		program_handle_t load_sync(stringview_t name, const cshader& vs, const cshader& fs);
 
-		core::cfuture_type<program_handle_t> load_async(stringview_t name, const shader_handle_t vs, const shader_handle_t fs);
+		core::cfuture_type<program_handle_t> load_async(stringview_t name, shader_handle_t shader);
+		core::cfuture_type<program_handle_t> load_async(stringview_t name, shader_handle_t vs, shader_handle_t fs);
 		core::cfuture_type<program_handle_t> load_async(stringview_t name, const cshader& vs, const cshader& fs);
 
 	private:
