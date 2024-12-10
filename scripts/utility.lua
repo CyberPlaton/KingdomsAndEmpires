@@ -52,11 +52,11 @@ function set_basic_defines()
 	end
 
 	filter{"configurations:debug"}
-		defines{"DEBUG=1", "BX_CONFIG_DEBUG"}
+		defines{"DEBUG=1", "BX_CONFIG_DEBUG=1"}
 	filter{"configurations:release"}
-		defines{"NDEBUG", "RELEASE=1"}
+		defines{"NDEBUG", "RELEASE=1", "BX_CONFIG_DEBUG=0"}
 	filter{"configurations:hybrid"}
-		defines{"NDEBUG", "HYBRID=1"}
+		defines{"NDEBUG", "HYBRID=1", "BX_CONFIG_DEBUG=0"}
 	filter{}
 	defines{"_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
 			"_CRT_SECURE_NO_WARNINGS",
