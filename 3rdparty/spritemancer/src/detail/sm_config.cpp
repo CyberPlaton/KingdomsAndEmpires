@@ -69,33 +69,32 @@ namespace sm
 	{
 		if (is_valid(shader))
 		{
-			raylib::UnloadShader(shader.shader());
-			shader.m_type = shader_type_none;
+			bgfx::destroy(shader.shader());
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cshader::cshader() :
-		m_shader({ MAX(uint16_t) }), m_type(shader_type_none)
+		m_handle({ bgfx::kInvalidHandle })
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(shader_type type, stringview_t filepath)
+	cshader::cshader(stringview_t path)
 	{
-		load_from_file(type, filepath);
+		load_from_file(path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(shader_type type, const char* string)
+	cshader::cshader(const char* text)
 	{
-		load_from_string(type, string);
+		load_from_string(text);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(shader_type type, const uint8_t* data, unsigned size)
+	cshader::cshader(const uint8_t* data, unsigned size)
 	{
-		load_from_memory(type, data, size);
+		load_from_memory(data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -104,37 +103,48 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_file(shader_type type, stringview_t filepath)
+	sm::opresult cshader::load_from_file(stringview_t path)
 	{
-		const auto [data, size] = core::cfile::load_binary(filepath.data());
+		memory_ref_t data = nullptr;
 
-		return load_from_memory(type, data, size);
+		if (!path.empty())
+		{
+			data = fs::load_text_from_file(path);
+		}
+
+		return load_from_memory((uint8_t*)data->data(), (unsigned)data->size());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_string(shader_type type, const char* string)
+	sm::opresult cshader::load_from_string(const char* text)
 	{
-		return load_from_memory(type, (const uint8_t*)string, strlen(string));
+		return load_from_memory((const uint8_t*)text, strlen(text));
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_memory(shader_type type, const uint8_t* data, unsigned size)
+	sm::opresult cshader::load_from_memory(const uint8_t* data, unsigned size)
 	{
 		const bgfx::Memory* mem = bgfx::makeRef(data, size);
 
-		if (m_shader = bgfx::createShader(mem); !bgfx::isValid(m_shader))
+		if (m_handle = bgfx::createShader(mem); !bgfx::isValid(m_handle))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
 				serror_reporter::instance().m_callback(core::logging_verbosity_error,
 					"Failed loading shader");
 			}
+
 			return opresult_fail;
 		}
 
-		m_type = type;
-
 		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::cshader& cshader::operator=(const cshader& other)
+	{
+		m_handle = other.m_handle;
+		return *this;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -186,14 +196,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::cshader& cshader::operator=(const cshader& other)
-	{
-		m_shader = other.m_shader;
-		m_type = other.m_type;
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	bgfx::ProgramHandle cprogram::create(const cshader& shader)
 	{
 		bgfx::ProgramHandle handle; handle.idx = bgfx::kInvalidHandle;
@@ -220,7 +222,7 @@ namespace sm
 	cprogram::cprogram(const cshader& vertex, const cshader& fragment) :
 		m_vertex(vertex), m_fragment(fragment)
 	{
-		load_from_handles(m_vertex.shader(), m_fragment.shader());
+		load_from_handles(m_vertex.shader().idx, m_fragment.shader().idx);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -241,13 +243,13 @@ namespace sm
 	{
 		m_vertex = vertex;
 		m_fragment = fragment;
-		return load_from_handles(m_vertex.shader(), m_fragment.shader());
+		return load_from_handles(m_vertex.shader().idx, m_fragment.shader().idx);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cprogram::load_from_handles(bgfx::ShaderHandle vertex, bgfx::ShaderHandle fragment)
+	sm::opresult cprogram::load_from_handles(shader_handle_t vertex, shader_handle_t fragment)
 	{
-		if (m_handle = bgfx::createProgram(vertex, fragment); !bgfx::isValid(m_handle))
+		if (m_handle = bgfx::createProgram(bgfx::ShaderHandle{ vertex }, bgfx::ShaderHandle{ fragment }); !bgfx::isValid(m_handle))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
@@ -292,7 +294,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cimage::load_from_file(stringview_t filepath)
 	{
-		const auto [data, size] = core::cfile::load_binary(filepath.data());
+		unsigned size = 0;
+		const auto data = fs::load_binary_file_data(filepath.data(), &size);
 
 		return load_from_memory(data, size);
 	}
@@ -536,24 +539,6 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void ccommand::create(render_callback_t&& callback)
-	{
-		m_callback = std::move(callback);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void ccommand::execute() const
-	{
-		m_callback();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ccommand::ccommand(render_callback_t&& callback) :
-		m_callback(std::move(callback))
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	ccamera::ccamera() :
 		m_position({ 0.0f, 0.0f }), m_offset({ 0.0f, 0.0f }), m_zoom(0.0f), m_rotation(0.0f), m_ready(false)
 	{
@@ -652,8 +637,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool sblending::operator==(const sblending& other)
 	{
-		return m_mode == other.m_mode && m_equation == other.m_equation &&
-			m_dst_factor == other.m_dst_factor && m_src_factor == other.m_src_factor;
+		return m_mode == other.m_mode;
 	}
 
 } //- sm

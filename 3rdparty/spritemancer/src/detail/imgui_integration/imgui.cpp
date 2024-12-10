@@ -1,4 +1,6 @@
 #include "imgui.hpp"
+#include "../sm_config.hpp"
+#include "imgui/imgui_impl_bgfx.h"
 
 namespace imgui
 {
@@ -10,6 +12,125 @@ namespace imgui
 		static auto S_W = 0;
 		static auto S_H = 0;
 
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static ImTextureID bgfx_to_imgui_texture_id(bgfx::TextureHandle handle, uint8_t flags, uint8_t mip)
+		{
+			union { struct { bgfx::TextureHandle m_handle; uint8_t m_flags; uint8_t m_mip; } s; ImTextureID m_id; } tex;
+			tex.s.m_handle = handle;
+			tex.s.m_flags = flags;
+			tex.s.m_mip = mip;
+			return tex.m_id;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static ImGuiKey core_key_to_imgui(core::key k)
+		{
+			switch (k)
+			{
+			default:
+			case core::key_none: return ImGuiKey_None;
+			case core::key_esc: return ImGuiKey_Escape;
+			case core::key_return: return ImGuiKey_Enter;
+			case core::key_tab: return ImGuiKey_Tab;
+			case core::key_space: return ImGuiKey_Space;
+			case core::key_backspace: return ImGuiKey_Backspace;
+			case core::key_up: return ImGuiKey_UpArrow;
+			case core::key_down: return ImGuiKey_DownArrow;
+			case core::key_left: return ImGuiKey_LeftArrow;
+			case core::key_right: return ImGuiKey_RightArrow;
+			case core::key_insert: return ImGuiKey_Insert;
+			case core::key_delete: return ImGuiKey_Delete;
+			case core::key_home: return ImGuiKey_Home;
+			case core::key_end: return ImGuiKey_End;
+			case core::key_page_up: return ImGuiKey_PageUp;
+			case core::key_page_down: return ImGuiKey_PageDown;
+			case core::key_print: return ImGuiKey_PrintScreen;
+				/*case core::key_plus: return ImGuiKey_Plus;*/
+			case core::key_minus: return ImGuiKey_Minus;
+			case core::key_left_bracket: return ImGuiKey_LeftBracket;
+			case core::key_right_bracket: return ImGuiKey_RightBracket;
+			case core::key_semicolon: return ImGuiKey_Semicolon;
+			case core::key_quote: return ImGuiKey_Apostrophe;
+			case core::key_comma: return ImGuiKey_Comma;
+			case core::key_period: return ImGuiKey_Period;
+			case core::key_slash: return ImGuiKey_Slash;
+			case core::key_backslash: return ImGuiKey_Backslash;
+			case core::key_tilde: return ImGuiKey_GraveAccent;
+			case core::key_f1: return ImGuiKey_F1;
+			case core::key_f2: return ImGuiKey_F2;
+			case core::key_f3: return ImGuiKey_F3;
+			case core::key_f4: return ImGuiKey_F4;
+			case core::key_f5: return ImGuiKey_F5;
+			case core::key_f6: return ImGuiKey_F6;
+			case core::key_f7: return ImGuiKey_F7;
+			case core::key_f8: return ImGuiKey_F8;
+			case core::key_f9: return ImGuiKey_F9;
+			case core::key_f10: return ImGuiKey_F10;
+			case core::key_f11: return ImGuiKey_F11;
+			case core::key_f12: return ImGuiKey_F12;
+			case core::key_numpad0: return ImGuiKey_Keypad0;
+			case core::key_numpad1: return ImGuiKey_Keypad1;
+			case core::key_numpad2: return ImGuiKey_Keypad2;
+			case core::key_numpad3: return ImGuiKey_Keypad3;
+			case core::key_numpad4: return ImGuiKey_Keypad4;
+			case core::key_numpad5: return ImGuiKey_Keypad5;
+			case core::key_numpad6: return ImGuiKey_Keypad6;
+			case core::key_numpad7: return ImGuiKey_Keypad7;
+			case core::key_numpad8: return ImGuiKey_Keypad8;
+			case core::key_numpad9: return ImGuiKey_Keypad9;
+			case core::key_0: return ImGuiKey_0;
+			case core::key_1: return ImGuiKey_1;
+			case core::key_2: return ImGuiKey_2;
+			case core::key_3: return ImGuiKey_3;
+			case core::key_4: return ImGuiKey_4;
+			case core::key_5: return ImGuiKey_5;
+			case core::key_6: return ImGuiKey_6;
+			case core::key_7: return ImGuiKey_7;
+			case core::key_8: return ImGuiKey_8;
+			case core::key_9: return ImGuiKey_9;
+			case core::key_a: return ImGuiKey_A;
+			case core::key_b: return ImGuiKey_B;
+			case core::key_c: return ImGuiKey_C;
+			case core::key_d: return ImGuiKey_D;
+			case core::key_e: return ImGuiKey_E;
+			case core::key_f: return ImGuiKey_F;
+			case core::key_g: return ImGuiKey_G;
+			case core::key_h: return ImGuiKey_H;
+			case core::key_i: return ImGuiKey_I;
+			case core::key_k: return ImGuiKey_K;
+			case core::key_l: return ImGuiKey_L;
+			case core::key_m: return ImGuiKey_M;
+			case core::key_n: return ImGuiKey_N;
+			case core::key_o: return ImGuiKey_O;
+			case core::key_p: return ImGuiKey_P;
+			case core::key_q: return ImGuiKey_Q;
+			case core::key_r: return ImGuiKey_R;
+			case core::key_s: return ImGuiKey_S;
+			case core::key_t: return ImGuiKey_T;
+			case core::key_u: return ImGuiKey_U;
+			case core::key_v: return ImGuiKey_V;
+			case core::key_w: return ImGuiKey_W;
+			case core::key_x: return ImGuiKey_X;
+			case core::key_y: return ImGuiKey_Y;
+			case core::key_z: return ImGuiKey_Z;
+			case core::key_gamepad_a: return ImGuiKey_GamepadFaceDown;
+			case core::key_gamepad_b: return ImGuiKey_GamepadFaceRight;
+			case core::key_gamepad_x: return ImGuiKey_GamepadFaceLeft;
+			case core::key_gamepad_y: return ImGuiKey_GamepadFaceUp;
+			case core::key_gamepad_thumb_L: return ImGuiKey_GamepadL3;
+			case core::key_gamepad_thumb_R: return ImGuiKey_GamepadR3;
+			case core::key_gamepad_shoulder_L: return ImGuiKey_GamepadL1;
+			case core::key_gamepad_shoulder_R: return ImGuiKey_GamepadR1;
+			case core::key_gamepad_up: return ImGuiKey_GamepadDpadUp;
+			case core::key_gamepad_down: return ImGuiKey_GamepadDpadDown;
+			case core::key_gamepad_left: return ImGuiKey_GamepadDpadLeft;
+			case core::key_gamepad_right: return ImGuiKey_GamepadDpadRight;
+			case core::key_gamepad_back: return ImGuiKey_GamepadBack;
+			case core::key_gamepad_start: return ImGuiKey_GamepadStart;
+			case core::key_gamepad_guide: return ImGuiKey_GamepadStart;
+			}
+		}
+
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -18,10 +139,8 @@ namespace imgui
 		//- init imgui and create icon font from ICON_FA data
 		ImGui::CreateContext();
 
-		auto& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_ViewportsEnable;
-
-		rlImGuiSetup(true);
+		imgui::imguiCreate(18.0f, sm::entry::allocator());
+		/*rlImGuiSetup(true);*/
 
 		//- setup default style
 		ImGui::GetStyle().WindowRounding = 0;
@@ -31,6 +150,14 @@ namespace imgui
 		ImGui::GetStyle().ScrollbarRounding = 0;
 		ImGui::GetStyle().GrabRounding = 0;
 		ImGui::GetStyle().TabRounding = 0;
+
+		auto& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable
+			| ImGuiConfigFlags_ViewportsEnable
+			| ImGuiConfigFlags_NavEnableGamepad
+			| ImGuiConfigFlags_NavEnableKeyboard;
+
+		return true;
 
 		//- setup resize handler
 		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
@@ -46,26 +173,72 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	void shutdown()
 	{
-		rlImGuiShutdown();
+		imgui::imguiDestroy();
+		ImGui::DestroyContext();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void begin()
 	{
-		rlImGuiBegin();
+		if (auto os = sm::entry::get_os(); os)
+		{
+			static int64_t S_LAST = 0;
+			ImGuiIO& io = ImGui::GetIO();
+			double mx = 0.0, my = 0.0, sx = 0.0, sy = 0.0;
+			os->mouse_position(&mx, &my);
+			os->mouse_scroll_dt(&sx, &sy);
+
+			const int64_t now = bx::getHPCounter();
+			const int64_t frameTime = now - S_LAST;
+			S_LAST = now;
+			const double freq = double(bx::getHPFrequency());
+			io.DeltaTime = float(frameTime / freq);
+
+			if (const auto c = os->read_input_character(); c != '\0')
+			{
+				io.AddInputCharacter((unsigned)c);
+			}
+
+			//- Provide mouse events to ImGui
+			io.AddMousePosEvent(SCAST(float, mx), SCAST(float, my));
+			io.AddMouseButtonEvent(ImGuiMouseButton_Left, os->is_mouse_button_pressed(core::mouse_button_left) ||
+				os->is_mouse_button_held(core::mouse_button_left));
+			io.AddMouseButtonEvent(ImGuiMouseButton_Middle, os->is_mouse_button_pressed(core::mouse_button_middle) ||
+				os->is_mouse_button_held(core::mouse_button_middle));
+			io.AddMouseButtonEvent(ImGuiMouseButton_Right, os->is_mouse_button_pressed(core::mouse_button_right) ||
+				os->is_mouse_button_held(core::mouse_button_right));
+			io.AddMouseWheelEvent(sx, sy);
+
+			//- Provide keyboard events to ImGui
+			io.AddKeyEvent(ImGuiMod_Shift, os->is_modifier_active(core::key_modifier_left_shift | core::key_modifier_right_shift));
+			io.AddKeyEvent(ImGuiMod_Ctrl, os->is_modifier_active(core::key_modifier_left_ctrl | core::key_modifier_right_ctrl));
+			io.AddKeyEvent(ImGuiMod_Alt, os->is_modifier_active(core::key_modifier_left_alt | core::key_modifier_right_alt));
+			io.AddKeyEvent(ImGuiMod_Super, os->is_modifier_active(core::key_modifier_left_meta | core::key_modifier_right_meta));
+
+			for (int i = 0; i < (int)core::key::key_count; ++i)
+			{
+				const auto pressed_or_held = os->is_key_held((core::key)i)
+					|| os->is_key_pressed((core::key)i);
+
+				io.AddKeyEvent(core_key_to_imgui((core::key)i), pressed_or_held);
+			}
+
+			ImGui::NewFrame();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void end()
 	{
-		rlImGuiEnd();
+		imgui::imguiEndFrame();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void cui::on_resize(unsigned w, unsigned h)
 	{
-		S_W = w;
-		S_H = h;
+		ImGuiIO& io = ImGui::GetIO();
+		io.DisplaySize.x = float(w);
+		io.DisplaySize.y = float(h);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -174,11 +347,11 @@ namespace imgui
 				// Try creating the file.
 				if (core::cfilesystem::create_file_in(directory.data(), file_name.data(), extension.data()))
 				{
-					cui::create_notification("Success", raylib::TextFormat("Success creating file \"%s\" at \"%s\"!", string_t(file_name + extension).c_str(), directory.c_str()), notification_type_success, snotification::s_success_lifetime);
+					cui::create_notification("Success", fmt::format("Success creating file \"{}\" at \"{}\"!", string_t(file_name + extension).c_str(), directory.c_str()), notification_type_success, snotification::s_success_lifetime);
 				}
 				else
 				{
-					cui::create_notification("Failure", raylib::TextFormat("Failed creating file \"%s\" at \"%s\"!", string_t(file_name + extension).c_str(), directory.c_str()), notification_type_error, snotification::s_error_lifetime);
+					cui::create_notification("Failure", fmt::format("Failed creating file \"{}\" at \"{}\"!", string_t(file_name + extension).c_str(), directory.c_str()), notification_type_error, snotification::s_error_lifetime);
 				}
 
 				// Reset the internal state.
@@ -226,11 +399,11 @@ namespace imgui
 				// Try creating folder with specified name at specified location.
 				if (core::cfilesystem::create_dir(core::cfilesystem::construct(directory.data(), folder_name.data()).view()))
 				{
-					cui::create_notification("Success", raylib::TextFormat("Success creating folder \"%s\" at \"%s\"!", folder_name.c_str(), directory.c_str()), notification_type_success, snotification::s_success_lifetime);
+					cui::create_notification("Success", fmt::format("Success creating folder \"{}\" at \"{}\"!", folder_name.c_str(), directory.c_str()), notification_type_success, snotification::s_success_lifetime);
 				}
 				else
 				{
-					cui::create_notification("Failure", raylib::TextFormat("Failed creating folder \"%s\" at \"%s\"!", folder_name.c_str(), directory.c_str()), notification_type_error, snotification::s_error_lifetime);
+					cui::create_notification("Failure", fmt::format("Failed creating folder \"{}\" at \"{}\"!", folder_name.c_str(), directory.c_str()), notification_type_error, snotification::s_error_lifetime);
 				}
 
 				// Reset the internal state.
@@ -264,11 +437,11 @@ namespace imgui
 		{
 			if (core::cfilesystem::remove(directory.data()))
 			{
-				cui::create_notification("Success", raylib::TextFormat("Success deleting folder \"%s\"!", directory.c_str()), notification_type_success, snotification::s_success_lifetime);
+				cui::create_notification("Success", fmt::format("Success deleting folder \"{}\"!", directory.c_str()), notification_type_success, snotification::s_success_lifetime);
 			}
 			else
 			{
-				cui::create_notification("Failure", raylib::TextFormat("Failed deleting folder \"%s\"!", directory.c_str()), notification_type_error, snotification::s_error_lifetime);
+				cui::create_notification("Failure", fmt::format("Failed deleting folder \"{}\"!", directory.c_str()), notification_type_error, snotification::s_error_lifetime);
 			}
 
 			// Reset the internal state.
@@ -287,15 +460,15 @@ namespace imgui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	bool cui::image_button(const string_t& id, const raylib::Texture* texture, const vec2_t& size,
-		const core::scolor& bg /*= BLACK*/, const core::scolor& tint /*= RAYWHITE*/)
+	bool cui::image_button(const string_t& id, const bgfx::TextureHandle texture, const vec2_t& size,
+		const core::scolor& bg /*= { 255, 255, 255, 255 }*/, const core::scolor& tint /*= RAYWHITE*/)
 	{
 		auto bg4 = bg.normalize();
 		auto tint4 = tint.normalize();
 
 		ImGui::PushStyleColor(ImGuiCol_Button, { bg4.r, bg4.g, bg4.b, 0.0f });
 
-		bool result = ImGui::ImageButton(id.c_str(), (ImTextureID)texture, { size.x, size.y },
+		bool result = ImGui::ImageButton(id.c_str(), bgfx_to_imgui_texture_id(texture, 0, 0), { size.x, size.y },
 			{ 0.0f, 0.0f }, { 1.0f, 1.0f }, { bg4.r, bg4.g, bg4.b, bg4.a }, { tint4.r, tint4.g, tint4.b, tint4.a });
 
 		ImGui::PopStyleColor();
@@ -303,22 +476,22 @@ namespace imgui
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::image(const raylib::Texture* texture, const vec2_t& size,
-		const core::scolor& bg /*= WHITE*/, const core::scolor& tint /*= RAYWHITE*/)
+	void cui::image(const bgfx::TextureHandle texture, const vec2_t& size,
+		const core::scolor& bg /*= { 255, 255, 255, 255 }*/, const core::scolor& tint /*= RAYWHITE*/)
 	{
 		image(texture, size, { 0.0f, 0.0f }, { 1.0f, 1.0f }, bg, tint);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cui::image(const raylib::Texture* texture, const vec2_t& size, const vec2_t& uv0, const vec2_t& uv1,
-		const core::scolor& bg /*= { 0, 0, 0, 255 }*/, const core::scolor& tint /*= { 250, 250, 250, 255 }*/)
+	void cui::image(const bgfx::TextureHandle texture, const vec2_t& size, const vec2_t& uv0, const vec2_t& uv1,
+		const core::scolor& bg /*= { 255, 255, 255, 255 }*/, const core::scolor& tint /*= { 250, 250, 250, 255 }*/)
 	{
 		auto bg4 = bg.normalize();
 		auto tint4 = tint.normalize();
 
 		ImGui::PushStyleColor(ImGuiCol_Button, { bg4.r, bg4.g, bg4.b, 0.0f });
 
-		ImGui::Image((ImTextureID)texture, { size.x, size.y },
+		ImGui::Image(bgfx_to_imgui_texture_id(texture, 0, 0), { size.x, size.y },
 			{ uv0.x, uv0.y }, { uv1.x, uv1.y }, { bg4.r, bg4.g, bg4.b, bg4.a }, { tint4.r, tint4.g, tint4.b, tint4.a });
 
 		ImGui::PopStyleColor();
@@ -722,7 +895,7 @@ namespace imgui
 
 				float color[4] = { value.r / 255.0f, value.g / 255.0f, value.b / 255.0f, value.a / 255.0f };
 
-				if (ImGui::ColorEdit4(raylib::TextFormat("##%s_Color_Picker", field_text.c_str()), (float*)&color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar))
+				if (ImGui::ColorEdit4(fmt::format("##{}s_Color_Picker", field_text.c_str()).data(), (float*)&color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar))
 				{
 					prev[0] = color[0] * 255;
 					prev[1] = color[1] * 255;
@@ -833,7 +1006,7 @@ namespace imgui
 
 				float color[4] = { value.m_r / 255.0f, value.m_g / 255.0f, value.m_b / 255.0f, value.m_a / 255.0f };
 
-				if (ImGui::ColorEdit4(raylib::TextFormat("##%s_Color_Picker", field_text.c_str()), (float*)&color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar))
+				if (ImGui::ColorEdit4(fmt::format("##{}s_Color_Picker", field_text.c_str()).data(), (float*)&color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar))
 				{
 					prev[0] = color[0] * 255;
 					prev[1] = color[1] * 255;

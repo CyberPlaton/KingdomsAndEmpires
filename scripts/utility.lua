@@ -79,8 +79,8 @@ function set_basic_links()
 	elseif PLATFORM == "linux" then
 		links{"GL", "rt", "m", "X11"}
 	elseif PLATFORM == "macosx" then
-        -- setting macos built-in libraries is required to be done through linkoptions
-        linkoptions{"-framework Cocoa -framework CoreVideo -framework CoreFoundation -framework IOKit -framework OpenGL"}
+		-- setting macos built-in libraries is required to be done through linkoptions
+		linkoptions{"-framework Cocoa -framework CoreVideo -framework CoreFoundation -framework IOKit -framework OpenGL"}
 	else
 	end
 end
@@ -152,23 +152,6 @@ function set_include_path(type_name, name)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-function set_bx_includes()
-	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
-	if PLATFORM == "windows" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
-	elseif PLATFORM == "linux" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
-	elseif PLATFORM == "macosx" then
-		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
-	else
-		print("Unknown platform!")
-	end
-
-	set_glfw_deps()
-	set_bgfx_3rd_party_includes()
-end
-
-------------------------------------------------------------------------------------------------------------------------
 function set_bgfx_3rd_party_includes()
 
 	bgfx_3rd_party_dir = path.join(WORKSPACE_DIR, "3rdparty", "bgfx", "bgfx", "3rdparty")
@@ -217,6 +200,23 @@ function set_glfw_deps()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+function set_bx_includes()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
+	if PLATFORM == "windows" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/msvc")}
+	elseif PLATFORM == "linux" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/linux")}
+	elseif PLATFORM == "macosx" then
+		externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include/compat/osx")}
+	else
+		print("Unknown platform!")
+	end
+
+	set_glfw_deps()
+	set_bgfx_3rd_party_includes()
+end
+
+------------------------------------------------------------------------------------------------------------------------
 function set_libs_path()
 	libdirs{path.join(VENDOR_DIR, OUTDIR)}
 end
@@ -230,7 +230,7 @@ end
 -- Creates a static library project. By default c sources are compiled too.
 ------------------------------------------------------------------------------------------------------------------------
 function add_target_static_library(name, build_options, define_flags, plugin_deps, thirdparty_deps, target_language,
-	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes, depends_on_engine)
+	plugin_headeronly_deps, thirdparty_headeronly_deps, additional_includes, depends_on_engine, depends_on_bgfx)
 	if VERBOSE == true then
 		print("\tstatic library: " .. name)
 	end
@@ -282,8 +282,11 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		-- link with engine by default, if not explicitly disabled
 		if depends_on_engine == true then
 			link_with_engine()
+		end
+		if depends_on_bgfx == true then
 			set_bx_includes()
 		end
+
 
 		configure()
 end

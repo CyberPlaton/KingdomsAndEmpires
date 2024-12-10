@@ -1,7 +1,7 @@
 #pragma once
 #include <core.h>
 #include <imgui.h>
-#include "imgui/rlImGui.h"
+#include "../bgfx_integration/bgfx.hpp"
 #include "imgui_scopes.hpp"
 #include "imnodes_scopes.hpp"
 #include "imnodes_node.hpp"
@@ -52,10 +52,10 @@ namespace imgui
 		static void create_file_dialog(const string_t& field_text, const string_t& field_desc, bool* is_open, const vec2_t& position, const vec2_t& size, const char* allowed_file_types[], unsigned file_type_count, const string_t& directory, const string_t& ok_text = "OK", const string_t& cancel_text = "Cancel", ImGuiInputTextFlags flags = ImGuiInputTextFlags_None);
 		static void create_folder_dialog(const string_t& field_text, const string_t& field_desc, bool* is_open, const vec2_t& position, const vec2_t& size, const string_t& directory, const string_t& ok_text = "OK", const string_t& cancel_text = "Cancel", ImGuiInputTextFlags flags = ImGuiInputTextFlags_None);
 		static void delete_folder_dialog(const string_t& field_text, const string_t& field_desc, bool* is_open, const vec2_t& position, const vec2_t& size, const string_t& directory, const string_t& ok_text = "OK", const string_t& cancel_text = "Cancel");
-		static bool image_button(const string_t& id, const raylib::Texture* texture, const vec2_t& size, const core::scolor& bg = { 0, 0, 0, 255 }, const core::scolor& tint = { 250, 250, 250, 255 });
-		static void image(const raylib::Texture* texture, const vec2_t& size, const core::scolor& bg = { 255, 255, 255, 255 }, const core::scolor& tint = { 250, 250, 250, 255 });
+		static bool image_button(const string_t& id, const bgfx::TextureHandle texture, const vec2_t& size, const core::scolor& bg = { 0, 0, 0, 255 }, const core::scolor& tint = { 250, 250, 250, 255 });
+		static void image(const bgfx::TextureHandle texture, const vec2_t& size, const core::scolor& bg = { 255, 255, 255, 255 }, const core::scolor& tint = { 250, 250, 250, 255 });
 		//- Rendering render target is possible with uv0 = 0.0f, 1.0f and uv1 = 1.0f, 0.0f
-		static void image(const raylib::Texture* texture, const vec2_t& size, const vec2_t& uv0, const vec2_t& uv1, const core::scolor& bg = { 0, 0, 0, 255 }, const core::scolor& tint = { 250, 250, 250, 255 });
+		static void image(const bgfx::TextureHandle texture, const vec2_t& size, const vec2_t& uv0, const vec2_t& uv1, const core::scolor& bg = { 255, 255, 255, 255 }, const core::scolor& tint = { 250, 250, 250, 255 });
 		static void toggle_button(const string_t& field_text, bool* v);
 		static void toggle_button_ex(const string_t field_text, bool* v, const core::scolor& bg_active = { 25, 250, 0, 255 }, const core::scolor& bg_inactive = { 150, 150, 150, 255 }, const core::scolor& fg_knob = { 250, 250, 250, 255 });
 		static void loading_bar(const string_t& field_id, float percent_value, const vec2_t& size, const core::scolor& background = { 50, 50, 50, 255 }, const core::scolor& foreground = { 0, 150, 0, 255 });

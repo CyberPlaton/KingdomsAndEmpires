@@ -457,4 +457,10 @@ rttr::cregistrator<cshader>("cshader")
 	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cshader::destroy)
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
 ;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<cshader>("cprogram")
+.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cprogram::destroy)
+.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
+;
 }

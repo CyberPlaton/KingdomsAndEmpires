@@ -20,6 +20,30 @@ namespace sm
 	class cspriteatlas_manager;
 	class crendertarget_manager;
 
+	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT = 256;
+	constexpr auto C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT = 512;
+	constexpr auto C_SHADER_RESOURCE_MANAGER_RESERVE_COUNT = 512;
+	constexpr auto C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT = 256;
+	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT = 128;
+	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT = 64;
+
+	constexpr stringview_t C_UNIFORM_TEXTURE0 = "texture0";
+	constexpr stringview_t C_UNIFORM_TEXTURE1 = "texture1";
+	constexpr stringview_t C_UNIFORM_TEXTURE2 = "texture2";
+	constexpr stringview_t C_UNIFORM_TEXTURE3 = "texture3";
+	constexpr stringview_t C_UNIFORM_TEXTURE4 = "texture4";
+	constexpr stringview_t C_UNIFORM_TEXTURE5 = "texture5";
+	constexpr stringview_t C_UNIFORM_TEXTURE6 = "texture6";
+	constexpr stringview_t C_UNIFORM_TEXTURE7 = "texture7";
+
+	using handle_type_t			= uint16_t;
+	using image_handle_t		= handle_type_t;
+	using texture_handle_t		= handle_type_t;
+	using shader_handle_t		= handle_type_t;
+	using program_handle_t		= handle_type_t;
+	using spriteatlas_handle_t	= handle_type_t;
+	using rendertarget_handle_t = handle_type_t;
+
 	bool is_valid(const cshader& shader);
 	bool is_valid(const cprogram& program);
 	bool is_valid(const cimage& image);
@@ -51,87 +75,6 @@ namespace sm
 	using texture_format = bgfx::TextureFormat::Enum;
 
 	//------------------------------------------------------------------------------------------------------------------------
-	enum shader_optimization : uint8_t
-	{
-		shader_optimization_none = 0,
-		shader_optimization_full,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum shader_platform : uint8_t
-	{
-		shader_platform_none = 0,
-		shader_platform_android,
-		shader_platform_emscripten,
-		shader_platform_ios,
-		shader_platform_linux,
-		shader_platform_macos,
-		shader_platform_playstation,
-		shader_platform_windows,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum shader_language : uint8_t
-	{
-		shader_language_none = 0,
-		shader_language_hlsl,
-		shader_language_glsl,
-		shader_language_essl,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum shader_options : uint32_t
-	{
-		shader_options_none						= 0,
-		shader_options_debug_information		= BIT(1),
-		shader_options_avoid_flow_control		= BIT(2),
-		shader_options_no_preshader				= BIT(3),
-		shader_options_partial_precision		= BIT(4),
-		shader_options_prefer_flow_control		= BIT(5),
-		shader_options_backwards_compatability	= BIT(6),
-		shader_options_warnings_are_errors		= BIT(7),
-		shader_options_keep_intermediate		= BIT(8),
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum blending_factor
-	{
-		blending_factor_none = 0,
-		blending_factor_zero,
-		blending_factor_one,
-		blending_factor_src_color,
-		blending_factor_one_minus_src_color,
-		blending_factor_src_alpha,
-		blending_factor_one_minus_src_alpha,
-		blending_factor_dst_alpha,
-		blending_factor_dst_color,
-		blending_factor_one_minus_dst_alpha,
-		blending_factor_src_alpha_saturate,
-		blending_factor_constant_color,
-		blending_factor_one_minus_constant_color,
-		blending_factor_constant_alpha,
-		blending_factor_one_minus_constant_alpha,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	enum blending_equation
-	{
-		blending_equation_none = 0,
-		blending_equation_add,
-		blending_equation_min,
-		blending_equation_max,
-		blending_equation_subtract,
-		blending_equation_reverse_subtract,
-		blending_equation_blend_equation_rgb,
-		blending_equation_blend_equation_alpha,
-		blending_equation_blend_dst_rgb,
-		blending_equation_blend_src_rgb,
-		blending_equation_blend_dst_alpha,
-		blending_equation_blend_src_alpha,
-		blending_equation_blend_color,
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_mode : uint8_t
 	{
 		blending_mode_none = 0,
@@ -141,17 +84,6 @@ namespace sm
 		blending_mode_add_colors,
 		blending_mode_subtract_colors,
 		blending_mode_alpha_premultiply,
-	};
-
-	//- @see https://subscription.packtpub.com/book/programming/9781849698009/1/ch01lvl1sec10/types-of-shaders
-	//------------------------------------------------------------------------------------------------------------------------
-	enum shader_type : uint8_t
-	{
-		shader_type_none = 0,
-		shader_type_vertex,
-		shader_type_fragment,
-		shader_type_geometry,	//- creates new rendering primitives from output of vertex shader to be processed by fragment shader
-		shader_type_compute,	//- general purpose shader that can affect all others
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -201,9 +133,6 @@ namespace sm
 		bool operator!=(const sblending& other);
 
 		blending_mode m_mode;
-		blending_equation m_equation;
-		blending_factor m_dst_factor;
-		blending_factor m_src_factor;
 	};
 
 	//- A shader, a single vertex or fragment, or compute etc. shader.
@@ -215,18 +144,17 @@ namespace sm
 	public:
 		static void destroy(cshader& shader);
 
-		explicit cshader(shader_type type, stringview_t filepath);
-		explicit cshader(shader_type type, const char* string);
-		explicit cshader(shader_type type, const uint8_t* data, unsigned size);
+		explicit cshader(stringview_t filepath);
+		explicit cshader(const char* string);
+		explicit cshader(const uint8_t* data, unsigned size);
 		cshader();
 		~cshader();
 
-		opresult load_from_file(shader_type type, stringview_t filepath);
-		opresult load_from_string(shader_type type, const char* string);
-		opresult load_from_memory(shader_type type, const uint8_t* data, unsigned size);
+		opresult load_from_file(stringview_t filepath);
+		opresult load_from_string(const char* string);
+		opresult load_from_memory(const uint8_t* data, unsigned size);
 
-		inline bgfx::ShaderHandle shader() const { return m_shader; }
-		inline shader_type type() const { return m_type; }
+		inline bgfx::ShaderHandle shader() const { return m_handle; }
 
 		void set_uniform_float(stringview_t name, float value);
 		void set_uniform_int(stringview_t name, int value);
@@ -240,8 +168,7 @@ namespace sm
 		cshader& operator=(const cshader& other);
 
 	private:
-		bgfx::ShaderHandle m_shader;
-		shader_type m_type;
+		bgfx::ShaderHandle m_handle;
 	};
 
 	//- Container for vertex and fragment shader. Destroying destroys individual shaders.
@@ -257,7 +184,7 @@ namespace sm
 		~cprogram();
 
 		opresult load_from_shaders(const cshader& vertex, const cshader& fragment);
-		opresult load_from_handles(bgfx::ShaderHandle vertex, bgfx::ShaderHandle fragment);
+		opresult load_from_handles(shader_handle_t vertex, shader_handle_t fragment);
 
 		inline bgfx::ProgramHandle handle() const { return m_handle; }
 		inline const cshader& vertex() const { return m_vertex; }
@@ -350,34 +277,6 @@ namespace sm
 		uint16_t m_height;
 	};
 
-	//- TODO: Reworking camera system
-	//- Following an entity: camera locks on to an in-game entity
-	//- Edge-Snapping: camera can not move farther or below some coordinate
-	//- Camera Window: camera locks on to an in-game entity and pushes camera
-	//- position as the entity hits the window edge (4-sides)
-	//- Smooth position change: lerping from current position to desired one,
-	//- with different easing options
-	//- Projected Focus: depending on controller input and velocity pan in some direction
-	//- Target Focus: depending on looking direction/mouse position pan in that direction
-	//- Camera Path: camera follows a predefined path throughout the level
-	//- Zoom-To-Fit: zoom in or zoom out depending on some context, in order
-	//- to provide a wide view or close up of something
-	//- Attractors/Detractors: attractors pull camera view towards something and
-	//- detractors push camera view away from something.
-	//- Those attractors/detractors can be attached to different entities.
-	//- Region Focus: position of camera is mostly based on a region anchor point
-	//- but shifts slightly as the player entity moves
-	//- Gesture Focus: camera does something when a specific in-game event happens,
-	//- i.e. zoom in when the player does a special attack on an enemy
-	//- Cinematic Paths: suspend normal function to show something special
-	//- Multi-Focal: camera focuses on several entities and maintains a position
-	//- centered between them and a zoom so that all of them are visible at once
-	//- Manual Control: camera can be controlled directly by input
-	//- Camera Shake (Screen Shake): change position/rotation slightly to create an effect
-	//- Average-Oriented Region: position averaging between closest regions
-	//- Cues: while in a camera region, some entities can activate/deactivate
-	//- their attraction/detraction behavior
-	//-
 	//- Camera class designed to be lighweight and copied around and to be a thin layer over raylib::Camera2D.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ccamera final
@@ -418,39 +317,6 @@ namespace sm
 		vec2_t m_size;
 	};
 
-	//- Basically a sprite to be rendered on screen, along with some flags and customization.
-	//- TODO: materials, spriteatlases
-	//------------------------------------------------------------------------------------------------------------------------
-	struct srenderable
-	{
-		core::srect m_src = { 0.0f, 0.0f, 1.0f, 1.0f };
-		cshader m_shader;
-		cimage m_image;
-		ctexture m_texture;
-		sblending m_blending;
-		vec2_t m_origin = { 0.0f, 0.0f };
-		float m_rotation = 0.0f;//- degrees
-		int m_flags = 0;		//- bitwise concated renderable_flag
-	};
-
-	//- Description of a rendering layer. Some of the data becomes only relevant when appropriate flags are set
-	//------------------------------------------------------------------------------------------------------------------------
-	struct slayer
-	{
-		crendertarget m_target;
-		vector_t<ccommand> m_commands;
-		ccamera m_camera;					//- optional: camera to be used when rendering
-		cshader m_shader;					//- optional: shader used to render the layer render texture on previous layers
-		core::scolor m_combine_tint;		//- color put over layer render texture when drawing on previous layers
-		core::scolor m_clear_tint;			//- color used to clear the layer render texture before drawing
-		vec2_t m_position = { 0.0f, 0.0f }; //- optional: where to draw the render target when combining; by default we cover whole screen
-		vec2_t m_scale = { 1.0f, 1.0f };	//- optional: scaling of the render target; by default normal scale
-		vec2_t m_origin = { 0.0f, 0.0f };	//- optional: origin of the render target; by default top-left
-		unsigned m_flags = 0;				//- bitwise concated layer_flags
-		bool m_show = false;
-		unsigned m_id = 0;
-	};
-
 	//------------------------------------------------------------------------------------------------------------------------
 	class irenderer
 	{
@@ -458,23 +324,8 @@ namespace sm
 		virtual ~irenderer() = default;
 
 		virtual void prepare_device() = 0;
-		virtual opresult init_device(void* nwh, unsigned w, unsigned h,
-			bool fullscreen, bool vsync) = 0;
+		virtual opresult init_device(void* nwh, unsigned w, unsigned h, bool fullscreen, bool vsync) = 0;
 		virtual opresult shutdown_device() = 0;
-
-		virtual void prepare_frame() = 0;
-		virtual void display_frame() = 0;
-		virtual void update_viewport(const vec2_t& position, const vec2_t& size) = 0;
-		virtual void blendmode(sblending mode) = 0;
-
-		virtual void clear(const slayer& layer, bool depth) = 0;
-		virtual bool begin(const slayer& layer) = 0;
-		virtual void draw(const slayer& layer) = 0;
-		virtual void end(const slayer& layer) = 0;
-		virtual bool combine(const slayer& layer) = 0;
-
-		virtual void update_texture_gpu(uint64_t id, unsigned w, unsigned h, texture_format format, const void* data) = 0;
-		virtual void update_texture_cpu(uint64_t id, unsigned w, unsigned h, texture_format format, void*& data) = 0;
 
 		RTTR_ENABLE();
 	};
@@ -501,6 +352,53 @@ namespace sm
 
 		virtual void main_window_position(unsigned* x, unsigned* y) = 0;
 		virtual void main_window_size(unsigned* x, unsigned* y) = 0;
+
+		RTTR_ENABLE();
+	};
+
+	//- Operating system interface class. Implementing hardware functionality, such as window creation, HDI interface and
+	//- processing and emitting hardware events
+	//------------------------------------------------------------------------------------------------------------------------
+	class ios
+	{
+	public:
+		virtual ~ios() = default;
+
+		virtual opresult init() = 0;						//- create and init of client application
+		virtual opresult shutdown() = 0;					//- destroy and clean of client application
+
+		virtual opresult init_gfx(int w, int h,
+			bool fullscreen, bool vsync) = 0;				//- create graphical context
+
+		virtual opresult init_mainwindow(stringview_t title,
+			int w, int h, bool fullscreen) = 0;				//- create application main window
+
+		virtual opresult optional_init_event_mainloop() = 0;//- process hardware events in a loop; use where required
+		virtual opresult optional_process_event() = 0;		//- process one hardware event
+
+		virtual void on_event(const rttr::variant& event) = 0; //- handle a hardware event from glfw or SDL etc.
+
+		virtual core::smouse_state mouse_state() const = 0;
+		virtual core::skeyboard_state keyboard_state() const = 0;
+		virtual core::sgamepad_state gamepad_state() const = 0;
+
+		virtual unsigned read_input_character() = 0;
+
+		virtual void main_window_position(int* x, int* y) = 0;
+		virtual void main_window_size(int* x, int* y) = 0;
+
+		virtual bool is_key_held(core::key k) const = 0;
+		virtual bool is_key_pressed(core::key k) const = 0;
+		virtual bool is_key_released(core::key k) const = 0;
+		virtual bool is_modifier_active(int modifiers) const = 0;
+
+		virtual void mouse_position(double* x, double* y) = 0;
+		virtual void mouse_scroll_dt(double* x, double* y) = 0;
+		virtual bool is_mouse_button_held(core::mouse_button b) = 0;
+		virtual bool is_mouse_button_pressed(core::mouse_button b) = 0;
+		virtual bool is_mouse_button_released(core::mouse_button b) = 0;
+
+		virtual float gamepad_axis(core::gamepad_axis a) = 0;
 
 		RTTR_ENABLE();
 	};

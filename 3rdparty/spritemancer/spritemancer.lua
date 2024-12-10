@@ -9,7 +9,8 @@ function spritemancer()
 					"c++",
 					{}, -- plugin_headeronly_deps
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "asio"}, -- thirdparty_headeronly_deps
-					{"src", "../rttr/rttr/src", "../asio/include/asio/asio/include"} -- additional_includes
-					)
+					{"src", "../rttr/rttr/src", "../asio/include/asio/asio/include"}, -- additional_includes
+					false, -- not depending on engine
+					true) -- but depending on bgfx etc.
 end
 spritemancer()

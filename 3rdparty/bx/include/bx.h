@@ -4,3 +4,6 @@
 #include "../bx/include/bx/readerwriter.h"
 #include "../bx/include/bx/file.h"
 #include "../bx/include/bx/hash.h"
+#include "../bx/include/bx/ringbuffer.h"
+#include "../bx/include/bx/pixelformat.h"
+#include "../bx/include/bx/timer.h"
