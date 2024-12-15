@@ -1,6 +1,16 @@
 #pragma once
 #include "sm_entry.hpp"
 
+//- Use macro to reflect your vertex type, the vertex type function must be declared and implemented.
+//-------------------------------------------------------------------------------------------------------------------------
+#define REGISTER_VERTEX_LAYOUT(s) \
+	rttr::cregistrator<s>(STRINGIFY(s)) \
+		.meth(ecs::vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME, &s::vertex_layout) \
+		.meth(ecs::vertexlayout::svertex::C_VERTEX_LAYOUT_HANDLE_FUNC_NAME, &s::vertex_layout_handle) \
+		.meth(ecs::vertexlayout::svertex::C_INIT_FUNC_NAME, &s::init) \
+		.meth(ecs::vertexlayout::svertex::C_MAKE_VERTEX_FUNC_NAME, &s::make) \
+		;
+
 namespace sm
 {
 	class irenderer;
@@ -47,6 +57,7 @@ namespace sm
 	using rendertarget_handle_t = handle_type_t;
 	using renderpass_id_t		= handle_type_t;
 	using buffer_handle_t		= handle_type_t;
+	using vertex_layout_handle_t= handle_type_t;
 	using index_type_t			= uint16_t;
 	using renderpass_order_t	= vector_t<renderpass_id_t>;
 	using context_ref_t			= ref_t<ccontext>;
@@ -146,6 +157,32 @@ namespace sm
 		void		set_renderer(ptr_t<irenderer>&& renderer);
 
 	} //- entry
+
+	namespace vertexlayout
+	{
+		//- This is a dummy vertex layout to show how one should be defined. While creating you must not inherit from it.
+		//- Define all required functions and reflect them to RTTR using the macro REGISTER_VERTEX_LAYOUT().
+		//------------------------------------------------------------------------------------------------------------------------
+		struct svertex final
+		{
+			static constexpr rttr::string_view C_VERTEX_LAYOUT_FUNC_NAME		= "vertex_layout";
+			static constexpr rttr::string_view C_VERTEX_LAYOUT_HANDLE_FUNC_NAME = "vertex_layout_handle";
+			static constexpr rttr::string_view C_INIT_FUNC_NAME					= "init";
+			static constexpr rttr::string_view C_MAKE_VERTEX_FUNC_NAME			= "make";
+
+			static constexpr array_t<rttr::string_view, 4> C_LAYOUTS_FUNC_NAMES = { C_VERTEX_LAYOUT_FUNC_NAME, C_VERTEX_LAYOUT_HANDLE_FUNC_NAME, C_INIT_FUNC_NAME, C_MAKE_VERTEX_FUNC_NAME };
+
+			static bool init() { return true; } //- Do initialization here using bgfx.
+			static bgfx::VertexLayout vertex_layout() { return {}; }
+			static vertex_layout_handle_t vertex_layout_handle() { return MAX(vertex_layout_handle_t); }
+			static svertex make(float x, float y, float z) { return svertex{x, y, z}; }
+
+			float x = 0.0f;
+			float y = 0.0f;
+			float z = 0.0f;
+		};
+
+	} //- vertexlayout
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sblending final

@@ -1,17 +1,23 @@
 #pragma once
 #include "sm_config.hpp"
-#include "sm_mesh.hpp"
+#include "sm_vertices.hpp"
 
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sposition_color_texcoord_vertex final
 	{
-		static void init();
+		static bool init();
+		static bgfx::VertexLayout vertex_layout();
+		static vertex_layout_handle_t vertex_layout_handle();
+		static sposition_color_texcoord_vertex make(float x, float y, float z);
 
-		float x = 0.0f, y = 0.0f, z = 0.0f;
-		float u = 0.0f, v = 0.0f;
-		unsigned abgr = 0;
+		float m_x = 0.0f;
+		float m_y = 0.0f;
+		float m_z = 0.0f;
+		float m_u = 0.0f;
+		float m_v = 0.0f;
+		unsigned m_abgr = 0;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------

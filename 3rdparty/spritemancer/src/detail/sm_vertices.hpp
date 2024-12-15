@@ -4,11 +4,11 @@ namespace sm
 {
 	namespace detail
 	{
-		class imesh;
-		using mesh_ref_t = ref_t<imesh>;
+		class ivertices;
+		using vertices_ref_t = ref_t<ivertices>;
 
 		//------------------------------------------------------------------------------------------------------------------------
-		class imesh
+		class ivertices
 		{
 		public:
 			enum buffer_type : uint8_t
@@ -27,15 +27,13 @@ namespace sm
 				primitive_type_points,
 			};
 
+			explicit ivertices(rttr::type vertex_type);
+
 			void set_buffer_type(buffer_type type) { m_buffer_type = type; }
 			buffer_type get_buffer_type() const { return m_buffer_type; }
 
 			void set_primitive_type(primitive_type type) { m_primitive_type = type; }
 			primitive_type get_primitive_type() const { return m_primitive_type; }
-
-			virtual unsigned vertex_buffer_size() const = 0;
-			virtual unsigned index_buffer_size() const = 0;
-			virtual bgfx::VertexLayout vertex_layout() const = 0;
 
 			buffer_handle_t vertex_buffer() const { return m_vertex_buffer_handle; }
 			buffer_handle_t index_buffer() const { return m_index_buffer_handle; }
@@ -48,10 +46,11 @@ namespace sm
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
-		template<typename TVertex>
-		class cmesh : public imesh
+		class cvertices : public ivertices
 		{
 		public:
+			explicit cvertices(rttr::type vertex_type);
+
 			unsigned vertex_buffer_size() const override final;
 			unsigned index_buffer_size() const override final;
 			bgfx::VertexLayout vertex_layout() const override final;
