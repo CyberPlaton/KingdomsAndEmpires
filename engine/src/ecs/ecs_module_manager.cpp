@@ -259,7 +259,7 @@ namespace ecs
 		//- Create function to be called for running the task
 		auto function = [=](flecs::iter& it)
 			{
-				(callback)(it.delta_time());
+				(callback)(w, it.delta_time());
 			};
 
 		auto task = builder.run(std::move(function));

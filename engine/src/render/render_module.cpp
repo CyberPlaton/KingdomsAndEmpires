@@ -39,7 +39,7 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_frame_begin_system::srender_frame_begin_system(ecs::cworld* w)
 	{
-		w->create_task(config(), [](float dt)
+		w->create_task(config(), [](flecs::world&, float dt)
 			{
 				//-- no-op
 			});
@@ -60,7 +60,7 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_frame_end_system::srender_frame_end_system(ecs::cworld* w)
 	{
-		w->create_task(config(), [](float dt)
+		w->create_task(config(), [](flecs::world&, float dt)
 			{
 				//-- no-op
 			});
@@ -101,6 +101,35 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_system::srender_system(ecs::cworld* w)
 	{
+		sm::setup_render_pass();
+
+		w->create_task(config(), [](flecs::world& ecs, float dt)
+			{
+				const auto* world = reinterpret_cast<ecs::cworld*>(ecs.get_ctx());
+
+				sm::begin();
+				const auto& pass = sm::begin_renderpass((renderpass_id_t)m_pass_id); //-- The renderpass along with data must be defined elsewhere
+
+				sm::set_effect(pass.effect());
+				sm::set_camera(pass.camera());
+
+				for (const auto& id : world->visible_entities())
+				{
+					const auto e = flecs::entity(id);
+
+					const auto& transform = *e.get<ecs::stransform>();
+					const auto& material = *e.get<ecs::smaterial>();
+					const auto& renderer = *e.get<ecs::ssprite_renderer>();
+
+					sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture,
+						renderer.m_tint, transform.m_rotation, transform.m_scale, material.m_program,
+						material.m_renderstate, renderer.m_origin, renderer.m_source_rect);
+				}
+
+				sm::end_renderpass();
+				sm::end();
+			});
+
 		w->create_system(config(), &scene_render_system);
 	}
 

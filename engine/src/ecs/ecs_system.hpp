@@ -25,7 +25,7 @@ namespace ecs
 	{
 		template<typename... TComps>
 		using system_callback_t = void(flecs::entity, TComps...);
-		using task_callback_t = void(float);
+		using task_callback_t = void(flecs::world&, float);
 		using system_flags_t = int;
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ namespace ecs
 		struct ssystem final
 		{
 			static constexpr rttr::string_view C_SYSTEM_CONFIG_FUNC_NAME = "config";
-			static constexpr array_t<rttr::string_view, 1> C_MODULE_FUNC_NAMES = { C_SYSTEM_CONFIG_FUNC_NAME };
+			static constexpr array_t<rttr::string_view, 1> C_SYSTEM_FUNC_NAMES = { C_SYSTEM_CONFIG_FUNC_NAME };
 
 			static sconfig config() { return {}; }
 

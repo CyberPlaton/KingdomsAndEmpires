@@ -88,7 +88,7 @@ namespace sm
 	{
 		if (is_valid(shader))
 		{
-			bgfx::destroy(shader.shader());
+			bgfx::destroy(bgfx::ShaderHandle{ shader.shader() });
 		}
 	}
 
@@ -145,7 +145,7 @@ namespace sm
 	{
 		const bgfx::Memory* mem = bgfx::makeRef(data, size);
 
-		if (m_handle = bgfx::createShader(mem); !bgfx::isValid(m_handle))
+		if (m_handle = bgfx::createShader(mem).idx; !bgfx::isValid(bgfx::ShaderHandle{ m_handle }))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
@@ -225,7 +225,7 @@ namespace sm
 	cprogram::cprogram(const cshader& vertex, const cshader& fragment) :
 		m_vertex(vertex), m_fragment(fragment)
 	{
-		load_from_handles(m_vertex.shader().idx, m_fragment.shader().idx);
+		load_from_handles(m_vertex.shader(), m_fragment.shader());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -274,13 +274,14 @@ namespace sm
 	{
 		m_vertex = vertex;
 		m_fragment = fragment;
-		return load_from_handles(m_vertex.shader().idx, m_fragment.shader().idx);
+		return load_from_handles(m_vertex.shader(), m_fragment.shader());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cprogram::load_from_handles(shader_handle_t vertex, shader_handle_t fragment)
 	{
-		if (m_handle = bgfx::createProgram(bgfx::ShaderHandle{ vertex }, bgfx::ShaderHandle{ fragment }); !bgfx::isValid(m_handle))
+		if (m_handle = bgfx::createProgram(bgfx::ShaderHandle{ vertex }, bgfx::ShaderHandle{ fragment }).idx;
+			!bgfx::isValid(bgfx::ProgramHandle{ m_handle }))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
@@ -377,12 +378,12 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void ctexture::destroy(ctexture& texture)
 	{
-		if (bgfx::isValid(texture.texture()))
+		if (bgfx::isValid(bgfx::TextureHandle{ texture.texture() }))
 		{
-			bgfx::destroy(texture.texture());
+			bgfx::destroy(bgfx::TextureHandle{ texture.texture() });
 
 			//- reset handle and info
-			texture.m_texture.idx = MAX(uint16_t);
+			texture.m_texture = MAX(uint16_t);
 			texture.m_info = {};
 		}
 	}
@@ -413,7 +414,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::ctexture(bgfx::TextureHandle handle, const bgfx::TextureInfo& info) :
+	ctexture::ctexture(texture_handle_t handle, const bgfx::TextureInfo& info) :
 		m_texture(handle), m_info(info)
 	{
 	}
@@ -465,7 +466,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cshader& shader)
 	{
-		return bgfx::isValid(shader.shader());
+		return bgfx::isValid(bgfx::ShaderHandle{ shader.shader() });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -477,13 +478,13 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const ctexture& texture)
 	{
-		return bgfx::isValid(texture.texture());
+		return bgfx::isValid(bgfx::TextureHandle{ texture.texture() });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const crendertarget& target)
 	{
-		return bgfx::isValid(target.target());
+		return bgfx::isValid(bgfx::FrameBufferHandle{ target.target() });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

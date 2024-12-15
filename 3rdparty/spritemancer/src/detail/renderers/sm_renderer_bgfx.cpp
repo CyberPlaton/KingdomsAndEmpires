@@ -1,6 +1,14 @@
 #include "sm_renderer_bgfx.hpp"
 #include "../sm_embedded_shaders.hpp"
 
+RTTR_REGISTRATION
+{
+	using namespace sm;
+
+	rttr::cregistrator<crenderer_bgfx>("crenderer_bgfx")
+		;
+}
+
 namespace sm
 {
 	namespace vertex_layouts

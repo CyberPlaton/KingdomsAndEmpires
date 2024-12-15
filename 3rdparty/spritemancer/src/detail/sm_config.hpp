@@ -20,6 +20,7 @@ namespace sm
 	class cmaterial_manager;
 	class cspriteatlas_manager;
 	class crendertarget_manager;
+	class ccontext;
 
 	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT = 256;
 	constexpr auto C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT = 512;
@@ -44,6 +45,12 @@ namespace sm
 	using program_handle_t		= handle_type_t;
 	using spriteatlas_handle_t	= handle_type_t;
 	using rendertarget_handle_t = handle_type_t;
+	using renderpass_id_t		= handle_type_t;
+	using buffer_handle_t		= handle_type_t;
+	using index_type_t			= uint16_t;
+	using renderpass_order_t	= vector_t<renderpass_id_t>;
+	using context_ref_t			= ref_t<ccontext>;
+	using context_state_flags_t = int;
 
 	bool is_valid(const cshader& shader);
 	bool is_valid(const cprogram& program);
@@ -53,6 +60,16 @@ namespace sm
 	bool is_valid(const ccamera& camera);
 	bool is_valid(const cmaterial& material);
 	bool is_valid(const cspriteatlas& atlas);
+
+	context_ref_t ctx();
+	void create_ctx();
+
+	//------------------------------------------------------------------------------------------------------------------------
+	enum context_state_flag : uint8_t
+	{
+		context_state_flag_none = 0,
+		context_state_flag_want_resize,
+	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum window_flag : uint32_t
@@ -158,7 +175,7 @@ namespace sm
 		opresult load_from_string(const char* string);
 		opresult load_from_memory(const uint8_t* data, unsigned size);
 
-		inline bgfx::ShaderHandle shader() const { return m_handle; }
+		inline shader_handle_t shader() const { return m_handle; }
 
 		void set_uniform_float(stringview_t name, float value);
 		void set_uniform_int(stringview_t name, int value);
@@ -171,8 +188,10 @@ namespace sm
 
 		cshader& operator=(const cshader& other);
 
+		operator bgfx::ShaderHandle() const noexcept { return bgfx::ShaderHandle{ m_handle }; }
+
 	private:
-		bgfx::ShaderHandle m_handle;
+		shader_handle_t m_handle;
 
 		RTTR_ENABLE(core::cresource);
 	};
@@ -194,14 +213,16 @@ namespace sm
 		opresult load_from_shaders(const cshader& vertex, const cshader& fragment);
 		opresult load_from_handles(shader_handle_t vertex, shader_handle_t fragment);
 
-		inline bgfx::ProgramHandle handle() const { return m_handle; }
+		inline program_handle_t handle() const { return m_handle; }
 		inline const cshader& vertex() const { return m_vertex; }
 		inline const cshader& fragment() const { return m_fragment; }
+
+		operator bgfx::ProgramHandle() const noexcept { return bgfx::ProgramHandle{ m_handle }; }
 
 	private:
 		cshader m_vertex;
 		cshader m_fragment;
-		bgfx::ProgramHandle m_handle;
+		program_handle_t m_handle;
 
 		RTTR_ENABLE(core::cresource);
 	};
@@ -245,7 +266,7 @@ namespace sm
 		explicit ctexture(stringview_t filepath);
 		explicit ctexture(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
 			bool mips, unsigned layers, texture_format format, uint64_t flags);
-		explicit ctexture(bgfx::TextureHandle handle, const bgfx::TextureInfo& info);
+		explicit ctexture(texture_handle_t handle, const bgfx::TextureInfo& info);
 		ctexture();
 		~ctexture();
 
@@ -257,10 +278,12 @@ namespace sm
 
 		inline unsigned w() const { return SCAST(unsigned, m_info.width); }
 		inline unsigned h() const { return SCAST(unsigned, m_info.height); }
-		inline bgfx::TextureHandle texture() const { return m_texture; }
+		inline texture_handle_t texture() const { return m_texture; }
+
+		operator bgfx::TextureHandle() const noexcept { return bgfx::TextureHandle{ m_texture }; }
 
 	private:
-		bgfx::TextureHandle m_texture;
+		texture_handle_t m_texture;
 		bgfx::TextureInfo m_info;
 
 		RTTR_ENABLE(core::cresource);
@@ -281,12 +304,14 @@ namespace sm
 
 		inline unsigned w() const { return SCAST(unsigned, m_width); }
 		inline unsigned h() const { return SCAST(unsigned, m_height); }
-		inline bgfx::FrameBufferHandle target() const { return m_framebuffer; }
-		inline bgfx::TextureHandle texture() const { return m_texture; }
+		inline rendertarget_handle_t target() const { return m_framebuffer; }
+		inline texture_handle_t texture() const { return m_texture; }
+
+		operator bgfx::FrameBufferHandle() const noexcept { return bgfx::FrameBufferHandle{ m_framebuffer }; }
 
 	private:
-		bgfx::FrameBufferHandle m_framebuffer;
-		bgfx::TextureHandle m_texture;
+		rendertarget_handle_t m_framebuffer;
+		texture_handle_t m_texture;
 		uint16_t m_width;
 		uint16_t m_height;
 
@@ -425,5 +450,77 @@ namespace sm
 		virtual void on_imgui() = 0;
 		virtual void on_shutdown() = 0;
 	};
+
+//------------------------------------------------------------------------------------------------------------------------
+#define CONTEXT_FLAG_FUNCTIONS(name, flag) \
+void name(const bool value) \
+{ \
+	if (value) \
+	{ \
+		algorithm::bit_set(m_flags, flag); \
+	} \
+	else \
+	{ \
+		algorithm::bit_clear(m_flags, flag); \
+	} \
+} \
+inline bool name() const { return check(flag); }
+
+	//- Class responsible for storing the current state of the library and connecting distinct parts of it as a single point
+	//- of interface.
+	//------------------------------------------------------------------------------------------------------------------------
+	class ccontext final
+	{
+	public:
+		static constexpr auto C_DEFAULT_ROTATION	= 0.0f;
+		static constexpr vec2_t C_DEFAULT_SCALE		= { 1.0f, 1.0f };
+		static constexpr vec2_t C_DEFAULT_ORIGIN	= { 0.5f, 0.5f };
+		static inline const auto C_DEFAULT_SOURCE	= core::srect{ 0.0f, 0.0f, 1.0f, 1.0f };
+		static inline const core::scolor C_WHITE	= { 255, 255, 255, 255 };
+		static inline const core::scolor C_BLACK	= { 0, 0, 0, 0 };
+		static inline const core::scolor C_BLANK	= { 0, 0, 0, 255 };
+
+		struct sio final
+		{
+			unsigned m_window_x = 0;
+			unsigned m_window_y = 0;
+			unsigned m_window_w = 0;
+			unsigned m_window_h = 0;
+			float m_dt = 0.0f;
+			bool m_fullscreen = false;
+			bool m_vsync = false;
+		};
+
+		struct sgraphics final
+		{
+			program_handle_t m_shader = 0;
+		};
+
+		sio& io() { return m_io; }
+		const sio& io() const { return m_io; }
+
+		sgraphics& graphics() { return m_graphics; }
+		const sgraphics& graphics() const { return m_graphics; }
+
+		void* user_data() const { return m_user_data; }
+		void user_data(void* p) { m_user_data = p; }
+
+		void running(const bool value) { m_running = value; }
+		inline bool running() const { return m_running; }
+
+		CONTEXT_FLAG_FUNCTIONS(want_resize, context_state_flag_want_resize);
+
+		inline bool check(context_state_flag flag) const { return algorithm::bit_check(m_flags, flag); }
+
+	private:
+		core::cmutex m_mutex;
+		sgraphics m_graphics;
+		sio m_io;
+		std::atomic_bool m_running = true;
+		context_state_flags_t m_flags = 0;
+		void* m_user_data = nullptr;
+	};
+
+#undef CONTEXT_FLAG_FUNCTIONS
 
 } //- sm

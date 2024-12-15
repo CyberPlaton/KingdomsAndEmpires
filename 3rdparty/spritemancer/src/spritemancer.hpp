@@ -4,6 +4,39 @@
 
 namespace sm
 {
+	namespace renderpass
+	{
+		using renderpass_flags_t = int;
+
+		//------------------------------------------------------------------------------------------------------------------------
+		enum renderpass_flag : uint8_t
+		{
+
+		};
+
+		//------------------------------------------------------------------------------------------------------------------------
+		struct sconfig final
+		{
+			string_t m_name;
+			renderpass_flags_t m_flags = 0;
+		};
+
+		//- This is a dummy rendering pass to show how one should be defined. While creating you must not inherit from it.
+		//- Define all required functions and reflect them to RTTR using the macro REGISTER_RENDERPASS().
+		//------------------------------------------------------------------------------------------------------------------------
+		struct srenderpass final
+		{
+			static constexpr rttr::string_view C_RENDERPASS_CONFIG_FUNC_NAME = "config";
+			static constexpr array_t<rttr::string_view, 1> C_RENDERPASS_FUNC_NAMES = { C_RENDERPASS_CONFIG_FUNC_NAME };
+
+			static sconfig config() { return {}; }
+
+			RTTR_ENABLE();
+		};
+
+	} //- renderpass
+
+
 	opresult	prepare(iapp* app, void* config);
 	opresult	run(stringview_t title, unsigned w, unsigned h, bool fullscreen, bool vsync);
 	void		set_logger(core::error_report_function_t callback);

@@ -11,28 +11,8 @@
 
 namespace sm
 {
-	//- Spritemancer context concentrating important data in one place.
-	//------------------------------------------------------------------------------------------------------------------------
-	struct scontext final
-	{
-	};
-
 	namespace
 	{
-		static void* S_CONFIG				= nullptr;
-		static core::cmutex S_MUTEX;
-		static std::atomic_bool S_RUNNING;
-		static bool S_RESIZE_REQUIRED		= false;
-		static core::scolor S_WHITE			= { 255, 255, 255, 255 };
-		static core::scolor S_BLACK			= { 0, 0, 0, 0 };
-		static core::scolor S_BLANK			= { 0, 0, 0, 255 };
-
-		//- defaults
-		constexpr float C_DEFAULT_ROTATION	= 0.0f;
-		constexpr vec2_t C_DEFAULT_SCALE	= { 1.0f, 1.0f };
-		constexpr vec2_t C_DEFAULT_ORIGIN	= { 0.5f, 0.5f };
-		static const auto C_DEFAULT_SOURCE	= core::srect{ 0.0f, 0.0f, 1.0f, 1.0f };
-
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_configure_platform_and_renderer(iapp* app)
 		{
@@ -53,15 +33,19 @@ namespace sm
 				CORE_NAMED_ZONE(os_process_events);
 				if (entry::os()->process_events() == opresult_fail)
 				{
-					S_RUNNING = false;
+					ctx()->running(false);
 				}
 			}
 
 			//- check for resize of most basic layer. Other layers are not our responsibility
-			if (S_RESIZE_REQUIRED)
+			if (ctx()->want_resize())
 			{
-				entry::renderer()->update_viewport({ osdata.m_window_x, osdata.m_window_y }, { osdata.m_window_w, osdata.m_window_h });
-				S_RESIZE_REQUIRED = false;
+				const auto& io =  ctx()->io();
+
+				entry::renderer()->update_viewport({ io.m_window_x, io.m_window_y },
+					{ io.m_window_w, io.m_window_h });
+
+				ctx()->want_resize(false);
 			}
 
 			//- update HID state, such as keyboard and mouse
@@ -233,7 +217,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult prepare(iapp* app, void* config)
 	{
-		S_CONFIG = config;
+		ctx()->user_data(config);
 
 		engine_configure_platform_and_renderer(app);
 

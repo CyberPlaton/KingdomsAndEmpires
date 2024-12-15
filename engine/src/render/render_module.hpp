@@ -44,6 +44,17 @@ namespace render
 		RTTR_ENABLE();
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	struct srender_system_renderpass final
+	{
+		srender_system_renderpass() = default;
+		srender_system_renderpass(ecs::cworld* w);
+
+		static ecs::system::sconfig config();
+
+		RTTR_ENABLE();
+	};
+
 	//- System responsible for debug rendering on top of rendered sprites in current world.
 	//- Note: Eats up a lot of frame time.
 	//------------------------------------------------------------------------------------------------------------------------

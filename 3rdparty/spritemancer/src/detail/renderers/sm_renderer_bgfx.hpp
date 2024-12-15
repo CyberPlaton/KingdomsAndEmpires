@@ -33,14 +33,3 @@ namespace sm
 	};
 
 } //- sm
-
-namespace sm
-{
-	//------------------------------------------------------------------------------------------------------------------------
-	REFLECT_INLINE(crenderer_bgfx)
-	{
-		rttr::cregistrator<crenderer_bgfx>("crenderer_bgfx")
-			;
-	};
-
-} //- sm
