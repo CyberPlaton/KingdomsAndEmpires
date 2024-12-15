@@ -5,7 +5,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	cspritebatch::cspritebatch()
 	{
-		set_buffer_type(detail::imesh::buffer_type_transient);
+		m_buffer = std::make_shared<detail::cbuffer<sposition_color_texcoord_vertex>>();
+		m_buffer->set_buffer_type(detail::ibuffer::buffer_type_transient);
 	}
 
 } //- sm

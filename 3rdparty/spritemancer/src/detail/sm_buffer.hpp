@@ -4,11 +4,11 @@ namespace sm
 {
 	namespace detail
 	{
-		class ivertices;
-		using vertices_ref_t = ref_t<ivertices>;
+		class ibuffer;
+		using buffer_ref_t = ref_t<ibuffer>;
 
 		//------------------------------------------------------------------------------------------------------------------------
-		class ivertices
+		class ibuffer
 		{
 		public:
 			enum buffer_type : uint8_t
@@ -27,8 +27,6 @@ namespace sm
 				primitive_type_points,
 			};
 
-			explicit ivertices(rttr::type vertex_type);
-
 			void set_buffer_type(buffer_type type) { m_buffer_type = type; }
 			buffer_type get_buffer_type() const { return m_buffer_type; }
 
@@ -46,11 +44,10 @@ namespace sm
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
-		class cvertices : public ivertices
+		template<typename TVertex>
+		class cbuffer : public ibuffer
 		{
 		public:
-			explicit cvertices(rttr::type vertex_type);
-
 			unsigned vertex_buffer_size() const override final;
 			unsigned index_buffer_size() const override final;
 			bgfx::VertexLayout vertex_layout() const override final;
@@ -90,28 +87,28 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		bool cmesh<TVertex>::index_buffer_empty()
+		bool cbuffer<TVertex>::index_buffer_empty()
 		{
 			return m_index_buffer.empty();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		bool cmesh<TVertex>::vertex_buffer_empty()
+		bool cbuffer<TVertex>::vertex_buffer_empty()
 		{
 			return m_vertex_buffer.empty();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		bgfx::VertexLayout cmesh<TVertex>::vertex_layout() const
+		bgfx::VertexLayout cbuffer<TVertex>::vertex_layout() const
 		{
 			return TVertex::s_vertex_layout;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::init()
+		void cbuffer<TVertex>::init()
 		{
 			switch (buffer_type())
 			{
@@ -153,7 +150,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::submit()
+		void cbuffer<TVertex>::submit()
 		{
 			switch (buffer_type())
 			{
@@ -189,7 +186,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::swap_buffers()
+		void cbuffer<TVertex>::swap_buffers()
 		{
 			stl::swap(m_vertex_buffer, m_vertex_buffer_front);
 			stl::swap(m_index_buffer, m_index_buffer_front);
@@ -197,7 +194,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		bool cmesh<TVertex>::is_valid()
+		bool cbuffer<TVertex>::is_valid()
 		{
 			return bgfx::isValid(bgfx::VertexBufferHandle{ vertex_buffer() }) &&
 				bgfx::isValid(bgfx::IndexBufferHandle{ index_buffer() });
@@ -205,7 +202,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::destroy()
+		void cbuffer<TVertex>::destroy()
 		{
 			if (bgfx::isValid(bgfx::VertexBufferHandle{ vertex_buffer() }))
 			{
@@ -252,7 +249,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::reserve(unsigned vertices, unsigned indices)
+		void cbuffer<TVertex>::reserve(unsigned vertices, unsigned indices)
 		{
 			m_vertex_buffer.reserve(m_vertex_buffer.size() + vertices);
 			m_index_buffer.reserve(m_index_buffer.size() + indices);
@@ -260,7 +257,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::clear()
+		void cbuffer<TVertex>::clear()
 		{
 			m_vertex_buffer.clear();
 			m_index_buffer.clear();
@@ -268,7 +265,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_quad(const TVertex& vertex1, const TVertex& vertex2, const TVertex& vertex3, const TVertex& vertex4)
+		void cbuffer<TVertex>::add_quad(const TVertex& vertex1, const TVertex& vertex2, const TVertex& vertex3, const TVertex& vertex4)
 		{
 			add_vertex(vertex1);
 			add_vertex(vertex2);
@@ -287,7 +284,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_triangle(const TVertex& vertex1, const TVertex& vertex2, const TVertex& vertex3)
+		void cbuffer<TVertex>::add_triangle(const TVertex& vertex1, const TVertex& vertex2, const TVertex& vertex3)
 		{
 			add_vertex(vertex1);
 			add_vertex(vertex2);
@@ -301,7 +298,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_line(const TVertex& vertex1, const TVertex& vertex2)
+		void cbuffer<TVertex>::add_line(const TVertex& vertex1, const TVertex& vertex2)
 		{
 			add_vertex(vertex1);
 			add_last_vertex_index();
@@ -312,14 +309,14 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_current_vertex_index()
+		void cbuffer<TVertex>::add_current_vertex_index()
 		{
 			add_index(static_cast<index_type_t>(m_index_buffer.size()));
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_line(const TVertex& vertex)
+		void cbuffer<TVertex>::add_line(const TVertex& vertex)
 		{
 			if (m_vertex_buffer.empty())
 			{
@@ -332,7 +329,7 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_point(const TVertex& vertex)
+		void cbuffer<TVertex>::add_point(const TVertex& vertex)
 		{
 			add_vertex(vertex);
 			add_last_vertex_index();
@@ -340,35 +337,35 @@ namespace sm
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_last_vertex_index()
+		void cbuffer<TVertex>::add_last_vertex_index()
 		{
 			add_index(static_cast<index_type_t>(m_index_buffer.size() - 1));
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_index(index_type_t index)
+		void cbuffer<TVertex>::add_index(index_type_t index)
 		{
 			m_index_buffer.emplace_back(index);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		void cmesh<TVertex>::add_vertex(const TVertex& vertex)
+		void cbuffer<TVertex>::add_vertex(const TVertex& vertex)
 		{
 			m_vertex_buffer.emplace_back(vertex);
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		unsigned cmesh<TVertex>::index_buffer_size() const
+		unsigned cbuffer<TVertex>::index_buffer_size() const
 		{
 			return SCAST(unsigned, m_index_buffer_front.size());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		unsigned cmesh<TVertex>::vertex_buffer_size() const
+		unsigned cbuffer<TVertex>::vertex_buffer_size() const
 		{
 			return SCAST(unsigned, m_vertex_buffer_front.size());
 		}

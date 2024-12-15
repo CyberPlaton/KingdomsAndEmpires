@@ -1,6 +1,6 @@
 #pragma once
 #include "sm_config.hpp"
-#include "sm_vertices.hpp"
+#include "sm_buffer.hpp"
 
 namespace sm
 {
@@ -21,7 +21,7 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
-	class cspritebatch final : public detail::cmesh<sposition_color_texcoord_vertex>
+	class cspritebatch final
 	{
 	public:
 		cspritebatch();
@@ -32,6 +32,7 @@ namespace sm
 		void end();
 
 	private:
+		detail::buffer_ref_t m_buffer = nullptr;
 		texture_handle_t m_previous_texture = MAX(texture_handle_t);
 	};
 
