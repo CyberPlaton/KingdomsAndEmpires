@@ -4,53 +4,35 @@ namespace sm
 {
 	namespace detail
 	{
-		class ibuffer;
-		using buffer_ref_t = ref_t<ibuffer>;
+		//------------------------------------------------------------------------------------------------------------------------
+		enum buffer_type : uint8_t
+		{
+			buffer_type_none = 0,
+			buffer_type_static,
+			buffer_type_dynamic,
+			buffer_type_transient,
+		};
 
 		//------------------------------------------------------------------------------------------------------------------------
-		class ibuffer
+		enum primitive_type : uint8_t
 		{
-		public:
-			enum buffer_type : uint8_t
-			{
-				buffer_type_none = 0,
-				buffer_type_static,
-				buffer_type_dynamic,
-				buffer_type_transient,
-			};
-
-			enum primitive_type : uint8_t
-			{
-				primitive_type_none = 0,
-				primitive_type_triangles,
-				primitive_type_lines,
-				primitive_type_points,
-			};
-
-			void set_buffer_type(buffer_type type) { m_buffer_type = type; }
-			buffer_type get_buffer_type() const { return m_buffer_type; }
-
-			void set_primitive_type(primitive_type type) { m_primitive_type = type; }
-			primitive_type get_primitive_type() const { return m_primitive_type; }
-
-			buffer_handle_t vertex_buffer() const { return m_vertex_buffer_handle; }
-			buffer_handle_t index_buffer() const { return m_index_buffer_handle; }
-
-		protected:
-			buffer_type m_buffer_type = buffer_type_none;
-			primitive_type m_primitive_type = primitive_type_none;
-			buffer_handle_t m_vertex_buffer_handle = MAX(buffer_handle_t);
-			buffer_handle_t m_index_buffer_handle = MAX(buffer_handle_t);
+			primitive_type_none = 0,
+			primitive_type_triangles,
+			primitive_type_lines,
+			primitive_type_points,
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename TVertex>
-		class cbuffer : public ibuffer
+		class cbuffer final
 		{
 		public:
-			unsigned vertex_buffer_size() const override final;
-			unsigned index_buffer_size() const override final;
-			bgfx::VertexLayout vertex_layout() const override final;
+			cbuffer() = default;
+			~cbuffer() { destroy(); }
+
+			unsigned vertex_buffer_size() const;
+			unsigned index_buffer_size() const;
+			bgfx::VertexLayout vertex_layout() const;
 
 			void add_point(const TVertex& vertex);
 			void add_line(const TVertex& vertex);
@@ -77,12 +59,26 @@ namespace sm
 			TVertex* vertex_buffer_data() const { return m_vertex_buffer.data(); }
 			index_type_t* index_buffer_data() const { return m_index_buffer.data(); }
 
+			void set_buffer_type(buffer_type type) { m_buffer_type = type; }
+			buffer_type get_buffer_type() const { return m_buffer_type; }
+
+			void set_primitive_type(primitive_type type) { m_primitive_type = type; }
+			primitive_type get_primitive_type() const { return m_primitive_type; }
+
+			buffer_handle_t vertex_buffer() const { return m_vertex_buffer_handle; }
+			buffer_handle_t index_buffer() const { return m_index_buffer_handle; }
+
 		private:
 			vector_t<TVertex> m_vertex_buffer;
 			vector_t<TVertex> m_vertex_buffer_front;
 
 			vector_t<index_type_t> m_index_buffer;
 			vector_t<index_type_t> m_index_buffer_front;
+
+			buffer_type m_buffer_type = buffer_type_none;
+			primitive_type m_primitive_type = primitive_type_none;
+			buffer_handle_t m_vertex_buffer_handle = MAX(buffer_handle_t);
+			buffer_handle_t m_index_buffer_handle = MAX(buffer_handle_t);
 		};
 
 		//------------------------------------------------------------------------------------------------------------------------

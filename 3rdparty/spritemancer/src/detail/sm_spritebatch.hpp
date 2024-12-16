@@ -28,11 +28,12 @@ namespace sm
 		~cspritebatch() = default;
 
 		void begin();
-		void draw();
+		void draw(texture_handle_t texture, const vec2_t& position, const core::scolor& color,
+			float rotation, const vec2_t& scale, const vec2_t& origin, const core::srect& source);
 		void end();
 
 	private:
-		detail::buffer_ref_t m_buffer = nullptr;
+		detail::cbuffer<sposition_color_texcoord_vertex> m_buffer;
 		texture_handle_t m_previous_texture = MAX(texture_handle_t);
 	};
 
