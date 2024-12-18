@@ -3,9 +3,11 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	cspritebatch::cspritebatch()
+	cspritebatch::cspritebatch() :
+		m_buffer(rttr::type::get<sposition_color_texcoord_vertex>())
 	{
 		m_buffer.set_buffer_type(detail::buffer_type_transient);
+		m_buffer.set_primitive_type(detail::primitive_type_triangles);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -45,7 +47,16 @@ namespace sm
 	void sposition_color_texcoord_vertex::make_vertex(core::cany& buffer, float x, float y, float z, float u, float v, unsigned abgr)
 	{
 		auto& data = buffer.get<vector_t<sposition_color_texcoord_vertex>>();
-		data.emplace_back(x, y, z, u, v, abgr);
+
+		sposition_color_texcoord_vertex vertex;
+		vertex.m_x = x;
+		vertex.m_y = y;
+		vertex.m_z = z;
+		vertex.m_u = u;
+		vertex.m_v = v;
+		vertex.m_abgr = abgr;
+
+		data.emplace_back(vertex);
 	}
 
 } //- sm

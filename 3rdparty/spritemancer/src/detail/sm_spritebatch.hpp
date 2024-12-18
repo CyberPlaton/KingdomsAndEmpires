@@ -35,7 +35,7 @@ namespace sm
 		void end();
 
 	private:
-		detail::cbuffer<sposition_color_texcoord_vertex> m_buffer;
+		detail::cbuffer m_buffer;
 		texture_handle_t m_previous_texture = MAX(texture_handle_t);
 	};
 

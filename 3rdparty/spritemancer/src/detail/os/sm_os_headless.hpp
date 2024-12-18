@@ -20,6 +20,7 @@ namespace sm
 		core::smouse_state mouse_state() const override final { return {}; }
 		core::skeyboard_state keyboard_state() const override final { return {}; }
 		core::sgamepad_state gamepad_state() const override final { return {}; }
+		float frametime() const override final { return 0.016f; }
 		unsigned read_input_character() override final { return (unsigned)'\0'; }
 		void mouse_position(double* x, double* y) override final {}
 		void mouse_scroll_dt(double* x, double* y) override final {}

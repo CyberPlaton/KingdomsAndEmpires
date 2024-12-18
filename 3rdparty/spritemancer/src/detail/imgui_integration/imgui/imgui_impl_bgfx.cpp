@@ -1,5 +1,5 @@
 #include "imgui_impl_bgfx.h"
-#include "../../bgfx_integration/bgfx.hpp"
+#include "../../bgfx_integration/bgfx_integration.hpp"
 #include "droidsans.ttf.h"
 #include "roboto_regular.ttf.h"
 #include "robotomono_regular.ttf.h"
@@ -74,8 +74,8 @@ namespace
 	void simgui_context::render(ImDrawData* _drawData)
 	{
 		// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-		int32_t dispWidth = _drawData->DisplaySize.x * _drawData->FramebufferScale.x;
-		int32_t dispHeight = _drawData->DisplaySize.y * _drawData->FramebufferScale.y;
+		int dispWidth = static_cast<int>(_drawData->DisplaySize.x * _drawData->FramebufferScale.x);
+		int dispHeight = static_cast<int>(_drawData->DisplaySize.y * _drawData->FramebufferScale.y);
 		if (dispWidth <= 0
 			|| dispHeight <= 0)
 		{
@@ -111,7 +111,7 @@ namespace
 			uint32_t numVertices = (uint32_t)drawList->VtxBuffer.size();
 			uint32_t numIndices = (uint32_t)drawList->IdxBuffer.size();
 
-			if (!bgfx::checkAvailTransientBuffers(numVertices, m_layout, numIndices))
+			if (!sm::graphics::detail::check_available_transient_buffers(numVertices, m_layout, numIndices))
 			{
 				// not enough space in transient buffer just quit drawing the rest...
 				break;

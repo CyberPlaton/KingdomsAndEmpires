@@ -1,7 +1,7 @@
 #pragma once
 #include <core.h>
 #include <imgui.h>
-#include "../bgfx_integration/bgfx.hpp"
+#include "../bgfx_integration/bgfx_integration.hpp"
 #include "imgui_scopes.hpp"
 #include "imnodes_scopes.hpp"
 #include "imnodes_node.hpp"

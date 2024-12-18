@@ -230,7 +230,7 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cprogram::cprogram() :
-		m_handle({ MAX(uint16_t) })
+		m_handle(MAX(uint16_t))
 	{
 
 	}
@@ -390,7 +390,7 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	ctexture::ctexture() :
-		m_texture({ MAX(uint16_t) })
+		m_texture(MAX(uint16_t))
 	{
 	}
 
@@ -512,7 +512,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cprogram& program)
 	{
-		return bgfx::isValid(program.handle());
+		return bgfx::isValid(bgfx::ProgramHandle{ program.handle() });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -520,7 +520,7 @@ namespace sm
 	{
 		if (is_valid(target))
 		{
-			bgfx::destroy(target.target());
+			bgfx::destroy(bgfx::FrameBufferHandle{ target.target() });
 		}
 	}
 
@@ -532,7 +532,7 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	crendertarget::crendertarget() :
-		m_texture({ MAX(uint16_t) })
+		m_texture(MAX(uint16_t))
 	{
 	}
 
@@ -545,7 +545,7 @@ namespace sm
 	sm::opresult crendertarget::create(unsigned w, unsigned h)
 	{
 		if (m_framebuffer = bgfx::createFrameBuffer(SCAST(uint16_t, w), SCAST(uint16_t, h),
-			texture_format::RGBA8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP); !bgfx::isValid(m_framebuffer))
+			texture_format::RGBA8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP).idx; !bgfx::isValid(bgfx::FrameBufferHandle{ m_framebuffer }))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
@@ -555,7 +555,7 @@ namespace sm
 			return opresult_fail;
 		}
 
-		m_texture = bgfx::getTexture(m_framebuffer);
+		m_texture = bgfx::getTexture(bgfx::FrameBufferHandle{ m_framebuffer }).idx;
 		m_width = SCAST(uint16_t, w);
 		m_height = SCAST(uint16_t, h);
 
