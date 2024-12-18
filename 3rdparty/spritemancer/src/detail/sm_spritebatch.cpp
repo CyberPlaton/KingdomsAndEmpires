@@ -27,4 +27,32 @@ namespace sm
 
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	void sposition_color_texcoord_vertex::init()
+	{
+		S_LAYOUT.begin()
+			.add(bgfx::Attrib::Position,	3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::TexCoord0,	2, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Color0,		4, bgfx::AttribType::Uint8, true)
+			.end();
+
+		S_HANDLE = bgfx::createVertexLayout(S_LAYOUT);
+
+		CORE_ASSERT(bgfx::isValid(S_HANDLE), "Invalid operation. Failed to initialize vertex type 'sposition_color_texcoord_vertex'!");
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void sposition_color_texcoord_vertex::make_vertex(core::cany& buffer, float x, float y, float z, float u, float v, unsigned abgr)
+	{
+		auto& data = buffer.get<vector_t<sposition_color_texcoord_vertex>>();
+		data.emplace_back(x, y, z, u, v, abgr);
+	}
+
 } //- sm
+
+RTTR_REGISTRATION
+{
+	using namespace sm;
+
+	REGISTER_VERTEX_TYPE(sposition_color_texcoord_vertex);
+}

@@ -5,12 +5,12 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	struct sposition_color_texcoord_vertex final
+	struct sposition_color_texcoord_vertex final : detail::ivertex_type
 	{
-		static bool init();
-		static bgfx::VertexLayout vertex_layout();
-		static vertex_layout_handle_t vertex_layout_handle();
-		static sposition_color_texcoord_vertex make(float x, float y, float z);
+		DECLARE_VERTEX_TYPE(sposition_color_texcoord_vertex);
+
+		static void init();
+		static void make_vertex(core::cany& buffer, float x, float y, float z, float u, float v, unsigned abgr);
 
 		float m_x = 0.0f;
 		float m_y = 0.0f;
@@ -18,6 +18,8 @@ namespace sm
 		float m_u = 0.0f;
 		float m_v = 0.0f;
 		unsigned m_abgr = 0;
+
+		RTTR_ENABLE(detail::ivertex_type);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
