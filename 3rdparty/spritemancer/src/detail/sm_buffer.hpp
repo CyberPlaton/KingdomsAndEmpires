@@ -19,32 +19,39 @@
 		return S_LAYOUT; \
 	} \
 	static stringview_t name() { static constexpr stringview_t C_NAME = SSTRING(c); return C_NAME; } \
-	static unsigned vertices_count(core::cany& b) const { return SCAST(unsigned, b.get<vector_t<c>>().size()); } \
-	static bool vertices_empty(core::cany& b) const { return b.get<vector_t<c>>().empty(); } \
-static void vertices_clear(core::cany& b) { b.get<vector_t<c>>().clear(); } \
-static void vertices_destroy(core::cany& b, buffer_handle_t handle, buffer_type type) \
-{ \
-	if (bgfx::isValid(bgfx::VertexBufferHandle{ handle })) \
+	static unsigned vertices_count(core::cany& b) { return SCAST(unsigned, b.get<vector_t<c>>().size()); } \
+	static bool vertices_empty(core::cany& b) { return b.get<vector_t<c>>().empty(); } \
+	static void vertices_clear(core::cany& b) { b.get<vector_t<c>>().clear(); } \
+	static void vertices_destroy(core::cany& b, sm::buffer_handle_t handle, sm::detail::buffer_type type) \
 	{ \
-		switch (type) \
+		if (bgfx::isValid(bgfx::VertexBufferHandle{ handle })) \
 		{ \
-		case buffer_type_static: \
-		{ \
-			bgfx::destroy(bgfx::VertexBufferHandle{ handle }); \
-			break; \
-		} \
-		case buffer_type_dynamic: \
-		{ \
-			bgfx::destroy(bgfx::DynamicVertexBufferHandle{ handle }); \
-			break; \
-		} \
-		case buffer_type_transient: \
-		{ \
-			break; \
-		} \
+			switch (type) \
+			{ \
+			case sm::detail::buffer_type_static: \
+			{ \
+				bgfx::destroy(bgfx::VertexBufferHandle{ handle }); \
+				break; \
+			} \
+			case sm::detail::buffer_type_dynamic: \
+			{ \
+				bgfx::destroy(bgfx::DynamicVertexBufferHandle{ handle }); \
+				break; \
+			} \
+			default: \
+			case sm::detail::buffer_type_transient: \
+			{ \
+				break; \
+			} \
+			} \
 		} \
 	} \
-} \
+	static void vertex_swap_buffers(core::cany& b, core::cany& front) \
+	{ \
+		auto& b_data = b.get<vector_t<c>>(); \
+		auto& front_data = front.get<vector_t<c>>(); \
+		stl::swap(b_data, front_data); \
+	} \
 
 //- Use macro to reflect you vertex type to RTTR.
 //------------------------------------------------------------------------------------------------------------------------
@@ -55,6 +62,11 @@ static void vertices_destroy(core::cany& b, buffer_handle_t handle, buffer_type 
 		.meth(sm::detail::C_VERTEX_TYPE_INIT_BUFFER_FUNC_NAME, &c::init_buffer) \
 		.meth(sm::detail::C_VERTEX_TYPE_MAKE_VERTEX_FUNC_NAME, &c::make_vertex) \
 		.meth(sm::detail::C_VERTEX_TYPE_VERTEX_LAYOUT_FUNC_NAME, &c::vertex_layout) \
+		.meth(sm::detail::C_VERTEX_TYPE_VERTEX_COUNT_FUNC_NAME, &c::vertex_count) \
+		.meth(sm::detail::C_VERTEX_TYPE_VERTEX_CLEAR_FUNC_NAME, &c::vertex_clear) \
+		.meth(sm::detail::C_VERTEX_TYPE_VERTEX_DESTROY_FUNC_NAME, &c::vertex_destroy) \
+		.meth(sm::detail::C_VERTEX_TYPE_VERTEX_EMPTY_FUNC_NAME, &c::vertex_empty) \
+		.meth(sm::detail::C_VERTEX_TYPE_VERTEX_SWAP_BUFFERS_FUNC_NAME, &c::vertex_swap_buffers) \
 		.meth(sm::detail::C_VERTEX_TYPE_VERTEX_LAYOUT_HANDLE_FUNC_NAME, &c::vertex_layout_handle)
 
 namespace sm
@@ -70,6 +82,8 @@ namespace sm
 		constexpr rttr::string_view C_VERTEX_TYPE_VERTICES_CLEAR_FUNC_NAME = "vertex_clear";
 		constexpr rttr::string_view C_VERTEX_TYPE_VERTICES_DESTROY_FUNC_NAME = "vertex_destroy";
 		constexpr rttr::string_view C_VERTEX_TYPE_VERTICES_EMPTY_FUNC_NAME = "vertex_empty";
+		constexpr rttr::string_view C_VERTEX_TYPE_VERTICES_SWAP_BUFFERS_FUNC_NAME = "vertex_swap_buffers";
+
 
 		//------------------------------------------------------------------------------------------------------------------------
 		enum buffer_type : uint8_t
@@ -109,7 +123,7 @@ namespace sm
 			unsigned indices_count() const;
 			bool vertices_empty() const;
 			bool indices_empty() const;
-
+			void swap_buffers();
 			void clear();
 			void destroy();
 
@@ -124,6 +138,7 @@ namespace sm
 
 		private:
 			core::cany m_vertex_data;
+			core::cany m_vertex_data_front;
 			vector_t<index_type_t> m_indices;
 			rttr::type m_vertex_type;
 			buffer_type m_buffer_type = buffer_type_none;

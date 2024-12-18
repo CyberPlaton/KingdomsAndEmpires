@@ -34,25 +34,29 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		unsigned cbuffer2::vertices_count() const
 		{
-			return invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTICES_COUNT_FUNC_NAME, m_vertex_data).get_value<unsigned>();
+			const auto result = invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTICES_COUNT_FUNC_NAME, const_cast<core::cany&>(m_vertex_data));
+
+			return result.get_value<unsigned>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		unsigned cbuffer2::indices_count() const
 		{
-
+			return SCAST(unsigned, m_indices.size());
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		bool cbuffer2::vertices_empty() const
 		{
-			return invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTICES_EMPTY_FUNC_NAME, m_vertex_data).get_value<bool>();
+			const auto result = invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTICES_EMPTY_FUNC_NAME, const_cast<core::cany&>(m_vertex_data));
+
+			return result.get_value<bool>();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		bool cbuffer2::indices_empty() const
 		{
-
+			return m_indices.empty();
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
@@ -65,6 +69,12 @@ namespace sm
 		void cbuffer2::destroy()
 		{
 			invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTICES_DESTROY_FUNC_NAME, m_vertex_data);
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void cbuffer2::swap_buffers()
+		{
+			invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTICES_SWAP_BUFFERS_FUNC_NAME, m_vertex_data, m_vertex_data_front);
 		}
 
 	} //- detail
