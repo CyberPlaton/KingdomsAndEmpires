@@ -84,6 +84,47 @@ namespace sm
 	} //- entry
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void cuniform::destroy(cuniform& uniform)
+	{
+		if (is_valid(uniform))
+		{
+			bgfx::destroy(bgfx::UniformHandle{ uniform.uniform() });
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::cuniform(stringview_t name, bgfx::UniformType::Enum type)
+	{
+		create(name, type);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::cuniform() :
+		m_handle(MAX(handle_type_t))
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cuniform::~cuniform()
+	{
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	opresult cuniform::create(stringview_t name, bgfx::UniformType::Enum type)
+	{
+		m_handle = bgfx::createUniform(name.data(), type, 1).idx;
+
+		return bgfx::isValid(bgfx::UniformHandle{ m_handle }) ? opresult_ok : opresult_fail;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	uniform_handle_t cuniform::uniform() const
+	{
+		return m_handle;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cshader::destroy(cshader& shader)
 	{
 		if (is_valid(shader))
@@ -513,6 +554,12 @@ namespace sm
 	bool is_valid(const cprogram& program)
 	{
 		return bgfx::isValid(bgfx::ProgramHandle{ program.handle() });
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bool is_valid(const cuniform& uniform)
+	{
+		return bgfx::isValid(bgfx::UniformHandle{ uniform.uniform() });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

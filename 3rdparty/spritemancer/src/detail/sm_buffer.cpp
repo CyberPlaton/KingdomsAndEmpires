@@ -1,18 +1,19 @@
 #include "sm_buffer.hpp"
+#include "bgfx_integration/bgfx_integration.hpp"
 
 namespace sm
 {
-	namespace detail
+	namespace buffer
 	{
 		namespace
 		{
 			//------------------------------------------------------------------------------------------------------------------------
 			template<typename... ARGS>
-			rttr::variant invoke_static_function(rttr::type type, rttr::string_view name, core::cany& buffer, ARGS&&... args)
+			rttr::variant invoke_static_function(rttr::type type, rttr::string_view name, ARGS&&... args)
 			{
 				if (const auto m = type.get_method(name); m.is_valid())
 				{
-					return m.invoke({}, buffer, args...);
+					return m.invoke({}, args...);
 				}
 				else
 				{
@@ -25,243 +26,162 @@ namespace sm
 		} //- unnamed
 
 		//------------------------------------------------------------------------------------------------------------------------
-		cbuffer::cbuffer(rttr::type vertex_type) :
-			m_vertex_type(vertex_type)
+		opresult create(sbuffer* buffer)
 		{
-			invoke_static_function(m_vertex_type, C_VERTEX_TYPE_INIT_BUFFER_FUNC_NAME, m_vertex_data);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cbuffer& cbuffer::push_vertex(const core::cany& vertex)
-		{
-			invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTEX_EMPTY_FUNC_NAME, m_vertex_data, vertex);
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cbuffer& cbuffer::push_index(index_type_t index)
-		{
-			m_indices.emplace_back(index);
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cbuffer& cbuffer::push_line(const core::cany& vertex)
-		{
-			if (vertices_empty())
+			switch (buffer->m_buffer_type)
 			{
-				push_last_index();
-				push_current_index();
-			}
-			push_vertex(vertex);
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cbuffer& cbuffer::push_line(const core::cany& vertex1, const core::cany& vertex2)
-		{
-			push_vertex(vertex1);
-			push_last_index();
-
-			push_vertex(vertex2);
-			push_last_index();
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cbuffer& cbuffer::push_point(const core::cany& vertex)
-		{
-			push_vertex(vertex);
-			push_last_index();
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cbuffer& cbuffer::push_triangle(const core::cany& vertex1, const core::cany& vertex2, const core::cany& vertex3)
-		{
-			push_vertex(vertex1);
-			push_vertex(vertex2);
-			push_vertex(vertex3);
-
-			const auto i = SCAST(index_type_t, m_indices.size());
-			push_index(i);
-			push_index(i + 1);
-			push_index(i + 2);
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		cbuffer& cbuffer::push_quad(const core::cany& vertex1, const core::cany& vertex2, const core::cany& vertex3, const core::cany& vertex4)
-		{
-			push_vertex(vertex1);
-			push_vertex(vertex2);
-			push_vertex(vertex3);
-			push_vertex(vertex4);
-
-			const auto i = SCAST(index_type_t, m_indices.size());
-			push_index(i);
-			push_index(i + 1);
-			push_index(i + 2);
-			push_index(i + 3);
-			push_index(i + 1);
-			push_index(i + 3);
-			push_index(i + 2);
-			return *this;
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		unsigned cbuffer::vertices_count() const
-		{
-			const auto result = invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTEX_COUNT_FUNC_NAME, const_cast<core::cany&>(m_vertex_data));
-
-			return result.get_value<unsigned>();
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		unsigned cbuffer::indices_count() const
-		{
-			return SCAST(unsigned, m_indices.size());
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bool cbuffer::vertices_empty() const
-		{
-			const auto result = invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTEX_EMPTY_FUNC_NAME, const_cast<core::cany&>(m_vertex_data));
-
-			return result.get_value<bool>();
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bool cbuffer::indices_empty() const
-		{
-			return m_indices.empty();
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		bool cbuffer::valid() const
-		{
-			return bgfx::isValid(bgfx::VertexBufferHandle{ vertex_buffer() }) &&
-				bgfx::isValid(bgfx::IndexBufferHandle{ index_buffer() });
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void cbuffer::submit()
-		{
-			switch (m_buffer_type)
+			case buffer_type_static:
 			{
-			case detail::buffer_type_static:
-			{
-				destroy();
-				create_buffers();
-				break;
-			}
-			case detail::buffer_type_dynamic:
-			{
-				if (!valid())
+				if (!buffer->m_vertices.empty())
 				{
-					create_buffers();
-				}
-				else
-				{
-					invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTEX_BUFFER_UPDATE_FUNC_NAME, m_vertex_data, m_vertex_buffer_handle, m_buffer_type, 0);
+					if (const auto vertex_type = rttr::type::get_by_name(buffer->m_layout_name.data()); vertex_type.is_valid())
+					{
+						const auto& layout = invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
 
-					bgfx::update(bgfx::DynamicIndexBufferHandle{ index_buffer() }, 0, bgfx::makeRef(m_indices.data(), indices_count()));
+						buffer->m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(buffer->m_vertices.data(), buffer->m_vertices.size()),
+							layout, BGFX_BUFFER_ALLOW_RESIZE).idx;
+
+						if (!buffer->m_indices.empty())
+						{
+							buffer->m_ibh = bgfx::createIndexBuffer(bgfx::makeRef(buffer->m_indices.data(), buffer->m_indices.size()),
+								BGFX_BUFFER_ALLOW_RESIZE).idx;
+						}
+					}
 				}
 				break;
 			}
-			default:
-			case detail::buffer_type_transient:
+			case buffer_type_dynamic:
 			{
-				break;
-			}
-			}
-
-			swap_buffers();
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void cbuffer::clear()
-		{
-			invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTEX_CLEAR_FUNC_NAME, m_vertex_data);
-		}
-
-		//------------------------------------------------------------------------------------------------------------------------
-		void cbuffer::destroy()
-		{
-			invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTEX_DESTROY_FUNC_NAME, m_vertex_data);
-
-			if (bgfx::isValid(bgfx::IndexBufferHandle{ index_buffer() }))
-			{
-				switch (buffer_type())
+				if (!buffer->m_vertices.empty())
 				{
-				case buffer_type_static:
-				{
-					bgfx::destroy(bgfx::IndexBufferHandle{ index_buffer() });
-					break;
-				}
-				case buffer_type_dynamic:
-				{
-					bgfx::destroy(bgfx::DynamicIndexBufferHandle{ index_buffer() });
-					break;
-				}
-				case buffer_type_transient:
-				{
-					break;
-				}
-				}
-			}
-		}
+					if (const auto vertex_type = rttr::type::get_by_name(buffer->m_layout_name.data()); vertex_type.is_valid())
+					{
+						const auto& layout = invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
 
-		//------------------------------------------------------------------------------------------------------------------------
-		void cbuffer::create_buffers()
-		{
-			invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTEX_BUFFER_CREATE_FUNC_NAME, m_vertex_data, m_vertex_buffer_handle, m_buffer_type);
+						buffer->m_vbh = bgfx::createDynamicVertexBuffer(bgfx::makeRef(buffer->m_vertices.data(), buffer->m_vertices.size()),
+							layout, BGFX_BUFFER_ALLOW_RESIZE).idx;
 
-			switch (m_buffer_type)
-			{
-			case detail::buffer_type_static:
-			{
-				if (!vertices_empty() && !indices_empty())
-				{
-					m_index_buffer_handle = bgfx::createIndexBuffer(bgfx::makeRef(m_indices.data(), indices_count())).idx;
+						if (!buffer->m_indices.empty())
+						{
+							buffer->m_ibh = bgfx::createDynamicIndexBuffer(bgfx::makeRef(buffer->m_indices.data(), buffer->m_indices.size()),
+								BGFX_BUFFER_ALLOW_RESIZE).idx;
+						}
+					}
 				}
 				break;
 			}
-			case detail::buffer_type_dynamic:
+			case buffer_type_transient:
 			{
-				if (!vertices_empty() && !indices_empty())
+				if (const auto vertex_type = rttr::type::get_by_name(buffer->m_layout_name.data()); vertex_type.is_valid())
 				{
-					m_index_buffer_handle = bgfx::createDynamicIndexBuffer(bgfx::makeRef(m_indices.data(), indices_count()),
-						BGFX_BUFFER_ALLOW_RESIZE).idx;
+					const auto& layout = invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
+
+					if (sm::graphics::detail::check_available_transient_buffers(buffer->m_vertices.size(), layout, buffer->m_indices.size()))
+					{
+						//- TODO: we probably should store this somewhere for a frame, this could get destroyed when going out of scope...
+						bgfx::TransientVertexBuffer tvb;
+						bgfx::TransientIndexBuffer tib;
+
+						bgfx::allocTransientBuffers(&tvb, layout, buffer->m_vertices.size(),
+							&tib, buffer->m_indices.size());
+
+						std::memcpy(tvb.data, (const void*)buffer->m_vertices.data(), sizeof(float) * buffer->m_vertices.size());
+						std::memcpy(tib.data,(const void*)buffer->m_indices.data(), sizeof(index_type_t) * buffer->m_indices.size());
+
+						buffer->m_vbh = tvb.handle.idx;
+						buffer->m_ibh = tvb.handle.idx;
+					}
 				}
 				break;
 			}
-			default:
-			case detail::buffer_type_transient:
+			default: return opresult_fail;
+			}
+
+			return opresult_ok;
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		void destroy(sbuffer* buffer)
+		{
+			switch (buffer->m_buffer_type)
 			{
+			case buffer_type_static:
+			{
+				const auto vertex_handle = bgfx::VertexBufferHandle{ buffer->m_vbh };
+				const auto index_handle = bgfx::IndexBufferHandle{ buffer->m_ibh };
+
+				if (bgfx::isValid(vertex_handle)) bgfx::destroy(vertex_handle);
+				if (bgfx::isValid(index_handle)) bgfx::destroy(index_handle);
+
 				break;
 			}
+			case buffer_type_dynamic:
+			{
+				const auto vertex_handle = bgfx::DynamicVertexBufferHandle{ buffer->m_vbh };
+				const auto index_handle = bgfx::DynamicIndexBufferHandle{ buffer->m_ibh };
+
+				if (bgfx::isValid(vertex_handle)) bgfx::destroy(vertex_handle);
+				if (bgfx::isValid(index_handle)) bgfx::destroy(index_handle);
+				break;
+			}
+			case buffer_type_transient: break;
+			default: break;
 			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void cbuffer::push_last_index()
+		void update(sbuffer* buffer)
 		{
-			m_indices.emplace_back(static_cast<index_type_t>(m_indices.size() - 1));
+			switch (buffer->m_buffer_type)
+			{
+			case buffer_type_static:
+			{
+				destroy(buffer);
+				create(buffer);
+				break;
+			}
+			case buffer_type_dynamic:
+			{
+				if (!buffer->m_vertices.empty())
+				{
+					bgfx::update(bgfx::DynamicVertexBufferHandle{ buffer->m_vbh }, 0,
+						bgfx::makeRef(buffer->m_vertices.data(), buffer->m_vertices.size()));
+
+					if (!buffer->m_indices.empty())
+					{
+						bgfx::update(bgfx::DynamicIndexBufferHandle{ buffer->m_ibh }, 0,
+							bgfx::makeRef(buffer->m_indices.data(), buffer->m_indices.size()));
+					}
+				}
+				break;
+			}
+			case buffer_type_transient:
+			default: break;
+			}
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		void cbuffer::push_current_index()
+		void bind(sbuffer* buffer)
 		{
-			m_indices.emplace_back(static_cast<index_type_t>(m_indices.size()));
+			switch (buffer->m_buffer_type)
+			{
+			case buffer_type_transient:
+			case buffer_type_static:
+			{
+				bgfx::setVertexBuffer(0, bgfx::VertexBufferHandle{ buffer->m_vbh });
+				bgfx::setIndexBuffer(bgfx::IndexBufferHandle{ buffer->m_ibh });
+				break;
+			}
+			case buffer_type_dynamic:
+			{
+				bgfx::setVertexBuffer(0, bgfx::DynamicVertexBufferHandle{ buffer->m_vbh });
+				bgfx::setIndexBuffer(bgfx::DynamicIndexBufferHandle{ buffer->m_ibh });
+				break;
+			}
+			default: break;
+			}
 		}
 
-		//------------------------------------------------------------------------------------------------------------------------
-		void cbuffer::swap_buffers()
-		{
-			invoke_static_function(m_vertex_type, C_VERTEX_TYPE_VERTEX_SWAP_BUFFERS_FUNC_NAME, m_vertex_data, m_vertex_data_front);
-		}
-
-	} //- detail
+	} //- buffer
 
 } //- sm

@@ -17,6 +17,7 @@ namespace sm
 	class iplatform;
 	class iapp;
 	class ios;
+	class cuniform;
 	class cshader;
 	class cprogram;
 	class crendertarget;
@@ -38,6 +39,7 @@ namespace sm
 	constexpr auto C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT = 256;
 	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT = 128;
 	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT = 64;
+	constexpr auto C_MESH_RESOURCE_MANAGER_RESERVE_COUNT = 2048;
 
 	constexpr stringview_t C_UNIFORM_TEXTURE0 = "texture0";
 	constexpr stringview_t C_UNIFORM_TEXTURE1 = "texture1";
@@ -56,12 +58,15 @@ namespace sm
 	using spriteatlas_handle_t	= handle_type_t;
 	using rendertarget_handle_t = handle_type_t;
 	using renderpass_id_t		= handle_type_t;
+	using uniform_handle_t		= handle_type_t;
 	using buffer_handle_t		= handle_type_t;
 	using vertex_layout_handle_t= handle_type_t;
+	using mesh_handle_t			= handle_type_t;
 	using index_type_t			= uint16_t;
 	using renderpass_order_t	= vector_t<renderpass_id_t>;
 	using context_ref_t			= ref_t<ccontext>;
 	using context_state_flags_t = int;
+	constexpr auto C_INVALID_HANDLE = MAX(handle_type_t);
 
 	bool is_valid(const cshader& shader);
 	bool is_valid(const cprogram& program);
@@ -71,6 +76,7 @@ namespace sm
 	bool is_valid(const ccamera& camera);
 	bool is_valid(const cmaterial& material);
 	bool is_valid(const cspriteatlas& atlas);
+	bool is_valid(const cuniform& uniform);
 
 	context_ref_t ctx();
 	void create_ctx();
@@ -191,6 +197,26 @@ namespace sm
 		bool operator!=(const sblending& other);
 
 		blending_mode m_mode;
+	};
+
+	//- Lightweight class containing a shader uniform. Can easily be copied around and has to be manually destroyed when
+	//- created.
+	//------------------------------------------------------------------------------------------------------------------------
+	class cuniform final
+	{
+	public:
+		static void destroy(cuniform& uniform);
+
+		explicit cuniform(stringview_t name, bgfx::UniformType::Enum type);
+		cuniform();
+		~cuniform();
+
+		opresult create(stringview_t name, bgfx::UniformType::Enum type);
+
+		uniform_handle_t uniform() const;
+
+	private:
+		uniform_handle_t m_handle;
 	};
 
 	//- A shader, a single vertex or fragment, or compute etc. shader.

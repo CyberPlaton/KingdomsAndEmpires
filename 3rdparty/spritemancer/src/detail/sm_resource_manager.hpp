@@ -1,5 +1,7 @@
 #pragma once
 #include "sm_config.hpp"
+#include "sm_mesh.hpp"
+#include "sm_material.hpp"
 
 namespace sm
 {
@@ -145,6 +147,29 @@ namespace sm
 
 	private:
 		RTTR_ENABLE(core::cservice, core::cresource_manager<crendertarget>);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
+	class cmesh_manager final :
+		public core::cservice,
+		public core::cresource_manager<cmesh>
+	{
+	public:
+		cmesh_manager(unsigned reserve = C_MESH_RESOURCE_MANAGER_RESERVE_COUNT);
+		~cmesh_manager();
+
+		bool on_start() override final;
+		void on_shutdown() override final;
+		void on_update(float) override final;
+
+		mesh_handle_t load_sync(stringview_t name, rttr::type vertex_type);
+		mesh_handle_t load_sync(stringview_t name);
+
+		core::cfuture_type<mesh_handle_t> load_async(stringview_t name, rttr::type vertex_type);
+		core::cfuture_type<mesh_handle_t> load_async(stringview_t name);
+
+	private:
+		RTTR_ENABLE(core::cservice, core::cresource_manager<cmesh>);
 	};
 
 } //- sm
