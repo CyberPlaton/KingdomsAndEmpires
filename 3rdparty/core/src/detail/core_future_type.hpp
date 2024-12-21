@@ -17,6 +17,7 @@ namespace core
 
 		bool ready();
 		const TType& wait();
+		const TType& get() { return wait(); }
 
 	private:
 		std::shared_future<TType> m_task;

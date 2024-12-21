@@ -7,14 +7,12 @@
 namespace core
 {
 	//- Base class for a resource. When creating a new resource inherit from this class and implement any required functionality,
-	//- and reflect with RTTR. This will also help to verify a class when registering a new resource.
-	//- Dont forget to define and implement the function 'static void destroy(cresource& resource);'
+	//- and reflect with RTTR. This will also help to verify a class when registering a new resource
 	//------------------------------------------------------------------------------------------------------------------------
 	class cresource
 	{
 	public:
 		static constexpr stringview_t C_META_SUPPORTED_EXTENSIONS	= "RESOURCE_EXTENSIONS";
-		static constexpr stringview_t C_DESTROY_FUNCTION_NAME		= "destroy";
 
 		cresource() = default;
 		virtual ~cresource() = default;
@@ -42,21 +40,14 @@ namespace core
 
 		unsigned count() const { return static_cast<unsigned>(m_data.size()); }
 
+		void erase(stringview_t name) { erase(algorithm::hash(name)); }
+		void erase(handle_type_t handle) { m_data.erase(handle); }
+		void clear() { m_data.clear(); }
+
 	protected:
 		umap_t<unsigned, TResource> m_data;
 
 	protected:
-		//- Utility function that calls 'destroy' on data of resource manager. A resource must define a static 'destroy' function,
-		//- for examples see sm_config.hpp
-		//------------------------------------------------------------------------------------------------------------------------
-		void destroy_all(umap_t<unsigned, TResource>& data)
-		{
-			for (auto& pair : data)
-			{
-				TResource::destroy(pair.second);
-			}
-		}
-
 		//- Utility function to load a resource synchronously and construct it in-place with given arguments.
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename THandle, typename... ARGS>

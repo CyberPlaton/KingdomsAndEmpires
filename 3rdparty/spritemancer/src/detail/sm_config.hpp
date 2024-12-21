@@ -40,6 +40,8 @@ namespace sm
 	constexpr auto C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT = 128;
 	constexpr auto C_RENDERTARGET_RESOURCE_MANAGER_RESERVE_COUNT = 64;
 	constexpr auto C_MESH_RESOURCE_MANAGER_RESERVE_COUNT = 2048;
+	constexpr auto C_MATERIAL_RESOURCE_MANAGER_RESERVE_COUNT = 512;
+	constexpr auto C_UNIFORM_RESOURCE_MANAGER_RESERVE_COUNT = 8192;
 
 	constexpr stringview_t C_UNIFORM_TEXTURE0 = "texture0";
 	constexpr stringview_t C_UNIFORM_TEXTURE1 = "texture1";
@@ -62,6 +64,7 @@ namespace sm
 	using buffer_handle_t		= handle_type_t;
 	using vertex_layout_handle_t= handle_type_t;
 	using mesh_handle_t			= handle_type_t;
+	using material_handle_t		= handle_type_t;
 	using index_type_t			= uint16_t;
 	using renderpass_order_t	= vector_t<renderpass_id_t>;
 	using context_ref_t			= ref_t<ccontext>;
@@ -199,188 +202,6 @@ namespace sm
 		blending_mode m_mode;
 	};
 
-	//- Lightweight class containing a shader uniform. Can easily be copied around and has to be manually destroyed when
-	//- created.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cuniform final
-	{
-	public:
-		static void destroy(cuniform& uniform);
-
-		explicit cuniform(stringview_t name, bgfx::UniformType::Enum type);
-		cuniform();
-		~cuniform();
-
-		opresult create(stringview_t name, bgfx::UniformType::Enum type);
-
-		uniform_handle_t uniform() const;
-
-	private:
-		uniform_handle_t m_handle;
-	};
-
-	//- A shader, a single vertex or fragment, or compute etc. shader.
-	//- TODO: As of now, we can only load embedded shader types compiled externally. Each function to load a shader expects
-	//- that exactly format.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cshader final : public core::cresource
-	{
-	public:
-		static void destroy(cshader& shader);
-
-		explicit cshader(stringview_t filepath);
-		explicit cshader(const char* string);
-		explicit cshader(const uint8_t* data, unsigned size);
-		cshader();
-		~cshader();
-
-		opresult load_from_file(stringview_t filepath);
-		opresult load_from_string(const char* string);
-		opresult load_from_memory(const uint8_t* data, unsigned size);
-
-		inline shader_handle_t shader() const { return m_handle; }
-
-		void set_uniform_float(stringview_t name, float value);
-		void set_uniform_int(stringview_t name, int value);
-		void set_uniform_vec2(stringview_t name, const vec2_t& value);
-		void set_uniform_vec3(stringview_t name, const vec3_t& value);
-		void set_uniform_vec4(stringview_t name, const vec4_t& value);
-		void set_uniform_matrix(stringview_t name, const mat4_t& value);
-		void set_uniform_texture(stringview_t name, const ctexture& value);
-		void remove_uniform(stringview_t name);
-
-		cshader& operator=(const cshader& other);
-
-		operator bgfx::ShaderHandle() const noexcept { return bgfx::ShaderHandle{ m_handle }; }
-
-	private:
-		shader_handle_t m_handle;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//- Container for vertex and fragment shader. Destroying destroys individual shaders.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cprogram final : public core::cresource
-	{
-	public:
-		static void destroy(cprogram& program);
-
-		explicit cprogram(shader_handle_t shader);
-		explicit cprogram(const cshader& vertex, const cshader& fragment);
-		explicit cprogram(shader_handle_t vertex, shader_handle_t fragment);
-		cprogram();
-		~cprogram();
-
-		opresult load_from_shader(shader_handle_t shader);
-		opresult load_from_shaders(const cshader& vertex, const cshader& fragment);
-		opresult load_from_handles(shader_handle_t vertex, shader_handle_t fragment);
-
-		inline program_handle_t handle() const { return m_handle; }
-		inline const cshader& vertex() const { return m_vertex; }
-		inline const cshader& fragment() const { return m_fragment; }
-
-		operator bgfx::ProgramHandle() const noexcept { return bgfx::ProgramHandle{ m_handle }; }
-
-	private:
-		cshader m_vertex;
-		cshader m_fragment;
-		program_handle_t m_handle;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//- CPU resident image representation
-	//------------------------------------------------------------------------------------------------------------------------
-	class cimage final : public core::cresource
-	{
-	public:
-		static void destroy(cimage& image);
-
-		explicit cimage(stringview_t filepath);
-		explicit cimage(void* data, unsigned size);
-		cimage();
-		~cimage();
-
-		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(void* data, unsigned size);
-
-		inline const bimg::ImageContainer* image() const { return m_container; }
-
-		//- utility functions for image generation and manipulation
-		void create_solid(unsigned w, unsigned h, const core::scolor& color);
-		void create_checkerboard(unsigned w, unsigned h, unsigned step, const core::scolor& first, const core::scolor& second);
-
-	private:
-		bimg::ImageContainer* m_container;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//- GPU resident image representation.
-	//- TODO: information does not need to be held by each texture. Store it somewhere else and in texture only the handle.
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture final : public core::cresource
-	{
-	public:
-		static void destroy(ctexture& texture);
-
-		explicit ctexture(const cimage& image);
-		explicit ctexture(stringview_t filepath);
-		explicit ctexture(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
-		explicit ctexture(texture_handle_t handle, const bgfx::TextureInfo& info);
-		ctexture();
-		~ctexture();
-
-
-		opresult load_from_image(const cimage& image);
-		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
-
-		inline unsigned w() const { return SCAST(unsigned, m_info.width); }
-		inline unsigned h() const { return SCAST(unsigned, m_info.height); }
-		inline texture_handle_t texture() const { return m_texture; }
-
-		operator bgfx::TextureHandle() const noexcept { return bgfx::TextureHandle{ m_texture }; }
-
-	private:
-		texture_handle_t m_texture;
-		bgfx::TextureInfo m_info;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class crendertarget final : public core::cresource
-	{
-	public:
-		static void destroy(crendertarget& target);
-
-		explicit crendertarget(unsigned w, unsigned h);
-		crendertarget();
-		~crendertarget();
-
-		opresult create(unsigned w, unsigned h);
-		opresult resize(unsigned w, unsigned h);
-
-		inline unsigned w() const { return SCAST(unsigned, m_width); }
-		inline unsigned h() const { return SCAST(unsigned, m_height); }
-		inline rendertarget_handle_t target() const { return m_framebuffer; }
-		inline texture_handle_t texture() const { return m_texture; }
-
-		operator bgfx::FrameBufferHandle() const noexcept { return bgfx::FrameBufferHandle{ m_framebuffer }; }
-
-	private:
-		rendertarget_handle_t m_framebuffer;
-		texture_handle_t m_texture;
-		uint16_t m_width;
-		uint16_t m_height;
-
-		RTTR_ENABLE(core::cresource);
-	};
-
 	//- Camera class designed to be lighweight and copied around and to be a thin layer over raylib::Camera2D.
 	//------------------------------------------------------------------------------------------------------------------------
 	class ccamera final
@@ -394,33 +215,6 @@ namespace sm
 		float m_zoom;
 		float m_rotation;
 		bool m_ready;
-	};
-
-	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas final : public core::cresource
-	{
-	public:
-		static void destroy(cspriteatlas& atlas);
-
-		explicit cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
-		cspriteatlas();
-		~cspriteatlas() = default;
-
-		opresult create(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
-		const core::srect& at(stringview_t name) const;
-		vec2_t dimension() const;
-		unsigned subtextures() const;
-
-		//- Routines for manual atlas creation
-		cspriteatlas& begin(unsigned w, unsigned h);
-		cspriteatlas& subtexture(stringview_t name, const core::srect& rect);
-		cspriteatlas& end();
-
-	private:
-		umap_t<unsigned, core::srect> m_subtextures;
-		vec2_t m_size;
-
-		RTTR_ENABLE(core::cresource);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
