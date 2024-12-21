@@ -3,34 +3,74 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	cmesh::cmesh(rttr::type vertex_type) :
-		m_buffer(vertex_type)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	cmesh::cmesh()
 	{
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	cmesh::cmesh(geometry_type geometry, primitive_type primitive)
+	{
+		create(geometry, primitive);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	cmesh::~cmesh()
+	{
+		buffer::destroy(&buffer());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmesh::create(geometry_type geometry, primitive_type primitive)
+	{
+		opresult result = opresult_fail;
+
+		switch (geometry)
+		{
+		default:
+		case geometry_type_none:
+		case geometry_type_static:
+		case geometry_type_dynamic:
+		{
+			buffer().m_buffer_type = (buffer_type)geometry;
+			buffer().m_primitive_type = primitive;
+			result = buffer::create(&buffer());
+			break;
+		}
+		}
+
+		if (!buffer().m_vertices.empty() && result != opresult_ok)
+		{
+			log_warn(fmt::format("Failed creating mesh from data for geometry type '{}' and primitive type '{}'",
+				algorithm::enum_to_string(geometry), algorithm::enum_to_string(primitive)));
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cmesh::update()
+	{
+		buffer::update(&buffer());
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cmesh::bind()
 	{
+		switch (buffer().m_buffer_type)
+		{
+		default:
+		case buffer_type_none:
+		case buffer_type_static:
+		case buffer_type_dynamic:
+		{
+			break;
+		}
+		case buffer_type_transient:
+		{
+			buffer::create(&buffer());
+			break;
+		}
+		}
 
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cmesh::create(rttr::type vertex_type)
-	{
-		m_buffer.set_vertex_type(vertex_type);
-
-		return opresult_ok;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cmesh::create()
-	{
-		return opresult_ok;
+		buffer::bind(&buffer());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -42,7 +82,6 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	cmesh_manager::~cmesh_manager()
 	{
-		destroy_all(m_data);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -54,6 +93,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void cmesh_manager::on_shutdown()
 	{
+		clear();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

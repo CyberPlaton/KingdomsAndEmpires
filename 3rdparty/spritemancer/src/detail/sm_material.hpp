@@ -17,13 +17,18 @@ namespace sm
 	class cmaterial final : public core::cresource
 	{
 	public:
-		static void destroy(cmaterial& material);
-
 		explicit cmaterial(stringview_t program, stringview_t texture);
+		explicit cmaterial();
+		~cmaterial();
 
 		opresult create(stringview_t program, stringview_t texture);
 
+		//- Note: binding material will submit previously set geometry for rendering with with this material.
+		//- Any set textures and uniforms will be applied for use with program.
 		void bind(uint8_t view = 0, unsigned depth = 0);
+
+		inline texture_handle_t texture() const { return m_texture; }
+		inline program_handle_t program() const { return m_program; }
 
 	private:
 		vector_t<cuniform> m_uniforms;
@@ -31,6 +36,8 @@ namespace sm
 		program_handle_t m_program;
 		texture_handle_t m_texture;
 		unsigned m_state = BGFX_STATE_DEFAULT;
+		bool m_owning_program;
+		bool m_owning_texture;
 
 		RTTR_ENABLE(core::cresource);
 	};

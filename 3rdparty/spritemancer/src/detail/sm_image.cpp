@@ -161,9 +161,9 @@ RTTR_REGISTRATION
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::registration::class_<cimage_manager>("cimage_manager")
-	.constructor<>()
-	(
-		rttr::policy::ctor::as_raw_ptr
-	)
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+		)
 	;
 }

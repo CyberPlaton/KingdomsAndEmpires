@@ -26,11 +26,6 @@ namespace sm
 	class ccamera;
 	class cmaterial;
 	class cspriteatlas;
-	class ctexture_manager;
-	class cshader_manager;
-	class cmaterial_manager;
-	class cspriteatlas_manager;
-	class crendertarget_manager;
 	class ccontext;
 
 	constexpr auto C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT = 256;

@@ -43,6 +43,7 @@ namespace core
 		void erase(stringview_t name) { erase(algorithm::hash(name)); }
 		void erase(handle_type_t handle) { m_data.erase(handle); }
 		void clear() { m_data.clear(); }
+		handle_type_t handle(stringview_t name) { return algorithm::hash(name); }
 
 	protected:
 		umap_t<unsigned, TResource> m_data;

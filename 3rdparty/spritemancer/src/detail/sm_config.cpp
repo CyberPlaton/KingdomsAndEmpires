@@ -5,6 +5,7 @@
 #include "sm_shader.hpp"
 #include "sm_spriteatlas.hpp"
 #include "sm_texture.hpp"
+#include "sm_material.hpp"
 #include "sm_uniform.hpp"
 
 namespace sm
@@ -105,9 +106,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cmaterial& material)
 	{
-		CORE_ASSERT(false, "Invalid operation. Not supported");
-
-		return false;
+		return bgfx::isValid(bgfx::TextureHandle{ material.texture() }) &&
+			bgfx::isValid(bgfx::ProgramHandle{ material.program() });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
