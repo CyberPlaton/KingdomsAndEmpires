@@ -2,6 +2,11 @@
 
 namespace sm
 {
+	namespace uniform
+	{
+
+	} //- uniform
+
 	//------------------------------------------------------------------------------------------------------------------------
 	void cuniform::destroy(cuniform& uniform)
 	{

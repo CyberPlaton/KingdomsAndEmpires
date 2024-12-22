@@ -3,6 +3,17 @@
 
 namespace sm
 {
+	namespace uniform
+	{
+		struct suniform_data final
+		{
+			string_t m_name;
+			bgfx::UniformType::Enum m_type;
+			unsigned m_data_offset = 0;
+		};
+
+	} //- uniform
+
 	//- Lightweight class containing a shader uniform. Can easily be copied around and has to be manually destroyed when
 	//- created.
 	//------------------------------------------------------------------------------------------------------------------------
