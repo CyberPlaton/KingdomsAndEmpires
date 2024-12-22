@@ -23,9 +23,6 @@
 [submodule "3rdparty/tracy/tracy"]
 	path = 3rdparty/tracy/tracy
 	url = https://github.com/CyberPlaton/tracy.git
-[submodule "3rdparty/bgfx/bgfx"]
-	path = 3rdparty/bgfx/bgfx
-	url = https://github.com/bkaradzic/bgfx.git
 [submodule "3rdparty/bx/bx"]
 	path = 3rdparty/bx/bx
 	url = https://github.com/bkaradzic/bx.git
