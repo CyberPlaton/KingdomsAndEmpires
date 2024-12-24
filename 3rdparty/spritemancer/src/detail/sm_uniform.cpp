@@ -2,22 +2,33 @@
 
 namespace sm
 {
-	namespace uniform
+	namespace
 	{
-
-	} //- uniform
+        //------------------------------------------------------------------------------------------------------------------------
+        bgfx::UniformType::Enum to_bgfx_enum(uniform_type type)
+        {
+            switch(type)
+            {
+                case uniform_type_float:
+                case uniform_type_vector2:
+                case uniform_type_vector3:
+                case uniform_type_vector4:
+                    return bgfx::UniformType::Enum::Vec4;
+                case uniform_type_mat3x3:
+                    return bgfx::UniformType::Enum::Mat3;
+                case uniform_type_mat4x4:
+                    return bgfx::UniformType::Enum::Mat4;
+                case uniform_type_sampler:
+                    return bgfx::UniformType::Enum::Sampler;
+                default:
+                    return bgfx::UniformType::Enum::Count;
+            }
+        }
+    
+	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cuniform::destroy(cuniform& uniform)
-	{
-		if (is_valid(uniform))
-		{
-			bgfx::destroy(bgfx::UniformHandle{ uniform.uniform() });
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cuniform::cuniform(stringview_t name, bgfx::UniformType::Enum type)
+	cuniform::cuniform(stringview_t name, uniform_type type)
 	{
 		create(name, type);
 	}
@@ -31,15 +42,18 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	cuniform::~cuniform()
 	{
-
+        if (is_valid(*this))
+        {
+            bgfx::destroy(*this);
+        }
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	opresult cuniform::create(stringview_t name, bgfx::UniformType::Enum type)
+	opresult cuniform::create(stringview_t name, uniform_type type)
 	{
-		m_handle = bgfx::createUniform(name.data(), type, 1).idx;
+		m_handle = bgfx::createUniform(name.data(), to_bgfx_enum(type), 1).idx;
 
-		return bgfx::isValid(bgfx::UniformHandle{ m_handle }) ? opresult_ok : opresult_fail;
+		return is_valid(*this) ? opresult_ok : opresult_fail;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

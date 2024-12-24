@@ -23,7 +23,7 @@ namespace sm
 
 		opresult create(stringview_t program, stringview_t texture);
 
-		//- Note: binding material will submit previously set geometry for rendering with with this material.
+		//- Note: binding material will submit previously set geometry for rendering with this material.
 		//- Any set textures and uniforms will be applied for use with program.
 		void bind(uint8_t view = 0, unsigned depth = 0);
 
