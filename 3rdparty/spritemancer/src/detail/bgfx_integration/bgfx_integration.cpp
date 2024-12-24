@@ -1,4 +1,6 @@
 #include "bgfx_integration.hpp"
+#include "../sm_rendertarget.hpp"
+#include "../sm_program.hpp"
 
 namespace sm
 {

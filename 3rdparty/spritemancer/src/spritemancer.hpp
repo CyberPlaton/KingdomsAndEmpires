@@ -1,6 +1,14 @@
 #pragma once
 #include "detail/sm_config.hpp"
-#include "detail/sm_resource_manager.hpp"
+#include "detail/sm_image.hpp"
+#include "detail/sm_material.hpp"
+#include "detail/sm_mesh.hpp"
+#include "detail/sm_program.hpp"
+#include "detail/sm_rendertarget.hpp"
+#include "detail/sm_shader.hpp"
+#include "detail/sm_spriteatlas.hpp"
+#include "detail/sm_texture.hpp"
+#include "detail/sm_uniform.hpp"
 
 namespace sm
 {
