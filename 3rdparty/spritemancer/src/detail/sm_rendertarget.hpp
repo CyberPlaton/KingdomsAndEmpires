@@ -10,10 +10,12 @@ namespace sm
 		static void destroy(crendertarget& target);
 
 		explicit crendertarget(unsigned w, unsigned h);
+        explicit crendertarget(framebuffer_ratio ratio);
 		crendertarget();
 		~crendertarget();
 
 		opresult create(unsigned w, unsigned h);
+        opresult create(framebuffer_ratio ratio);
 		opresult resize(unsigned w, unsigned h);
 
 		inline unsigned w() const { return SCAST(unsigned, m_width); }
@@ -46,8 +48,10 @@ namespace sm
 		void on_update(float) override final;
 
 		rendertarget_handle_t load_sync(stringview_t name, unsigned w, unsigned h);
+        rendertarget_handle_t load_sync(stringview_t name, framebuffer_ratio ratio);
 
 		core::cfuture_type<rendertarget_handle_t> load_async(stringview_t name, unsigned w, unsigned h);
+        core::cfuture_type<rendertarget_handle_t> load_async(stringview_t name, framebuffer_ratio ratio);
 
 	private:
 		RTTR_ENABLE(core::cservice, core::cresource_manager<crendertarget>);

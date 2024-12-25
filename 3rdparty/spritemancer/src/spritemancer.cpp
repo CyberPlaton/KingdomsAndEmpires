@@ -336,6 +336,20 @@ namespace sm
 	{
 	}
 
+    //------------------------------------------------------------------------------------------------------------------------
+    void draw_mesh(mesh_handle_t mesh_handle, material_handle_t material_handle)
+    {
+        const auto* meshm = core::cservice_manager::find<cmesh_manager>();
+        const auto* matm = core::cservice_manager::find<cmaterial_manager>();
+        
+        const auto& mesh = meshm->at(mesh_handle);
+        const auto& material = matm->at(material_handle);
+        
+        //- FIXME: material should be bound on a specific view, i.e. the currently set view for rendering.
+        mesh.bind();
+        material.bind();
+    }
+
 	//------------------------------------------------------------------------------------------------------------------------
 	void draw_placeholder(unsigned layer, const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
 		const core::scolor& tint /*= {255, 255, 255, 255}*/)

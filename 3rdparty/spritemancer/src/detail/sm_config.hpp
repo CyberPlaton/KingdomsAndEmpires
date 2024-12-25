@@ -56,7 +56,6 @@ namespace sm
 	using rendertarget_handle_t = handle_type_t;
 	using renderpass_id_t		= handle_type_t;
 	using uniform_handle_t		= handle_type_t;
-	using buffer_handle_t		= handle_type_t;
 	using vertex_layout_handle_t= handle_type_t;
 	using mesh_handle_t			= handle_type_t;
 	using material_handle_t		= handle_type_t;
@@ -106,6 +105,29 @@ namespace sm
 	//- BC_* formats: https://learn.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-block-compression#bc3
 	//------------------------------------------------------------------------------------------------------------------------
 	using texture_format = bgfx::TextureFormat::Enum;
+
+    //------------------------------------------------------------------------------------------------------------------------
+    enum view_mode : uint8_t
+    {
+        view_mode_none = 0,
+        view_mode_default,          //- default sort order
+        view_mode_sequential,       //- sort in same order in which submit calls were called
+        view_mode_depth_ascending,  //- sort draw calls in ascending order
+        view_mode_depth_descending, //- sort draw calls in descending order
+        
+    };
+
+    //------------------------------------------------------------------------------------------------------------------------
+    enum framebuffer_ratio : uint8_t
+    {
+        framebuffer_ratio_none = 0,
+        framebuffer_ratio_equal,
+        framebuffer_ratio_half,
+        framebuffer_ratio_quarter,
+        framebuffer_ratio_eighth,
+        framebuffer_ratio_sixteenth,
+        framebuffer_ratio_double,
+    };
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum blending_mode : uint8_t
