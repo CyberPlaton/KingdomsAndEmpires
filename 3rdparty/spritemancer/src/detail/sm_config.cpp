@@ -7,6 +7,7 @@
 #include "sm_texture.hpp"
 #include "sm_material.hpp"
 #include "sm_uniform.hpp"
+#include "sm_context.hpp"
 
 namespace sm
 {
@@ -16,7 +17,33 @@ namespace sm
 		static ptr_t<iplatform> S_PLATFORM	= nullptr;
 		static iapp* S_APP					= nullptr;
 		static ptr_t<irenderer> S_RENDERER	= nullptr;
+        static ptr_t<ccontext> S_CTX        = nullptr;
 
+        //------------------------------------------------------------------------------------------------------------------------
+        bool create_context(ptr_t<ccontext>&& ctx /*= nullptr*/)
+        {
+            if(ctx)
+            {
+                S_CTX = std::move(ctx);
+            }
+            else
+            {
+                S_CTX = std::make_unique<ccontext>();
+            }
+        }
+    
+        //------------------------------------------------------------------------------------------------------------------------
+        void destroy_context()
+        {
+            S_CTX.reset();
+        }
+    
+        //------------------------------------------------------------------------------------------------------------------------
+        ccontext* ctx()
+        {
+            return S_CTX.get();
+        }
+    
 		//------------------------------------------------------------------------------------------------------------------------
 		sm::irenderer* renderer()
 		{

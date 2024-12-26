@@ -61,7 +61,6 @@ namespace sm
 	using material_handle_t		= handle_type_t;
 	using index_type_t			= uint16_t;
 	using renderpass_order_t	= vector_t<renderpass_id_t>;
-	using context_ref_t			= ref_t<ccontext>;
 	using context_state_flags_t = int;
 	constexpr auto C_INVALID_HANDLE = MAX(handle_type_t);
 
@@ -74,9 +73,6 @@ namespace sm
 	bool is_valid(const cmaterial& material);
 	bool is_valid(const cspriteatlas& atlas);
 	bool is_valid(const cuniform& uniform);
-
-	context_ref_t ctx();
-	void create_ctx();
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum context_state_flag : uint8_t
@@ -172,6 +168,10 @@ namespace sm
 
 	namespace entry
 	{
+        bool        create_context(ptr_t<ccontext>&& ctx = nullptr);
+        void        destroy_context();
+        ccontext*   ctx();
+    
 		bool		has_platform();
 		irenderer*	renderer();
 		ios*		os();
@@ -324,77 +324,5 @@ namespace sm
 		virtual void on_imgui() = 0;
 		virtual void on_shutdown() = 0;
 	};
-
-//------------------------------------------------------------------------------------------------------------------------
-#define CONTEXT_FLAG_FUNCTIONS(name, flag) \
-void name(const bool value) \
-{ \
-	if (value) \
-	{ \
-		algorithm::bit_set(m_flags, flag); \
-	} \
-	else \
-	{ \
-		algorithm::bit_clear(m_flags, flag); \
-	} \
-} \
-inline bool name() const { return check(flag); }
-
-	//- Class responsible for storing the current state of the library and connecting distinct parts of it as a single point
-	//- of interface.
-	//------------------------------------------------------------------------------------------------------------------------
-	class ccontext final
-	{
-	public:
-		static constexpr auto C_DEFAULT_ROTATION	= 0.0f;
-		static constexpr vec2_t C_DEFAULT_SCALE		= { 1.0f, 1.0f };
-		static constexpr vec2_t C_DEFAULT_ORIGIN	= { 0.5f, 0.5f };
-		static inline const auto C_DEFAULT_SOURCE	= core::srect{ 0.0f, 0.0f, 1.0f, 1.0f };
-		static inline const core::scolor C_WHITE	= { 255, 255, 255, 255 };
-		static inline const core::scolor C_BLACK	= { 0, 0, 0, 0 };
-		static inline const core::scolor C_BLANK	= { 0, 0, 0, 255 };
-
-		struct sio final
-		{
-			unsigned m_window_x = 0;
-			unsigned m_window_y = 0;
-			unsigned m_window_w = 0;
-			unsigned m_window_h = 0;
-			float m_dt = 0.0f;
-			bool m_fullscreen = false;
-			bool m_vsync = false;
-		};
-
-		struct sgraphics final
-		{
-			program_handle_t m_shader = 0;
-		};
-
-		sio& io() { return m_io; }
-		const sio& io() const { return m_io; }
-
-		sgraphics& graphics() { return m_graphics; }
-		const sgraphics& graphics() const { return m_graphics; }
-
-		void* user_data() const { return m_user_data; }
-		void user_data(void* p) { m_user_data = p; }
-
-		void running(const bool value) { m_running = value; }
-		inline bool running() const { return m_running; }
-
-		CONTEXT_FLAG_FUNCTIONS(want_resize, context_state_flag_want_resize);
-
-		inline bool check(context_state_flag flag) const { return algorithm::bit_check(m_flags, flag); }
-
-	private:
-		core::cmutex m_mutex;
-		sgraphics m_graphics;
-		sio m_io;
-		std::atomic_bool m_running = true;
-		context_state_flags_t m_flags = 0;
-		void* m_user_data = nullptr;
-	};
-
-#undef CONTEXT_FLAG_FUNCTIONS
 
 } //- sm

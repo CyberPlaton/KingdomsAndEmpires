@@ -1,5 +1,6 @@
 #pragma once
 #include "detail/sm_config.hpp"
+#include "detail/sm_context.hpp"
 #include "detail/sm_image.hpp"
 #include "detail/sm_material.hpp"
 #include "detail/sm_mesh.hpp"
@@ -9,7 +10,7 @@
 #include "detail/sm_spriteatlas.hpp"
 #include "detail/sm_texture.hpp"
 #include "detail/sm_uniform.hpp"
-#inlcude "detail/sm_renderpass.hpp"
+#include "detail/sm_renderpass.hpp"
 
 namespace sm
 {

@@ -5,6 +5,7 @@
 #include "detail/os/sm_os_glfw.hpp"
 #include "detail/sm_resource_manager.hpp"
 #include "detail/sm_embedded_shaders.hpp"
+#include "detail/sm_context.hpp"
 #if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
 #include <tracy.h>
 #endif
@@ -33,31 +34,41 @@ namespace sm
 				CORE_NAMED_ZONE(os_process_events);
 				if (entry::os()->process_events() == opresult_fail)
 				{
-					ctx()->running(false);
+					entry::ctx()->running(false);
 				}
 			}
 
 			//- check for resize of most basic layer. Other layers are not our responsibility
-			if (ctx()->want_resize())
+			if (entry::ctx()->want_resize())
 			{
-				const auto& io =  ctx()->io();
+				const auto& io =  entry::ctx()->io();
 
+                //- FIXME: renderer should have a reset function:
+                //- reset(width, height)
+                
 				entry::renderer()->update_viewport({ io.m_window_x, io.m_window_y },
 					{ io.m_window_w, io.m_window_h });
 
-				ctx()->want_resize(false);
+                entry::ctx()->want_resize(false);
 			}
 
 			//- update HID state, such as keyboard and mouse
 			{
 				CORE_NAMED_ZONE(app_on_update);
-				entry::app()->on_update(osdata.m_delta_time);
+				entry::app()->on_update(entry::ctx()->io().m_dt);
 			}
 
 			//- render frame
 			//- most basic layer, does always exist
 			{
 				CORE_NAMED_ZONE(renderer_prepare_frame);
+                
+                //- FIXME: setup of frame
+                //- Here we want to update camera view and projection matrices for views,
+                //- their clipping rectangles and view mode defined in renderpass,
+                //- and also the rendertexture the view should use, and lastly
+                //- make sure each view is cleared and ready for new frame (touch)
+                
 				layerdata.m_rendering_layers[0].m_show = true;
 				entry::renderer()->update_frame_camera(renderdata.m_frame_camera);
 				entry::renderer()->begin();
@@ -133,7 +144,9 @@ namespace sm
 				return;
 			}
 
-			entry::os()->main_window_position(&ctx().m_os_data.m_window_x, &ctx().m_os_data.m_window_y);
+            auto& os = entry::ctx()->io();
+            
+			entry::os()->main_window_position(&os.m_window_x, &os.m_window_y);
 			entry::os()->main_window_size(&ctx().m_os_data.m_window_w, &ctx().m_os_data.m_window_h);
 			ctx().m_os_data.m_fullscreen = fullscreen;
 			ctx().m_os_data.m_vsync = vsync;
@@ -261,10 +274,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::scontext& ctx()
+	ccontext& ctx()
 	{
-		static scontext S_CONTEXT;
-		return S_CONTEXT;
+		static ccontext S_CONTEXT; return S_CONTEXT;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
