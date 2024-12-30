@@ -1,6 +1,9 @@
 name: windows_x86_64
 
-on: "push"
+on:
+  push:
+    branches: # Runs on pushes to any branch
+      - '**'
 
 jobs:
   build_windows_x86_64:

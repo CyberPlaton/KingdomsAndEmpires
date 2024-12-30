@@ -1,6 +1,9 @@
 name: macOS_x86_64
 
 on:
+  push:
+    branches: # Runs on pushes to any branch
+      - '**'
   schedule:
     # Run nightly at 2:00 AM UTC
     - cron: "0 2 * * *"
