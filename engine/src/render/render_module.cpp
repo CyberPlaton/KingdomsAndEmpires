@@ -101,33 +101,38 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_system::srender_system(ecs::cworld* w)
 	{
-		sm::setup_render_pass();
-
 		w->create_task(config(), [](flecs::world& ecs, float dt)
 			{
 				const auto* world = reinterpret_cast<ecs::cworld*>(ecs.get_ctx());
 
-				sm::begin();
-				const auto& pass = sm::begin_renderpass((renderpass_id_t)m_pass_id); //-- The renderpass along with data must be defined elsewhere
+				//- Sort visible entities by their layer, the layer specifies which renderpass is to be used
+				const auto& entities = world->visible_entities();
+				umap_t<sm::renderpass_id_t, vector_t<flecs::entity_t>> sorted_entities;
+				const auto view_mtx = world->camera_view_mtx();
+				const auto proj_mtx = world->camera_projection_mtx();
 
-				sm::set_effect(pass.effect());
-				sm::set_camera(pass.camera());
-
-				for (const auto& id : world->visible_entities())
+				for (auto& pass : sm::renderpasses())
 				{
-					const auto e = flecs::entity(id);
+					pass->m_view_mtx = view_mtx;
+					pass->m_projection_mtx = proj_mtx;
 
-					const auto& transform = *e.get<ecs::stransform>();
-					const auto& material = *e.get<ecs::smaterial>();
-					const auto& renderer = *e.get<ecs::ssprite_renderer>();
+					sm::begin_renderpass(pass);
 
-					sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture,
-						renderer.m_tint, transform.m_rotation, transform.m_scale, material.m_program,
-						material.m_renderstate, renderer.m_origin, renderer.m_source_rect);
+					for (const auto& id : sorted_entities.at(pass->m_cfg.m_id))
+					{
+						const auto e = flecs::entity(id);
+
+						const auto* transform = e.get<ecs::stransform>();
+						const auto* mesh = e.get<ecs::smesh>();
+						const auto* material = e.get<ecs::smaterial>();
+
+						const auto& mtx = math::transform(transform->m_position, transform->m_scale, transform->m_shear, transform->m_rotation);
+
+						sm::draw_mesh(glm::value_ptr(mtx), mesh->m_mesh, material->m_material);
+					}
+
+					sm::end_renderpass(pass);
 				}
-
-				sm::end_renderpass();
-				sm::end();
 			});
 
 		w->create_system(config(), &scene_render_system);

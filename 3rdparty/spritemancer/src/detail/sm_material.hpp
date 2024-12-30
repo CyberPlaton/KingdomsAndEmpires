@@ -25,7 +25,7 @@ namespace sm
 
 		//- Note: binding material will submit previously set geometry for rendering with this material.
 		//- Any set textures and uniforms will be applied for use with program.
-		void bind(uint8_t view = 0, unsigned depth = 0);
+		void bind(unsigned depth = 0);
 
 		inline texture_handle_t texture() const { return m_texture; }
 		inline program_handle_t program() const { return m_program; }
@@ -33,6 +33,7 @@ namespace sm
 	private:
 		vector_t<cuniform> m_uniforms;
 		ssampler_state m_sampler_state;
+		view_id_t m_view;
 		program_handle_t m_program;
 		texture_handle_t m_texture;
 		unsigned m_state = BGFX_STATE_DEFAULT;

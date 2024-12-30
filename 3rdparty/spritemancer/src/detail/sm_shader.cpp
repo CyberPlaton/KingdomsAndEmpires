@@ -13,7 +13,7 @@ namespace sm
 
 	//------------------------------------------------------------------------------------------------------------------------
 	cshader::cshader() :
-		m_handle({ bgfx::kInvalidHandle })
+		m_handle(C_INVALID_HANDLE)
 	{
 	}
 

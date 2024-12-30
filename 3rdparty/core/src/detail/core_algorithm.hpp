@@ -15,7 +15,7 @@ namespace algorithm
 
 	} //- matching
 
-	unsigned hash(stringview_t string);
+	constexpr unsigned hash(stringview_t string);
 	unsigned percentage(float total_value, float part_value);
 	float percent_value(unsigned p, float total_value);
 	bool is_valid_handle(handle_type_t h);

@@ -38,7 +38,7 @@ namespace sm
 		vector_t<float> m_vertices;
 		vector_t<index_type_t> m_indices;
 
-		stringview_t m_layout_name;
+		stringview_t m_vertex_type_name;
 		buffer_type m_buffer_type = buffer_type_none;
 		primitive_type m_primitive_type = primitive_type_none;
 		buffer_handle_t m_vbh = C_INVALID_HANDLE;

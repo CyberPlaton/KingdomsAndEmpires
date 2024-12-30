@@ -25,22 +25,23 @@ namespace sm
         //------------------------------------------------------------------------------------------------------------------------
         struct sio
         {
-            unsigned m_window_x = 0;
-            unsigned m_window_y = 0;
-            unsigned m_window_w = 0;
-            unsigned m_window_h = 0;
-            float m_dt = 0.0f;
-            bool m_fullscreen = false;
-            bool m_vsync = false;
+			int m_window_x = 0;
+			int m_window_y = 0;
+			int m_window_w = 0;
+			int m_window_h = 0;
+			float m_dt = 0.0f;
+			bool m_fullscreen = false;
+			bool m_vsync = false;
         };
-        
+
         //- Structure containing data relevant to GPU and drawing
         //------------------------------------------------------------------------------------------------------------------------
         struct sgraphics
         {
-            program_handle_t m_shader = 0;
+			renderpass_order_t m_renderpass_order;
+			renderpasses_t m_renderpasses;
         };
-    
+
     } //- detail
 
     //- Class responsible for storing the current state of the library and connecting distinct parts of it as a single point
@@ -66,7 +67,7 @@ namespace sm
         void* user_data() const { return m_user_data; }
         void user_data(void* p) { m_user_data = p; }
 
-        void running(const bool value) { m_running = value; }
+        void running(const bool value) { m_running.store(value); }
         inline bool running() const { return m_running; }
 
         CTX_FLAG_FUNCTION(want_resize, context_state_flag_want_resize);

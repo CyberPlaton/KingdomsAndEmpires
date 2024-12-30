@@ -128,6 +128,41 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	mat4_t cworld::camera_projection_mtx() const
+	{
+		if (auto e = query_one<const scamera>([](const scamera& c)
+			{
+				return true;
+
+			}); e.is_valid())
+		{
+			const auto& c = *e.get<scamera>();
+
+			return glm::ortho(-c.m_zoom, c.m_zoom, -c.m_zoom, c.m_zoom);
+		}
+
+		return math::C_MAT4_ID;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	mat4_t cworld::camera_view_mtx() const
+	{
+
+		if (auto e = query_one<const scamera>([](const scamera& c)
+			{
+				return true;
+
+			}); e.is_valid())
+		{
+			const auto& c = *e.get<scamera>();
+
+			return math::transform(c.m_position, c.m_scale, vec2_t(0.0f), c.m_rotation);
+		}
+
+		return math::C_MAT4_ID;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void cworld::tick(float dt)
 	{
 		CORE_NAMED_ZONE(cworld::tick);

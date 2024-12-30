@@ -13,19 +13,21 @@ namespace sm
 		geometry_type_transient,
 	};
 
+	using mesh_state_t = unsigned long long;
+
 	//- A mesh contains arbitrary geometry and handles to buffers.
 	//------------------------------------------------------------------------------------------------------------------------
 	class cmesh : public core::cresource
 	{
 	public:
 		explicit cmesh();
-		explicit cmesh(geometry_type geometry, primitive_type primitive);
+		explicit cmesh(stringview_t vertex_type, geometry_type geometry, primitive_type primitive);
 		~cmesh();
 
 		//- Note: when creating we expect that the buffer is filled with data. Otherwise nothing will
 		//- actually be created. So it is perfectly reasonable to create an empty mesh to acquire the handle
 		//- and afterwards use update to fill buffers with updated data.
-		void create(geometry_type geometry, primitive_type primitive);
+		void create(stringview_t vertex_type, geometry_type geometry, primitive_type primitive);
 
 		//- Note: updating a static buffer will recreate the buffer with new geometry. A dynamic buffer will
 		//- update the existing buffer with new vertex data and transient buffer wont do anything.
@@ -56,10 +58,10 @@ namespace sm
 		void on_shutdown() override final;
 		void on_update(float) override final;
 
-		mesh_handle_t load_sync(stringview_t name, rttr::type vertex_type);
+		mesh_handle_t load_sync(stringview_t name, stringview_t vertex_type, geometry_type geometry, primitive_type primitive);
 		mesh_handle_t load_sync(stringview_t name);
 
-		core::cfuture_type<mesh_handle_t> load_async(stringview_t name, rttr::type vertex_type);
+		core::cfuture_type<mesh_handle_t> load_async(stringview_t name, stringview_t vertex_type, geometry_type geometry, primitive_type primitive);
 		core::cfuture_type<mesh_handle_t> load_async(stringview_t name);
 
 	private:

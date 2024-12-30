@@ -8,9 +8,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cmesh::cmesh(geometry_type geometry, primitive_type primitive)
+	cmesh::cmesh(stringview_t vertex_type, geometry_type geometry, primitive_type primitive)
 	{
-		create(geometry, primitive);
+		create(vertex_type, geometry, primitive);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -20,9 +20,11 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmesh::create(geometry_type geometry, primitive_type primitive)
+	void cmesh::create(stringview_t vertex_type, geometry_type geometry, primitive_type primitive)
 	{
 		opresult result = opresult_fail;
+
+		buffer().m_vertex_type_name = vertex_type;
 
 		switch (geometry)
 		{
@@ -70,6 +72,7 @@ namespace sm
 		}
 		}
 
+		//- Bind vertex and index buffers
 		buffer::bind(&buffer());
 	}
 
@@ -103,9 +106,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	mesh_handle_t cmesh_manager::load_sync(stringview_t name, rttr::type vertex_type)
+	mesh_handle_t cmesh_manager::load_sync(stringview_t name, stringview_t vertex_type, geometry_type geometry, primitive_type primitive)
 	{
-		return load_of_sync<mesh_handle_t>(name, m_data, vertex_type);
+		return load_of_sync<mesh_handle_t>(name, m_data, vertex_type, geometry, primitive);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -115,9 +118,9 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<mesh_handle_t> cmesh_manager::load_async(stringview_t name, rttr::type vertex_type)
+	core::cfuture_type<mesh_handle_t> cmesh_manager::load_async(stringview_t name, stringview_t vertex_type, geometry_type geometry, primitive_type primitive)
 	{
-		return load_of_async<mesh_handle_t>(name, m_data, vertex_type);
+		return load_of_async<mesh_handle_t>(name, m_data, vertex_type, geometry, primitive);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

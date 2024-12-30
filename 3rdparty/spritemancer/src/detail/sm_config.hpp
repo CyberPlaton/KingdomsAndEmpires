@@ -13,6 +13,12 @@
 
 namespace sm
 {
+	namespace renderpass
+	{
+		struct irenderpass;
+
+	} //- renderpass
+
 	class irenderer;
 	class iplatform;
 	class iapp;
@@ -59,10 +65,14 @@ namespace sm
 	using vertex_layout_handle_t= handle_type_t;
 	using mesh_handle_t			= handle_type_t;
 	using material_handle_t		= handle_type_t;
+	using buffer_handle_t		= handle_type_t;
+	using view_id_t				= handle_type_t;
 	using index_type_t			= uint16_t;
-	using renderpass_order_t	= vector_t<renderpass_id_t>;
 	using context_state_flags_t = int;
 	constexpr auto C_INVALID_HANDLE = MAX(handle_type_t);
+	using renderpass_ref_t = ref_t<renderpass::irenderpass>;
+	using renderpasses_t = vector_t<renderpass_ref_t>;
+	using renderpass_order_t = umap_t<renderpass_id_t, renderpass_ref_t>;
 
 	bool is_valid(const cshader& shader);
 	bool is_valid(const cprogram& program);
@@ -244,6 +254,9 @@ namespace sm
 		virtual opresult init_device(void* nwh, unsigned w, unsigned h, bool fullscreen, bool vsync) = 0;
 		virtual opresult shutdown_device() = 0;
 
+		virtual void begin() = 0;
+		virtual void end() = 0;
+
 		RTTR_ENABLE();
 	};
 
@@ -319,10 +332,17 @@ namespace sm
 	{
 	public:
 		virtual ~iapp() = default;
-		virtual bool on_init(void* config, argparse::ArgumentParser& args) = 0;
+		virtual bool on_init(void* config) = 0;
 		virtual void on_update(float) = 0;
 		virtual void on_imgui() = 0;
 		virtual void on_shutdown() = 0;
 	};
+
+	namespace detail
+	{
+		bgfx::BackbufferRatio::Enum to_bgfx_ratio(framebuffer_ratio ratio);
+		bgfx::ViewMode::Enum to_bgfx_view_mode(view_mode mode);
+
+	} //- detail
 
 } //- sm

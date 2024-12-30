@@ -5,26 +5,6 @@ namespace sm
 {
 	namespace buffer
 	{
-		namespace
-		{
-			//------------------------------------------------------------------------------------------------------------------------
-			template<typename... ARGS>
-			rttr::variant invoke_static_function(rttr::type type, rttr::string_view name, ARGS&&... args)
-			{
-				if (const auto m = type.get_method(name); m.is_valid())
-				{
-					return m.invoke({}, args...);
-				}
-				else
-				{
-					log_error(fmt::format("Failed invoking unknown function '{}' in type '{}'",
-						name.data(), type.get_name().data()));
-				}
-				return {};
-			}
-
-		} //- unnamed
-
 		//------------------------------------------------------------------------------------------------------------------------
 		opresult create(sbuffer* buffer)
 		{
@@ -34,9 +14,9 @@ namespace sm
 			{
 				if (!buffer->m_vertices.empty())
 				{
-					if (const auto vertex_type = rttr::type::get_by_name(buffer->m_layout_name.data()); vertex_type.is_valid())
+					if (const auto vertex_type = rttr::type::get_by_name(buffer->m_vertex_type_name.data()); vertex_type.is_valid())
 					{
-						const auto& layout = invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
+						const auto& layout = rttr::detail::invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
 
 						buffer->m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(buffer->m_vertices.data(), buffer->m_vertices.size()),
 							layout, BGFX_BUFFER_ALLOW_RESIZE).idx;
@@ -54,9 +34,9 @@ namespace sm
 			{
 				if (!buffer->m_vertices.empty())
 				{
-					if (const auto vertex_type = rttr::type::get_by_name(buffer->m_layout_name.data()); vertex_type.is_valid())
+					if (const auto vertex_type = rttr::type::get_by_name(buffer->m_vertex_type_name.data()); vertex_type.is_valid())
 					{
-						const auto& layout = invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
+						const auto& layout = rttr::detail::invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
 
 						buffer->m_vbh = bgfx::createDynamicVertexBuffer(bgfx::makeRef(buffer->m_vertices.data(), buffer->m_vertices.size()),
 							layout, BGFX_BUFFER_ALLOW_RESIZE).idx;
@@ -72,9 +52,9 @@ namespace sm
 			}
 			case buffer_type_transient:
 			{
-				if (const auto vertex_type = rttr::type::get_by_name(buffer->m_layout_name.data()); vertex_type.is_valid())
+				if (const auto vertex_type = rttr::type::get_by_name(buffer->m_vertex_type_name.data()); vertex_type.is_valid())
 				{
-					const auto& layout = invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
+					const auto& layout = rttr::detail::invoke_static_function(vertex_type, vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME).get_value<bgfx::VertexLayout>();
 
 					if (sm::graphics::detail::check_available_transient_buffers(buffer->m_vertices.size(), layout, buffer->m_indices.size()))
 					{

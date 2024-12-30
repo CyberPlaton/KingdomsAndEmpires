@@ -244,8 +244,7 @@ namespace rttr
 		{
 			m_object.method(name, std::move(method))
 				(
-					std::forward<TMeta>(metadata)...
-					);
+					std::forward<TMeta>(metadata)...);
 		}
 		else
 		{
@@ -254,5 +253,25 @@ namespace rttr
 
 		return *this;
 	}
+
+	namespace detail
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		template<typename... ARGS>
+		rttr::variant invoke_static_function(rttr::type class_type, rttr::string_view function_name, ARGS&&... args)
+		{
+			if (const auto m = class_type.get_method(function_name); m.is_valid())
+			{
+				return m.invoke({}, args...);
+			}
+			else
+			{
+				log_error(fmt::format("Failed invoking unknown function '{}' in class '{}'",
+					function_name.data(), class_type.get_name().data()));
+			}
+			return {};
+		}
+
+	} //- detail
 
 } //- rttr

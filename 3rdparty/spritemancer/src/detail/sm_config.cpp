@@ -30,6 +30,8 @@ namespace sm
             {
                 S_CTX = std::make_unique<ccontext>();
             }
+
+			return S_CTX.get() != nullptr;
         }
     
         //------------------------------------------------------------------------------------------------------------------------
@@ -174,5 +176,37 @@ namespace sm
 	{
 		return m_mode == other.m_mode;
 	}
+
+	namespace detail
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		bgfx::BackbufferRatio::Enum to_bgfx_ratio(framebuffer_ratio ratio)
+		{
+			switch (ratio)
+			{
+			default:
+			case framebuffer_ratio_none: return bgfx::BackbufferRatio::Enum::Count;
+			case framebuffer_ratio_equal: return bgfx::BackbufferRatio::Enum::Equal;
+			case framebuffer_ratio_quarter: return bgfx::BackbufferRatio::Enum::Quarter;
+			case framebuffer_ratio_eighth: return bgfx::BackbufferRatio::Enum::Eighth;
+			case framebuffer_ratio_sixteenth: return bgfx::BackbufferRatio::Enum::Sixteenth;
+			case framebuffer_ratio_double: return bgfx::BackbufferRatio::Enum::Double;
+			}
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
+		bgfx::ViewMode::Enum to_bgfx_view_mode(view_mode mode)
+		{
+			switch (mode)
+			{
+			default:
+			case view_mode_default: return bgfx::ViewMode::Default;
+			case view_mode_sequential: return bgfx::ViewMode::Sequential;
+			case view_mode_depth_ascending: return bgfx::ViewMode::DepthAscending;
+			case view_mode_depth_descending: return bgfx::ViewMode::DepthDescending;
+			}
+		}
+
+	} //- detail
 
 } //- sm

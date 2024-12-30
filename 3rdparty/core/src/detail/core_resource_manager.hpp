@@ -29,6 +29,8 @@ namespace core
 		virtual ~cresource_manager() = default;
 
 		bool lookup(stringview_t name) const;
+		bool lookup(handle_type_t handle) const;
+
 		TResource& get(stringview_t name);
 		const TResource& at(stringview_t name) const;
 
@@ -132,7 +134,14 @@ namespace core
 	template<typename TResource>
 	bool core::cresource_manager<TResource>::lookup(stringview_t name) const
 	{
-		return m_data.find(algorithm::hash(name)) != m_data.end();
+		return lookup(algorithm::hash(name));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	bool core::cresource_manager<TResource>::lookup(handle_type_t handle) const
+	{
+		return m_data.find(handle) != m_data.end();
 	}
 
 } //- core

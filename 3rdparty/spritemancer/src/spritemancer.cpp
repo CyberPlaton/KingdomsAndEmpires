@@ -3,9 +3,9 @@
 #include "detail/renderers/sm_renderer_headless.hpp"
 #include "detail/renderers/sm_renderer_bgfx.hpp"
 #include "detail/os/sm_os_glfw.hpp"
-#include "detail/sm_resource_manager.hpp"
 #include "detail/sm_embedded_shaders.hpp"
 #include "detail/sm_context.hpp"
+#include "detail/imgui_integration/imgui.hpp"
 #if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
 #include <tracy.h>
 #endif
@@ -41,15 +41,8 @@ namespace sm
 			//- check for resize of most basic layer. Other layers are not our responsibility
 			if (entry::ctx()->want_resize())
 			{
-				const auto& io =  entry::ctx()->io();
-
-                //- FIXME: renderer should have a reset function:
-                //- reset(width, height)
-                
-				entry::renderer()->update_viewport({ io.m_window_x, io.m_window_y },
-					{ io.m_window_w, io.m_window_h });
-
-                entry::ctx()->want_resize(false);
+				//- TODO: we want to use bgfx::reset() function for all the views
+				entry::ctx()->want_resize(false);
 			}
 
 			//- update HID state, such as keyboard and mouse
@@ -59,59 +52,15 @@ namespace sm
 			}
 
 			//- render frame
-			//- most basic layer, does always exist
 			{
 				CORE_NAMED_ZONE(renderer_prepare_frame);
-                
-                //- FIXME: setup of frame
-                //- Here we want to update camera view and projection matrices for views,
-                //- their clipping rectangles and view mode defined in renderpass,
-                //- and also the rendertexture the view should use, and lastly
-                //- make sure each view is cleared and ready for new frame (touch)
-                
-				layerdata.m_rendering_layers[0].m_show = true;
-				entry::renderer()->update_frame_camera(renderdata.m_frame_camera);
 				entry::renderer()->begin();
-				entry::renderer()->clear();
-				entry::renderer()->blendmode(renderdata.m_default_renderstate.m_blending);
-			}
-
-			//- layered rendering, from bottom to top
-			{
-				CORE_NAMED_ZONE(renderer_layered_rendering);
-				for (auto i = 0u; i < layerdata.m_layer_count; ++i)
-				{
-					auto& layer = layerdata.m_rendering_layers[i];
-
-					{
-						CORE_NAMED_ZONE(renderer_layer_draw);
-						entry::renderer()->layer_draw(layer);
-					}
-
-					layer.m_commands.clear();
-				}
-
-				//- layered debug rendering if enabled
-				if (layerdata.m_layer_debug_enabled)
-				{
-					entry::renderer()->layer_draw(get_layer_debug());
-				}
 			}
 
 			//- present everything
 			{
 				CORE_NAMED_ZONE(renderer_frame_present);
-				//- finalize rendering with imgui on top of everything
-				{
-					CORE_NAMED_ZONE(renderer_imgui_draw);
-					if (entry::renderer()->imgui_begin())
-					{
-						entry::renderer()->state_reset_to_default();
-						entry::app()->on_imgui();
-						entry::renderer()->imgui_end();
-					}
-				}
-
+				//- TODO: finalize rendering with imgui on top of everything
 				entry::renderer()->end();
 			}
 
@@ -144,15 +93,14 @@ namespace sm
 				return;
 			}
 
-            auto& os = entry::ctx()->io();
-            
-			entry::os()->main_window_position(&os.m_window_x, &os.m_window_y);
-			entry::os()->main_window_size(&ctx().m_os_data.m_window_w, &ctx().m_os_data.m_window_h);
-			ctx().m_os_data.m_fullscreen = fullscreen;
-			ctx().m_os_data.m_vsync = vsync;
+			auto& os = entry::ctx()->io();
 
-			if (entry::os()->init_gfx(ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h,
-				fullscreen, vsync) != opresult_ok)
+			entry::os()->main_window_position(&os.m_window_x, &os.m_window_y);
+			entry::os()->main_window_size(&os.m_window_w, &os.m_window_h);
+			os.m_fullscreen = fullscreen;
+			os.m_vsync = vsync;
+
+			if (entry::os()->init_gfx(os.m_window_w, os.m_window_h, fullscreen, vsync) != opresult_ok)
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -162,9 +110,6 @@ namespace sm
 				return;
 			}
 
-			entry::renderer()->update_viewport({ ctx().m_os_data.m_window_x, ctx().m_os_data.m_window_y },
-				{ ctx().m_os_data.m_window_w, ctx().m_os_data.m_window_h });
-
 			//- create resource managers and load default data
 			core::cservice_manager::emplace<cimage_manager>();
 			core::cservice_manager::emplace<ctexture_manager>();
@@ -172,26 +117,8 @@ namespace sm
 			core::cservice_manager::emplace<cspriteatlas_manager>();
 			core::cservice_manager::emplace<crendertarget_manager>();
 
-			auto& renderdata = ctx().m_render_data;
-			renderdata.m_default_renderstate.m_flags = 0;
-
-			ctx().m_render_data.m_default_shader = core::cservice_manager::find<cshader_manager>()->load_sync("sprite",
-				shader_type_fragment, shaders::sprite::C_VS, shaders::sprite::C_PS);
-
-			{
-				cimage image;
-				image.create_solid(256, 256, core::scolor(core::common_color_magenta));
-
-				ctx().m_render_data.m_placeholder_texture = core::cservice_manager::find<ctexture_manager>()->load_sync("placeholder", image);
-
-				cimage::destroy(image);
-			}
-
-			//- finalize preparation
-			create_layer();
-
 			//- initialize client application
-			if (!entry::app()->on_init(S_CONFIG))
+			if (!entry::app()->on_init(entry::ctx()->user_data()))
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -204,16 +131,17 @@ namespace sm
 			core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
 				{
 					const auto& e = var.convert<events::window::sresize>();
-					ctx().m_os_data.m_window_w = e.w;
-					ctx().m_os_data.m_window_h = e.h;
-					S_RESIZE_REQUIRED = true;
+					auto& os = entry::ctx()->io();
+					os.m_window_w = e.w;
+					os.m_window_h = e.h;
+					entry::ctx()->want_resize(true);
 				});
 
 			//- create imgui context
 			imgui::init();
 
 			//- main loop
-			while (S_RUNNING)
+			while (entry::ctx()->running())
 			{
 				engine_update();
 			}
@@ -230,7 +158,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult prepare(iapp* app, void* config)
 	{
-		ctx()->user_data(config);
+		entry::ctx()->user_data(config);
 
 		engine_configure_platform_and_renderer(app);
 
@@ -260,7 +188,7 @@ namespace sm
 			return opresult_fail;
 		}
 
-		S_RUNNING.store(true);
+		entry::ctx()->running(true);
 
 		//- start the thread with window and graphics context and proceed init there
 		std::thread thread(engine_thread, title, w, h, fullscreen, vsync);
@@ -282,44 +210,82 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	vec2_t window_size()
 	{
-		return vec2_t{ SCAST(float, raylib::GetScreenWidth()), SCAST(float, raylib::GetScreenHeight()) };
+		auto& os = entry::ctx()->io();
+
+		return { SCAST(float, os.m_window_w), SCAST(float, os.m_window_h) };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	vec2_t window_position()
 	{
-		const auto p = raylib::GetWindowPosition();
-		return vec2_t{ SCAST(float, p.x), SCAST(float, p.y) };
+		auto& os = entry::ctx()->io();
+
+		return { SCAST(float, os.m_window_x), SCAST(float, os.m_window_y) };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	unsigned create_layer()
+	const sm::renderpasses_t& renderpasses()
 	{
-		auto& renderdata = ctx().m_render_data;
-		auto& layerdata = renderdata.m_layer_data;
+		return entry::ctx()->graphics().m_renderpasses;
+	}
 
-		if (layerdata.m_layer_count < scontext::srender::srendering_layers::C_LAYER_COUNT_MAX)
+	//------------------------------------------------------------------------------------------------------------------------
+	renderpass_ref_t renderpass_create(stringview_t type)
+	{
+		return renderpass_create(rttr::type::get_by_name(type.data()));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	renderpass_ref_t renderpass_create(rttr::type type)
+	{
+		auto& gfx = entry::ctx()->graphics();
+
+		auto& pass = gfx.m_renderpasses.emplace_back(rttr::detail::invoke_static_function(type, renderpass::irenderpass::C_RENDERPASS_CREATE_FUNC_NAME)
+			.get_value<renderpass_ref_t>());
+
+		gfx.m_renderpass_order[pass->m_cfg.m_id] = pass;
+
+		return pass;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void renderpass_begin(const renderpass_ref_t& pass)
+	{
+		const auto view_id = bgfx::ViewId{ pass->m_cfg.m_id };
+		const auto& io = entry::ctx()->io();
+
+		bgfx::setViewTransform(view_id, glm::value_ptr(pass->m_view_mtx), glm::value_ptr(pass->m_projection_mtx));
+		bgfx::setViewRect(view_id, io.m_window_x, io.m_window_y, detail::to_bgfx_ratio(pass->m_cfg.m_rendertarget_ratio));
+		bgfx::setViewMode(view_id, detail::to_bgfx_view_mode(pass->m_cfg.m_view_mode));
+
+		const auto* rtm = core::cservice_manager::find<crendertarget_manager>();
+
+		if (rtm->lookup(pass->m_cfg.m_rendertarget))
 		{
-			auto& layer = layerdata.m_rendering_layers[layerdata.m_layer_count];
+			const auto& rt = rtm->at(pass->m_cfg.m_rendertarget);
 
-			//- create with reasonable defaults
-			layer.m_id = layerdata.m_layer_count;
-			layer.m_flags = 0;
-			layer.m_show = true;
-
-			return layerdata.m_layer_count++;
+			bgfx::setViewFrameBuffer(view_id, rt);
 		}
-		return MAX(unsigned);
+		else
+		{
+			//- Set default backbuffer for view to use
+			bgfx::setViewFrameBuffer(view_id, bgfx::FrameBufferHandle{ C_INVALID_HANDLE });
+		}
+
+		//- Make sure the view is cleared and ready for drawing
+		bgfx::touch(view_id);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void update_frame_camera(const vec2_t& position, const vec2_t& offset, float zoom, float rotation)
+	void renderpass_end(const renderpass_ref_t& pass)
 	{
-		auto& renderdata = ctx().m_render_data;
-		renderdata.m_frame_camera.m_position = position;
-		renderdata.m_frame_camera.m_offset = position;
-		renderdata.m_frame_camera.m_zoom = zoom;
-		renderdata.m_frame_camera.m_rotation = rotation;
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void renderpass_reset(const renderpasses_t& pass)
+	{
+
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -349,82 +315,19 @@ namespace sm
 	}
 
     //------------------------------------------------------------------------------------------------------------------------
-    void draw_mesh(mesh_handle_t mesh_handle, material_handle_t material_handle)
+    void draw_mesh(const void* mtx, mesh_handle_t mesh_handle, material_handle_t material_handle)
     {
-        const auto* meshm = core::cservice_manager::find<cmesh_manager>();
-        const auto* matm = core::cservice_manager::find<cmaterial_manager>();
-        
-        const auto& mesh = meshm->at(mesh_handle);
-        const auto& material = matm->at(material_handle);
-        
-        //- FIXME: material should be bound on a specific view, i.e. the currently set view for rendering.
+        auto* meshm = core::cservice_manager::find<cmesh_manager>();
+        auto* matm = core::cservice_manager::find<cmaterial_manager>();
+
+        auto& mesh = meshm->get(mesh_handle);
+        auto& material = matm->get(material_handle);
+
+		bgfx::setTransform(mtx);
+
         mesh.bind();
         material.bind();
     }
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_placeholder(unsigned layer, const vec2_t& position, const vec2_t& scale /*= {1.0f, 1.0f}*/,
-		const core::scolor& tint /*= {255, 255, 255, 255}*/)
-	{
-		draw_texture(layer, position, ctx().m_render_data.m_placeholder_texture, tint, C_DEFAULT_ROTATION, scale);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture)
-	{
-		draw_texture(layer, position, texture, S_WHITE);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint)
-	{
-		draw_texture(layer, position, texture, tint, C_DEFAULT_ROTATION);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation)
-	{
-		draw_texture(layer, position, texture, tint, rotation, C_DEFAULT_SCALE);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale)
-	{
-		draw_texture(layer, position, texture, tint, rotation, scale, ctx().m_render_data.m_default_shader);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader)
-	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, ctx().m_render_data.m_default_renderstate);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state)
-	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, C_DEFAULT_ORIGIN);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin)
-	{
-		draw_texture(layer, position, texture, tint, rotation, scale, shader, state, origin, C_DEFAULT_SOURCE);
-	}
-
-	//- The actual rendering routine for a texture/sprite
-	//------------------------------------------------------------------------------------------------------------------------
-	void draw_texture(unsigned layer, const vec2_t& position, texture_handle_t texture, const core::scolor& tint, float rotation,
-		const vec2_t& scale, shader_handle_t shader, const srenderstate& state, const vec2_t& origin, const core::srect& source)
-	{
-		if (algorithm::bit_check(state.m_flags, renderable_flag_invisible))
-		{
-			return;
-		}
-	}
 
 } //- sm
 
@@ -434,7 +337,6 @@ RTTR_REGISTRATION
 
 //------------------------------------------------------------------------------------------------------------------------
 rttr::cregistrator<cspriteatlas>("cspriteatlas")
-	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cspriteatlas::destroy)
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
 		vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
 		".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
@@ -442,13 +344,11 @@ rttr::cregistrator<cspriteatlas>("cspriteatlas")
 
 //------------------------------------------------------------------------------------------------------------------------
 rttr::cregistrator<crendertarget>("crendertarget")
-	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &crendertarget::destroy)
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{})
 ;
 
 //------------------------------------------------------------------------------------------------------------------------
 rttr::cregistrator<ctexture>("ctexture")
-	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &ctexture::destroy)
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
 		vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
 		".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
@@ -456,7 +356,6 @@ rttr::cregistrator<ctexture>("ctexture")
 
 //------------------------------------------------------------------------------------------------------------------------
 rttr::cregistrator<cimage>("cimage")
-	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cimage::destroy)
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS,
 		vector_t<string_t>{".png", ".bmp", ".tga", ".jpg", ".gif", ".pic",
 		".psd", ".hdr", ".qoi", ".svg", ".dds", ".pkm", ".ktx", ".pvr", ".astc"})
@@ -464,13 +363,11 @@ rttr::cregistrator<cimage>("cimage")
 
 //------------------------------------------------------------------------------------------------------------------------
 rttr::cregistrator<cshader>("cshader")
-	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cshader::destroy)
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
 	;
 
 //------------------------------------------------------------------------------------------------------------------------
 rttr::cregistrator<cprogram>("cprogram")
-	.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cprogram::destroy)
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
 	;
 }

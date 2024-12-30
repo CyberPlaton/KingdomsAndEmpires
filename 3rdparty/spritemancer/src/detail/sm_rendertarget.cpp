@@ -2,25 +2,6 @@
 
 namespace sm
 {
-    namespace
-    {
-        //------------------------------------------------------------------------------------------------------------------------
-        bgfx::BackbufferRatio::Enum to_bgfx_ratio(framebuffer_ratio ratio)
-        {
-            switch(ratio)
-            {
-            default:
-            case framebuffer_ratio_none: return bgfx::BackbufferRatio::Enum::Count;
-            case framebuffer_ratio_equal: return bgfx::BackbufferRatio::Enum::Equal;
-            case framebuffer_ratio_quarter: return bgfx::BackbufferRatio::Enum::Quarter;
-            case framebuffer_ratio_eighth: return bgfx::BackbufferRatio::Enum::Eighth;
-            case framebuffer_ratio_sixteenth: return bgfx::BackbufferRatio::Enum::Sixteenth;
-            case framebuffer_ratio_double: return bgfx::BackbufferRatio::Enum::Double;
-            }
-        }
-    
-    } //- unnamed
-
 	//------------------------------------------------------------------------------------------------------------------------
 	void crendertarget::destroy(crendertarget& target)
 	{
@@ -56,7 +37,7 @@ namespace sm
     //------------------------------------------------------------------------------------------------------------------------
     opresult crendertarget::create(framebuffer_ratio ratio)
     {
-        if (m_framebuffer = bgfx::createFrameBuffer(to_bgfx_ratio(ratio),
+        if (m_framebuffer = bgfx::createFrameBuffer(detail::to_bgfx_ratio(ratio),
             texture_format::RGBA8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP).idx; !bgfx::isValid(bgfx::FrameBufferHandle{ m_framebuffer }))
         {
             if (serror_reporter::instance().m_callback)

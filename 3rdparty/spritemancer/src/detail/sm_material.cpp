@@ -55,7 +55,7 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::bind(uint8_t view /*= 0*/, unsigned depth /*= 0*/)
+	void cmaterial::bind(unsigned depth /*= 0*/)
 	{
 		CORE_ASSERT(is_valid(*this), "Invalid operation. Binding an invalid material with an invalid texture or program!");
 
@@ -67,7 +67,7 @@ namespace sm
 		}
 
 		bgfx::setState(m_state);
-		bgfx::submit(view, bgfx::ProgramHandle{ m_program }, depth);
+		bgfx::submit(bgfx::ViewId{ m_view }, bgfx::ProgramHandle{ m_program }, depth);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

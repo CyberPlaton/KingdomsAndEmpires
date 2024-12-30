@@ -26,6 +26,7 @@ namespace sm
 		core::skeyboard_state keyboard_state() const override final { return m_keyboard; }
 		core::sgamepad_state gamepad_state() const override final { return m_gamepad; }
 
+		float frametime() const override final;
 		unsigned read_input_character() override final;
 
 		void main_window_position(int* x, int* y) override final;

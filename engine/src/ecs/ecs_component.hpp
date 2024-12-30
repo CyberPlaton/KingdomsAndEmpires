@@ -163,7 +163,7 @@ namespace ecs
 		static void show_ui(flecs::entity e);
 
 		vec2_t m_position			= { 0.0f, 0.0f };
-		vec2_t m_offset				= { 0.0f, 0.0f };
+		vec2_t m_scale				= { 0.0f, 0.0f };
 		float m_zoom				= 0.0f;
 		float m_rotation			= 0.0f;
 
@@ -198,6 +198,7 @@ namespace ecs
 		RTTR_ENABLE(icomponent);
 	};
 
+	//- TODO: re-add later source rect, tint and origin.
 	//------------------------------------------------------------------------------------------------------------------------
 	struct smaterial final : public icomponent
 	{
@@ -205,27 +206,19 @@ namespace ecs
 
 		static void show_ui(flecs::entity e);
 
-		sm::srenderstate m_renderstate;
-		sm::texture_handle_t m_texture = sm::C_INVALID_HANDLE;
-		sm::shader_handle_t m_program = sm::C_INVALID_HANDLE;
-		int m_flags = sm::renderable_flag_none;
+		sm::material_handle_t m_material = sm::C_INVALID_HANDLE;
 
 		RTTR_ENABLE(icomponent);
 	};
 
-	//- Component contains data required to render a sprite specifically. Also, when adding this component to an entity
-	//- it will be rendered as a sprite.
 	//------------------------------------------------------------------------------------------------------------------------
-	struct ssprite_renderer final : public icomponent
+	struct smesh final : public icomponent
 	{
-		DECLARE_COMPONENT(ssprite_renderer);
+		DECLARE_COMPONENT(smesh);
 
 		static void show_ui(flecs::entity e);
 
-		core::srect m_source_rect	= { 0.0f, 0.0f, 0.0f, 0.0f };
-		core::scolor m_tint			= core::scolor(core::common_color_neutral1000);
-		vec2_t m_origin				= { 0.0f, 0.0f };
-		unsigned m_layer			= 0;
+		sm::mesh_handle_t m_mesh = sm::C_INVALID_HANDLE;
 
 		RTTR_ENABLE(icomponent);
 	};

@@ -43,6 +43,9 @@ namespace ecs
 
 		stringview_t name() const { return m_name; }
 
+		mat4_t camera_view_mtx() const;
+		mat4_t camera_projection_mtx() const;
+
 		bool load(const core::cpath& path);
 		void save(const core::cpath& path);
 
