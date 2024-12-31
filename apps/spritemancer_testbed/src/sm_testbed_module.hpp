@@ -17,4 +17,6 @@ public:
 	static void on_world_render();
 	static void on_ui_render();
 	static void on_post_update(float dt);
+
+	RTTR_ENABLE();
 };

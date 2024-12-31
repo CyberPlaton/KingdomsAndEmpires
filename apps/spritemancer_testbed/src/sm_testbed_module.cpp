@@ -110,3 +110,8 @@ void configure_args(const args_ref_t& args)
 {
 
 }
+
+RTTR_REGISTRATION
+{
+	REGISTER_LAYER(cspritemancer);
+}

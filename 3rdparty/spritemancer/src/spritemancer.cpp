@@ -151,6 +151,7 @@ namespace sm
 			imgui::shutdown();
 			entry::os()->shutdown();
 			if (entry::has_platform()) { entry::platform()->shutdown(); }
+			entry::destroy_context();
 		}
 
 	} //- unnamed
@@ -158,6 +159,11 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult prepare(iapp* app, void* config)
 	{
+		if (!entry::create_context())
+		{
+			return opresult_fail;
+		}
+
 		entry::ctx()->user_data(config);
 
 		engine_configure_platform_and_renderer(app);
