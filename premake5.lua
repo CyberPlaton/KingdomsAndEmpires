@@ -7,7 +7,7 @@ include "scripts/utility.lua"
 -- Postponed projects:
 -- "kingdoms_and_empires"
 -- Postponed exes:
--- "engine_launcher", "spritemancer_testbed"
+-- "engine_launcher"
 
 ENGINE_NAME		= "kokoro"
 VERBOSE			= true
@@ -23,8 +23,8 @@ THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann", "mimalloc", "imgu
 
 PLUGINS = {"plugin_module_example", "plugin_camera_system", "plugin_ai", "plugin_rttr_example"}
 
-PROJECTS = {"tiny_editor", "kingdom_wars"}
-ACTIVE_PROJECT = "kingdom_wars"
+PROJECTS = {} --{"tiny_editor", "kingdom_wars"}
+ACTIVE_PROJECT = "spritemancer_testbed"
 
 EXES			= { "unittest_launcher", "spritemancer_testbed"}
 PLATFORM		= "<undefined>"

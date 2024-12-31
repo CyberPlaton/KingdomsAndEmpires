@@ -176,6 +176,17 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::end()
 	{
+#if CORE_DEBUG
+		const bgfx::Stats* stats = bgfx::getStats();
+		bgfx::dbgTextClear();
+		bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters."
+			, stats->width
+			, stats->height
+			, stats->textWidth
+			, stats->textHeight
+		);
+#endif
+
 		bgfx::frame();
 	}
 
