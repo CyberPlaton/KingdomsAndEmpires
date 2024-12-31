@@ -70,6 +70,7 @@ namespace sm
 			{
 				const auto& io = entry::ctx()->io();
 				entry::renderer()->reset(io.m_window_w, io.m_window_h, io.m_fullscreen, io.m_vsync);
+				imgui::cui::on_resize(io.m_window_w, io.m_window_h);
 				entry::ctx()->want_resize(false);
 			}
 
@@ -83,6 +84,14 @@ namespace sm
 			{
 				CORE_NAMED_ZONE(renderer_prepare_frame);
 				entry::renderer()->begin();
+			}
+
+			//- imgui drawing
+			{
+				CORE_NAMED_ZONE(app_imgui);
+				imgui::begin();
+				entry::app()->on_imgui();
+				imgui::end();
 			}
 
 			//- present everything
@@ -172,6 +181,7 @@ namespace sm
 
 			//- create imgui context
 			imgui::init();
+			imgui::cui::on_resize(os.m_window_w, os.m_window_h);
 
 			//- main loop
 			while (entry::ctx()->running())

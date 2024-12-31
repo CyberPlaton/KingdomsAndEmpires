@@ -153,14 +153,6 @@ namespace imgui
 			| ImGuiConfigFlags_NavEnableGamepad
 			| ImGuiConfigFlags_NavEnableKeyboard;
 
-		//- setup resize handler
-		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
-			{
-				const auto& e = var.convert<events::window::sresize>();
-				S_W = e.w;
-				S_H = e.h;
-			});
-
 		return true;
 	}
 

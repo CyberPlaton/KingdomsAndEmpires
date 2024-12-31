@@ -124,6 +124,16 @@ namespace sm
 
 			return opresult_fail;
 		}
+
+		//- Enable debug text if desired
+#if CORE_DEBUG
+		bgfx::setDebug(BGFX_DEBUG_TEXT);
+#endif
+
+		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+		bgfx::setViewRect(0, 0, 0, w, h);
+		bgfx::setViewFrameBuffer(0, bgfx::FrameBufferHandle{ C_INVALID_HANDLE });
+
 		return opresult_ok;
 	}
 
@@ -139,6 +149,7 @@ namespace sm
 	void crenderer_bgfx::reset(unsigned w, unsigned h, bool fullscreen, bool vsync)
 	{
 		bgfx::reset(w, h, (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE));
+		bgfx::setViewRect(0, 0, 0, w, h);
 
 		//- Force reset in one frame
 		bgfx::frame();
@@ -158,6 +169,7 @@ namespace sm
 		}
 
 		bgfx::setViewOrder(0, SCAST(uint16_t, order.size()), order.data());
+
 		bgfx::touch(0);
 	}
 
