@@ -37,7 +37,7 @@ namespace ecs
 		~cworld();
 
 		void tick(float dt);
-		core::srect world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom) const;
+		core::srect world_visible_area() const;
 		[[nodiscard]] const auto& visible_entities() const { return prm().visible_entities(); }
 		inline bool is_visible(const flecs::entity& e) const { return prm().is_visible(e); };
 

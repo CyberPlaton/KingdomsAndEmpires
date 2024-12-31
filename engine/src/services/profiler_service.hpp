@@ -4,9 +4,6 @@
 
 namespace engine
 {
-	using gpu_stats_t = vector_t<sm::profile::gpu::sgpu_stats>;
-	using gpu_drawcall_data_t = sm::profile::gpu::saggregated_drawcall_data;
-
 	using cpu_stats_t = vector_t<core::profile::cpu::scpu_stats>;
 	using cpu_function_t = core::profile::cpu::saggregated_function_data;
 	using cpu_function_data_t = umap_t<const char*, cpu_function_t>;
@@ -38,11 +35,6 @@ namespace engine
 		cpu_stats_t cpu_stats() const;
 		cpu_function_t cpu_function_data(stringview_t function_name) const;
 		cpu_function_data_t cpu_function_data() const;
-
-		//- GPU
-		void gpu_force_update();
-		gpu_stats_t gpu_stats() const;
-		gpu_drawcall_data_t gpu_drawcall_data() const;
 
 	private:
 		RTTR_ENABLE(core::cservice);

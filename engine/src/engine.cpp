@@ -357,7 +357,7 @@ RTTR_REGISTRATION
 
 	rttr::ccomponent<ecs::scamera>("scamera")
 		.prop("m_position", &ecs::scamera::m_position)
-		.prop("m_offset", &ecs::scamera::m_offset)
+		.prop("m_scale", &ecs::scamera::m_scale)
 		.prop("m_zoom", &ecs::scamera::m_zoom)
 		.prop("m_rotation", &ecs::scamera::m_rotation)
 		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ecs::scamera::show_ui)
@@ -384,23 +384,17 @@ RTTR_REGISTRATION
 		;
 
 	rttr::ccomponent<ecs::smaterial>("smaterial")
-		.prop("m_renderstate", &ecs::smaterial::m_renderstate)
-		.prop("m_texture", &ecs::smaterial::m_texture)
-		.prop("m_program", &ecs::smaterial::m_program)
-		.prop("m_flags", &ecs::smaterial::m_flags)
+		.prop("m_material", &ecs::smaterial::m_material)
 		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ecs::smaterial::show_ui)
 		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME, &ecs::smaterial::add)
 		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME, &ecs::smaterial::remove)
 		;
 
-	rttr::ccomponent<ecs::ssprite_renderer>("ssprite_renderer")
-		.prop("m_source_rect", &ecs::ssprite_renderer::m_source_rect)
-		.prop("m_origin", &ecs::ssprite_renderer::m_origin)
-		.prop("m_tint", &ecs::ssprite_renderer::m_tint)
-		.prop("m_layer", &ecs::ssprite_renderer::m_layer)
-		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ecs::ssprite_renderer::show_ui)
-		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME, &ecs::ssprite_renderer::add)
-		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME, &ecs::ssprite_renderer::remove)
+	rttr::ccomponent<ecs::smesh>("smesh")
+		.prop("m_material", &ecs::smesh::m_mesh)
+		.meth(ecs::detail::C_COMPONENT_SHOW_UI_FUNC_NAME, &ecs::smesh::show_ui)
+		.meth(ecs::detail::C_COMPONENT_ADD_FUNC_NAME, &ecs::smesh::add)
+		.meth(ecs::detail::C_COMPONENT_REMOVE_FUNC_NAME, &ecs::smesh::remove)
 		;
 
 	rttr::ccomponent<ecs::stransform>("stransform")

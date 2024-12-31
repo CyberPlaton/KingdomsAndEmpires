@@ -18,7 +18,7 @@ THIRDPARTY_DIR	= "3rdparty"
 PLUGINS_DIR		= "plugins"
 PROJECTS_DIR	= "projects"
 THIRDPARTY = {"spdlog", "core", "glm", "argparse", "nlohmann", "mimalloc", "imgui", "pfd", "glfw",
-			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua", "rttr", "raylib", "bx", "bimg", "bgfx",
+			  "magic_enum", "taskflow", "flecs", "LuaBridge", "Lua", "rttr", "bx", "bimg", "bgfx",
 			  "spritemancer", "tree_sitter", "unittest", "hwinfo", "asio", "tracy"}
 
 PLUGINS = {"plugin_module_example", "plugin_camera_system", "plugin_ai", "plugin_rttr_example"}

@@ -72,16 +72,6 @@ namespace engine
 			return false;
 		}
 
-		//- Check that required functions are implemented
-		if (const auto& m = resource_type.get_method(core::cresource::C_DESTROY_FUNCTION_NAME.data());
-			!m.is_valid() || !m.is_static())
-		{
-			log_warn(fmt::format("Resource '{}' did not define a static 'destroy' function",
-				resource_type.get_name().data()));
-
-			return false;
-		}
-
 		//- Check that the resource manager is already registered with the service manager
 		if (const auto* service = core::cservice_manager::find(manager_type); !service)
 		{

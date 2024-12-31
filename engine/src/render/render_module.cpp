@@ -4,39 +4,6 @@
 namespace render
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	void scene_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
-	{
-		CORE_ZONE;
-
-		const auto* world = reinterpret_cast<ecs::cworld*>(e.world().get_ctx());
-
-// 		if (world->is_visible(e))
-// 		{
-// 		}
-		sm::draw_texture(renderer.m_layer, transform.m_position, material.m_texture,
-			renderer.m_tint, transform.m_rotation, transform.m_scale, material.m_program, material.m_renderstate, renderer.m_origin, renderer.m_source_rect);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void scene_debug_render_system(flecs::entity e, const ecs::stransform& transform, const ecs::smaterial& material, const ecs::ssprite_renderer& renderer)
-	{
-		CORE_ZONE;
-
-// 		if (world->is_visible(e))
-// 		{
-// 			const auto& tm = *core::cservice_manager::find<sm::ctexture_manager>();
-// 			const auto& _texture = tm.at(material.m_texture == sm::C_INVALID_HANDLE ? S_PLACEHOLDER_TEXTURE : material.m_texture);
-// 			const auto w = _texture.w();
-// 			const auto h = _texture.h();
-// 
-// 			sm::draw_rect(sm::get_layer_debug().m_id, transform.m_position,
-// 				{ transform.m_scale.x * renderer.m_source_rect.w() * w - renderer.m_origin.x * 0.5f,
-// 				transform.m_scale.y * renderer.m_source_rect.h() * h - renderer.m_origin.y * 0.5f },
-// 				core::scolor(core::common_color_red));
-// 		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	srender_frame_begin_system::srender_frame_begin_system(ecs::cworld* w)
 	{
 		w->create_task(config(), [](flecs::world&, float dt)
@@ -82,7 +49,6 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	sdebug_render_system::sdebug_render_system(ecs::cworld* w)
 	{
-		w->create_system(config(), &scene_debug_render_system);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -103,6 +69,8 @@ namespace render
 	{
 		w->create_task(config(), [](flecs::world& ecs, float dt)
 			{
+				CORE_ZONE;
+
 				const auto* world = reinterpret_cast<ecs::cworld*>(ecs.get_ctx());
 
 				//- Sort visible entities by their layer, the layer specifies which renderpass is to be used
@@ -116,7 +84,7 @@ namespace render
 					pass->m_view_mtx = view_mtx;
 					pass->m_projection_mtx = proj_mtx;
 
-					sm::begin_renderpass(pass);
+					sm::renderpass_begin(pass);
 
 					for (const auto& id : sorted_entities.at(pass->m_cfg.m_id))
 					{
@@ -131,11 +99,9 @@ namespace render
 						sm::draw_mesh(glm::value_ptr(mtx), mesh->m_mesh, material->m_material);
 					}
 
-					sm::end_renderpass(pass);
+					sm::renderpass_end(pass);
 				}
 			});
-
-		w->create_system(config(), &scene_render_system);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

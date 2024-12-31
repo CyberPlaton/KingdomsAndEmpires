@@ -62,7 +62,6 @@ RTTR_REGISTRATION
 		.prop("m_name", &cmodule::m_name)
 		.prop("m_path_alias", &cmodule::m_path_alias)
 		.prop("m_definitions", &cmodule::m_definitions)
-		.meth(core::cresource::C_DESTROY_FUNCTION_NAME.data(), &cmodule::destroy)
 		.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".module"})
 		;
 }

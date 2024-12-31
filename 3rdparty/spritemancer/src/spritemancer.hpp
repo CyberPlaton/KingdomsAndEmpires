@@ -11,6 +11,7 @@
 #include "detail/sm_texture.hpp"
 #include "detail/sm_uniform.hpp"
 #include "detail/sm_renderpass.hpp"
+#include "detail/imgui_integration/imgui.hpp"
 
 namespace sm
 {

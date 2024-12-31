@@ -12,17 +12,6 @@ namespace ecs
 		constexpr std::string_view C_MODULES_PROP		= "modules";
 		constexpr std::string_view C_COMPONENTS_PROP	= "components";
 
-		//------------------------------------------------------------------------------------------------------------------------
-		raylib::Camera2D to_raylib_camera(const vec2_t& target, const vec2_t& offset, float zoom, float rotation)
-		{
-			sm::ccamera camera;
-			camera.m_position = target;
-			camera.m_offset = offset;
-			camera.m_zoom = zoom;
-			camera.m_rotation = rotation;
-			return camera.camera();
-		}
-
 	} //- unnamed
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -200,18 +189,9 @@ namespace ecs
 		}
 
 		//- get current viewing rect for active camera
-		if (auto e = query_one<const scamera>([](const scamera& c)
-			{
-				return true;
+		math::caabb aabb(world_visible_area());
 
-			}); e.is_valid())
-		{
-			const auto& c = *e.get<scamera>();
-
-			math::caabb aabb(world_visible_area(c.m_position, c.m_offset, c.m_zoom));
-
-			prm().prepare(aabb);
-		}
+		prm().prepare(aabb);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -234,18 +214,27 @@ namespace ecs
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::srect cworld::world_visible_area(const vec2_t& target, const vec2_t& offset, float zoom) const
+	core::srect cworld::world_visible_area() const
 	{
 		const auto window_size = sm::window_size();
 
-		const auto raylib_camera = to_raylib_camera(target, offset, zoom, 0.0f);
-		const auto tl = raylib::GetScreenToWorld2D({ 0.0f, 0.0f }, raylib_camera);
-		const auto br = raylib::GetScreenToWorld2D({ window_size.x, window_size.y }, raylib_camera);
+		mat4_t matrix = math::C_MAT4_ID;
 
-		const auto topleft = math::camera_screen_to_world({ 0.0f, 0.0f }, target, offset, zoom);
-		const auto bottomright = math::camera_screen_to_world({ window_size.x, window_size.y }, target, offset, zoom);
+		if (auto e = query_one<const scamera>([](const scamera& c)
+			{
+				return true;
 
-		return { tl.x, tl.y, br.x, br.y };
+			}); e.is_valid())
+		{
+			const auto& c = *e.get<scamera>();
+
+			matrix = math::transform(c.m_position, c.m_scale * c.m_zoom, vec2_t(0.0f), c.m_rotation);
+		}
+
+		const auto topleft = math::unproject_2d({ 0.0f, 0.0f }, matrix);
+		const auto bottomright = math::unproject_2d({ window_size.x, window_size.y }, matrix);
+
+		return { topleft.x, topleft.y, bottomright.x, bottomright.y };
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

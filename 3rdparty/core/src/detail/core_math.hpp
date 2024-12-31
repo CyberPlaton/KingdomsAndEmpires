@@ -11,8 +11,6 @@ namespace math
 	constexpr float C_PI = 3.1415927f;
 	constexpr float C_PI2 = C_PI * C_PI;
 
-	vec2_t camera_screen_to_world(const vec2_t& position, const vec2_t& target, const vec2_t& offset, float zoom, float rotation = 0.0f);
-	vec2_t camera_world_to_screen(const vec2_t& position, const vec2_t& target, const vec2_t& offset, float zoom, float rotation = 0.0f);
 	bool inbetween(float value, float min, float max);
 	bool almost_equal(float a, float b, float e = C_ALMOST_EQUAL_EPSILON);
 	bool almost_equal(const vec2_t& a, const vec2_t& b, float e = C_ALMOST_EQUAL_EPSILON);
@@ -22,5 +20,12 @@ namespace math
 	vec2_t extract_scale(const mat4_t& matrix);
 	vec2_t extract_shear(const mat4_t& matrix);
 	float extract_rotation(const mat4_t& matrix);
+
+	//- Convert from world coordinates to screen coordinates
+	vec2_t project_2d(const vec2_t& point, const mat4_t& camera_matrix);
+
+	//- Convert from screen coordinates to world coordinates.
+	//- Note: we invert the matrix inside this function.
+	vec2_t unproject_2d(const vec2_t& point, const mat4_t& camera_matrix);
 
 } //- math

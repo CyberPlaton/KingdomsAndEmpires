@@ -63,10 +63,6 @@ namespace engine
 			{
 				aggregator->update();
 			}
-			if (auto aggregator = sm::profile::gpu::get_aggregator(); aggregator)
-			{
-				aggregator->update();
-			}
 
 			S_TIMER.start();
 		}
@@ -77,7 +73,6 @@ namespace engine
 	{
 		memory_force_update();
 		cpu_force_update();
-		gpu_force_update();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -105,35 +100,6 @@ namespace engine
 		if (auto aggregator = core::profile::cpu::get_aggregator(); aggregator)
 		{
 			return aggregator->function_data();
-		}
-		return {};
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cprofiler_service::gpu_force_update()
-	{
-		if (auto aggregator = sm::profile::gpu::get_aggregator(); aggregator)
-		{
-			aggregator->update();
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	gpu_stats_t cprofiler_service::gpu_stats() const
-	{
-		if (auto aggregator = sm::profile::gpu::get_aggregator(); aggregator)
-		{
-			return aggregator->stats();
-		}
-		return {};
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	gpu_drawcall_data_t cprofiler_service::gpu_drawcall_data() const
-	{
-		if (auto aggregator = sm::profile::gpu::get_aggregator(); aggregator)
-		{
-			return aggregator->drawcall_data();
 		}
 		return {};
 	}

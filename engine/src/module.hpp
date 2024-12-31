@@ -9,8 +9,6 @@ namespace io
 	class cmodule final : public core::cresource
 	{
 	public:
-		static void destroy(cmodule& module) {}
-
 		struct sdefinition
 		{
 			vector_t<string_t> m_dependencies; //- Modules this depends on
