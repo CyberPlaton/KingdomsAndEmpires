@@ -4,21 +4,8 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	void ctexture::destroy(ctexture& texture)
-	{
-		if (bgfx::isValid(bgfx::TextureHandle{ texture.texture() }))
-		{
-			bgfx::destroy(bgfx::TextureHandle{ texture.texture() });
-
-			//- reset handle and info
-			texture.m_texture = MAX(uint16_t);
-			texture.m_info = {};
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	ctexture::ctexture() :
-		m_texture(MAX(uint16_t))
+		m_texture(C_INVALID_HANDLE)
 	{
 	}
 
@@ -50,6 +37,14 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	ctexture::~ctexture()
 	{
+		if (bgfx::isValid(bgfx::TextureHandle{ texture() }))
+		{
+			bgfx::destroy(bgfx::TextureHandle{ texture() });
+
+			//- reset handle and info
+			m_texture = C_INVALID_HANDLE;
+			m_info = {};
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

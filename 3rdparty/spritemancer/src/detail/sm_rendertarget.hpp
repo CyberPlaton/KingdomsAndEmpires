@@ -7,8 +7,6 @@ namespace sm
 	class crendertarget final : public core::cresource
 	{
 	public:
-		static void destroy(crendertarget& target);
-
 		explicit crendertarget(unsigned w, unsigned h);
         explicit crendertarget(framebuffer_ratio ratio);
 		crendertarget();

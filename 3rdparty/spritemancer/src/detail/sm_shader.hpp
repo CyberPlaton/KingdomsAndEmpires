@@ -10,8 +10,6 @@ namespace sm
 	class cshader final : public core::cresource
 	{
 	public:
-		static void destroy(cshader& shader);
-
 		explicit cshader(stringview_t filepath);
 		explicit cshader(const char* string);
 		explicit cshader(const uint8_t* data, unsigned size);

@@ -9,8 +9,6 @@ namespace sm
 	class cprogram final : public core::cresource
 	{
 	public:
-		static void destroy(cprogram& program);
-
 		explicit cprogram(shader_handle_t shader);
 		explicit cprogram(const cshader& vertex, const cshader& fragment);
 		explicit cprogram(shader_handle_t vertex, shader_handle_t fragment);

@@ -3,47 +3,6 @@
 
 namespace algorithm
 {
-	namespace
-	{
-		//------------------------------------------------------------------------------------------------------------------------
-		constexpr unsigned hash(const char* string)
-		{
-			unsigned long long block = 0;
-
-			auto len = 0ull;
-
-			while (string[len] != '\0')
-			{
-				++len;
-			}
-
-			for (auto i = 0ull; i < 8; ++i)
-			{
-				if (i < len)
-				{
-					block |= SCAST(unsigned long long, string[i] << (56ull - i * 8ull));
-				}
-			}
-
-			auto h = block * 0x9E3779B97F4A7C15ull;
-			h ^= (h >> 33ull);
-			h *= 0xC2B2AE3D27D4EB4Full;
-			h ^= (h >> 29ull);
-
-			return h;
-
-			// 		unsigned len = SCAST(unsigned, strlen(string));
-			// 		const char* s = string;
-			// 		unsigned h = len;
-			// 		for (auto i = 0u; i < len; ++s, ++i)
-			// 		{
-			// 			h = ((h << 5) + h) + (*s);
-			// 		}
-			// 		return h;
-		}
-
-	} //- unnamed
-
 	namespace matching
 	{
 		//------------------------------------------------------------------------------------------------------------------------
@@ -108,12 +67,6 @@ namespace algorithm
 		}
 
 	} //- matching
-
-	//------------------------------------------------------------------------------------------------------------------------
-	constexpr unsigned hash(stringview_t string)
-	{
-		return hash(string.data());
-	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	unsigned percentage(float total_value, float part_value)

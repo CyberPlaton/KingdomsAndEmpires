@@ -370,4 +370,19 @@ rttr::cregistrator<cshader>("cshader")
 rttr::cregistrator<cprogram>("cprogram")
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{".vs", ".fs"})
 	;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<cuniform>("cuniform")
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{})
+	;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<cmesh>("cmesh")
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{})
+	;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<cmaterial>("cmaterial")
+	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{})
+	;
 }

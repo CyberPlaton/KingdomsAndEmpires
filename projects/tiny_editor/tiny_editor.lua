@@ -5,7 +5,7 @@ function tiny_editor()
 	build_options = {}
 	define_flags = {}
 	plugin_deps = {"plugin_module_example", "plugin_camera_system"}
-	thirdparty_deps = {"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "imgui", "raylib", "tree_sitter"}
+	thirdparty_deps = {"Lua", "spdlog", "core", "flecs", "spritemancer", "mimalloc", "hwinfo", "rttr", "imgui", "bimg", "bx", "bgfx", "glfw", "tree_sitter"}
 	plugin_headeronly_deps = {}
 	thirdparty_headeronly_deps = {"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "pfd", "asio"}
 	additional_includes = {"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include", "../../3rdparty/tree_sitter/tree_sitter/include"}
@@ -41,6 +41,7 @@ function tiny_editor()
 		includedirs{additional_includes}
 		set_include_path_to_engine()
 		link_with_engine()
+		set_bx_includes()
 		targetdir(path.join(VENDOR_DIR, OUTDIR))
 		objdir(path.join(VENDOR_DIR, OUTDIR, ".obj"))
 		set_libs_path()

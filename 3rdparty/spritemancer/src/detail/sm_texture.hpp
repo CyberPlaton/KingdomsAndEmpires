@@ -9,8 +9,6 @@ namespace sm
 	class ctexture final : public core::cresource
 	{
 	public:
-		static void destroy(ctexture& texture);
-
 		explicit ctexture(const cimage& image);
 		explicit ctexture(stringview_t filepath);
 		explicit ctexture(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,

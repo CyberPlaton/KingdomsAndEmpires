@@ -58,11 +58,11 @@ namespace sm
         static inline const core::scolor C_BLACK    = { 0, 0, 0, 0 };
         static inline const core::scolor C_BLANK    = { 0, 0, 0, 255 };
 
-        detail::sio& io();
-        const detail::sio& io() const;
+		inline detail::sio& io() { return m_io; }
+		inline const detail::sio& io() const { return m_io; }
 
-        detail::sgraphics& graphics();
-        const detail::sgraphics& graphics() const;
+		inline detail::sgraphics& graphics() { return m_graphics; }
+		inline const detail::sgraphics& graphics() const { return m_graphics; }
 
         void* user_data() const { return m_user_data; }
         void user_data(void* p) { m_user_data = p; }

@@ -282,6 +282,7 @@ function add_target_static_library(name, build_options, define_flags, plugin_dep
 		-- link with engine by default, if not explicitly disabled
 		if depends_on_engine == true then
 			link_with_engine()
+			set_bx_includes()
 		end
 		if depends_on_bgfx == true then
 			set_bx_includes()

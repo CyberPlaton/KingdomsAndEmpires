@@ -5,7 +5,7 @@ function plugin_status_effects()
 					{},
 					{},
 					{"plugin_kingdoms_core"},
-					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "raylib"},
+					{"spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "bimg", "bx", "bgfx", "glfw"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "asio"},
 					{"../../3rdparty/rttr/rttr/src", "../../3rdparty/asio/include/asio/asio/include"},

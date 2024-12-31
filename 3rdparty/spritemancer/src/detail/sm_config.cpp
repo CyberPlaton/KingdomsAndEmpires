@@ -207,6 +207,27 @@ namespace sm
 			}
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		bgfx::UniformType::Enum to_bgfx_uniform_type(uniform_type type)
+		{
+			switch (type)
+			{
+			case uniform_type_float:
+			case uniform_type_vector2:
+			case uniform_type_vector3:
+			case uniform_type_vector4:
+				return bgfx::UniformType::Enum::Vec4;
+			case uniform_type_mat3x3:
+				return bgfx::UniformType::Enum::Mat3;
+			case uniform_type_mat4x4:
+				return bgfx::UniformType::Enum::Mat4;
+			case uniform_type_sampler:
+				return bgfx::UniformType::Enum::Sampler;
+			default:
+				return bgfx::UniformType::Enum::Count;
+			}
+		}
+
 	} //- detail
 
 } //- sm

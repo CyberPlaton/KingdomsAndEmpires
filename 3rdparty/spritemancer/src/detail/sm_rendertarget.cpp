@@ -3,15 +3,6 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	void crendertarget::destroy(crendertarget& target)
-	{
-		if (is_valid(target))
-		{
-			bgfx::destroy(bgfx::FrameBufferHandle{ target.target() });
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	crendertarget::crendertarget(unsigned w, unsigned h)
 	{
 		create(w, h);
@@ -32,6 +23,10 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	crendertarget::~crendertarget()
 	{
+		if (is_valid(*this))
+		{
+			bgfx::destroy(bgfx::FrameBufferHandle{ target() });
+		}
 	}
 
     //------------------------------------------------------------------------------------------------------------------------
@@ -79,7 +74,10 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult crendertarget::resize(unsigned w, unsigned h)
 	{
-		crendertarget::destroy(*this);
+		if (is_valid(*this))
+		{
+			bgfx::destroy(bgfx::FrameBufferHandle{ target() });
+		}
 
 		return create(w, h);
 	}

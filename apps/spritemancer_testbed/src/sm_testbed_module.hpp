@@ -1,4 +1,5 @@
 #pragma once
+#include <core.h>
 #include <engine.h>
 #include <plugin_ai.h>
 #include <lua.h>

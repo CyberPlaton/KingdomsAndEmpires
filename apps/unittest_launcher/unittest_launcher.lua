@@ -5,7 +5,7 @@ function unittest_launcher()
 	add_target_app("unittest_launcher",
 					{},
 					{},
-					{ "Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "raylib" },
+					{ "Lua", "spdlog", "core", "flecs", "spritemancer", "unittest", "mimalloc", "hwinfo", "rttr", "imgui", "bimg", "bx", "bgfx", "glfw" },
 					{ "plugin_camera_system", "plugin_ai"},
 					{},
 					{"nlohmann", "glm", "magic_enum", "taskflow", "argparse", "LuaBridge", "asio"},

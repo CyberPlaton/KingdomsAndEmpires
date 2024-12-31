@@ -8,8 +8,6 @@ namespace sm
 	class cimage final : public core::cresource
 	{
 	public:
-		static void destroy(cimage& image);
-
 		explicit cimage(stringview_t filepath);
 		explicit cimage(void* data, unsigned size);
 		cimage();

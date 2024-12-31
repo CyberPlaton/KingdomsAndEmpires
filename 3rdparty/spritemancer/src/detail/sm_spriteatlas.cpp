@@ -3,12 +3,6 @@
 namespace sm
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	void cspriteatlas::destroy(cspriteatlas& /*atlas*/)
-	{
-		//- noop
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
 	cspriteatlas::cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
 	{
 		create(w, h, names, frames);

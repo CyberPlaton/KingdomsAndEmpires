@@ -15,7 +15,6 @@ namespace algorithm
 
 	} //- matching
 
-	constexpr unsigned hash(stringview_t string);
 	unsigned percentage(float total_value, float part_value);
 	float percent_value(unsigned p, float total_value);
 	bool is_valid_handle(handle_type_t h);
@@ -209,6 +208,35 @@ namespace algorithm
 	void reverse(TIterator begin, TIterator end)
 	{
 		stl::reverse(begin, end);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	constexpr unsigned hash(stringview_t string)
+	{
+		constexpr auto strlength = [](const char* s) constexpr -> unsigned long long
+			{
+				unsigned long long out = 0;
+				while (s[out] != '\0') ++out;
+				return out;
+			};
+
+		unsigned long long block = 0;
+		const auto len = strlength(string.data());
+
+		for (auto i = 0ull; i < 8; ++i)
+		{
+			if (i < len)
+			{
+				block |= SCAST(unsigned long long, string[i] << (56ull - i * 8ull));
+			}
+		}
+
+		auto h = block * 0x9E3779B97F4A7C15ull;
+		h ^= (h >> 33ull);
+		h *= 0xC2B2AE3D27D4EB4Full;
+		h ^= (h >> 29ull);
+
+		return h;
 	}
 
 } //- algorithm

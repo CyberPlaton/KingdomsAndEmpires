@@ -7,8 +7,6 @@ namespace sm
 	class cspriteatlas final : public core::cresource
 	{
 	public:
-		static void destroy(cspriteatlas& atlas);
-
 		explicit cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
 		cspriteatlas();
 		~cspriteatlas() = default;

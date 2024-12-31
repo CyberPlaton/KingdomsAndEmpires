@@ -123,6 +123,22 @@ namespace sm
         
     };
 
+	//- Supported uniform types. Note: everything is mapped to a vector4 and a single float uniform will waste 3 floats as unused.
+	//- Also there is no direct mapping to bgfx because we extend the functionality.
+	//------------------------------------------------------------------------------------------------------------------------
+	enum uniform_type : uint8_t
+	{
+		uniform_type_none = 0,
+		uniform_type_float,
+		uniform_type_vector2,
+		uniform_type_vector3,
+		uniform_type_vector4,
+
+		uniform_type_mat3x3,
+		uniform_type_mat4x4,
+		uniform_type_sampler,
+	};
+
     //------------------------------------------------------------------------------------------------------------------------
     enum framebuffer_ratio : uint8_t
     {
@@ -342,6 +358,7 @@ namespace sm
 	{
 		bgfx::BackbufferRatio::Enum to_bgfx_ratio(framebuffer_ratio ratio);
 		bgfx::ViewMode::Enum to_bgfx_view_mode(view_mode mode);
+		bgfx::UniformType::Enum to_bgfx_uniform_type(uniform_type type);
 
 	} //- detail
 
