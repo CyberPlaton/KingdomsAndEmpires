@@ -18,9 +18,9 @@ namespace sm
 		opresult init_mainwindow(stringview_t title,
 			int w, int h, bool fullscreen) override final;			//- create application main window
 
-		opresult process_events() override final;
+		opresult post_init() override final;
 
-		void on_event(const rttr::variant& event) override final;
+		opresult process_events() override final;
 
 		core::smouse_state mouse_state() const override final { return m_mouse; }
 		core::skeyboard_state keyboard_state() const override final { return m_keyboard; }
@@ -57,6 +57,9 @@ namespace sm
 		double m_scroll_dt_y = 0.0;
 		double m_previous_mouse_scroll_x = 0.0;
 		double m_previous_mouse_scroll_y = 0.0;
+		bool m_want_close = false;
+
+		void init_event_listeners();
 
 		RTTR_ENABLE(ios);
 	};

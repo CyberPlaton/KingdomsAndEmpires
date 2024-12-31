@@ -13,9 +13,9 @@ namespace sm
 		void		prepare_device() override final;
 		opresult	init_device(void* nwh, unsigned w, unsigned h, bool fullscreen, bool vsync) override final;
 		opresult	shutdown_device() override final;
-
-		void begin() override final;
-		void end() override final;
+		void		reset(unsigned w, unsigned h, bool fullscreen, bool vsync) override final;
+		void		begin() override final;
+		void		end() override final;
 
 		RTTR_ENABLE(irenderer);
 	};

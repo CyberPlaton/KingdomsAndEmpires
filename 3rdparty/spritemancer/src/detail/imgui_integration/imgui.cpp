@@ -136,11 +136,7 @@ namespace imgui
 	//------------------------------------------------------------------------------------------------------------------------
 	bool init()
 	{
-		//- init imgui and create icon font from ICON_FA data
-		ImGui::CreateContext();
-
 		imgui::imguiCreate(18.0f, sm::entry::allocator());
-		/*rlImGuiSetup(true);*/
 
 		//- setup default style
 		ImGui::GetStyle().WindowRounding = 0;
@@ -157,8 +153,6 @@ namespace imgui
 			| ImGuiConfigFlags_NavEnableGamepad
 			| ImGuiConfigFlags_NavEnableKeyboard;
 
-		return true;
-
 		//- setup resize handler
 		core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
 			{
@@ -174,7 +168,6 @@ namespace imgui
 	void shutdown()
 	{
 		imgui::imguiDestroy();
-		ImGui::DestroyContext();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

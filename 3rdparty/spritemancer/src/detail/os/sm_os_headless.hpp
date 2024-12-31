@@ -13,8 +13,8 @@ namespace sm
 		opresult shutdown() override final { return opresult_ok; }
 		opresult init_gfx(int w, int h, bool fullscreen, bool vsync) override final { return opresult_ok; }
 		opresult init_mainwindow(stringview_t title, int w, int h, bool fullscreen) override final { return opresult_ok; }
+		opresult post_init() override final { return opresult_ok; }
 		opresult process_events() override final { return opresult_ok; }
-		void on_event(const rttr::variant& event) override final {}
 		void main_window_position(int* x, int* y) override final {}
 		void main_window_size(int* x, int* y) override final {}
 		core::smouse_state mouse_state() const override final { return {}; }

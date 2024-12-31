@@ -269,7 +269,7 @@ namespace sm
 		virtual void prepare_device() = 0;
 		virtual opresult init_device(void* nwh, unsigned w, unsigned h, bool fullscreen, bool vsync) = 0;
 		virtual opresult shutdown_device() = 0;
-
+		virtual void reset(unsigned w, unsigned h, bool fullscreen, bool vsync) = 0;
 		virtual void begin() = 0;
 		virtual void end() = 0;
 
@@ -312,8 +312,9 @@ namespace sm
 		//- create application main window
 		virtual opresult init_mainwindow(stringview_t title, int w, int h, bool fullscreen) = 0;
 
-		//- handle a hardware event from glfw or SDL etc.
-		virtual void on_event(const rttr::variant& event) = 0;
+		//- finalize initialization. This is called after the application was initialized with services and resource managers
+		virtual opresult post_init() = 0;
+
 		virtual opresult process_events() = 0;
 
 		virtual core::smouse_state mouse_state() const = 0;

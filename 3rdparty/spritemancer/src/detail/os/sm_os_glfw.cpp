@@ -166,6 +166,12 @@ namespace sm
 			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::scharacter_input>(codepoint);
 		}
 
+		//------------------------------------------------------------------------------------------------------------------------
+		inline static void glfw_window_close_callback(GLFWwindow* window)
+		{
+			core::cservice_manager::find<core::cevent_service>()->emit_event<events::window::sclose>();
+		}
+
 		//- Retrieve native window handle from GLFWindow
 		//------------------------------------------------------------------------------------------------------------------------
 		inline static void* glfw_native_handle(GLFWwindow* window)
@@ -212,6 +218,7 @@ namespace sm
 		{
 			return opresult_fail;
 		}
+
 		return opresult_ok;
 	}
 
@@ -232,6 +239,7 @@ namespace sm
 			glfwSetWindowSizeCallback(m_mainwindow, glfw_window_size_callback);
 			glfwSetScrollCallback(m_mainwindow, glfw_scroll_callback);
 			glfwSetCharCallback(m_mainwindow, glfw_character_callback);
+			glfwSetWindowCloseCallback(m_mainwindow, glfw_window_close_callback);
 			m_mainwindow_width = w;
 			m_mainwindow_height = h;
 
@@ -241,129 +249,163 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	sm::opresult cos_glfw::post_init()
+	{
+		init_event_listeners();
+		return opresult_ok;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	sm::opresult cos_glfw::process_events()
 	{
 		glfwPollEvents();
 		m_scroll_dt_x = 0.0;
 		m_scroll_dt_y = 0.0;
 
-		return opresult_ok;
+		return m_want_close? opresult_fail : opresult_ok;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void cos_glfw::on_event(const rttr::variant& event)
+	void cos_glfw::init_event_listeners()
 	{
-		if (event.is_type<events::window::sresize>())
-		{
-			const auto& e = event.convert<events::window::sresize>();
-			m_mainwindow_width = e.w;
-			m_mainwindow_height = e.h;
-		}
-		else if (event.is_type<events::window::scursor>())
-		{
-			const auto& e = event.convert<events::window::scursor>();
-			m_mouse.set_cursor(e.mx, e.my);
-		}
-		else if (event.is_type<events::window::smouse_button>())
-		{
-			const auto& e = event.convert<events::window::smouse_button>();
-			//- Note: action specifies whether the key was pressed, released or is held, where
-			//- mods specifies whether a modifier key was active at that time, i.e. GLFW_MOD_SHIFT
-			const auto released = e.action == GLFW_RELEASE;
-			const auto pressed = e.action == GLFW_PRESS;
-			const auto held = e.action == GLFW_REPEAT;
+		auto* evs = core::cservice_manager::find<core::cevent_service>();
 
-			m_mouse.set_state((core::mouse_button)(e.button + 1), released, pressed, held);
-		}
-		else if (event.is_type<events::window::skey_button>())
-		{
-			const auto& e = event.convert<events::window::skey_button>();
-			const auto released = e.action == GLFW_RELEASE;
-			const auto pressed = e.action == GLFW_PRESS;
-			const auto held = e.action == GLFW_REPEAT;
-
-			//- Check modifier keys state
-			int mods = core::key_modifier_none;
-			if (algorithm::bit_check(e.mods, GLFW_MOD_SHIFT))
+		evs->emplace_listener<events::window::sclose>([&](const rttr::variant& e)
 			{
-				mods |= (core::key_modifier_left_shift | core::key_modifier_right_shift);
-			}
-			if (algorithm::bit_check(e.mods, GLFW_MOD_CONTROL))
-			{
-				mods |= (core::key_modifier_left_ctrl | core::key_modifier_right_ctrl);
-			}
-			if (algorithm::bit_check(e.mods, GLFW_MOD_ALT))
-			{
-				mods |= (core::key_modifier_left_alt | core::key_modifier_right_alt);
-			}
-			if (algorithm::bit_check(e.mods, GLFW_MOD_SUPER))
-			{
-				mods |= (core::key_modifier_left_meta | core::key_modifier_right_meta);
-			}
-			if (algorithm::bit_check(e.mods, GLFW_MOD_CAPS_LOCK) ||
-				algorithm::bit_check(e.mods, GLFW_MOD_NUM_LOCK))
-			{
-				//- currently both modifiers are ignored
-			}
+				log_trace("OS handling event 'sclose'");
+				m_want_close = true;
+			});
 
-			m_keyboard.set_state((core::key)e.button, released, pressed, held, mods);
-		}
-		else if (event.is_type<events::window::sminimize>())
-		{
-			const auto& e = event.convert<events::window::sminimize>();
-		}
-		else if (event.is_type<events::window::sunminimize>())
-		{
-			const auto& e = event.convert<events::window::sunminimize>();
-		}
-		else if (event.is_type<events::window::shide>())
-		{
-			const auto& e = event.convert<events::window::shide>();
-		}
-		else if (event.is_type<events::window::sunhide>())
-		{
-			const auto& e = event.convert<events::window::sunhide>();
-		}
-		else if (event.is_type<events::window::sfocus>())
-		{
-			const auto& e = event.convert<events::window::sfocus>();
-		}
-		else if (event.is_type<events::window::sunfocus>())
-		{
-			const auto& e = event.convert<events::window::sunfocus>();
-		}
-		else if (event.is_type<events::window::smouse_scroll>())
-		{
-			const auto& e = event.convert<events::window::smouse_scroll>();
-
-			m_mouse.m_scroll_x += e.dx;
-			m_mouse.m_scroll_y += e.dy;
-
-			m_scroll_dt_x = m_mouse.m_scroll_x - m_previous_mouse_scroll_x;
-			m_scroll_dt_y = m_mouse.m_scroll_y - m_previous_mouse_scroll_y;
-
-			m_previous_mouse_scroll_x = m_mouse.m_scroll_x;
-			m_previous_mouse_scroll_y = m_mouse.m_scroll_y;
-		}
-		else if (event.is_type<events::window::scharacter_input>())
-		{
-			const auto& e = event.convert<events::window::scharacter_input>();
-
-			byte_t chars[4];
-			if (byte_t length = algorithm::encode_utf8(chars, e.codepoint); length > 0)
+		evs->emplace_listener<events::window::sresize>([&](const rttr::variant& e)
 			{
-				for (unsigned l = S_INPUT_CONTROL.reserve(4); l < length; l = S_INPUT_CONTROL.reserve(4))
+				log_trace("OS handling event 'sresize'");
+				const auto& resize = e.convert<events::window::sresize>();
+				m_mainwindow_width = resize.w;
+				m_mainwindow_height = resize.h;
+			});
+
+		evs->emplace_listener<events::window::scursor>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'scursor'");
+				const auto& cursor = e.convert<events::window::scursor>();
+				m_mouse.set_cursor(cursor.mx, cursor.my);
+			});
+
+		evs->emplace_listener<events::window::smouse_button>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'smouse_button'");
+				const auto& button = e.convert<events::window::smouse_button>();
+
+				//- Note: action specifies whether the key was pressed, released or is held, where
+				//- mods specifies whether a modifier key was active at that time, i.e. GLFW_MOD_SHIFT
+				const auto released = button.action == GLFW_RELEASE;
+				const auto pressed = button.action == GLFW_PRESS;
+				const auto held = button.action == GLFW_REPEAT;
+
+				m_mouse.set_state((core::mouse_button)(button.button + 1), released, pressed, held);
+			});
+
+		evs->emplace_listener<events::window::skey_button>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'skey_button'");
+				const auto& button = e.convert<events::window::skey_button>();
+				const auto released = button.action == GLFW_RELEASE;
+				const auto pressed = button.action == GLFW_PRESS;
+				const auto held = button.action == GLFW_REPEAT;
+
+				//- Check modifier keys state
+				int mods = core::key_modifier_none;
+				if (algorithm::bit_check(button.mods, GLFW_MOD_SHIFT))
 				{
-					if (S_INPUT_CONTROL.available() > 0)
-					{
-						S_INPUT_CONTROL.consume(4);
-					}
+					mods |= (core::key_modifier_left_shift | core::key_modifier_right_shift);
+				}
+				if (algorithm::bit_check(button.mods, GLFW_MOD_CONTROL))
+				{
+					mods |= (core::key_modifier_left_ctrl | core::key_modifier_right_ctrl);
+				}
+				if (algorithm::bit_check(button.mods, GLFW_MOD_ALT))
+				{
+					mods |= (core::key_modifier_left_alt | core::key_modifier_right_alt);
+				}
+				if (algorithm::bit_check(button.mods, GLFW_MOD_SUPER))
+				{
+					mods |= (core::key_modifier_left_meta | core::key_modifier_right_meta);
+				}
+				if (algorithm::bit_check(button.mods, GLFW_MOD_CAPS_LOCK) ||
+					algorithm::bit_check(button.mods, GLFW_MOD_NUM_LOCK))
+				{
+					//- currently both modifiers are ignored
 				}
 
-				bx::memCopy(&m_input_chars[S_INPUT_CONTROL.m_current], chars, 4);
-				S_INPUT_CONTROL.commit(4);
-			}
-		}
+				m_keyboard.set_state((core::key)button.button, released, pressed, held, mods);
+			});
+
+		evs->emplace_listener<events::window::sminimize>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'sminimize'");
+			});
+
+
+		evs->emplace_listener<events::window::sunminimize>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'sunminimize'");
+			});
+
+		evs->emplace_listener<events::window::shide>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'shide'");
+			});
+
+		evs->emplace_listener<events::window::sunhide>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'sunhide'");
+			});
+
+		evs->emplace_listener<events::window::sfocus>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'sfocus'");
+			});
+
+		evs->emplace_listener<events::window::sunfocus>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'sunfocus'");
+			});
+
+		evs->emplace_listener<events::window::smouse_scroll>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'smouse_scroll'");
+				const auto& scroll = e.convert<events::window::smouse_scroll>();
+
+				m_mouse.m_scroll_x += scroll.dx;
+				m_mouse.m_scroll_y += scroll.dy;
+
+				m_scroll_dt_x = m_mouse.m_scroll_x - m_previous_mouse_scroll_x;
+				m_scroll_dt_y = m_mouse.m_scroll_y - m_previous_mouse_scroll_y;
+
+				m_previous_mouse_scroll_x = m_mouse.m_scroll_x;
+				m_previous_mouse_scroll_y = m_mouse.m_scroll_y;
+			});
+
+		evs->emplace_listener<events::window::scharacter_input>([&](const rttr::variant& e)
+			{
+				log_trace("OS handling event 'scharacter_input'");
+				const auto& character = e.convert<events::window::scharacter_input>();
+
+				byte_t chars[4];
+				if (byte_t length = algorithm::encode_utf8(chars, character.codepoint); length > 0)
+				{
+					for (unsigned l = S_INPUT_CONTROL.reserve(4); l < length; l = S_INPUT_CONTROL.reserve(4))
+					{
+						if (S_INPUT_CONTROL.available() > 0)
+						{
+							S_INPUT_CONTROL.consume(4);
+						}
+					}
+
+					bx::memCopy(&m_input_chars[S_INPUT_CONTROL.m_current], chars, 4);
+					S_INPUT_CONTROL.commit(4);
+				}
+			});
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

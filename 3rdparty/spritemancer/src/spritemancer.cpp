@@ -23,6 +23,32 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
+		void engine_sync_context_data()
+		{
+			auto& os = entry::ctx()->io();
+			auto& gfx = entry::ctx()->graphics();
+
+			//- Window dimensions and position
+			{
+				int x = 0, y = 0, w = 0, h = 0;
+
+				entry::os()->main_window_position(&x, &y);
+				entry::os()->main_window_size(&w, &h);
+
+				if (os.m_window_w != w || os.m_window_h != h)
+				{
+					os.m_window_w = w;
+					os.m_window_h = h;
+					entry::ctx()->want_resize(true);
+				}
+				os.m_window_x = x;
+				os.m_window_y = y;
+			}
+
+			os.m_dt = entry::os()->frametime();
+		}
+
+		//------------------------------------------------------------------------------------------------------------------------
 		void engine_update()
 		{
 			CORE_ZONE;
@@ -36,12 +62,14 @@ namespace sm
 				{
 					entry::ctx()->running(false);
 				}
+				engine_sync_context_data();
 			}
 
 			//- check for resize of most basic layer. Other layers are not our responsibility
 			if (entry::ctx()->want_resize())
 			{
-				//- TODO: we want to use bgfx::reset() function for all the views
+				const auto& io = entry::ctx()->io();
+				entry::renderer()->reset(io.m_window_w, io.m_window_h, io.m_fullscreen, io.m_vsync);
 				entry::ctx()->want_resize(false);
 			}
 
@@ -116,6 +144,10 @@ namespace sm
 			core::cservice_manager::emplace<cshader_manager>();
 			core::cservice_manager::emplace<cspriteatlas_manager>();
 			core::cservice_manager::emplace<crendertarget_manager>();
+			core::cservice_manager::emplace<cmesh_manager>();
+			core::cservice_manager::emplace<cmaterial_manager>();
+			core::cservice_manager::emplace<cprogram_manager>();
+			core::cservice_manager::emplace<cuniform_manager>();
 
 			//- initialize client application
 			if (!entry::app()->on_init(entry::ctx()->user_data()))
@@ -128,14 +160,15 @@ namespace sm
 				return;
 			}
 
-			core::cservice_manager::find<core::cevent_service>()->emplace_listener<events::window::sresize>([](const rttr::variant& var)
+			if (entry::os()->post_init() != opresult_ok)
+			{
+				if (serror_reporter::instance().m_callback)
 				{
-					const auto& e = var.convert<events::window::sresize>();
-					auto& os = entry::ctx()->io();
-					os.m_window_w = e.w;
-					os.m_window_h = e.h;
-					entry::ctx()->want_resize(true);
-				});
+					serror_reporter::instance().m_callback(core::logging_verbosity_error,
+						"Failed post initializing OS!");
+				}
+				return;
+			}
 
 			//- create imgui context
 			imgui::init();

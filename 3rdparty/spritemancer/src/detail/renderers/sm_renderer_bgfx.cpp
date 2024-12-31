@@ -136,6 +136,16 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_bgfx::reset(unsigned w, unsigned h, bool fullscreen, bool vsync)
+	{
+		bgfx::reset(w, h, (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE));
+
+		//- Force reset in one frame
+		bgfx::frame();
+		bgfx::frame();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
 	void crenderer_bgfx::begin()
 	{
 		const auto& gfx = entry::ctx()->graphics();
@@ -148,6 +158,7 @@ namespace sm
 		}
 
 		bgfx::setViewOrder(0, SCAST(uint16_t, order.size()), order.data());
+		bgfx::touch(0);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

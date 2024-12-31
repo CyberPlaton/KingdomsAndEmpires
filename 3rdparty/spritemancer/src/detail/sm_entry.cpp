@@ -9,7 +9,6 @@ namespace sm
 		static cfilewriter S_FILEWRITER;
 		static cstringwriter S_STRINGWRITER;
 		static clogwriter S_LOGWRITER;
-		static bx::AllocatorI* S_ALLOCATOR = &S_ALLOCATOR_DEFAULT;
 
 		//------------------------------------------------------------------------------------------------------------------------
 		bool cfilereader::open(const bx::FilePath& path, bx::Error* error)
@@ -91,7 +90,7 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		bx::AllocatorI* allocator()
 		{
-			return S_ALLOCATOR;
+			return &S_ALLOCATOR_DEFAULT;
 		}
 
 	} //- entry

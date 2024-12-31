@@ -19,6 +19,7 @@ namespace events
 		struct sunhide {};
 		struct sfocus {};
 		struct sunfocus {};
+		struct sclose {};	//- Currently only considering the main window
 
 	} //- window
 
