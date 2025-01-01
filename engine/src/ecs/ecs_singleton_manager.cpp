@@ -7,12 +7,11 @@ namespace ecs
 	csingleton_manager::csingleton_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
-		//- gather all singleton component types registered to RTTR
-		log_trace("Register ecs singletons:");
+		log_debug("Register ecs singletons:");
 
 		for (const auto& type : rttr::type::get<isingleton>().get_derived_classes())
 		{
-			log_trace(fmt::format("\t'{}'", type.get_name().data()));
+			log_debug(fmt::format("\t'{}'", type.get_name().data()));
 
 			m_registered_singletons.emplace_back(type.get_name().data());
 		}

@@ -22,11 +22,27 @@ namespace sm
 			entry::set_renderer(std::make_unique<crenderer_bgfx>());
 		}
 
+		//- FIXME: this will create ALL renderpasses that exist, without considering if they are enabled or not.
+		//------------------------------------------------------------------------------------------------------------------------
+		void engine_setup_renderpasses()
+		{
+			log_debug("Create gfx renderpasses:");
+
+			for (const auto& type : rttr::type::get<renderpass::irenderpass>().get_derived_classes())
+			{
+				const auto& pass = renderpass_create(type);
+
+				log_debug(fmt::format("\tType: '{}', Id: '{}'\n\tConfig: '{}'\n",
+					type.get_name().data(),
+					pass->m_cfg.m_id,
+					core::io::to_json_string(pass->m_cfg, true)));
+			}
+		}
+
 		//------------------------------------------------------------------------------------------------------------------------
 		void engine_sync_context_data()
 		{
 			auto& os = entry::ctx()->io();
-			auto& gfx = entry::ctx()->graphics();
 
 			//- Window dimensions and position
 			{
@@ -182,6 +198,10 @@ namespace sm
 			//- create imgui context
 			imgui::init();
 			imgui::cui::on_resize(os.m_window_w, os.m_window_h);
+
+			//- finalize init with creation of renderpasses
+			//- TODO: we want this not to be on init, but rather dynamically changeable and configurable, we might setup only the main renderpass here
+			engine_setup_renderpasses();
 
 			//- main loop
 			while (entry::ctx()->running())
@@ -433,5 +453,67 @@ rttr::cregistrator<cmesh>("cmesh")
 //------------------------------------------------------------------------------------------------------------------------
 rttr::cregistrator<cmaterial>("cmaterial")
 	.meta(core::cresource::C_META_SUPPORTED_EXTENSIONS, vector_t<string_t>{})
+	;
+
+using namespace sm::renderpass;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::registration::enumeration<view_mode>("view_mode")
+(
+	rttr::value("view_mode_none", view_mode_none),
+	rttr::value("view_mode_default", view_mode_default),
+	rttr::value("view_mode_sequential", view_mode_sequential),
+	rttr::value("view_mode_depth_ascending", view_mode_depth_ascending),
+	rttr::value("view_mode_depth_descending", view_mode_depth_descending)
+);
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::registration::enumeration<framebuffer_ratio>("framebuffer_ratio")
+(
+	rttr::value("framebuffer_ratio_none", framebuffer_ratio_none),
+	rttr::value("framebuffer_ratio_equal", framebuffer_ratio_equal),
+	rttr::value("framebuffer_ratio_half", framebuffer_ratio_half),
+	rttr::value("framebuffer_ratio_quarter", framebuffer_ratio_quarter),
+	rttr::value("framebuffer_ratio_eighth", framebuffer_ratio_eighth),
+	rttr::value("framebuffer_ratio_sixteenth", framebuffer_ratio_sixteenth),
+	rttr::value("framebuffer_ratio_double", framebuffer_ratio_double)
+);
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::registration::enumeration<uniform_type>("uniform_type")
+(
+	rttr::value("uniform_type_none", uniform_type_none),
+	rttr::value("uniform_type_float", uniform_type_float),
+	rttr::value("uniform_type_vector2", uniform_type_vector2),
+	rttr::value("uniform_type_vector3", uniform_type_vector3),
+	rttr::value("uniform_type_vector4", uniform_type_vector4),
+	rttr::value("uniform_type_mat3x3", uniform_type_mat3x3),
+	rttr::value("uniform_type_mat4x4", uniform_type_mat4x4),
+	rttr::value("uniform_type_sampler", uniform_type_sampler)
+);
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<sconfig>("sconfig")
+	.prop("m_id", &sconfig::m_id)
+	.prop("m_view_mode", &sconfig::m_view_mode)
+	.prop("m_rendertarget_ratio", &sconfig::m_rendertarget_ratio)
+	.prop("m_rendertarget", &sconfig::m_rendertarget)
+	.prop("m_program", &sconfig::m_program)
+	.prop("m_flags", &sconfig::m_flags)
+	;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<irenderpass>("irenderpass")
+	.meth(irenderpass::C_RENDERPASS_NAME_FUNC_NAME, &irenderpass::name)
+	.meth(irenderpass::C_RENDERPASS_CONFIG_FUNC_NAME, &irenderpass::config)
+	.meth(irenderpass::C_RENDERPASS_CREATE_FUNC_NAME, &irenderpass::create)
+	.prop("m_cfg", &irenderpass::m_cfg)
+	;
+
+//------------------------------------------------------------------------------------------------------------------------
+rttr::cregistrator<smain_renderpass>("smain_renderpass")
+	.meth(irenderpass::C_RENDERPASS_NAME_FUNC_NAME, &smain_renderpass::name)
+	.meth(irenderpass::C_RENDERPASS_CONFIG_FUNC_NAME, &smain_renderpass::config)
+	.meth(irenderpass::C_RENDERPASS_CREATE_FUNC_NAME, &smain_renderpass::create)
 	;
 }

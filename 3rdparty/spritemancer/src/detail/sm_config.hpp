@@ -120,7 +120,6 @@ namespace sm
         view_mode_sequential,       //- sort in same order in which submit calls were called
         view_mode_depth_ascending,  //- sort draw calls in ascending order
         view_mode_depth_descending, //- sort draw calls in descending order
-        
     };
 
 	//- Supported uniform types. Note: everything is mapped to a vector4 and a single float uniform will waste 3 floats as unused.
@@ -129,6 +128,8 @@ namespace sm
 	enum uniform_type : uint8_t
 	{
 		uniform_type_none = 0,
+
+		//- These will be evaluated as float4
 		uniform_type_float,
 		uniform_type_vector2,
 		uniform_type_vector3,

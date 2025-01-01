@@ -96,6 +96,7 @@ namespace ecs
 	cmodule_manager::cmodule_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
+		//- FIXME: why do we not register module types like in component manager here?
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

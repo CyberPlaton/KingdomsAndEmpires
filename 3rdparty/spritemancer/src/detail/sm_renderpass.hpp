@@ -39,10 +39,11 @@ namespace sm
         //------------------------------------------------------------------------------------------------------------------------
 		struct irenderpass
         {
+			static constexpr rttr::string_view C_RENDERPASS_NAME_FUNC_NAME = "name";
 			static constexpr rttr::string_view C_RENDERPASS_CONFIG_FUNC_NAME = "config";
 			static constexpr rttr::string_view C_RENDERPASS_CREATE_FUNC_NAME = "create";
-			static constexpr array_t<rttr::string_view, 2> C_RENDERPASS_FUNC_NAMES = { C_RENDERPASS_CONFIG_FUNC_NAME,
-				C_RENDERPASS_CREATE_FUNC_NAME };
+			static constexpr array_t<rttr::string_view, 3> C_RENDERPASS_FUNC_NAMES = { C_RENDERPASS_CONFIG_FUNC_NAME,
+				C_RENDERPASS_CREATE_FUNC_NAME, C_RENDERPASS_NAME_FUNC_NAME };
 
 			static stringview_t name() { static constexpr stringview_t C_NAME = "irenderpass"; return C_NAME; };
 			static sconfig config() { return {}; }
@@ -58,8 +59,9 @@ namespace sm
             RTTR_ENABLE();
         };
 
+		//- Main rendering pass representing drawing to current active backbuffer. Enabled always by default for default view 0.
 		//------------------------------------------------------------------------------------------------------------------------
-		struct smain_renderpass final : irenderpass
+		struct smain_renderpass final : public irenderpass
 		{
 			DECLARE_RENDERPASS(smain_renderpass);
 

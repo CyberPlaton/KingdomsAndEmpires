@@ -7,12 +7,11 @@ namespace ecs
 	ccomponent_manager::ccomponent_manager(cworld* w) :
 		iworld_context_holder(w)
 	{
-		//- gather all component types registered to RTTR
-		log_trace("Register ecs components:");
+		log_debug("Register ecs components:");
 
 		for (const auto& type : rttr::type::get<icomponent>().get_derived_classes())
 		{
-			log_trace(fmt::format("\t'{}'", type.get_name().data()));
+			log_debug(fmt::format("\t'{}'", type.get_name().data()));
 
 			m_registered_components.emplace_back(type.get_name().data());
 		}
