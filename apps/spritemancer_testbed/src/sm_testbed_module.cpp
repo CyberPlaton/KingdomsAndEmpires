@@ -7,6 +7,12 @@ void configure_args(const args_ref_t& args);
 //------------------------------------------------------------------------------------------------------------------------
 bool cspritemancer::init()
 {
+	ecs::world::sconfig cfg;
+	cfg.m_name = "spritemancer_world";
+	cfg.m_threads = MAX(unsigned);
+
+	ecs::cworld_manager::instance().create(cfg, true);
+
 	return true;
 }
 

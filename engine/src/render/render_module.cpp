@@ -6,7 +6,7 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_frame_begin_system::srender_frame_begin_system(ecs::cworld* w)
 	{
-		w->create_task(config(), [](flecs::world&, float dt)
+		w->create_task(config(), [](flecs::iter&, float dt)
 			{
 				//-- no-op
 			});
@@ -27,7 +27,7 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_frame_end_system::srender_frame_end_system(ecs::cworld* w)
 	{
-		w->create_task(config(), [](flecs::world&, float dt)
+		w->create_task(config(), [](flecs::iter&, float dt)
 			{
 				//-- no-op
 			});
@@ -59,7 +59,7 @@ namespace render
 		cfg.m_name = "sdebug_render_system";
 		cfg.m_run_after = { "srender_system" };
 		cfg.m_run_before = { "srender_frame_end_system" };
-		cfg.m_flags = ecs::system::system_flag_multithreaded;
+		cfg.m_flags = ecs::system::system_flag_immediate;
 
 		return cfg;
 	}
@@ -67,10 +67,11 @@ namespace render
 	//------------------------------------------------------------------------------------------------------------------------
 	srender_system::srender_system(ecs::cworld* w)
 	{
-		w->create_task(config(), [](flecs::world& ecs, float dt)
+		w->create_task(config(), [](flecs::iter& it, float dt)
 			{
 				CORE_ZONE;
 
+				const auto ecs = it.world();
 				const auto* world = reinterpret_cast<ecs::cworld*>(ecs.get_ctx());
 
 				//- Sort visible entities by their layer, the layer specifies which renderpass is to be used
@@ -86,17 +87,20 @@ namespace render
 
 					sm::renderpass_begin(pass);
 
-					for (const auto& id : sorted_entities.at(pass->m_cfg.m_id))
+					if (!sorted_entities.empty())
 					{
-						const auto e = flecs::entity(id);
+						for (const auto& id : sorted_entities.at(pass->m_cfg.m_id))
+						{
+							const auto e = flecs::entity(id);
 
-						const auto* transform = e.get<ecs::stransform>();
-						const auto* mesh = e.get<ecs::smesh>();
-						const auto* material = e.get<ecs::smaterial>();
+							const auto* transform = e.get<ecs::stransform>();
+							const auto* mesh = e.get<ecs::smesh>();
+							const auto* material = e.get<ecs::smaterial>();
 
-						const auto& mtx = math::transform(transform->m_position, transform->m_scale, transform->m_shear, transform->m_rotation);
+							const auto& mtx = math::transform(transform->m_position, transform->m_scale, transform->m_shear, transform->m_rotation);
 
-						sm::draw_mesh(glm::value_ptr(mtx), mesh->m_mesh, material->m_material);
+							sm::draw_mesh(glm::value_ptr(mtx), mesh->m_mesh, material->m_material);
+						}
 					}
 
 					sm::renderpass_end(pass);
@@ -112,7 +116,7 @@ namespace render
 		cfg.m_name = "srender_system";
 		cfg.m_run_after = { "srender_frame_begin_system" };
 		cfg.m_run_before = { "srender_frame_end_system" };
-		cfg.m_flags = ecs::system::system_flag_multithreaded;
+		cfg.m_flags = ecs::system::system_flag_immediate;
 
 		return cfg;
 	}

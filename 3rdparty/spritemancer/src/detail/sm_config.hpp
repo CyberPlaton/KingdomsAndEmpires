@@ -274,6 +274,10 @@ namespace sm
 		virtual void begin() = 0;
 		virtual void end() = 0;
 
+		virtual void renderpass_begin(const renderpass_ref_t&) = 0;
+		virtual void renderpass_end(const renderpass_ref_t&) = 0;
+		virtual void renderpass_reset(const renderpasses_t&) = 0;
+
 		RTTR_ENABLE();
 	};
 

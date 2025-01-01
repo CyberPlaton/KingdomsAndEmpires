@@ -28,7 +28,7 @@ namespace sm
 	renderpass_ref_t renderpass_create(rttr::type type);
 	void renderpass_begin(const renderpass_ref_t& pass);
 	void renderpass_end(const renderpass_ref_t& pass);
-	void renderpass_reset(const renderpasses_t& pass);
+	void renderpass_reset(const renderpasses_t& passes);
 
 	void draw_mesh(const void* mtx, mesh_handle_t mesh_handle, material_handle_t material_handle);
 

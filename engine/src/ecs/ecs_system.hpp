@@ -25,7 +25,7 @@ namespace ecs
 	{
 		template<typename... TComps>
 		using system_callback_t = void(flecs::entity, TComps...);
-		using task_callback_t = void(flecs::world&, float);
+		using task_callback_t = void(flecs::iter&, float);
 		using system_flags_t = int;
 
 		//------------------------------------------------------------------------------------------------------------------------

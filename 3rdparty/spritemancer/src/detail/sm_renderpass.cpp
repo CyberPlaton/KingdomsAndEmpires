@@ -12,11 +12,11 @@ namespace sm
 			sconfig cfg;
 
 			cfg.m_id = 0;
-			cfg.m_flags = 0;
+			cfg.m_flags = renderpass_flag_no_framebuffer | renderpass_flag_no_program;
 			cfg.m_rendertarget_ratio = framebuffer_ratio_equal;
 			cfg.m_view_mode = view_mode_sequential;
-			cfg.m_program = algorithm::hash("smain_renderpass_program");
-			cfg.m_rendertarget = algorithm::hash("smain_renderpass_rendertarget");
+			cfg.m_program = C_INVALID_HANDLE;
+			cfg.m_rendertarget = C_INVALID_HANDLE;
 
 			return cfg;
 		}

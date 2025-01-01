@@ -320,41 +320,19 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	void renderpass_begin(const renderpass_ref_t& pass)
 	{
-		const auto view_id = bgfx::ViewId{ pass->m_cfg.m_id };
-		const auto& io = entry::ctx()->io();
-
-		bgfx::setViewTransform(view_id, glm::value_ptr(pass->m_view_mtx), glm::value_ptr(pass->m_projection_mtx));
-		bgfx::setViewRect(view_id, io.m_window_x, io.m_window_y, detail::to_bgfx_ratio(pass->m_cfg.m_rendertarget_ratio));
-		bgfx::setViewMode(view_id, detail::to_bgfx_view_mode(pass->m_cfg.m_view_mode));
-
-		const auto* rtm = core::cservice_manager::find<crendertarget_manager>();
-
-		if (rtm->lookup(pass->m_cfg.m_rendertarget))
-		{
-			const auto& rt = rtm->at(pass->m_cfg.m_rendertarget);
-
-			bgfx::setViewFrameBuffer(view_id, rt);
-		}
-		else
-		{
-			//- Set default backbuffer for view to use
-			bgfx::setViewFrameBuffer(view_id, bgfx::FrameBufferHandle{ C_INVALID_HANDLE });
-		}
-
-		//- Make sure the view is cleared and ready for drawing
-		bgfx::touch(view_id);
+		entry::renderer()->renderpass_begin(pass);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	void renderpass_end(const renderpass_ref_t& pass)
 	{
-
+		entry::renderer()->renderpass_end(pass);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	void renderpass_reset(const renderpasses_t& pass)
+	void renderpass_reset(const renderpasses_t& passes)
 	{
-
+		entry::renderer()->renderpass_reset(passes);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

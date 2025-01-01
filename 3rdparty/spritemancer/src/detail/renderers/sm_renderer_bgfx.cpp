@@ -2,6 +2,7 @@
 #include "../sm_embedded_shaders.hpp"
 #include "../sm_renderpass.hpp"
 #include "../sm_context.hpp"
+#include "../sm_rendertarget.hpp"
 
 RTTR_REGISTRATION
 {
@@ -161,7 +162,7 @@ namespace sm
 	{
 		const auto& gfx = entry::ctx()->graphics();
 
-		vector_t<renderpass_id_t> order(gfx.m_renderpass_order.size());
+		vector_t<renderpass_id_t> order; order.reserve(gfx.m_renderpass_order.size());
 
 		for (const auto& pair : gfx.m_renderpass_order)
 		{
@@ -170,7 +171,19 @@ namespace sm
 
 		bgfx::setViewOrder(0, SCAST(uint16_t, order.size()), order.data());
 
-		bgfx::touch(0);
+		for (const auto& pass: gfx.m_renderpasses)
+		{
+			const auto id = bgfx::ViewId{ pass->m_cfg.m_id };
+
+			bgfx::setViewMode(id, detail::to_bgfx_view_mode(pass->m_cfg.m_view_mode));
+
+			if (!algorithm::bit_check(pass->m_cfg.m_flags, renderpass::renderpass_flag_no_framebuffer))
+			{
+				bgfx::setViewFrameBuffer(id, bgfx::FrameBufferHandle{ pass->m_cfg.m_rendertarget });
+			}
+
+			bgfx::touch(id);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -188,6 +201,56 @@ namespace sm
 #endif
 
 		bgfx::frame();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_bgfx::renderpass_begin(const renderpass_ref_t& pass)
+	{
+		const auto view_id = bgfx::ViewId{ pass->m_cfg.m_id };
+		const auto& io = entry::ctx()->io();
+
+		bgfx::setViewTransform(view_id, glm::value_ptr(pass->m_view_mtx), glm::value_ptr(pass->m_projection_mtx));
+		bgfx::setViewRect(view_id, 0, 0, detail::to_bgfx_ratio(pass->m_cfg.m_rendertarget_ratio));
+		bgfx::setViewMode(view_id, detail::to_bgfx_view_mode(pass->m_cfg.m_view_mode));
+
+		const auto* rtm = core::cservice_manager::find<crendertarget_manager>();
+
+		if (!algorithm::bit_check(pass->m_cfg.m_flags, renderpass::renderpass_flag_no_framebuffer) &&
+			rtm->lookup(pass->m_cfg.m_rendertarget))
+		{
+			const auto& rt = rtm->at(pass->m_cfg.m_rendertarget);
+
+			bgfx::setViewFrameBuffer(view_id, rt);
+		}
+		else
+		{
+			if (!algorithm::bit_check(pass->m_cfg.m_flags, renderpass::renderpass_flag_no_framebuffer) &&
+				pass->m_cfg.m_rendertarget != C_INVALID_HANDLE)
+			{
+				log_warn(fmt::format("Renderpass '{}' should not have a framebuffer, but one is set!", pass->name().data()));
+			}
+			else if(pass->m_cfg.m_rendertarget != C_INVALID_HANDLE)
+			{
+				log_warn(fmt::format("Renderpass '{}' framebuffer could not be found! Setting default backbuffer!", pass->name().data()));
+			}
+
+			//- Set default backbuffer for view to use
+			bgfx::setViewFrameBuffer(view_id, bgfx::FrameBufferHandle{ C_INVALID_HANDLE });
+		}
+
+		//- Make sure the view is cleared and ready for drawing
+		bgfx::touch(view_id);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_bgfx::renderpass_end(const renderpass_ref_t& pass)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void crenderer_bgfx::renderpass_reset(const renderpasses_t& passes)
+	{
+
 	}
 
 } //- sm

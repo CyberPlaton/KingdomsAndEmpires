@@ -17,6 +17,10 @@ namespace sm
 		void		begin() override final;
 		void		end() override final;
 
+		void renderpass_begin(const renderpass_ref_t& pass) override final;
+		void renderpass_end(const renderpass_ref_t& pass) override final;
+		void renderpass_reset(const renderpasses_t& passes) override final;
+
 		RTTR_ENABLE(irenderer);
 	};
 
