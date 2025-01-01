@@ -822,13 +822,27 @@ namespace fs
 	//------------------------------------------------------------------------------------------------------------------------
 	bool cvirtual_filesystem::does_filesystem_exists(stringview_t alias) const
 	{
-		return m_filesystems.find(alias.data()) != m_filesystems.end();
+		string_t _alias = alias.data();
+
+		if (!string_utils::ends_with(_alias, "/"))
+		{
+			_alias += "/";
+		}
+
+		return m_filesystems.find(_alias.data()) != m_filesystems.end();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	fs::filesystem_ref_t cvirtual_filesystem::find_filesystem(stringview_t alias) const
 	{
-		return m_filesystems.at(alias.data());
+		string_t _alias = alias.data();
+
+		if (!string_utils::ends_with(_alias, "/"))
+		{
+			_alias += "/";
+		}
+
+		return m_filesystems.at(_alias.data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

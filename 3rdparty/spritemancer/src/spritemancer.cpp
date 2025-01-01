@@ -6,6 +6,7 @@
 #include "detail/sm_embedded_shaders.hpp"
 #include "detail/sm_context.hpp"
 #include "detail/imgui_integration/imgui.hpp"
+#include "detail/sm_vertex_layouts.hpp"
 #if CORE_PLATFORM_WINDOWS && PROFILE_ENABLE && TRACY_ENABLE
 #include <tracy.h>
 #endif
@@ -494,4 +495,12 @@ rttr::cregistrator<smain_renderpass>("smain_renderpass")
 	.meth(irenderpass::C_RENDERPASS_CONFIG_FUNC_NAME, &smain_renderpass::config)
 	.meth(irenderpass::C_RENDERPASS_CREATE_FUNC_NAME, &smain_renderpass::create)
 	;
+
+using namespace vertexlayout;
+
+//------------------------------------------------------------------------------------------------------------------------
+REGISTER_VERTEX_LAYOUT(spostexcoord);
+REGISTER_VERTEX_LAYOUT(sposcolortexcoord);
+REGISTER_VERTEX_LAYOUT(sposcolor);
+
 }

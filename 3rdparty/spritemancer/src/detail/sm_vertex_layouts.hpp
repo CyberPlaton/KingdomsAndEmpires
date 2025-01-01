@@ -40,4 +40,21 @@ namespace sm::vertexlayout
 		float v = 0.0f;
 	};
 
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sposcolor final
+	{
+		static bool init();
+		static bgfx::VertexLayout vertex_layout();
+		static vertex_layout_handle_t vertex_layout_handle();
+		static sposcolor make(float x, float y, float z, unsigned abgr);
+
+		static inline bgfx::VertexLayout S_LAYOUT;
+		static inline bgfx::VertexLayoutHandle S_LAYOUT_HANDLE;
+
+		float x = 0.0f;
+		float y = 0.0f;
+		float z = 0.0f;
+		unsigned m_abgr = 0;
+	};
+
 } //- sm::vertexlayout

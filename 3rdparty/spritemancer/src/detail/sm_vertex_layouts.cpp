@@ -65,4 +65,35 @@ namespace sm::vertexlayout
 		return spostexcoord{ x, y, z, u, v };
 	}
 
+	//------------------------------------------------------------------------------------------------------------------------
+	bool sposcolor::init()
+	{
+		S_LAYOUT.begin(bgfx::getRendererType())
+			.add(bgfx::Attrib::Position,	3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Color0,		4, bgfx::AttribType::Uint8, true)
+			.end();
+
+		S_LAYOUT_HANDLE = bgfx::createVertexLayout(S_LAYOUT);
+
+		return bgfx::isValid(S_LAYOUT_HANDLE);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	bgfx::VertexLayout sposcolor::vertex_layout()
+	{
+		return S_LAYOUT;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sm::vertex_layout_handle_t sposcolor::vertex_layout_handle()
+	{
+		return S_LAYOUT_HANDLE.idx;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	sposcolor sposcolor::make(float x, float y, float z, unsigned abgr)
+	{
+		return sposcolor{ x, y, z, abgr };
+	}
+
 } //- sm::vertexlayout

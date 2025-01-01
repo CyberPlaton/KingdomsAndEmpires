@@ -5,10 +5,10 @@
 //-------------------------------------------------------------------------------------------------------------------------
 #define REGISTER_VERTEX_LAYOUT(s) \
 	rttr::cregistrator<s>(STRINGIFY(s)) \
-		.meth(ecs::vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME, &s::vertex_layout) \
-		.meth(ecs::vertexlayout::svertex::C_VERTEX_LAYOUT_HANDLE_FUNC_NAME, &s::vertex_layout_handle) \
-		.meth(ecs::vertexlayout::svertex::C_INIT_FUNC_NAME, &s::init) \
-		.meth(ecs::vertexlayout::svertex::C_MAKE_VERTEX_FUNC_NAME, &s::make) \
+		.meth(sm::vertexlayout::svertex::C_VERTEX_LAYOUT_FUNC_NAME, &s::vertex_layout) \
+		.meth(sm::vertexlayout::svertex::C_VERTEX_LAYOUT_HANDLE_FUNC_NAME, &s::vertex_layout_handle) \
+		.meth(sm::vertexlayout::svertex::C_INIT_FUNC_NAME, &s::init) \
+		.meth(sm::vertexlayout::svertex::C_MAKE_VERTEX_FUNC_NAME, &s::make) \
 		;
 
 namespace sm

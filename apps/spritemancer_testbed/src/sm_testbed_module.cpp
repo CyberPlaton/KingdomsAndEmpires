@@ -7,11 +7,30 @@ void configure_args(const args_ref_t& args);
 //------------------------------------------------------------------------------------------------------------------------
 bool cspritemancer::init()
 {
+	//- Create world for testing
 	ecs::world::sconfig cfg;
 	cfg.m_name = "spritemancer_world";
 	cfg.m_threads = MAX(unsigned);
 
 	ecs::cworld_manager::instance().create(cfg, true);
+
+	//- Add shaders virtual file path and load color program
+	auto* vfs = engine::cengine::service<fs::cvirtual_filesystem>();
+	const auto& vfs_base = vfs->find_filesystem("/");
+	if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(string_utils::join(vfs_base->base_path(), "shaders"), "/shaders"))
+	{
+		vfs->add_filesystem("/shaders", filesystem);
+	}
+	const auto& vfs_shaders = vfs->find_filesystem("/shaders");
+	auto* sm = engine::cengine::service<sm::cshader_manager>();
+	auto* pm = engine::cengine::service<sm::cprogram_manager>();
+
+	auto vs = sm->load_sync("vs_color", string_utils::join(vfs_shaders->base_path(), "color/vs_color.sc"));
+	auto fs = sm->load_sync("fs_color", string_utils::join(vfs_shaders->base_path(), "color/fs_color.sc"));
+
+	auto color_program = pm->load_sync("program_color", vs, fs);
+
+
 
 	return true;
 }
