@@ -33,8 +33,11 @@ void try_compile_shaders()
 		"\0"
 		;
 
+	const auto& vfs_shaders = engine::cengine::service<fs::cvirtual_filesystem>()->find_filesystem("/shaders");
+
 	sm::shaderc::soptions options;
 	options.m_type = sm::shaderc::soptions::shader_type_vertex;
+	options.m_include_directories.emplace_back(vfs_shaders->base_path());
 
 	const auto mem = sm::shaderc::compile(C_VERTEX_DEFAULT, options);
 }
@@ -49,8 +52,6 @@ bool cspritemancer::init()
 
 	ecs::cworld_manager::instance().create(cfg, true);
 
-	try_compile_shaders();
-
 	//- Add shaders virtual file path and load color program
 	auto* vfs = engine::cengine::service<fs::cvirtual_filesystem>();
 	const auto& vfs_base = vfs->find_filesystem("/");
@@ -58,6 +59,9 @@ bool cspritemancer::init()
 	{
 		vfs->add_filesystem("/shaders", filesystem);
 	}
+
+	try_compile_shaders();
+
 	const auto& vfs_shaders = vfs->find_filesystem("/shaders");
 	auto* sm = engine::cengine::service<sm::cshader_manager>();
 	auto* pm = engine::cengine::service<sm::cprogram_manager>();

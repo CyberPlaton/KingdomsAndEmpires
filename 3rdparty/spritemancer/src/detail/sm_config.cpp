@@ -253,7 +253,8 @@ namespace sm
 			"vec2 v_texcoord0 : TEXCOORD0 = vec2(0.0, 0.0);\n"
 			"vec3 a_position  : POSITION;\n"
 			"vec4 a_color0    : COLOR0;\n"
-			"vec2 a_texcoord0 : TEXCOORD0;\n";
+			"vec2 a_texcoord0 : TEXCOORD0;\n"
+			"\n\0";
 
 		return C_VARYING.data();
 	}

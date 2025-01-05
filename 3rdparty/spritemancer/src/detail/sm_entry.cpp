@@ -43,24 +43,24 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		int32_t cstringwriter::write(const void* data, int32_t size, bx::Error* error)
 		{
-			if (!error)
+			if (error->isOk())
 			{
 				m_string.append((const char*)data, size);
-				return -1;
+				return size;
 			}
-			return size;
+			return -1;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
 		int32_t clogwriter::write(const void* data, int32_t size, bx::Error* error)
 		{
-			if (!error && serror_reporter::instance().m_callback)
+			if (error->isOk() && serror_reporter::instance().m_callback)
 			{
-				serror_reporter::instance().m_callback(core::logging_verbosity_info,
+				serror_reporter::instance().m_callback(core::logging_verbosity_debug,
 					(const char*)data);
-				return -1;
+				return size;
 			}
-			return size;
+			return -1;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------

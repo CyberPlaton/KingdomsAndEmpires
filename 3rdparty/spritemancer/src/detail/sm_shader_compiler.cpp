@@ -70,6 +70,7 @@ namespace sm::shaderc
 
 			out.platform = options.m_platform;
 			out.profile = options.m_profile;
+			out.raw = true;
 			out.debugInformation = algorithm::bit_check(options.m_flags, soptions::flag_debug);
 			out.avoidFlowControl = algorithm::bit_check(options.m_flags, soptions::flag_avoid_flow_control);
 			out.noPreshader = algorithm::bit_check(options.m_flags, soptions::flag_no_preshader);
@@ -92,8 +93,10 @@ namespace sm::shaderc
 			for (const auto& dep : options.m_dependencies)
 			{
 				out.dependencies.emplace_back(dep.data());
-				out.depends = true;
 			}
+
+			out.dependencies.emplace_back(options.m_varying.data());
+			out.depends = true;
 
 			return out;
 		}
@@ -154,7 +157,7 @@ namespace sm::shaderc
 				options.m_platform));
 		}
 
-		if (bgfx::compileShader(options.m_varying.data(), nullptr, (char*)code.data(), code.size(), bgfx_options, &stringwriter, &logwriter))
+		if (bgfx::compileShader(options.m_varying.data(), nullptr, (char*)code.data(), code.size(), false, bgfx_options, &stringwriter, &logwriter))
 		{
 			const auto text = stringwriter.take();
 
