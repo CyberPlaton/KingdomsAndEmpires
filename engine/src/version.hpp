@@ -14,7 +14,7 @@ namespace engine
 		static inline const auto C_VERSION_MINOR	= ENGINE_VERSION_MINOR;
 		static inline const auto C_VERSION_PATCH	= ENGINE_VERSION_PATCH;
 		static inline const auto C_VERSION			= fmt::format("{}.{}.{}", C_VERSION_MAJOR, C_VERSION_MINOR, C_VERSION_PATCH);
-		static inline constexpr stringview_t C_NAME = "kokoru engine";
+		static inline constexpr stringview_t C_NAME = "kokoru";
 	};
 
 } //- engine

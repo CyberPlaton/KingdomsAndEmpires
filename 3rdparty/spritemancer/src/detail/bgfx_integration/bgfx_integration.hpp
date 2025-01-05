@@ -1,5 +1,6 @@
 #pragma once
 #include "../sm_config.hpp"
+#include <bgfx.h>
 
 namespace sm
 {

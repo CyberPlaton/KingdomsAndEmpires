@@ -1,6 +1,10 @@
 #pragma once
 #include "sm_entry.hpp"
 
+#define SM_VERSION_MAJOR 0
+#define SM_VERSION_MINOR 0
+#define SM_VERSION_PATCH 0
+
 //- Use macro to reflect your vertex type, the vertex type function must be declared and implemented.
 //-------------------------------------------------------------------------------------------------------------------------
 #define REGISTER_VERTEX_LAYOUT(s) \
@@ -83,6 +87,20 @@ namespace sm
 	bool is_valid(const cmaterial& material);
 	bool is_valid(const cspriteatlas& atlas);
 	bool is_valid(const cuniform& uniform);
+
+	//- Structure to retrieve underlying information about supported and current API etc.
+	//------------------------------------------------------------------------------------------------------------------------
+	struct sinfo final
+	{
+		static inline const auto C_VERSION_MAJOR = SM_VERSION_MAJOR;
+		static inline const auto C_VERSION_MINOR = SM_VERSION_MINOR;
+		static inline const auto C_VERSION_PATCH = SM_VERSION_PATCH;
+		static inline const auto C_VERSION = fmt::format("{}.{}.{}", C_VERSION_MAJOR, C_VERSION_MINOR, C_VERSION_PATCH);
+		static inline constexpr stringview_t C_NAME = "spritemancer";
+
+		static string_t shader_profile();
+		static string_t shader_varying_default();
+	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	enum context_state_flag : uint8_t
@@ -236,6 +254,54 @@ namespace sm
 		};
 
 	} //- vertexlayout
+
+	namespace shaderc
+	{
+		using option_flags_t = int;
+
+		//------------------------------------------------------------------------------------------------------------------------
+		struct soptions final
+		{
+			enum shader_type : uint8_t
+			{
+				shader_type_none = 0,
+				shader_type_vertex,
+				shader_type_fragment,
+				shader_type_compute,
+			};
+
+			enum optimization_level : uint8_t
+			{
+				optimization_level_none = 0,
+				optimization_level_1,
+				optimization_level_2,
+				optimization_level_3,
+			};
+
+			enum flag : uint16_t
+			{
+				flag_avoid_flow_control = BIT(0),
+				flag_no_preshader		= BIT(1),
+				flag_partial_precision	= BIT(2),
+				flag_prefer_flow_control= BIT(3),
+				flag_backward_compatible= BIT(4),
+				flag_warnings_are_errors= BIT(5),
+				flag_keep_intermediate	= BIT(6),
+				flag_debug				= BIT(7)
+			};
+
+			vector_t<string_t> m_include_directories;
+			vector_t<string_t> m_defines;
+			vector_t<string_t> m_dependencies;
+			string_t m_varying = sm::sinfo::shader_varying_default();
+			string_t m_platform = core::sinfo::platform();
+			string_t m_profile = sm::sinfo::shader_profile();
+			shader_type m_type = shader_type_none;
+			optimization_level m_optimization = optimization_level_none;
+			option_flags_t m_flags = 0;
+		};
+
+	} //- shaderc
 
 	//------------------------------------------------------------------------------------------------------------------------
 	struct sblending final

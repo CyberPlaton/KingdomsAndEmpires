@@ -32,4 +32,11 @@ namespace string_utils
 	char to_lower(char c);
 	char to_upper(char c);
 
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TIterator>
+	string_t join(TIterator begin, TIterator end)
+	{
+		return fmt::to_string(fmt::join(begin, end, ","));
+	}
+
 } //- string_utils

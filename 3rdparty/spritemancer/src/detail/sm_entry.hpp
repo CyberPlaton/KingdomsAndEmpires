@@ -28,12 +28,6 @@ namespace sm
 
 	namespace entry
 	{
-		bx::FileReaderI*	filereader();
-		bx::FileWriterI*	filewriter();
-		bx::WriterI*		stringwriter();
-		bx::WriterI*		logwriter();
-		bx::AllocatorI*		allocator();
-
 		//------------------------------------------------------------------------------------------------------------------------
 		class cfilereader final : public bx::FileReader
 		{
@@ -70,6 +64,12 @@ namespace sm
 		public:
 			int32_t write(const void* data, int32_t size, bx::Error* error) override final;
 		};
+
+		cfilereader*		filereader();
+		cfilewriter*		filewriter();
+		cstringwriter*		stringwriter();
+		clogwriter*			logwriter();
+		bx::AllocatorI*		allocator();
 
 	} //- entry
 

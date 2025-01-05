@@ -230,4 +230,32 @@ namespace sm
 
 	} //- detail
 
+	//------------------------------------------------------------------------------------------------------------------------
+	string_t sinfo::shader_profile()
+	{
+#if CORE_PLATFORM_WINDOWS || CORE_PLATFORM_XBOXONE || CORE_PLATFORM_XBOXSERIES
+		return "s_5_0";
+#elif CORE_PLATFORM_LINUX || CORE_PLATFORM_ANDROID || CORE_PLATFORM_NX
+		return "spirv";
+#elif CORE_PLATFORM_IOS || CORE_PLATFORM_OSX
+		return "metal";
+#elif CORE_PLATFORM_PS4 || CORE_PLATFORM_PS5
+		return "pssl";
+#endif
+		return {};
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	string_t sinfo::shader_varying_default()
+	{
+		constexpr stringview_t C_VARYING =
+			"vec4 v_color0    : COLOR0    = vec4(1.0, 0.0, 0.0, 1.0);\n"
+			"vec2 v_texcoord0 : TEXCOORD0 = vec2(0.0, 0.0);\n"
+			"vec3 a_position  : POSITION;\n"
+			"vec4 a_color0    : COLOR0;\n"
+			"vec2 a_texcoord0 : TEXCOORD0;\n";
+
+		return C_VARYING.data();
+	}
+
 } //- sm

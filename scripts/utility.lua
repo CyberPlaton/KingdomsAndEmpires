@@ -165,7 +165,8 @@ function set_bgfx_3rd_party_includes()
 						path.join(bgfx_3rd_party_dir, "glsl-optimizer/include"),
 
 						path.join(bgfx_3rd_party_dir, "glslang"),
-						
+						path.join(bgfx_3rd_party_dir, "fcpp"),
+
 						path.join(bgfx_3rd_party_dir, "spirv-cross"),
 						path.join(bgfx_3rd_party_dir, "spirv-cross/include"),
 						path.join(bgfx_3rd_party_dir, "spirv-headers/include"),
@@ -200,6 +201,12 @@ function set_glfw_deps()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+function set_bgfx_deps()
+	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "fcpp", "include")}
+	links{"fcpp"}
+end
+
+------------------------------------------------------------------------------------------------------------------------
 function set_bx_includes()
 	externalincludedirs {path.join(WORKSPACE_DIR, "3rdparty", "bx", "bx", "include")}
 	if PLATFORM == "windows" then
@@ -213,6 +220,7 @@ function set_bx_includes()
 	end
 
 	set_glfw_deps()
+	set_bgfx_deps()
 	set_bgfx_3rd_party_includes()
 end
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "sm_config.hpp"
+#include "sm_shader_compiler.hpp"
 
 namespace sm
 {

@@ -64,25 +64,25 @@ namespace sm
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bx::FileReaderI* filereader()
+		cfilereader* filereader()
 		{
 			return &S_FILEREADER;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bx::FileWriterI* filewriter()
+		cfilewriter* filewriter()
 		{
 			return &S_FILEWRITER;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bx::WriterI* stringwriter()
+		cstringwriter* stringwriter()
 		{
 			return &S_STRINGWRITER;
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------
-		bx::WriterI* logwriter()
+		clogwriter* logwriter()
 		{
 			return &S_LOGWRITER;
 		}

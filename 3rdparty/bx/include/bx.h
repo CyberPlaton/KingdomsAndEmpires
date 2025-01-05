@@ -7,3 +7,4 @@
 #include "../bx/include/bx/ringbuffer.h"
 #include "../bx/include/bx/pixelformat.h"
 #include "../bx/include/bx/timer.h"
+#include "../bx/include/bx/os.h"

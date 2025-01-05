@@ -5,6 +5,41 @@ void core_io_error_function(uint8_t level, const std::string& message);
 void configure_args(const args_ref_t& args);
 
 //------------------------------------------------------------------------------------------------------------------------
+void try_compile_shaders()
+{
+	constexpr stringview_t C_VERTEX_DEFAULT =
+		"$input a_position, a_color0, a_texcoord0					\n"
+		"$output v_color0, v_texcoord0								\n"
+		"#include <bgfx_shader.sh>									\n"
+		"void main()												\n"
+		"{															\n"
+		"	gl_Position = mul(u_viewProj, vec4(a_position, 1.0));	\n"
+		"	v_color0 = a_color0;									\n"
+		"	v_texcoord0 = a_texcoord0;								\n"
+		"};															\n"
+		"\0"
+		;
+
+	constexpr stringview_t C_FRAGMENT_DEFAULT =
+		"$input v_color0, v_texcoord0								\n"
+		"#include <bgfx_shader.sh>									\n"
+		"SAMPLER2D(s_tex, 0);										\n"
+		"void main()												\n"
+		"{															\n"
+		"	vec4 color = v_color0 * texture2D(s_tex, v_texcoord0);	\n"
+		"	if (color.w < 1.0/255.0) { discard; }					\n"
+		"	gl_FragColor = color;									\n"
+		"};															\n"
+		"\0"
+		;
+
+	sm::shaderc::soptions options;
+	options.m_type = sm::shaderc::soptions::shader_type_vertex;
+
+	const auto mem = sm::shaderc::compile(C_VERTEX_DEFAULT, options);
+}
+
+//------------------------------------------------------------------------------------------------------------------------
 bool cspritemancer::init()
 {
 	//- Create world for testing
@@ -13,6 +48,8 @@ bool cspritemancer::init()
 	cfg.m_threads = MAX(unsigned);
 
 	ecs::cworld_manager::instance().create(cfg, true);
+
+	try_compile_shaders();
 
 	//- Add shaders virtual file path and load color program
 	auto* vfs = engine::cengine::service<fs::cvirtual_filesystem>();
@@ -29,8 +66,6 @@ bool cspritemancer::init()
 	auto fs = sm->load_sync("fs_color", string_utils::join(vfs_shaders->base_path(), "color/fs_color.sc"));
 
 	auto color_program = pm->load_sync("program_color", vs, fs);
-
-
 
 	return true;
 }
