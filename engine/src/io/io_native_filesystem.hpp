@@ -8,7 +8,7 @@ namespace io
 	class cnative_filesystem final : public fs::ifilesystem
 	{
 	public:
-		cnative_filesystem();
+		cnative_filesystem(bool build_file_list = true);
 		~cnative_filesystem();
 
 		bool init(stringview_t basepath, stringview_t alias) override final;
@@ -35,6 +35,7 @@ namespace io
 		string_t m_basepath;
 		string_t m_alias;
 		bool m_ready;
+		bool m_build_file_list;
 
 	private:
 		fs::file_ref_t find_file(const fs::cfileinfo& fileinfo) const;

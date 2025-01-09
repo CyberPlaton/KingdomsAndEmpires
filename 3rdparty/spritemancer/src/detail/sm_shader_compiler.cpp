@@ -70,7 +70,6 @@ namespace sm::shaderc
 
 			out.platform = options.m_platform;
 			out.profile = options.m_profile;
-			out.raw = true;
 			out.debugInformation = algorithm::bit_check(options.m_flags, soptions::flag_debug);
 			out.avoidFlowControl = algorithm::bit_check(options.m_flags, soptions::flag_avoid_flow_control);
 			out.noPreshader = algorithm::bit_check(options.m_flags, soptions::flag_no_preshader);
@@ -95,9 +94,6 @@ namespace sm::shaderc
 				out.dependencies.emplace_back(dep.data());
 			}
 
-			out.dependencies.emplace_back(options.m_varying.data());
-			out.depends = true;
-
 			return out;
 		}
 
@@ -110,7 +106,8 @@ namespace sm::shaderc
 	//------------------------------------------------------------------------------------------------------------------------
 	memory_ref_t compile(stringview_t code, const soptions& options)
 	{
-		log_debug(fmt::format("Compiling shader, spritemancer version '{}.{}.{}'",
+		log_debug(fmt::format("Compiling shader '{}', spritemancer version '{}.{}.{}'",
+			options.m_name,
 			sm::sinfo::C_VERSION_MAJOR,
 			sm::sinfo::C_VERSION_MINOR,
 			sm::sinfo::C_VERSION_PATCH));
@@ -130,9 +127,6 @@ namespace sm::shaderc
 		log_debug(fmt::format("\tdependencies: '{}'",
 			string_utils::join(bgfx_options.dependencies.begin(), bgfx_options.dependencies.end())));
 
-		entry::cstringwriter stringwriter;
-		entry::clogwriter logwriter;
-
 		if (string_utils::compare(options.m_platform, "Windows") ||
 			string_utils::compare(options.m_platform, "Xbox One") ||
 			string_utils::compare(options.m_platform, "Xbox Series"))
@@ -141,7 +135,7 @@ namespace sm::shaderc
 		else if (string_utils::compare(options.m_platform, "Linux") ||
 			string_utils::compare(options.m_platform, "Android") ||
 			string_utils::compare(options.m_platform, "NX"))
-		{
+		{ 
 		}
 		else if (string_utils::compare(options.m_platform, "iOS") ||
 			string_utils::compare(options.m_platform, "macOS"))
@@ -157,14 +151,38 @@ namespace sm::shaderc
 				options.m_platform));
 		}
 
-		if (bgfx::compileShader(options.m_varying.data(), nullptr, (char*)code.data(), code.size(), false, bgfx_options, &stringwriter, &logwriter))
+		//- Save code to a temporary file for compilation as direct compiling from string is not supported
+		string_t temp_input_file_path;
 		{
-			const auto text = stringwriter.take();
+			core::cfilesystem::remove(temp_input_file_path.data());
 
-			return core::cmemory::make_ref((byte_t*)text.data(), (unsigned)text.size());
+			auto vfs = core::cservice_manager::find<fs::cvirtual_filesystem>()->find_filesystem("/temp/");
+			temp_input_file_path = fmt::format("{}/{}.sc", vfs->base_path(), options.m_name);
+
+			if (const auto result = fs::save_text_to_file(temp_input_file_path, core::cmemory::make_ref((byte_t*)code.data(), code.size()));
+				result != core::file_io_status_success)
+			{
+				log_error(fmt::format("Failed creating temporary file for shader compilation '{}'", temp_input_file_path));
+				return {};
+			}
 		}
 
-		return {};
+		entry::clogwriter logwriter;
+		entry::cstringwriter stringwriter;
+		memory_ref_t memory{};
+
+		bgfx_options.inputFilePath = temp_input_file_path;
+
+		if (bgfx::compileShader(options.m_varying.data(), nullptr, (char*)code.data(), code.size(), false, bgfx_options, &stringwriter, &logwriter))
+		{
+			string_t shader(stringwriter.take());
+
+			memory = core::cmemory::make_ref((byte_t*)shader.c_str(), shader.size());
+		}
+
+		core::cfilesystem::remove(temp_input_file_path.data());
+
+		return memory;
 	}
 
 } //- sm::shaderc

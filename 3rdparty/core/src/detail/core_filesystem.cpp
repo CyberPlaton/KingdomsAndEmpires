@@ -98,7 +98,7 @@ namespace core
 	//------------------------------------------------------------------------------------------------------------------------
 	cpath& cpath::append(stringview_t path)
 	{
-		m_path = std::filesystem::path(fmt::format("{}{}", m_path.generic_u8string(), path).c_str());
+		m_path = std::filesystem::path(fmt::format("{}/{}", m_path.generic_u8string(), path).c_str());
 		m_dir = std::filesystem::directory_entry(m_path);
 
 		update_strings();

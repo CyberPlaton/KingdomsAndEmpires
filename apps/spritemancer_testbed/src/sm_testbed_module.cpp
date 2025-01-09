@@ -22,7 +22,7 @@ void try_compile_shaders()
 
 	constexpr stringview_t C_FRAGMENT_DEFAULT =
 		"$input v_color0, v_texcoord0								\n"
-		"#include <bgfx_shader.sh>									\n"
+		"#include </shaders/bgfx_shader.sh>							\n"
 		"SAMPLER2D(s_tex, 0);										\n"
 		"void main()												\n"
 		"{															\n"
@@ -36,10 +36,13 @@ void try_compile_shaders()
 	const auto& vfs_shaders = engine::cengine::service<fs::cvirtual_filesystem>()->find_filesystem("/shaders");
 
 	sm::shaderc::soptions options;
+	options.m_name = "default_vertex_shader";
 	options.m_type = sm::shaderc::soptions::shader_type_vertex;
 	options.m_include_directories.emplace_back(vfs_shaders->base_path());
 
 	const auto mem = sm::shaderc::compile(C_VERTEX_DEFAULT, options);
+
+	sm::cshader shader((const uint8_t*)mem->data(), mem->size());
 }
 
 //------------------------------------------------------------------------------------------------------------------------

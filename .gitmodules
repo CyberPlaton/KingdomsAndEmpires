@@ -35,6 +35,3 @@
 [submodule "3rdparty/bgfx/bgfx"]
 	path = 3rdparty/bgfx/bgfx
 	url = https://github.com/CyberPlaton/bgfx.git
-[submodule "3rdparty/fcpp/fcpp"]
-	path = 3rdparty/fcpp/fcpp
-	url = https://github.com/bagder/fcpp.git

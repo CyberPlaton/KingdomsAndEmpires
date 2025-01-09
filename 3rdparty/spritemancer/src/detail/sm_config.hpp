@@ -293,6 +293,7 @@ namespace sm
 			vector_t<string_t> m_include_directories;
 			vector_t<string_t> m_defines;
 			vector_t<string_t> m_dependencies;
+			string_t m_name;
 			string_t m_varying = sm::sinfo::shader_varying_default();
 			string_t m_platform = core::sinfo::platform();
 			string_t m_profile = sm::sinfo::shader_profile();

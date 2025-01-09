@@ -84,6 +84,7 @@ namespace engine
 		void register_services();
 		void register_resource_managers();
 		void register_layers();
+		void register_filesystems();
 	};
 
 	//- Find given service, returns nullptr if non-existent

@@ -3,8 +3,8 @@
 namespace io
 {
 	//------------------------------------------------------------------------------------------------------------------------
-	cnative_filesystem::cnative_filesystem() :
-		m_basepath({}), m_ready(false)
+	cnative_filesystem::cnative_filesystem(bool build_file_list /*= true*/) :
+		m_basepath({}), m_ready(false), m_build_file_list(build_file_list)
 	{
 	}
 
@@ -24,7 +24,10 @@ namespace io
 			m_basepath += "/";
 		}
 
-		build_file_list(m_basepath, m_file_list);
+		if (m_build_file_list)
+		{
+			build_file_list(m_basepath, m_file_list);
+		}
 
 		m_ready = true;
 		return m_ready;
@@ -323,20 +326,26 @@ namespace io
 		const auto base = base_path();
 
 		//- recursively iterate over base directory and gather all files contained within
-		for (const auto& entry : std::filesystem::directory_iterator{ path })
+		try
 		{
-			if (entry.is_directory())
+			for (const auto& entry : std::filesystem::directory_iterator{ path })
 			{
-				build_file_list(entry.path().generic_u8string(), out);
-			}
-			else if (entry.is_regular_file())
-			{
-				auto relative = std::filesystem::relative(entry.path(), base);
+				if (entry.is_directory())
+				{
+					build_file_list(entry.path().generic_u8string(), out);
+				}
+				else if (entry.is_regular_file())
+				{
+					auto relative = std::filesystem::relative(entry.path(), base);
 
-				fs::cfileinfo info(base, relative.generic_u8string());
+					fs::cfileinfo info(base, relative.generic_u8string());
 
-				out.insert(std::move(std::make_shared<cnative_file>(info)));
+					out.insert(std::move(std::make_shared<cnative_file>(info)));
+				}
 			}
+		}
+		catch (...)
+		{
 		}
 	}
 

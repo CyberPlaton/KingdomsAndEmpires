@@ -1,4 +1,5 @@
 #include "engine.hpp"
+#include <pfd.h>
 
 namespace engine
 {
@@ -230,30 +231,7 @@ namespace engine
 		//- by default we set path to projects resources
 		//- TODO: this should be revised and more flexible, e.g. when the game is published the cwd will
 		//- certainly change and we must handle it
-		auto fs = core::cfilesystem(core::cfilesystem::cwd());
-		fs.backwards();
-		fs.backwards();
-
-		if (fs.forwards("resources"))
-		{
-			const char* path = fs.current().view();
-
-			if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(path, "/"))
-			{
-				service<fs::cvirtual_filesystem>()->add_filesystem("/", filesystem);
-			}
-			else
-			{
-				log_error(fmt::format("Failed initializing virtual file system at path '/' for real path '{}'", path));
-				m_result = engine_run_result_fail;
-			}
-		}
-		else
-		{
-			log_error(fmt::format("Failed locating default resources path at '{}'",
-				fs.current().view()));
-			m_result = engine_run_result_fail;
-		}
+		register_filesystems();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -302,6 +280,73 @@ namespace engine
 		log_info("Initializing layers...");
 
 		m_layers.init();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	void cengine::register_filesystems()
+	{
+		{
+			auto fs = core::cfilesystem(core::cfilesystem::cwd());
+			fs.backwards();
+			fs.backwards();
+
+			if (fs.forwards("resources"))
+			{
+				const char* path = fs.current().view();
+
+				if (auto filesystem = std::make_shared<io::cnative_filesystem>(); filesystem->init(path, "/"))
+				{
+					service<fs::cvirtual_filesystem>()->add_filesystem("/", filesystem);
+				}
+				else
+				{
+					log_error(fmt::format("Failed initializing virtual file system at path '/' for real path '{}'", path));
+					m_result = engine_run_result_fail;
+				}
+			}
+			else
+			{
+				log_error(fmt::format("Failed locating default resources path at '{}'",
+					fs.current().view()));
+				m_result = engine_run_result_fail;
+			}
+		}
+
+		//- Create "temp" and "home" filesystems
+		{
+			if (auto filesystem = std::make_shared<io::cnative_filesystem>(false); filesystem->init(pfd::path::home().data(), "/home/"))
+			{
+				service<fs::cvirtual_filesystem>()->add_filesystem("/home/", filesystem);
+			}
+			else
+			{
+				log_error(fmt::format("Failed initializing virtual file system at path '/home/' for real path '{}'", pfd::path::home().data()));
+				m_result = engine_run_result_fail;
+			}
+
+			auto fs = core::cfilesystem(core::cfilesystem::cwd());
+			fs.backwards();
+			fs.backwards();
+
+			if (fs.forwards("resources") && !fs.forwards(".temp"))
+			{
+				core::cfilesystem::create_dir_in(fs.current().view(), ".temp");
+
+				fs.forwards(".temp");
+			}
+
+			const auto temp_file_path = fs.current().view();
+
+			if (auto filesystem = std::make_shared<io::cnative_filesystem>(false); filesystem->init(temp_file_path, "/temp/"))
+			{
+				service<fs::cvirtual_filesystem>()->add_filesystem("/temp/", filesystem);
+			}
+			else
+			{
+				log_error(fmt::format("Failed initializing virtual file system at path '/temp/' for real path '{}'", temp_file_path));
+				m_result = engine_run_result_fail;
+			}
+		}
 	}
 
 } //- engine

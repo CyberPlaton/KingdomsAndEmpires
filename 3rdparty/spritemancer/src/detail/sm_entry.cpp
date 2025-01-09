@@ -28,7 +28,9 @@ namespace sm
 		//------------------------------------------------------------------------------------------------------------------------
 		bool cfilewriter::open(const bx::FilePath& path, bool append, bx::Error* error)
 		{
-			if (const auto result = bx::FileWriter::open(path, append, error); !result)
+			bx::Error err;
+
+			if (const auto result = bx::FileWriter::open(path, append, &err); !result)
 			{
 				if (serror_reporter::instance().m_callback)
 				{
@@ -45,7 +47,9 @@ namespace sm
 		{
 			if (error->isOk())
 			{
-				m_string.append((const char*)data, size);
+				const char* text = (const char*)data;
+				string_t string(text, size);
+				m_string += string;
 				return size;
 			}
 			return -1;
