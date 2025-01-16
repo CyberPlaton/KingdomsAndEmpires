@@ -57,14 +57,14 @@ namespace sm
 	constexpr stringview_t C_UNIFORM_TEXTURE6 = "texture6";
 	constexpr stringview_t C_UNIFORM_TEXTURE7 = "texture7";
 
-	using handle_type_t			= uint16_t;
+	using handle_type_t			= uint32_t;
 	using image_handle_t		= handle_type_t;
 	using texture_handle_t		= handle_type_t;
 	using shader_handle_t		= handle_type_t;
 	using program_handle_t		= handle_type_t;
 	using spriteatlas_handle_t	= handle_type_t;
-	using rendertarget_handle_t = handle_type_t;
-	using renderpass_id_t		= handle_type_t;
+	using rendertarget_handle_t = uint16_t;
+	using renderpass_id_t		= uint16_t;
 	using uniform_handle_t		= handle_type_t;
 	using vertex_layout_handle_t= handle_type_t;
 	using mesh_handle_t			= handle_type_t;
@@ -205,6 +205,15 @@ namespace sm
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
+	enum shader_type : uint8_t
+	{
+		shader_type_none = 0,
+		shader_type_vertex,
+		shader_type_pixel,
+		shader_type_compute,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------------
 	enum opresult : uint8_t
 	{
 		opresult_ok = 0,
@@ -266,7 +275,7 @@ namespace sm
 			{
 				shader_type_none = 0,
 				shader_type_vertex,
-				shader_type_fragment,
+				shader_type_pixel,
 				shader_type_compute,
 			};
 

@@ -213,28 +213,16 @@ namespace algorithm
 	//------------------------------------------------------------------------------------------------------------------------
 	constexpr unsigned hash(stringview_t string)
 	{
-		constexpr auto strlength = [](const char* s) constexpr -> unsigned long long
-			{
-				unsigned long long out = 0;
-				while (s[out] != '\0') ++out;
-				return out;
-			};
+		constexpr auto prime = 16777619u;
+		constexpr auto basis = 2166136261u;
 
-		unsigned long long block = 0;
-		const auto len = strlength(string.data());
+		auto h = basis;
 
-		for (auto i = 0ull; i < 8; ++i)
+		for (const char& c : string)
 		{
-			if (i < len)
-			{
-				block |= SCAST(unsigned long long, string[i] << (56ull - i * 8ull));
-			}
+			h ^= static_cast<unsigned>(c);
+			h *= prime;
 		}
-
-		auto h = block * 0x9E3779B97F4A7C15ull;
-		h ^= (h >> 33ull);
-		h *= 0xC2B2AE3D27D4EB4Full;
-		h ^= (h >> 29ull);
 
 		return h;
 	}

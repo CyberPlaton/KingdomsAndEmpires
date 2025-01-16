@@ -113,25 +113,25 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::rendertarget_handle_t crendertarget_manager::load_sync(stringview_t name, unsigned w, unsigned h)
 	{
-		return load_of_sync<rendertarget_handle_t>(name, m_data, w, h);
+		return load_of_sync<rendertarget_handle_t>(name.data(), w, h);
 	}
 
     //------------------------------------------------------------------------------------------------------------------------
     sm::rendertarget_handle_t crendertarget_manager::load_sync(stringview_t name, framebuffer_ratio ratio)
     {
-        return load_of_sync<rendertarget_handle_t>(name, m_data, ratio);
+        return load_of_sync<rendertarget_handle_t>(name.data(), ratio);
     }
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::rendertarget_handle_t> crendertarget_manager::load_async(stringview_t name, unsigned w, unsigned h)
 	{
-		return load_of_async<rendertarget_handle_t>(name, m_data, w, h);
+		return load_of_async<rendertarget_handle_t>(name.data(), w, h);
 	}
 
     //------------------------------------------------------------------------------------------------------------------------
     core::cfuture_type<sm::rendertarget_handle_t> crendertarget_manager::load_async(stringview_t name, framebuffer_ratio ratio)
     {
-        return load_of_async<rendertarget_handle_t>(name, m_data, ratio);
+        return load_of_async<rendertarget_handle_t>(name.data(), ratio);
     }
 
 

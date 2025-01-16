@@ -90,25 +90,25 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::uniform_handle_t cuniform_manager::load_sync(stringview_t name, stringview_t uniform_name, uniform_type type)
 	{
-		return load_of_sync<uniform_handle_t>(name, m_data, uniform_name, type);
+		return load_of_sync<uniform_handle_t>(name.data(), uniform_name, type);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::uniform_handle_t cuniform_manager::load_sync(stringview_t name, stringview_t uniform_name)
 	{
-		return load_of_sync<uniform_handle_t>(name, m_data, uniform_name);
+		return load_of_sync<uniform_handle_t>(name.data(), uniform_name);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::uniform_handle_t> cuniform_manager::load_async(stringview_t name, stringview_t uniform_name, uniform_type type)
 	{
-		return load_of_async<mesh_handle_t>(name, m_data, uniform_name, type);
+		return load_of_async<mesh_handle_t>(name.data(), uniform_name, type);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::uniform_handle_t> cuniform_manager::load_async(stringview_t name, stringview_t uniform_name)
 	{
-		return load_of_async<mesh_handle_t>(name, m_data, uniform_name);
+		return load_of_async<mesh_handle_t>(name.data(), uniform_name);
 	}
 
 } //- sm

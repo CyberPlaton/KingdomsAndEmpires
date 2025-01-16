@@ -3,6 +3,7 @@
 #include "core_future_type.hpp"
 #include "core_algorithm.hpp"
 #include "core_async.hpp"
+#include "core_mutex.hpp"
 
 namespace core
 {
@@ -49,17 +50,20 @@ namespace core
 
 	protected:
 		umap_t<unsigned, TResource> m_data;
+		cmutex m_mutex;
 
 	protected:
 		//- Utility function to load a resource synchronously and construct it in-place with given arguments.
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename THandle, typename... ARGS>
-		THandle load_of_sync(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
+		THandle load_of_sync(const char* name, ARGS&&... args)
 		{
+			core::cscope_mutex m(m_mutex);
+
 			unsigned hash = algorithm::hash(name);
 
 			//- correctly forward arguments and hash
-			data.emplace(std::piecewise_construct,
+			m_data.emplace(std::piecewise_construct,
 				std::forward_as_tuple(hash),
 				std::forward_as_tuple(std::forward<ARGS>(args)...));
 
@@ -70,14 +74,16 @@ namespace core
 		//- will notify when resource handle is ready.
 		//------------------------------------------------------------------------------------------------------------------------
 		template<typename THandle, typename... ARGS>
-		core::cfuture_type<THandle> load_of_async(stringview_t name, umap_t<unsigned, TResource>& data, ARGS&&... args)
+		core::cfuture_type<THandle> load_of_async(const char* name, ARGS&&... args)
 		{
 			core::cfuture_type<THandle> result = core::casync::launch_async([&]() -> THandle
 				{
+					core::cscope_mutex m(m_mutex);
+
 					const auto hash = algorithm::hash(name);
 
 					//- correctly forward arguments and hash
-					data.emplace(std::piecewise_construct,
+					m_data.emplace(std::piecewise_construct,
 						std::forward_as_tuple(hash),
 						std::forward_as_tuple(std::forward<ARGS>(args)...));
 
@@ -96,6 +102,8 @@ namespace core
 	template<typename TCallable>
 	void core::cresource_manager<TResource>::each(TCallable&& callback)
 	{
+		core::cscope_mutex m(m_mutex);
+
 		for (const auto& pair : m_data)
 		{
 			callback(pair.second);

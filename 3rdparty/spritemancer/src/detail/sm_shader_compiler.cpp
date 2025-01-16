@@ -56,7 +56,7 @@ namespace sm::shaderc
 				out.shaderType = 'v';
 				break;
 			}
-			case soptions::shader_type_fragment:
+			case soptions::shader_type_pixel:
 			{
 				out.shaderType = 'f';
 				break;
@@ -106,6 +106,8 @@ namespace sm::shaderc
 	//------------------------------------------------------------------------------------------------------------------------
 	memory_ref_t compile(stringview_t code, const soptions& options)
 	{
+		CORE_ZONE;
+
 		log_debug(fmt::format("Compiling shader '{}', spritemancer version '{}.{}.{}'",
 			options.m_name,
 			sm::sinfo::C_VERSION_MAJOR,

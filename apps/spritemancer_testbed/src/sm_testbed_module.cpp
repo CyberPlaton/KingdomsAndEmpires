@@ -10,7 +10,7 @@ void try_compile_shaders()
 	constexpr stringview_t C_VERTEX_DEFAULT =
 		"$input a_position, a_color0, a_texcoord0					\n"
 		"$output v_color0, v_texcoord0								\n"
-		"#include <bgfx_shader.sh>									\n"
+		"#include <common.sh>										\n"
 		"void main()												\n"
 		"{															\n"
 		"	gl_Position = mul(u_viewProj, vec4(a_position, 1.0));	\n"
@@ -22,7 +22,7 @@ void try_compile_shaders()
 
 	constexpr stringview_t C_FRAGMENT_DEFAULT =
 		"$input v_color0, v_texcoord0								\n"
-		"#include </shaders/bgfx_shader.sh>							\n"
+		"#include <common.sh>										\n"
 		"SAMPLER2D(s_tex, 0);										\n"
 		"void main()												\n"
 		"{															\n"
@@ -33,16 +33,13 @@ void try_compile_shaders()
 		"\0"
 		;
 
-	const auto& vfs_shaders = engine::cengine::service<fs::cvirtual_filesystem>()->find_filesystem("/shaders");
+	auto* sm= engine::cengine::service<sm::cshader_manager>();
 
-	sm::shaderc::soptions options;
-	options.m_name = "default_vertex_shader";
-	options.m_type = sm::shaderc::soptions::shader_type_vertex;
-	options.m_include_directories.emplace_back(vfs_shaders->base_path());
+	string_t vertex_name = "default_vertex_shader";
+	string_t pixel_name = "default_pixel_shader";
 
-	const auto mem = sm::shaderc::compile(C_VERTEX_DEFAULT, options);
-
-	sm::cshader shader((const uint8_t*)mem->data(), mem->size());
+	sm->load_sync(vertex_name.data(), sm::shader_type_vertex, C_VERTEX_DEFAULT.data());
+	sm->load_sync(pixel_name.data(), sm::shader_type_pixel, C_FRAGMENT_DEFAULT.data());
 }
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -63,15 +60,15 @@ bool cspritemancer::init()
 		vfs->add_filesystem("/shaders", filesystem);
 	}
 
-	try_compile_shaders();
+	//try_compile_shaders();
 
 	const auto& vfs_shaders = vfs->find_filesystem("/shaders");
 	auto* sm = engine::cengine::service<sm::cshader_manager>();
 	auto* pm = engine::cengine::service<sm::cprogram_manager>();
-
-	auto vs = sm->load_sync("vs_color", string_utils::join(vfs_shaders->base_path(), "color/vs_color.sc"));
-	auto fs = sm->load_sync("fs_color", string_utils::join(vfs_shaders->base_path(), "color/fs_color.sc"));
-
+	
+	auto vs = sm->load_sync("vs_color", sm::shader_type_vertex, string_utils::join(vfs_shaders->base_path(), "color/vs_color.sc"));
+	auto fs = sm->load_sync("fs_color", sm::shader_type_pixel, string_utils::join(vfs_shaders->base_path(), "color/fs_color.sc"));
+	
 	auto color_program = pm->load_sync("program_color", vs, fs);
 
 	return true;

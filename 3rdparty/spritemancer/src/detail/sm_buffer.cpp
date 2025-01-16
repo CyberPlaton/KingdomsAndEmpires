@@ -87,8 +87,8 @@ namespace sm
 			{
 			case buffer_type_static:
 			{
-				const auto vertex_handle = bgfx::VertexBufferHandle{ buffer->m_vbh };
-				const auto index_handle = bgfx::IndexBufferHandle{ buffer->m_ibh };
+				const auto vertex_handle = bgfx::VertexBufferHandle{ SCAST(uint16_t, buffer->m_vbh) };
+				const auto index_handle = bgfx::IndexBufferHandle{ SCAST(uint16_t, buffer->m_ibh) };
 
 				if (bgfx::isValid(vertex_handle)) bgfx::destroy(vertex_handle);
 				if (bgfx::isValid(index_handle)) bgfx::destroy(index_handle);
@@ -97,8 +97,8 @@ namespace sm
 			}
 			case buffer_type_dynamic:
 			{
-				const auto vertex_handle = bgfx::DynamicVertexBufferHandle{ buffer->m_vbh };
-				const auto index_handle = bgfx::DynamicIndexBufferHandle{ buffer->m_ibh };
+				const auto vertex_handle = bgfx::DynamicVertexBufferHandle{ SCAST(uint16_t, buffer->m_vbh) };
+				const auto index_handle = bgfx::DynamicIndexBufferHandle{ SCAST(uint16_t, buffer->m_ibh) };
 
 				if (bgfx::isValid(vertex_handle)) bgfx::destroy(vertex_handle);
 				if (bgfx::isValid(index_handle)) bgfx::destroy(index_handle);
@@ -124,12 +124,12 @@ namespace sm
 			{
 				if (!buffer->m_vertices.empty())
 				{
-					bgfx::update(bgfx::DynamicVertexBufferHandle{ buffer->m_vbh }, 0,
+					bgfx::update(bgfx::DynamicVertexBufferHandle{ SCAST(uint16_t, buffer->m_vbh) }, 0,
 						bgfx::makeRef(buffer->m_vertices.data(), buffer->m_vertices.size()));
 
 					if (!buffer->m_indices.empty())
 					{
-						bgfx::update(bgfx::DynamicIndexBufferHandle{ buffer->m_ibh }, 0,
+						bgfx::update(bgfx::DynamicIndexBufferHandle{ SCAST(uint16_t, buffer->m_ibh) }, 0,
 							bgfx::makeRef(buffer->m_indices.data(), buffer->m_indices.size()));
 					}
 				}
@@ -148,14 +148,14 @@ namespace sm
 			case buffer_type_transient:
 			case buffer_type_static:
 			{
-				bgfx::setVertexBuffer(0, bgfx::VertexBufferHandle{ buffer->m_vbh });
-				bgfx::setIndexBuffer(bgfx::IndexBufferHandle{ buffer->m_ibh });
+				bgfx::setVertexBuffer(0, bgfx::VertexBufferHandle{ SCAST(uint16_t, buffer->m_vbh) });
+				bgfx::setIndexBuffer(bgfx::IndexBufferHandle{ SCAST(uint16_t, buffer->m_ibh) });
 				break;
 			}
 			case buffer_type_dynamic:
 			{
-				bgfx::setVertexBuffer(0, bgfx::DynamicVertexBufferHandle{ buffer->m_vbh });
-				bgfx::setIndexBuffer(bgfx::DynamicIndexBufferHandle{ buffer->m_ibh });
+				bgfx::setVertexBuffer(0, bgfx::DynamicVertexBufferHandle{ SCAST(uint16_t, buffer->m_vbh) });
+				bgfx::setIndexBuffer(bgfx::DynamicIndexBufferHandle{ SCAST(uint16_t, buffer->m_ibh) });
 				break;
 			}
 			default: break;

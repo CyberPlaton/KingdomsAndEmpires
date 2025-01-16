@@ -4,6 +4,7 @@
 namespace ecs
 {
 	//- Central place for storing and accessing all worlds. Note: consider refactoring into a service type.
+	//- TODO: why is this not a service, but a static instance?
 	//------------------------------------------------------------------------------------------------------------------------
 	class cworld_manager final
 	{

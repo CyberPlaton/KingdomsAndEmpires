@@ -20,7 +20,7 @@ namespace sm
 		uniform_handle_t uniform() const;
 		const void* value() const;
 
-		operator bgfx::UniformHandle() const noexcept { return bgfx::UniformHandle{ m_handle }; }
+		operator bgfx::UniformHandle() const noexcept { return bgfx::UniformHandle{ SCAST(uint16_t, m_handle) }; }
 
 	private:
 		string_t m_name;

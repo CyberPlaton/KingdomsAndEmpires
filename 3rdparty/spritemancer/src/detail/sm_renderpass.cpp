@@ -4,8 +4,8 @@
 
 namespace sm
 {
-    namespace renderpass
-    {
+	namespace renderpass
+	{
 		//------------------------------------------------------------------------------------------------------------------------
 		sconfig smain_renderpass::config()
 		{

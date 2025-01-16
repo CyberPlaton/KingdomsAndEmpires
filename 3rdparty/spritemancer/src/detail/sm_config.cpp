@@ -105,7 +105,7 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cshader& shader)
 	{
-		return bgfx::isValid(bgfx::ShaderHandle{ shader.shader() });
+		return bgfx::isValid(bgfx::ShaderHandle{ SCAST(uint16_t, shader.shader()) });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -117,13 +117,13 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const ctexture& texture)
 	{
-		return bgfx::isValid(bgfx::TextureHandle{ texture.texture() });
+		return bgfx::isValid(bgfx::TextureHandle{ SCAST(uint16_t, texture.texture()) });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const crendertarget& target)
 	{
-		return bgfx::isValid(bgfx::FrameBufferHandle{ target.target() });
+		return bgfx::isValid(bgfx::FrameBufferHandle{ SCAST(uint16_t, target.target()) });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -135,8 +135,8 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cmaterial& material)
 	{
-		return bgfx::isValid(bgfx::TextureHandle{ material.texture() }) &&
-			bgfx::isValid(bgfx::ProgramHandle{ material.program() });
+		return bgfx::isValid(bgfx::TextureHandle{ SCAST(uint16_t, material.texture()) }) &&
+			bgfx::isValid(bgfx::ProgramHandle{ SCAST(uint16_t, material.program()) });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -150,13 +150,13 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cprogram& program)
 	{
-		return bgfx::isValid(bgfx::ProgramHandle{ program.handle() });
+		return bgfx::isValid(bgfx::ProgramHandle{ SCAST(uint16_t, program.handle()) });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	bool is_valid(const cuniform& uniform)
 	{
-		return bgfx::isValid(bgfx::UniformHandle{ uniform.uniform() });
+		return bgfx::isValid(bgfx::UniformHandle{ SCAST(uint16_t, uniform.uniform()) });
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------

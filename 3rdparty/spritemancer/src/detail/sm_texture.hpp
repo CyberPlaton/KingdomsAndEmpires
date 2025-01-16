@@ -27,7 +27,7 @@ namespace sm
 		inline unsigned h() const { return SCAST(unsigned, m_info.height); }
 		inline texture_handle_t texture() const { return m_texture; }
 
-		operator bgfx::TextureHandle() const noexcept { return bgfx::TextureHandle{ m_texture }; }
+		operator bgfx::TextureHandle() const noexcept { return bgfx::TextureHandle{ SCAST(uint16_t, m_texture) }; }
 
 	private:
 		texture_handle_t m_texture;

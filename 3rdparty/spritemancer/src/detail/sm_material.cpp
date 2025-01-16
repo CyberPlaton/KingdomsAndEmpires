@@ -59,7 +59,7 @@ namespace sm
 	{
 		CORE_ASSERT(is_valid(*this), "Invalid operation. Binding an invalid material with an invalid texture or program!");
 
-		bgfx::setTexture(0, m_sampler_state.m_sampler, bgfx::TextureHandle{ m_texture }, m_sampler_state.m_sampler_flags);
+		bgfx::setTexture(0, m_sampler_state.m_sampler, bgfx::TextureHandle{ SCAST(uint16_t, m_texture) }, m_sampler_state.m_sampler_flags);
 
 		for (const auto& uniform : m_uniforms)
 		{
@@ -67,7 +67,7 @@ namespace sm
 		}
 
 		bgfx::setState(m_state);
-		bgfx::submit(bgfx::ViewId{ m_view }, bgfx::ProgramHandle{ m_program }, depth);
+		bgfx::submit(bgfx::ViewId{ SCAST(uint16_t, m_view) }, bgfx::ProgramHandle{SCAST(uint16_t, m_program)}, depth);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -101,25 +101,25 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::material_handle_t cmaterial_manager::load_sync(stringview_t name, stringview_t program, stringview_t texture)
 	{
-		return load_of_sync<image_handle_t>(name, m_data, program, texture);
+		return load_of_sync<image_handle_t>(name.data(), program, texture);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::material_handle_t cmaterial_manager::load_sync(stringview_t name)
 	{
-		return load_of_sync<image_handle_t>(name, m_data);
+		return load_of_sync<image_handle_t>(name.data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::material_handle_t> cmaterial_manager::load_async(stringview_t name, stringview_t program, stringview_t texture)
 	{
-		return load_of_async<image_handle_t>(name, m_data, program, texture);
+		return load_of_async<image_handle_t>(name.data(), program, texture);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::material_handle_t> cmaterial_manager::load_async(stringview_t name)
 	{
-		return load_of_async<image_handle_t>(name, m_data);
+		return load_of_async<image_handle_t>(name.data());
 	}
 
 } //- sm

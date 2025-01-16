@@ -23,10 +23,10 @@ namespace sm
         //------------------------------------------------------------------------------------------------------------------------
         struct sconfig final
         {
-			renderpass_id_t m_id					= C_INVALID_HANDLE; //- Id serves as identifier for renderpass and the view index
+			renderpass_id_t m_id					= MAX(renderpass_id_t); //- Id serves as identifier for renderpass and the view index
             view_mode m_view_mode					= view_mode_none;
             framebuffer_ratio m_rendertarget_ratio	= framebuffer_ratio_none;
-			rendertarget_handle_t m_rendertarget	= C_INVALID_HANDLE;
+			rendertarget_handle_t m_rendertarget	= MAX(rendertarget_handle_t);
 			program_handle_t m_program				= C_INVALID_HANDLE;
             renderpass_flags_t m_flags				= 0;
         };

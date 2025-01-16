@@ -127,25 +127,25 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::image_handle_t cimage_manager::load_sync(stringview_t name, stringview_t filepath)
 	{
-		return load_of_sync<image_handle_t>(name, m_data, filepath);
+		return load_of_sync<image_handle_t>(name.data(), filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::image_handle_t cimage_manager::load_sync(stringview_t name, void* data, unsigned size)
 	{
-		return load_of_sync<image_handle_t>(name, m_data, data, size);
+		return load_of_sync<image_handle_t>(name.data(), data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::image_handle_t> cimage_manager::load_async(stringview_t name, stringview_t filepath)
 	{
-		return load_of_async<image_handle_t>(name, m_data, filepath);
+		return load_of_async<image_handle_t>(name.data(), filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::image_handle_t> cimage_manager::load_async(stringview_t name, void* data, unsigned size)
 	{
-		return load_of_async<image_handle_t>(name, m_data, data, size);
+		return load_of_async<image_handle_t>(name.data(), data, size);
 	}
 
 } //- sm

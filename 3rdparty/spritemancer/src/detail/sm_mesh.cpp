@@ -108,25 +108,25 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	mesh_handle_t cmesh_manager::load_sync(stringview_t name, stringview_t vertex_type, geometry_type geometry, primitive_type primitive)
 	{
-		return load_of_sync<mesh_handle_t>(name, m_data, vertex_type, geometry, primitive);
+		return load_of_sync<mesh_handle_t>(name.data(), vertex_type, geometry, primitive);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	mesh_handle_t cmesh_manager::load_sync(stringview_t name)
 	{
-		return load_of_sync<mesh_handle_t>(name, m_data);
+		return load_of_sync<mesh_handle_t>(name.data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<mesh_handle_t> cmesh_manager::load_async(stringview_t name, stringview_t vertex_type, geometry_type geometry, primitive_type primitive)
 	{
-		return load_of_async<mesh_handle_t>(name, m_data, vertex_type, geometry, primitive);
+		return load_of_async<mesh_handle_t>(name.data(), vertex_type, geometry, primitive);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<mesh_handle_t> cmesh_manager::load_async(stringview_t name)
 	{
-		return load_of_async<mesh_handle_t>(name, m_data);
+		return load_of_async<mesh_handle_t>(name.data());
 	}
 
 } //- sm

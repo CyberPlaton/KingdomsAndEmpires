@@ -2,6 +2,38 @@
 
 namespace sm
 {
+	namespace
+	{
+		//------------------------------------------------------------------------------------------------------------------------
+		memory_ref_t compile_shader_string(stringview_t name, shader_type type, const char* text)
+		{
+			const auto& vfs_shaders = core::cservice_manager::find<fs::cvirtual_filesystem>()->find_filesystem("/shaders");
+
+			sm::shaderc::soptions options;
+			options.m_name = name;
+
+			switch (type)
+			{
+			case shader_type_vertex:
+				options.m_type = sm::shaderc::soptions::shader_type_vertex;
+				break;
+			case shader_type_pixel:
+				options.m_type = sm::shaderc::soptions::shader_type_pixel;
+				break;
+			case shader_type_compute:
+				options.m_type = sm::shaderc::soptions::shader_type_compute;
+				break;
+			default:
+				return {};
+			}
+
+			options.m_include_directories.emplace_back(vfs_shaders->base_path());
+
+			return sm::shaderc::compile(text, options);
+		}
+
+	} //- unnamed
+
 	//------------------------------------------------------------------------------------------------------------------------
 	cshader::cshader() :
 		m_handle(C_INVALID_HANDLE)
@@ -9,21 +41,24 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(stringview_t path)
+	cshader::cshader(stringview_t name, shader_type type, stringview_t path) :
+		m_shader_name(name)
 	{
-		load_from_file(path);
+		load_from_file(m_shader_name, type, path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(const char* text)
+	cshader::cshader(stringview_t name, shader_type type, const char* text) :
+		m_shader_name(name)
 	{
-		load_from_string(text);
+		load_from_string(m_shader_name, type, text);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	cshader::cshader(const uint8_t* data, unsigned size)
+	cshader::cshader(stringview_t name, shader_type type, const uint8_t* data, unsigned size) :
+		m_shader_name(name)
 	{
-		load_from_memory(data, size);
+		load_from_memory(m_shader_name, type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
@@ -31,12 +66,12 @@ namespace sm
 	{
 		if (is_valid(*this))
 		{
-			bgfx::destroy(bgfx::ShaderHandle{ shader() });
+			bgfx::destroy(bgfx::ShaderHandle{ SCAST(uint16_t, shader()) });
 		}
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_file(stringview_t path)
+	sm::opresult cshader::load_from_file(stringview_t name, shader_type type, stringview_t path)
 	{
 		memory_ref_t data = nullptr;
 
@@ -45,31 +80,43 @@ namespace sm
 			data = fs::load_text_from_file(path);
 		}
 
-		return load_from_memory((uint8_t*)data->data(), (unsigned)data->size());
+		return load_from_string(name, type, (const char*)data->data());
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_string(const char* text)
+	sm::opresult cshader::load_from_string(stringview_t name, shader_type type, const char* text)
 	{
-		return load_from_memory((const uint8_t*)text, strlen(text));
+		if (const auto mem = compile_shader_string(name, type, text); mem && !mem->empty())
+		{
+			return load_from_memory(name, type, (uint8_t*)mem->data(), mem->size());
+		}
+
+		if (serror_reporter::instance().m_callback)
+		{
+			serror_reporter::instance().m_callback(core::logging_verbosity_error,
+				fmt::format("Failed compiling and loading shader '{}'", name));
+		}
+		return opresult_fail;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cshader::load_from_memory(const uint8_t* data, unsigned size)
+	sm::opresult cshader::load_from_memory(stringview_t name, shader_type type, const uint8_t* data, unsigned size)
 	{
-		const bgfx::Memory* mem = bgfx::makeRef(data, size);
+		//- Create own copy of the blob to ensure it won´t go out of scope.
+		m_shader_blob = core::cmemory::make_ref((byte_t*)data, size);
+		m_type = type;
 
-		if (m_handle = bgfx::createShader(mem).idx; !bgfx::isValid(bgfx::ShaderHandle{ m_handle }))
+		const bgfx::Memory* mem = bgfx::makeRef(m_shader_blob->data(), m_shader_blob->size());
+
+		if (m_handle = bgfx::createShader(mem).idx; !bgfx::isValid(bgfx::ShaderHandle{ SCAST(uint16_t, m_handle) }))
 		{
 			if (serror_reporter::instance().m_callback)
 			{
 				serror_reporter::instance().m_callback(core::logging_verbosity_error,
-					"Failed loading shader");
+					fmt::format("Failed loading shader '{}' from memory data ", name));
 			}
-
 			return opresult_fail;
 		}
-
 		return opresult_ok;
 	}
 
@@ -157,39 +204,39 @@ namespace sm
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, stringview_t path)
+	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type, stringview_t path)
 	{
-		return load_of_sync<shader_handle_t>(name, m_data, path);
+		return load_of_sync<shader_handle_t>(name.data(), name, type, path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, const char* text)
+	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type, const char* text)
 	{
-		return load_of_sync<shader_handle_t>(name, m_data, text);
+		return load_of_sync<shader_handle_t>(name.data(), name, type, text);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, const uint8_t* data, unsigned size)
+	sm::shader_handle_t cshader_manager::load_sync(stringview_t name, shader_type type, const uint8_t* data, unsigned size)
 	{
-		return load_of_sync<shader_handle_t>(name, m_data, data, size);
+		return load_of_sync<shader_handle_t>(name.data(), name, type, data, size);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, stringview_t path)
+	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type, stringview_t path)
 	{
-		return load_of_async<shader_handle_t>(name, m_data, path);
+		return load_of_async<shader_handle_t>(name.data(), name, type, path);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, const char* text)
+	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type, const char* text)
 	{
-		return load_of_async<shader_handle_t>(name, m_data, text);
+		return load_of_async<shader_handle_t>(name.data(), name, type, text);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, const uint8_t* data, unsigned size)
+	core::cfuture_type<sm::shader_handle_t> cshader_manager::load_async(stringview_t name, shader_type type, const uint8_t* data, unsigned size)
 	{
-		return load_of_async<shader_handle_t>(name, m_data, data, size);
+		return load_of_async<shader_handle_t>(name.data(), name, type, data, size);
 	}
 
 } //- sm

@@ -23,7 +23,7 @@ namespace sm
 		inline const cshader& vertex() const { return m_vertex; }
 		inline const cshader& fragment() const { return m_fragment; }
 
-		operator bgfx::ProgramHandle() const noexcept { return bgfx::ProgramHandle{ m_handle }; }
+		operator bgfx::ProgramHandle() const noexcept { return bgfx::ProgramHandle{ SCAST(uint16_t, m_handle) }; }
 
 	private:
 		cshader m_vertex;

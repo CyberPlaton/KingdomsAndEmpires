@@ -37,9 +37,9 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	ctexture::~ctexture()
 	{
-		if (bgfx::isValid(bgfx::TextureHandle{ texture() }))
+		if (bgfx::isValid(bgfx::TextureHandle{ SCAST(uint16_t, texture()) }))
 		{
-			bgfx::destroy(bgfx::TextureHandle{ texture() });
+			bgfx::destroy(bgfx::TextureHandle{ SCAST(uint16_t, texture()) });
 
 			//- reset handle and info
 			m_texture = C_INVALID_HANDLE;
@@ -117,39 +117,39 @@ namespace sm
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, const cimage& image)
 	{
-		return load_of_sync<texture_handle_t>(name, m_data, image);
+		return load_of_sync<texture_handle_t>(name.data(), image);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, stringview_t filepath)
 	{
-		return load_of_sync<texture_handle_t>(name, m_data, filepath);
+		return load_of_sync<texture_handle_t>(name.data(), filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
 		bool mips, unsigned layers, texture_format format, uint64_t flags)
 	{
-		return load_of_sync<texture_handle_t>(name, m_data, data, size, w, h, depth, mips, layers, format, flags);
+		return load_of_sync<texture_handle_t>(name.data(), data, size, w, h, depth, mips, layers, format, flags);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, const cimage& image)
 	{
-		return load_of_async<texture_handle_t>(name, m_data, image);
+		return load_of_async<texture_handle_t>(name.data(), image);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, stringview_t filepath)
 	{
-		return load_of_async<texture_handle_t>(name, m_data, filepath);
+		return load_of_async<texture_handle_t>(name.data(), filepath);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------
 	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
 		bool mips, unsigned layers, texture_format format, uint64_t flags)
 	{
-		return load_of_async<texture_handle_t>(name, m_data, data, size, w, h, depth, mips, layers, format, flags);
+		return load_of_async<texture_handle_t>(name.data(), data, size, w, h, depth, mips, layers, format, flags);
 	}
 
 } //- sm

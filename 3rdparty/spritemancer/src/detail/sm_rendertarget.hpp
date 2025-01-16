@@ -21,7 +21,7 @@ namespace sm
 		inline rendertarget_handle_t target() const { return m_framebuffer; }
 		inline texture_handle_t texture() const { return m_texture; }
 
-		operator bgfx::FrameBufferHandle() const noexcept { return bgfx::FrameBufferHandle{ m_framebuffer }; }
+		operator bgfx::FrameBufferHandle() const noexcept { return bgfx::FrameBufferHandle{ SCAST(uint16_t, m_framebuffer) }; }
 
 	private:
 		rendertarget_handle_t m_framebuffer;

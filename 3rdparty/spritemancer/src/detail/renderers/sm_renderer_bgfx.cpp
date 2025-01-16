@@ -133,7 +133,7 @@ namespace sm
 
 		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
 		bgfx::setViewRect(0, 0, 0, w, h);
-		bgfx::setViewFrameBuffer(0, bgfx::FrameBufferHandle{ C_INVALID_HANDLE });
+		bgfx::setViewFrameBuffer(0, bgfx::FrameBufferHandle{ MAX(uint16_t) });
 
 		return opresult_ok;
 	}
@@ -235,7 +235,7 @@ namespace sm
 			}
 
 			//- Set default backbuffer for view to use
-			bgfx::setViewFrameBuffer(view_id, bgfx::FrameBufferHandle{ C_INVALID_HANDLE });
+			bgfx::setViewFrameBuffer(view_id, bgfx::FrameBufferHandle{ MAX(uint16_t) });
 		}
 
 		//- Make sure the view is cleared and ready for drawing
