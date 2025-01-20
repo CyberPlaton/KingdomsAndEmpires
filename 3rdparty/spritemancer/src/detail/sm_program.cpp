@@ -3,155 +3,88 @@
 
 namespace sm
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	cprogram::cprogram(const cshader& vertex, const cshader& fragment) :
-		m_vertex(vertex), m_fragment(fragment)
+	namespace resource
 	{
-		load_from_handles(m_vertex.shader(), m_fragment.shader());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cprogram::cprogram() :
-		m_handle(C_INVALID_HANDLE)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cprogram::cprogram(shader_handle_t shader)
-	{
-		load_from_shader(shader);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cprogram::cprogram(shader_handle_t vertex, shader_handle_t fragment)
-	{
-		load_from_handles(vertex, fragment);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cprogram::~cprogram()
-	{
-
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cprogram::load_from_shader(shader_handle_t shader)
-	{
-		bgfx::ProgramHandle handle{ bgfx::kInvalidHandle };
-
-		if (handle = bgfx::createProgram(bgfx::ShaderHandle{ SCAST(uint16_t, shader) }, false); !bgfx::isValid(handle))
+		//------------------------------------------------------------------------------------------------------------------------
+		const core::resource::iresource* cprogram_manager::load(stringview_t name, const fs::cfileinfo& path)
 		{
+			if (const auto* text = fs::load_text_file_data(path.path()); text)
+			{
+				if (const auto var = core::io::from_json_string(rttr::type::get<detail::sprogram>(), text); var.is_valid())
+				{
+					cprogram program;
+
+					program.m_resource = var.get_value<detail::sprogram>();
+
+					//- Proceed loading shaders
+					auto* sm = core::cservice_manager::find<cshader_manager>();
+
+					//- Either create from vertex/pixel shaders or from computpe shader
+					if (!program.m_resource.m_compute_shader_path.empty())
+					{
+						const cshader* compute = nullptr;
+						if (fs::cfileinfo info(program.m_resource.m_compute_shader_path); info.exists())
+						{
+							if (compute = sm->load_sync(info.stem(), info); compute)
+							{
+								if (program.m_resource.m_handle = bgfx::createProgram(compute->m_resource.m_handle); bgfx::isValid(program.m_resource.m_handle))
+								{
+									if (serror_reporter::instance().m_callback)
+									{
+										serror_reporter::instance().m_callback(core::logging_verbosity_trace,
+											fmt::format("Successfully loaded compute program '{}' at '{}'", name, path.path()));
+									}
+
+									return emplace_object(name, std::move(program));
+								}
+							}
+						}
+					}
+					else
+					{
+						const cshader* vertex = nullptr;
+						const cshader* pixel = nullptr;
+
+						fs::cfileinfo vertex_info(program.m_resource.m_vertex_shader_path);
+						fs::cfileinfo pixel_info(program.m_resource.m_pixel_shader_path);
+
+						if (vertex_info.exists() && pixel_info.exists())
+						{
+							vertex = sm->load_sync(vertex_info.stem(), vertex_info);
+							pixel = sm->load_sync(pixel_info.stem(), pixel_info);
+
+							if (program.m_resource.m_handle = bgfx::createProgram(vertex->m_resource.m_handle, pixel->m_resource.m_handle);
+								bgfx::isValid(program.m_resource.m_handle))
+							{
+								if (serror_reporter::instance().m_callback)
+								{
+									serror_reporter::instance().m_callback(core::logging_verbosity_trace,
+										fmt::format("Successfully loaded program '{}' at '{}'", name, path.path()));
+								}
+
+								return emplace_object(name, std::move(program));
+							}
+						}
+					}
+				}
+			}
+
 			if (serror_reporter::instance().m_callback)
 			{
 				serror_reporter::instance().m_callback(core::logging_verbosity_error,
-					"Failed loading program");
-			}
-		}
-		return bgfx::isValid(handle) ? opresult_ok : opresult_fail;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cprogram::load_from_shaders(const cshader& vertex, const cshader& fragment)
-	{
-		m_vertex = vertex;
-		m_fragment = fragment;
-		return load_from_handles(m_vertex.shader(), m_fragment.shader());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cprogram::load_from_handles(shader_handle_t vertex, shader_handle_t fragment)
-	{
-		if (m_handle = bgfx::createProgram(bgfx::ShaderHandle{ SCAST(uint16_t, vertex) }, bgfx::ShaderHandle{ SCAST(uint16_t, fragment) }).idx;
-			!bgfx::isValid(bgfx::ProgramHandle{ SCAST(uint16_t, m_handle) }))
-		{
-			if (serror_reporter::instance().m_callback)
-			{
-				serror_reporter::instance().m_callback(core::logging_verbosity_error,
-					"Failed loading program");
+					fmt::format("Failed loading program '{}' at '{}'", name, path.path()));
 			}
 
-			return opresult_fail;
+			return nullptr;
 		}
-		return opresult_ok;
-	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	cprogram_manager::cprogram_manager(unsigned reserve /*= C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT*/)
-	{
-		m_data.reserve(reserve);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cprogram_manager::~cprogram_manager()
-	{
-		clear();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool cprogram_manager::on_start()
-	{
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cprogram_manager::on_shutdown()
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cprogram_manager::on_update(float)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::program_handle_t cprogram_manager::load_sync(stringview_t name, shader_handle_t vs, shader_handle_t fs)
-	{
-		auto* sm = core::cservice_manager::find<cshader_manager>();
-
-		return load_of_sync<program_handle_t>(name.data(), sm->at(vs).shader(), sm->at(fs).shader());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::program_handle_t cprogram_manager::load_sync(stringview_t name, const cshader& vs, const cshader& fs)
-	{
-		return load_of_sync<program_handle_t>(name.data(), vs.shader(), fs.shader());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::program_handle_t cprogram_manager::load_sync(stringview_t name, shader_handle_t shader)
-	{
-		auto* sm = core::cservice_manager::find<cshader_manager>();
-
-		return load_of_sync<program_handle_t>(name.data(), sm->at(shader).shader());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, shader_handle_t vs, shader_handle_t fs)
-	{
-		auto* sm = core::cservice_manager::find<cshader_manager>();
-
-		return load_of_async<program_handle_t>(name.data(), sm->at(vs).shader(), sm->at(fs).shader());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, const cshader& vs, const cshader& fs)
-	{
-		return load_of_async<program_handle_t>(name.data(), vs.shader(), fs.shader());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::program_handle_t> cprogram_manager::load_async(stringview_t name, shader_handle_t shader)
-	{
-		auto* sm = core::cservice_manager::find<cshader_manager>();
-
-		return load_of_async<program_handle_t>(name.data(), sm->at(shader).shader());
-	}
+	} //- resource
 
 } //- sm
 
 RTTR_REGISTRATION
 {
-	using namespace sm;
+	using namespace sm::resource;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::registration::class_<cprogram_manager>("cprogram_manager")

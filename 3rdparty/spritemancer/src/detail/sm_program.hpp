@@ -1,61 +1,51 @@
 #pragma once
 #include "sm_config.hpp"
-#include "sm_shader.hpp"
 
 namespace sm
 {
-	//- Container for vertex and fragment shader. Destroying destroys individual shaders.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cprogram final : public core::cresource
+	namespace resource
 	{
-	public:
-		explicit cprogram(shader_handle_t shader);
-		explicit cprogram(const cshader& vertex, const cshader& fragment);
-		explicit cprogram(shader_handle_t vertex, shader_handle_t fragment);
-		cprogram();
-		~cprogram();
+		namespace detail
+		{
+			//- Struct containing a program combining a vertex and pixel shader or compute shader.
+			//------------------------------------------------------------------------------------------------------------------------
+			struct sprogram final
+			{
+				string_t m_vertex_shader_path;
+				string_t m_pixel_shader_path;
+				string_t m_compute_shader_path;
+				bgfx::ProgramHandle m_handle;
+			};
 
-		opresult load_from_shader(shader_handle_t shader);
-		opresult load_from_shaders(const cshader& vertex, const cshader& fragment);
-		opresult load_from_handles(shader_handle_t vertex, shader_handle_t fragment);
+		} //- detail
 
-		inline program_handle_t handle() const { return m_handle; }
-		inline const cshader& vertex() const { return m_vertex; }
-		inline const cshader& fragment() const { return m_fragment; }
+		//- Program resource class.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cprogram final : public core::cresource<detail::sprogram>
+		{
+		public:
+			cprogram() = default;
+			~cprogram();
 
-		operator bgfx::ProgramHandle() const noexcept { return bgfx::ProgramHandle{ SCAST(uint16_t, m_handle) }; }
+		private:
+			RTTR_ENABLE(core::cresource<detail::sprogram>);
+		};
 
-	private:
-		cshader m_vertex;
-		cshader m_fragment;
-		program_handle_t m_handle;
+		//- Program resource manager class responsible for loading a program from shaders or one shader.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cprogram_manager final : public core::cresource_manager<cprogram>
+		{
+		public:
+			cprogram_manager() = default;
+			~cprogram_manager() = default;
 
-		RTTR_ENABLE(core::cresource);
-	};
+		protected:
+			const core::resource::iresource* load(stringview_t name, const fs::cfileinfo& path) override final;
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class cprogram_manager final :
-		public core::cservice,
-		public core::cresource_manager<cprogram>
-	{
-	public:
-		cprogram_manager(unsigned reserve = C_PROGRAM_RESOURCE_MANAGER_RESERVE_COUNT);
-		~cprogram_manager();
+		private:
+			RTTR_ENABLE(core::cresource_manager<cshader>);
+		};
 
-		bool on_start() override final;
-		void on_shutdown() override final;
-		void on_update(float) override final;
-
-		program_handle_t load_sync(stringview_t name, shader_handle_t shader);
-		program_handle_t load_sync(stringview_t name, shader_handle_t vs, shader_handle_t fs);
-		program_handle_t load_sync(stringview_t name, const cshader& vs, const cshader& fs);
-
-		core::cfuture_type<program_handle_t> load_async(stringview_t name, shader_handle_t shader);
-		core::cfuture_type<program_handle_t> load_async(stringview_t name, shader_handle_t vs, shader_handle_t fs);
-		core::cfuture_type<program_handle_t> load_async(stringview_t name, const cshader& vs, const cshader& fs);
-
-	private:
-		RTTR_ENABLE(core::cservice, core::cresource_manager<cprogram>);
-	};
+	} //- resource
 
 } //- sm
