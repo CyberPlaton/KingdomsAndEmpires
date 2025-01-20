@@ -3,52 +3,49 @@
 
 namespace sm
 {
-	//- CPU resident image representation
-	//------------------------------------------------------------------------------------------------------------------------
-	class cimage final : public core::cresource
+	namespace resource
 	{
-	public:
-		explicit cimage(stringview_t filepath);
-		explicit cimage(void* data, unsigned size);
-		cimage();
-		~cimage();
+		namespace detail
+		{
+			//- Struct containing image data resident on CPU.
+			//------------------------------------------------------------------------------------------------------------------------
+			struct simage final
+			{
+				bimg::ImageContainer* m_image = nullptr;
+			};
 
-		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(void* data, unsigned size);
+		} //- detail
 
-		inline const bimg::ImageContainer* image() const { return m_container; }
+		//- Image resource class.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cimage final : public core::cresource<detail::simage>
+		{
+		public:
+			cimage() = default;
+			~cimage();
 
-		//- utility functions for image generation and manipulation
-		void create_solid(unsigned w, unsigned h, const core::scolor& color);
-		void create_checkerboard(unsigned w, unsigned h, unsigned step, const core::scolor& first, const core::scolor& second);
+			void create_from_solid_color(unsigned w, unsigned h, const core::scolor& color);
+			void create_checkerboard(unsigned w, unsigned h, unsigned step, const core::scolor& first, const core::scolor& second);
 
-	private:
-		bimg::ImageContainer* m_container;
+		private:
+			RTTR_ENABLE(core::cresource<detail::simage>);
+		};
 
-		RTTR_ENABLE(core::cresource);
-	};
+		//- Image resource manager class responsible for loading an image from file.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cimage_manager final : public core::cresource_manager<cimage>
+		{
+		public:
+			cimage_manager() = default;
+			~cimage_manager() = default;
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class cimage_manager final :
-		public core::cservice,
-		public core::cresource_manager<cimage>
-	{
-	public:
-		cimage_manager(unsigned reserve = C_IMAGE_RESOURCE_MANAGER_RESERVE_COUNT);
-		~cimage_manager();
+		protected:
+			const core::resource::iresource* load(stringview_t name, const fs::cfileinfo& path) override final;
 
-		bool on_start() override final;
-		void on_shutdown() override final;
-		void on_update(float) override final;
+		private:
+			RTTR_ENABLE(core::cresource_manager<cimage>);
+		};
 
-		image_handle_t load_sync(stringview_t name, stringview_t filepath);
-		image_handle_t load_sync(stringview_t name, void* data, unsigned size);
-
-		core::cfuture_type<image_handle_t> load_async(stringview_t name, stringview_t filepath);
-		core::cfuture_type<image_handle_t> load_async(stringview_t name, void* data, unsigned size);
-
-	private:
-		RTTR_ENABLE(core::cservice, core::cresource_manager<cimage>);
-	};
+	} //- resource
 
 } //- sm

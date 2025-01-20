@@ -32,6 +32,7 @@
 #include "detail/core_stringbuffer.hpp"
 #include "detail/core_stringutils.hpp"
 #include "detail/core_stringview.hpp"
+#include "detail/core_thread_service.hpp"
 #include "detail/core_timer.hpp"
 #include "detail/core_uuid.hpp"
 

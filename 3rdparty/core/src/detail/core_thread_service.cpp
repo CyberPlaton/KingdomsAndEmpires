@@ -1,6 +1,8 @@
-#include "thread_service.hpp"
+#include "core_thread_service.hpp"
+#include "core_algorithm.hpp"
+#include "core_logging.hpp"
 
-namespace engine
+namespace core
 {
 	namespace
 	{
@@ -141,11 +143,3 @@ namespace engine
 	}
 
 } //- engine
-
-RTTR_REGISTRATION
-{
-	using namespace engine;
-
-	rttr::cregistrator<cthread_service, rttr::detail::as_raw_pointer>("cthread_service")
-		;
-}

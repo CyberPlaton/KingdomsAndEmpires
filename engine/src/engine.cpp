@@ -40,7 +40,7 @@ namespace engine
 	cengine::~cengine()
 	{
 		//- FIXME: just for decoy, use some of the services so that they wont get optimized out for not being used...
-		cthread_service thread_service_decoy;
+		core::cthread_service thread_service_decoy;
 		casset_service asset_service_decoy;
 		io::cmodule_service module_service_decoy;
 	}

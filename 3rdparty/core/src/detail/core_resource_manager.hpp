@@ -1,155 +1,168 @@
 #pragma once
 #include "core_config.hpp"
-#include "core_future_type.hpp"
 #include "core_algorithm.hpp"
-#include "core_async.hpp"
 #include "core_mutex.hpp"
+#include "core_filesystem.hpp"
+#include "core_resource.hpp"
+#include "core_thread_service.hpp"
 
 namespace core
 {
-	//- Base class for a resource. When creating a new resource inherit from this class and implement any required functionality,
-	//- and reflect with RTTR. This will also help to verify a class when registering a new resource
-	//------------------------------------------------------------------------------------------------------------------------
-	class cresource
+	namespace resource
 	{
-	public:
-		static constexpr stringview_t C_META_SUPPORTED_EXTENSIONS	= "RESOURCE_EXTENSIONS";
+		using edit_pair_t = std::pair<bool, iresource*>;
 
-		cresource() = default;
-		virtual ~cresource() = default;
+		//- Resource manager abstract class.
+		//------------------------------------------------------------------------------------------------------------------------
+		class iresource_manager
+		{
+		public:
+			iresource_manager() = default;
+			virtual ~iresource_manager() = default;
 
-		RTTR_ENABLE();
-	};
+			virtual edit_pair_t lock_and_edit(stringview_t) = 0;
+			virtual edit_pair_t lock_and_edit(const iresource*) = 0;
 
-	//- Base class for a resource manager. Data is not serialized, the class serves to avoid redefining functionality
+			virtual void unlock(stringview_t) = 0;
+			virtual void unlock(iresource*) = 0;
+
+			virtual const iresource* find(stringview_t name) const = 0;
+
+		private:
+			RTTR_ENABLE();
+		};
+
+	} //- resource
+
+	//- Interface class for a resource manager.
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource>
-	class cresource_manager
+	class cresource_manager :
+		public cservice,
+		public resource::iresource_manager
 	{
+	protected:
+		virtual const resource::iresource* load(stringview_t, const fs::cfileinfo&) = 0;
+
+		const resource::iresource* emplace_object(stringview_t name, TResource&& res);
+
 	public:
+		cresource_manager() = default;
 		virtual ~cresource_manager() = default;
 
-		bool lookup(stringview_t name) const;
-		bool lookup(handle_type_t handle) const;
+		virtual bool on_start() override { return true; }
+		virtual void on_shutdown() override {}
+		virtual void on_update(float) override {}
 
-		TResource& get(stringview_t name);
-		const TResource& at(stringview_t name) const;
+		//- Lock the resource in question for editing. This allows for modifying operations on the actual object.
+		//- In case the object is locked, then this returns false.
+		resource::edit_pair_t lock_and_edit(stringview_t name) override final;
 
-		TResource& get(handle_type_t handle);
-		const TResource& at(handle_type_t handle) const;
+		resource::edit_pair_t lock_and_edit(const resource::iresource* res) override final;
 
-		template<typename TCallable>
-		void each(TCallable&& callback);
+		void unlock(stringview_t name) override final;
 
-		unsigned count() const { return static_cast<unsigned>(m_data.size()); }
+		void unlock(resource::iresource* res) override final;
 
-		void erase(stringview_t name) { erase(algorithm::hash(name)); }
-		void erase(handle_type_t handle) { m_data.erase(handle); }
-		void clear() { m_data.clear(); }
-		handle_type_t handle(stringview_t name) { return algorithm::hash(name); }
+		const TResource* load_sync(stringview_t name, const fs::cfileinfo& path);
 
-	protected:
+		const TResource* load_async(stringview_t name, const fs::cfileinfo& path);
+
+	private:
 		umap_t<unsigned, TResource> m_data;
-		cmutex m_mutex;
+		core::cmutex m_mutex;
 
-	protected:
-		//- Utility function to load a resource synchronously and construct it in-place with given arguments.
-		//------------------------------------------------------------------------------------------------------------------------
-		template<typename THandle, typename... ARGS>
-		THandle load_of_sync(const char* name, ARGS&&... args)
-		{
-			core::cscope_mutex m(m_mutex);
+	private:
+		const TResource* do_load_async(stringview_t name, const fs::cfileinfo& path);
 
-			unsigned hash = algorithm::hash(name);
-
-			//- correctly forward arguments and hash
-			m_data.emplace(std::piecewise_construct,
-				std::forward_as_tuple(hash),
-				std::forward_as_tuple(std::forward<ARGS>(args)...));
-
-			return THandle(hash);
-		}
-
-		//- Utility function to load a resource asynchronously and construct it in-place with given arguments. Returns a future that
-		//- will notify when resource handle is ready.
-		//------------------------------------------------------------------------------------------------------------------------
-		template<typename THandle, typename... ARGS>
-		core::cfuture_type<THandle> load_of_async(const char* name, ARGS&&... args)
-		{
-			core::cfuture_type<THandle> result = core::casync::launch_async([&]() -> THandle
-				{
-					core::cscope_mutex m(m_mutex);
-
-					const auto hash = algorithm::hash(name);
-
-					//- correctly forward arguments and hash
-					m_data.emplace(std::piecewise_construct,
-						std::forward_as_tuple(hash),
-						std::forward_as_tuple(std::forward<ARGS>(args)...));
-
-					return hash;
-
-				}).share();
-
-			return result;
-		}
-
-		RTTR_ENABLE();
+		RTTR_ENABLE(cservice, resource::iresource_manager);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------------
 	template<typename TResource>
-	template<typename TCallable>
-	void core::cresource_manager<TResource>::each(TCallable&& callback)
+	const resource::iresource* core::cresource_manager<TResource>::emplace_object(stringview_t name, TResource&& res)
+	{
+		const auto h = algorithm::hash(name);
+
+		const auto& object = m_data.emplace(h, std::move(res));
+
+		return &object;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	const TResource* core::cresource_manager<TResource>::do_load_async(stringview_t name, const fs::cfileinfo& path)
+	{
+		auto* ts = core::cservice_manager::find<core::cthread_service>();
+
+		//- Execute a function directly in async, returning only the future
+		tf::Future<TResource*> future = ts->push_background_job(fmt::format("do_load_async '{}'", name),
+			[n = name, p = path]() -> const TResource*
+			{
+				return static_cast<TResource*>(load(n, p));
+			});
+
+		//- Directly usable API from iresource to watch over resource status
+		//- and optionally retrieve some read-only data as soon as possible
+		return future.get();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	const TResource* core::cresource_manager<TResource>::load_async(stringview_t name, const fs::cfileinfo& path)
 	{
 		core::cscope_mutex m(m_mutex);
 
-		for (const auto& pair : m_data)
+		return static_cast<TResource*>(do_load_async(name, path));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	const TResource* core::cresource_manager<TResource>::load_sync(stringview_t name, const fs::cfileinfo& path)
+	{
+		core::cscope_mutex m(m_mutex);
+
+		return static_cast<TResource*>(load(name, path));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	void core::cresource_manager<TResource>::unlock(stringview_t name)
+	{
+		const auto h = algorithm::hash(name);
+
+		unlock(const_cast<iresource*>(&m_data.at(h)));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	void core::cresource_manager<TResource>::unlock(resource::iresource* res)
+	{
+		res->unlock();
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	resource::edit_pair_t core::cresource_manager<TResource>::lock_and_edit(stringview_t name)
+	{
+		const auto h = algorithm::hash(name);
+
+		return lock_and_edit(&m_data.at(h));
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------
+	template<typename TResource>
+	resource::edit_pair_t core::cresource_manager<TResource>::lock_and_edit(const resource::iresource* res)
+	{
+		auto* r = const_cast<iresource*>(res);
+
+		if (!r->locked() && r.lock())
 		{
-			callback(pair.second);
+			return { true, r };
 		}
-	}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	const TResource& core::cresource_manager<TResource>::at(stringview_t name) const
-	{
-		return at(algorithm::hash(name));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	TResource& core::cresource_manager<TResource>::get(stringview_t name)
-	{
-		return get(algorithm::hash(name));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	const TResource& core::cresource_manager<TResource>::at(handle_type_t handle) const
-	{
-		return m_data.at(handle);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	TResource& core::cresource_manager<TResource>::get(handle_type_t handle)
-	{
-		return m_data[handle];
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	bool core::cresource_manager<TResource>::lookup(stringview_t name) const
-	{
-		return lookup(algorithm::hash(name));
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	template<typename TResource>
-	bool core::cresource_manager<TResource>::lookup(handle_type_t handle) const
-	{
-		return m_data.find(handle) != m_data.end();
+		//- Failed to lock resource, means it is currently being edited by someone else.
+		return { false, nullptr };
 	}
 
 } //- core

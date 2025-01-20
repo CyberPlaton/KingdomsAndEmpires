@@ -15,7 +15,6 @@
 #include "editor/elements/editor_element_window.hpp"
 #include "layer.hpp"
 #include "services/profiler_service.hpp"
-#include "services/thread_service.hpp"
 #include "services/asset_service.hpp"
 #include "services/resource_service.hpp"
 #include "services/module_service.hpp"

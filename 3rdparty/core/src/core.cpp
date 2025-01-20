@@ -136,6 +136,13 @@ RTTR_REGISTRATION
 	rttr::detail::default_constructor<cservice_manager::sconfig>();
 	rttr::detail::default_constructor<vector_t<string_t>>();
 
+	rttr::registration::class_<cthread_service>("cthread_service")
+		.constructor<>()
+		(
+			rttr::policy::ctor::as_raw_ptr
+			)
+		;
+
 	rttr::registration::class_<cuuid>("cuuid")
 		.constructor<>()
 		(

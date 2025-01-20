@@ -3,64 +3,53 @@
 
 namespace sm
 {
-	//- GPU resident image representation.
-	//- TODO: information does not need to be held by each texture. Store it somewhere else and in texture only the handle.
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture final : public core::cresource
+	namespace resource
 	{
-	public:
-		explicit ctexture(const cimage& image);
-		explicit ctexture(stringview_t filepath);
-		explicit ctexture(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
-		explicit ctexture(texture_handle_t handle, const bgfx::TextureInfo& info);
-		ctexture();
-		~ctexture();
+		namespace detail
+		{
+			//- Struct containing GPU resident image data.
+			//------------------------------------------------------------------------------------------------------------------------
+			struct stexture final
+			{
+				bgfx::TextureInfo m_info;
+				bgfx::TextureHandle m_handle;
+			};
 
+		} //- detail
 
-		opresult load_from_image(const cimage& image);
-		opresult load_from_file(stringview_t filepath);
-		opresult load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
+		//- Texture resource class.
+		//------------------------------------------------------------------------------------------------------------------------
+		class ctexture final : public core::cresource<detail::stexture>
+		{
+		public:
+			ctexture() = default;
+			~ctexture();
 
-		inline unsigned w() const { return SCAST(unsigned, m_info.width); }
-		inline unsigned h() const { return SCAST(unsigned, m_info.height); }
-		inline texture_handle_t texture() const { return m_texture; }
+			inline unsigned w() const { return m_resource.m_info.width; }
+			inline unsigned h() const { return m_resource.m_info.height; }
 
-		operator bgfx::TextureHandle() const noexcept { return bgfx::TextureHandle{ SCAST(uint16_t, m_texture) }; }
+			inline const auto& info() const { return m_resource.m_info; }
+			inline const auto handle() const { return m_resource.m_handle; }
 
-	private:
-		texture_handle_t m_texture;
-		bgfx::TextureInfo m_info;
+		private:
+			RTTR_ENABLE(core::cresource<detail::stexture>);
+		};
 
-		RTTR_ENABLE(core::cresource);
-	};
+		//- Texture resource manager class responsible for loading a texture from file.
+		//------------------------------------------------------------------------------------------------------------------------
+		class ctexture_manager final : public core::cresource_manager<ctexture>
+		{
+		public:
+			ctexture_manager() = default;
+			~ctexture_manager() = default;
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class ctexture_manager final :
-		public core::cservice,
-		public core::cresource_manager<ctexture>
-	{
-	public:
-		ctexture_manager(unsigned reserve = C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT);
-		~ctexture_manager();
+		protected:
+			const core::resource::iresource* load(stringview_t name, const fs::cfileinfo& path) override final;
 
-		bool on_start() override final;
-		void on_shutdown() override final;
-		void on_update(float) override final;
+		private:
+			RTTR_ENABLE(core::cresource_manager<ctexture>);
+		};
 
-		texture_handle_t load_sync(stringview_t name, const cimage& image);
-		texture_handle_t load_sync(stringview_t name, stringview_t filepath);
-		texture_handle_t load_sync(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
-
-		core::cfuture_type<texture_handle_t> load_async(stringview_t name, const cimage& image);
-		core::cfuture_type<texture_handle_t> load_async(stringview_t name, stringview_t filepath);
-		core::cfuture_type<texture_handle_t> load_async(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-			bool mips, unsigned layers, texture_format format, uint64_t flags);
-
-	private:
-		RTTR_ENABLE(core::cservice, core::cresource_manager<ctexture>);
-	};
+	} //- resource
 
 } //- sm

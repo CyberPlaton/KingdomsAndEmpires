@@ -2,7 +2,6 @@
 #include "../animation/animation_module.hpp"
 #include "../render/render_module.hpp"
 #include "../camera/camera_module.hpp"
-#include "../services/thread_service.hpp"
 
 namespace ecs
 {
@@ -25,7 +24,7 @@ namespace ecs
 		m_singleton_manager(this),
 		m_module_manager(this),
 		m_proxy_manager(this),
-		m_used_threads(cfg.m_threads == MAX(unsigned) ? engine::cthread_service::hardware_threads() / 2 : cfg.m_threads)
+		m_used_threads(cfg.m_threads == MAX(unsigned) ? core::cthread_service::hardware_threads() / 2 : cfg.m_threads)
 	{
 		use_threads(m_used_threads);
 

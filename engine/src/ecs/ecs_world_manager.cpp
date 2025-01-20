@@ -1,5 +1,4 @@
 #include "ecs_world_manager.hpp"
-#include "../services/thread_service.hpp"
 
 namespace ecs
 {

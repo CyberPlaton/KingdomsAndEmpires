@@ -65,11 +65,11 @@ bool cspritemancer::init()
 	const auto& vfs_shaders = vfs->find_filesystem("/shaders");
 	auto* sm = engine::cengine::service<sm::cshader_manager>();
 	auto* pm = engine::cengine::service<sm::cprogram_manager>();
+
+	auto vs = sm->load_async("vs_color", sm::shader_type_vertex, string_utils::join(vfs_shaders->base_path(), "color/vs_color.sc"));
+	auto fs = sm->load_async("fs_color", sm::shader_type_pixel, string_utils::join(vfs_shaders->base_path(), "color/fs_color.sc"));
 	
-	auto vs = sm->load_sync("vs_color", sm::shader_type_vertex, string_utils::join(vfs_shaders->base_path(), "color/vs_color.sc"));
-	auto fs = sm->load_sync("fs_color", sm::shader_type_pixel, string_utils::join(vfs_shaders->base_path(), "color/fs_color.sc"));
-	
-	auto color_program = pm->load_sync("program_color", vs, fs);
+	auto color_program = pm->load_sync("program_color", vs.wait(), fs.wait());
 
 	return true;
 }

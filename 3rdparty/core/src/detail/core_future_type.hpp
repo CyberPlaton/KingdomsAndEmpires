@@ -28,6 +28,7 @@ namespace core
 	template<typename TType>
 	const TType& core::cfuture_type<TType>::wait()
 	{
+		while(!ready()) {}
 		return m_task.get();
 	}
 

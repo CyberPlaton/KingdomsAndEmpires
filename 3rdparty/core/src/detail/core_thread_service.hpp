@@ -1,7 +1,9 @@
 #pragma once
-#include <core.h>
+#include "core_config.hpp"
+#include "core_service_manager.hpp"
+#include "core_mutex.hpp"
 
-namespace engine
+namespace core
 {
 	namespace detail
 	{
@@ -83,4 +85,4 @@ namespace engine
 		return m_fg->async(name, std::forward<TCallable>(callable));
 	}
 
-} //- engine
+} //- core

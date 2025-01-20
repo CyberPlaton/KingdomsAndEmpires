@@ -248,6 +248,10 @@ using ref_t = std::shared_ptr<T>;
 
 template<typename T>
 using ptr_t = std::unique_ptr<T>;
+
+template<typename T>
+using weak_ref_t = std::weak_ptr<T;
+
 using stringview_t = stl::string_view;
 using string_t = stl::string;
 

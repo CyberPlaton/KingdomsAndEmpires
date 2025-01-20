@@ -3,160 +3,64 @@
 
 namespace sm
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::ctexture() :
-		m_texture(C_INVALID_HANDLE)
+	namespace resource
 	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::ctexture(const cimage& image)
-	{
-		load_from_image(image);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::ctexture(stringview_t filepath)
-	{
-		load_from_file(filepath);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::ctexture(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-		bool mips, unsigned layers, texture_format format, uint64_t flags)
-	{
-		load_from_memory(data, size, w, h, depth, mips, layers, format, flags);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::ctexture(texture_handle_t handle, const bgfx::TextureInfo& info) :
-		m_texture(handle), m_info(info)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	ctexture::~ctexture()
-	{
-		if (bgfx::isValid(bgfx::TextureHandle{ SCAST(uint16_t, texture()) }))
+		//------------------------------------------------------------------------------------------------------------------------
+		ctexture::~ctexture()
 		{
-			bgfx::destroy(bgfx::TextureHandle{ SCAST(uint16_t, texture()) });
 
-			//- reset handle and info
-			m_texture = C_INVALID_HANDLE;
-			m_info = {};
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult ctexture::load_from_image(const cimage& image)
-	{
-		const auto w = image.image()->m_width;
-		const auto h = image.image()->m_height;
-		const auto mips = image.image()->m_numMips < 1;
-		const auto& layers = image.image()->m_numLayers;
-		const auto format = image.image()->m_format;
-		const auto& depth = image.image()->m_depth;
-
-		return load_from_memory(image.image()->m_data, image.image()->m_size, w, h, depth, mips, layers,
-			texture_format(format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult ctexture::load_from_file(stringview_t filepath)
-	{
-		cimage image(filepath);
-
-		if (is_valid(image) && load_from_image(image))
-		{
-			return opresult_ok;
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult ctexture::load_from_memory(void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-		bool mips, unsigned layers, texture_format format, uint64_t flags)
-	{
-		cimage image(data, size);
-
-		if (is_valid(image) && load_from_image(image))
-		{
-			return opresult_ok;
 		}
 
-		return opresult_fail;
-	}
+		//------------------------------------------------------------------------------------------------------------------------
+		const core::resource::iresource* ctexture_manager::load(stringview_t name, const fs::cfileinfo& path)
+		{
+			auto* im = core::cservice_manager::find<resource::cimage_manager>();
 
-	//------------------------------------------------------------------------------------------------------------------------
-	ctexture_manager::ctexture_manager(unsigned reserve /*= C_TEXTURE_RESOURCE_MANAGER_RESERVE_COUNT*/)
-	{
-		m_data.reserve(reserve);
-	}
+			if (const auto* image = im->load_sync(name, path); image)
+			{
+				const auto* image_info = image->m_resource.m_image;
 
-	//------------------------------------------------------------------------------------------------------------------------
-	ctexture_manager::~ctexture_manager()
-	{
-	}
+				const auto* mem = bgfx::makeRef(image_info->m_data, image_info->m_size);
 
-	//------------------------------------------------------------------------------------------------------------------------
-	bool ctexture_manager::on_start()
-	{
-		return true;
-	}
+				if (const auto handle = bgfx::createTexture2D((uint16_t)image_info->m_width, (uint16_t)image_info->m_height,
+					image_info->m_numMips > 1, image_info->m_numLayers, (bgfx::TextureFormat::Enum)image_info->m_format,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem); bgfx::isValid(handle))
+				{
+					bgfx::TextureInfo texture_info;
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void ctexture_manager::on_shutdown()
-	{
-		clear();
-	}
+					bgfx::calcTextureSize(texture_info, (uint16_t)image_info->m_width, (uint16_t)image_info->m_height,
+						image_info->m_depth, image_info->m_cubeMap, image_info->m_numMips > 1, image_info->m_numLayers, (bgfx::TextureFormat::Enum)image_info->m_format);
 
-	//------------------------------------------------------------------------------------------------------------------------
-	void ctexture_manager::on_update(float)
-	{
-	}
+					ctexture texture;
+					texture.m_resource.m_handle = handle;
+					texture.m_resource.m_info = std::move(texture_info);
 
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, const cimage& image)
-	{
-		return load_of_sync<texture_handle_t>(name.data(), image);
-	}
+					if (serror_reporter::instance().m_callback)
+					{
+						serror_reporter::instance().m_callback(core::logging_verbosity_trace,
+							fmt::format("Successfully loaded texture '{}' at '{}'", name, path.path()));
+					}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, stringview_t filepath)
-	{
-		return load_of_sync<texture_handle_t>(name.data(), filepath);
-	}
+					return emplace_object(name, std::move(texture));
+				}
+			}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::texture_handle_t ctexture_manager::load_sync(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-		bool mips, unsigned layers, texture_format format, uint64_t flags)
-	{
-		return load_of_sync<texture_handle_t>(name.data(), data, size, w, h, depth, mips, layers, format, flags);
-	}
+			if (serror_reporter::instance().m_callback)
+			{
+				serror_reporter::instance().m_callback(core::logging_verbosity_error,
+					fmt::format("Failed loading texture '{}' at '{}'", name, path.path()));
+			}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, const cimage& image)
-	{
-		return load_of_async<texture_handle_t>(name.data(), image);
-	}
+			return nullptr;
+		}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, stringview_t filepath)
-	{
-		return load_of_async<texture_handle_t>(name.data(), filepath);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::texture_handle_t> ctexture_manager::load_async(stringview_t name, void* data, unsigned size, unsigned w, unsigned h, unsigned depth,
-		bool mips, unsigned layers, texture_format format, uint64_t flags)
-	{
-		return load_of_async<texture_handle_t>(name.data(), data, size, w, h, depth, mips, layers, format, flags);
-	}
+	} //- resource
 
 } //- sm
 
 RTTR_REGISTRATION
 {
-	using namespace sm;
+	using namespace sm::resource;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::registration::class_<ctexture_manager>("ctexture_manager")
