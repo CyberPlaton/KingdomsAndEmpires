@@ -9,6 +9,7 @@ namespace sm
 		namespace detail
 		{
 			//- Struct containing material data.
+			//- TODO: Divide in runtime and offline data.
 			//------------------------------------------------------------------------------------------------------------------------
 			struct smaterial final
 			{
@@ -34,8 +35,9 @@ namespace sm
 				struct suniform_data
 				{
 					string_t m_uniform_name;
+					uniform_type m_type;
 					bgfx::UniformHandle m_handle;
-					void* m_data;
+					core::cany m_data;
 				};
 
 				vector_t<suniform_data> m_uniforms;
