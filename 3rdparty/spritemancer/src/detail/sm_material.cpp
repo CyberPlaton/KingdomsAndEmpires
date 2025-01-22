@@ -4,129 +4,33 @@
 
 namespace sm
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::cmaterial(stringview_t program, stringview_t texture) :
-		m_program(C_INVALID_HANDLE), m_texture(C_INVALID_HANDLE), m_owning_program(false), m_owning_texture(false)
+	namespace resource
 	{
-		create(program, texture);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::cmaterial() :
-		m_program(C_INVALID_HANDLE), m_texture(C_INVALID_HANDLE), m_owning_program(false), m_owning_texture(false)
-	{
-
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial::~cmaterial()
-	{
-		m_uniforms.clear();
-
-		if (m_owning_program &&
-			m_program != C_INVALID_HANDLE)
+		//------------------------------------------------------------------------------------------------------------------------
+		void cmaterial::bind(unsigned depth /*= 0*/)
 		{
-			auto* pm = core::cservice_manager::find<cprogram_manager>(); pm->erase(m_program);
-		}
-		if (m_owning_texture &&
-			m_texture != C_INVALID_HANDLE)
-		{
-			auto* tm = core::cservice_manager::find<ctexture_manager>(); tm->erase(m_texture);
-		}
-	}
+			CORE_ASSERT(bgfx::isValid(m_resource.m_texture_data.m_handle) &&
+				bgfx::isValid(m_resource.m_program_data.m_handle), "Invalid operation. Binding an invalid material with an invalid texture or program!");
 
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cmaterial::create(stringview_t program, stringview_t texture)
-	{
-		auto* pm = core::cservice_manager::find<cprogram_manager>();
-		auto* tm = core::cservice_manager::find<ctexture_manager>();
+			bgfx::setTexture(0, m_resource.m_sampler_data.m_handle, m_resource.m_texture_data.m_handle,
+				m_resource.m_sampler_data.m_sampler_flags);
 
-		m_program = pm->handle(program);
-		m_texture = tm->handle(texture);
+			for (const auto& uniform : m_resource.m_uniforms)
+			{
+				bgfx::setUniform(uniform.m_handle, uniform.m_data, 1u);
+			}
 
-		if (!pm->lookup(program) ||
-			!tm->lookup(texture))
-		{
-			log_warn(fmt::format("Loading material without having program '{}' or texture '{}' loaded. This might lead to a crash!",
-				program.data(), texture.data()));
+			bgfx::setState(m_resource.m_state);
+			bgfx::submit(m_resource.m_view, m_resource.m_program_data.m_handle, depth);
 		}
 
-		return opresult_ok;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial::bind(unsigned depth /*= 0*/)
-	{
-		CORE_ASSERT(is_valid(*this), "Invalid operation. Binding an invalid material with an invalid texture or program!");
-
-		bgfx::setTexture(0, m_sampler_state.m_sampler, bgfx::TextureHandle{ SCAST(uint16_t, m_texture) }, m_sampler_state.m_sampler_flags);
-
-		for (const auto& uniform : m_uniforms)
-		{
-			bgfx::setUniform(uniform, uniform.value(), 1u);
-		}
-
-		bgfx::setState(m_state);
-		bgfx::submit(bgfx::ViewId{ SCAST(uint16_t, m_view) }, bgfx::ProgramHandle{SCAST(uint16_t, m_program)}, depth);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial_manager::cmaterial_manager(unsigned reserve /*= C_MATERIAL_RESOURCE_MANAGER_RESERVE_COUNT*/)
-	{
-		m_data.reserve(reserve);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cmaterial_manager::~cmaterial_manager()
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool cmaterial_manager::on_start()
-	{
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial_manager::on_shutdown()
-	{
-		clear();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cmaterial_manager::on_update(float)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::material_handle_t cmaterial_manager::load_sync(stringview_t name, stringview_t program, stringview_t texture)
-	{
-		return load_of_sync<image_handle_t>(name.data(), program, texture);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::material_handle_t cmaterial_manager::load_sync(stringview_t name)
-	{
-		return load_of_sync<image_handle_t>(name.data());
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::material_handle_t> cmaterial_manager::load_async(stringview_t name, stringview_t program, stringview_t texture)
-	{
-		return load_of_async<image_handle_t>(name.data(), program, texture);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::material_handle_t> cmaterial_manager::load_async(stringview_t name)
-	{
-		return load_of_async<image_handle_t>(name.data());
-	}
+	} //- resource
 
 } //- sm
 
 RTTR_REGISTRATION
 {
-	using namespace sm;
+	using namespace sm::resource;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::registration::class_<cmaterial_manager>("cmaterial_manager")

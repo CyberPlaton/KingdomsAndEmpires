@@ -3,52 +3,58 @@
 
 namespace sm
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas final : public core::cresource
+	namespace resource
 	{
-	public:
-		explicit cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
-		cspriteatlas();
-		~cspriteatlas() = default;
+		namespace detail
+		{
+			//- Struct containing spritesheet data for a texture/image.
+			//------------------------------------------------------------------------------------------------------------------------
+			struct sspriteatlas final
+			{
+				umap_t<unsigned, core::srect> m_subtextures;
+				string_t m_texture_path;
+				vec2_t m_size;
+			};
 
-		opresult create(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
-		const core::srect& at(stringview_t name) const;
-		vec2_t dimension() const;
-		unsigned subtextures() const;
+		} //- detail
 
-		//- Routines for manual atlas creation
-		cspriteatlas& begin(unsigned w, unsigned h);
-		cspriteatlas& subtexture(stringview_t name, const core::srect& rect);
-		cspriteatlas& end();
+		//- Spriteatlas resource class.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cspriteatlas final : public core::cresource<detail::sspriteatlas>
+		{
+		public:
+			cspriteatlas() = default;
+			~cspriteatlas();
 
-	private:
-		umap_t<unsigned, core::srect> m_subtextures;
-		vec2_t m_size;
+			bool create(float w, float h, const vector_t<string_t>& names, const vec2_t& frames);
+			const core::srect& at(stringview_t name) const;
+			vec2_t dimension() const;
+			unsigned subtextures() const;
 
-		RTTR_ENABLE(core::cresource);
-	};
+			//- Routines for manual atlas creation
+			cspriteatlas& begin(float w, float h);
+			cspriteatlas& subtexture(stringview_t name, const core::srect& rect);
+			cspriteatlas& end();
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class cspriteatlas_manager final :
-		public core::cservice,
-		public core::cresource_manager<cspriteatlas>
-	{
-	public:
-		cspriteatlas_manager(unsigned reserve = C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT);
-		~cspriteatlas_manager();
+		private:
+			RTTR_ENABLE(core::cresource<detail::sspriteatlas>);
+		};
 
-		bool on_start() override final;
-		void on_shutdown() override final;
-		void on_update(float) override final;
+		//- Spriteatlas resource manager class responsible for loading a spriteatlas from file.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cspriteatlas_manager final : public core::cresource_manager<cspriteatlas>
+		{
+		public:
+			cspriteatlas_manager() = default;
+			~cspriteatlas_manager() = default;
 
-		spriteatlas_handle_t load_sync(stringview_t name, unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
-		spriteatlas_handle_t load_sync(stringview_t name, const cspriteatlas& other);
+		protected:
+			const core::resource::iresource* load(stringview_t name, const fs::cfileinfo& path) override final;
 
-		core::cfuture_type<spriteatlas_handle_t> load_async(stringview_t name, unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames);
-		core::cfuture_type<spriteatlas_handle_t> load_async(stringview_t name, const cspriteatlas& other);
+		private:
+			RTTR_ENABLE(core::cresource_manager<cspriteatlas>);
+		};
 
-	private:
-		RTTR_ENABLE(core::cservice, core::cresource_manager<cspriteatlas>);
-	};
+	} //- resource
 
 } //- sm

@@ -4,66 +4,78 @@
 
 namespace sm
 {
-	//- TODO: reconsider.
-	//------------------------------------------------------------------------------------------------------------------------
-	struct ssampler_state final
+	namespace resource
 	{
-		cuniform m_sampler;
-		unsigned m_sampler_flags = BGFX_SAMPLER_NONE;
-	};
+		namespace detail
+		{
+			//- Struct containing material data.
+			//------------------------------------------------------------------------------------------------------------------------
+			struct smaterial final
+			{
+				struct ssampler_data
+				{
+					string_t m_uniform_name;
+					unsigned m_sampler_flags = BGFX_SAMPLER_NONE;
+					bgfx::UniformHandle m_handle;
+				};
 
-	//- A material containing texture data, sampler data and uniforms and a shader program used for drawing geometry.
-	//------------------------------------------------------------------------------------------------------------------------
-	class cmaterial final : public core::cresource
-	{
-	public:
-		explicit cmaterial(stringview_t program, stringview_t texture);
-		explicit cmaterial();
-		~cmaterial();
+				struct stexture_data
+				{
+					string_t m_texture_path;
+					bgfx::TextureHandle m_handle;
+				};
 
-		opresult create(stringview_t program, stringview_t texture);
+				struct sprogram_data
+				{
+					string_t m_program_path;
+					bgfx::ProgramHandle m_handle;
+				};
 
-		//- Note: binding material will submit previously set geometry for rendering with this material.
-		//- Any set textures and uniforms will be applied for use with program.
-		void bind(unsigned depth = 0);
+				struct suniform_data
+				{
+					string_t m_uniform_name;
+					bgfx::UniformHandle m_handle;
+					void* m_data;
+				};
 
-		inline texture_handle_t texture() const { return m_texture; }
-		inline program_handle_t program() const { return m_program; }
+				vector_t<suniform_data> m_uniforms;
+				ssampler_data m_sampler_data;
+				sprogram_data m_program_data;
+				stexture_data m_texture_data;
+				bgfx::ViewId m_view;
+				unsigned m_state = BGFX_STATE_DEFAULT;
+			};
 
-	private:
-		vector_t<cuniform> m_uniforms;
-		ssampler_state m_sampler_state;
-		view_id_t m_view;
-		program_handle_t m_program;
-		texture_handle_t m_texture;
-		unsigned m_state = BGFX_STATE_DEFAULT;
-		bool m_owning_program;
-		bool m_owning_texture;
+		} //- detail
 
-		RTTR_ENABLE(core::cresource);
-	};
+		//- Material resource class.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cmaterial final : public core::cresource<detail::smaterial>
+		{
+		public:
+			cmaterial() = default;
+			~cmaterial();
 
-	//------------------------------------------------------------------------------------------------------------------------
-	class cmaterial_manager final :
-		public core::cservice,
-		public core::cresource_manager<cmaterial>
-	{
-	public:
-		cmaterial_manager(unsigned reserve = C_MATERIAL_RESOURCE_MANAGER_RESERVE_COUNT);
-		~cmaterial_manager();
+			void bind(unsigned depth = 0);
 
-		bool on_start() override final;
-		void on_shutdown() override final;
-		void on_update(float) override final;
+		private:
+			RTTR_ENABLE(core::cresource<detail::smaterial>);
+		};
 
-		material_handle_t load_sync(stringview_t name, stringview_t program, stringview_t texture);
-		material_handle_t load_sync(stringview_t name);
+		//- Material resource manager class responsible for loading a material from file.
+		//------------------------------------------------------------------------------------------------------------------------
+		class cmaterial_manager final : public core::cresource_manager<cmaterial>
+		{
+		public:
+			cmaterial_manager() = default;
+			~cmaterial_manager() = default;
 
-		core::cfuture_type<material_handle_t> load_async(stringview_t name, stringview_t program, stringview_t texture);
-		core::cfuture_type<material_handle_t> load_async(stringview_t name);
+		protected:
+			const core::resource::iresource* load(stringview_t name, const fs::cfileinfo& path) override final;
 
-	private:
-		RTTR_ENABLE(core::cservice, core::cresource_manager<cmaterial>);
-	};
+		private:
+			RTTR_ENABLE(core::cresource_manager<cmaterial>);
+		};
+	} //- resource
 
 } //- sm

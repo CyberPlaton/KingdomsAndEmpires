@@ -2,143 +2,89 @@
 
 namespace sm
 {
-	//------------------------------------------------------------------------------------------------------------------------
-	cspriteatlas::cspriteatlas(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
+	namespace resource
 	{
-		create(w, h, names, frames);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cspriteatlas::cspriteatlas() :
-		m_size({ 0.0f, 0.0f })
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::opresult cspriteatlas::create(unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
-	{
-		const auto _w = (float)w;
-		const auto _h = (float)h;
-		const auto framesize = vec2_t(_w / frames.x, _h / frames.y);
-
-		begin(w, h);
-
-		for (auto y = 0u; y < frames.y; ++y)
+		//------------------------------------------------------------------------------------------------------------------------
+		bool cspriteatlas::create(float w, float h, const vector_t<string_t>& names, const vec2_t& frames)
 		{
-			for (auto x = 0u; x < frames.x; ++x)
-			{
-				const auto px = x * framesize.x / _w;
-				const auto py = y * framesize.y / _h;
-				const auto pw = framesize.x / _w;
-				const auto ph = framesize.y / _h;
+			const auto _w = (float)w;
+			const auto _h = (float)h;
+			const auto framesize = vec2_t(_w / frames.x, _h / frames.y);
 
-				subtexture(names[x + y], { px, py, pw, ph });
+			begin(w, h);
+
+			for (auto y = 0u; y < frames.y; ++y)
+			{
+				for (auto x = 0u; x < frames.x; ++x)
+				{
+					const auto px = x * framesize.x / _w;
+					const auto py = y * framesize.y / _h;
+					const auto pw = framesize.x / _w;
+					const auto ph = framesize.y / _h;
+
+					subtexture(names[x + y], { px, py, pw, ph });
+				}
 			}
+
+			end();
+
+			return true;
 		}
 
-		end();
+		//------------------------------------------------------------------------------------------------------------------------
+		const core::srect& cspriteatlas::at(stringview_t name) const
+		{
+			return m_resource.m_subtextures.at(algorithm::hash(name));
+		}
 
-		return opresult_ok;
-	}
+		//------------------------------------------------------------------------------------------------------------------------
+		vec2_t cspriteatlas::dimension() const
+		{
+			return m_resource.m_size;
+		}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	const core::srect& cspriteatlas::at(stringview_t name) const
-	{
-		return m_subtextures.at(algorithm::hash(name));
-	}
+		//------------------------------------------------------------------------------------------------------------------------
+		unsigned cspriteatlas::subtextures() const
+		{
+			return static_cast<unsigned>(m_resource.m_subtextures.size());
+		}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	vec2_t cspriteatlas::dimension() const
-	{
-		return m_size;
-	}
+		//------------------------------------------------------------------------------------------------------------------------
+		cspriteatlas& cspriteatlas::begin(float w, float h)
+		{
+			m_resource.m_size = { (float)w, (float)h };
+			return *this;
+		}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	unsigned cspriteatlas::subtextures() const
-	{
-		return static_cast<unsigned>(m_subtextures.size());
-	}
+		//------------------------------------------------------------------------------------------------------------------------
+		cspriteatlas& cspriteatlas::subtexture(stringview_t name, const core::srect& rect)
+		{
+			m_resource.m_subtextures[algorithm::hash(name)] = rect;
+			return *this;
+		}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::cspriteatlas& cspriteatlas::begin(unsigned w, unsigned h)
-	{
-		m_size = { (float)w, (float)h };
-		return *this;
-	}
+		//------------------------------------------------------------------------------------------------------------------------
+		cspriteatlas& cspriteatlas::end()
+		{
+			CORE_ASSERT(!m_resource.m_subtextures.empty() && m_resource.m_size.x > 0.0f && m_resource.m_size.y > 0.0f,
+				"Invalid operation. An empty spriteatlas is not valid");
+			return *this;
+		}
 
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::cspriteatlas& cspriteatlas::subtexture(stringview_t name, const core::srect& rect)
-	{
-		m_subtextures[algorithm::hash(name)] = rect;
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::cspriteatlas& cspriteatlas::end()
-	{
-		CORE_ASSERT(!m_subtextures.empty() && m_size.x > 0.0f && m_size.y > 0.0f, "Invalid operation. An empty spriteatlas is not valid");
-		return *this;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cspriteatlas_manager::cspriteatlas_manager(unsigned reserve /*= C_SPRITEATLAS_RESOURCE_MANAGER_RESERVE_COUNT*/)
-	{
-		m_data.reserve(reserve);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	cspriteatlas_manager::~cspriteatlas_manager()
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	bool cspriteatlas_manager::on_start()
-	{
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cspriteatlas_manager::on_shutdown()
-	{
-		clear();
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	void cspriteatlas_manager::on_update(float)
-	{
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::spriteatlas_handle_t cspriteatlas_manager::load_sync(stringview_t name,
-		unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
-	{
-		return load_of_sync<spriteatlas_handle_t>(name.data(), w, h, names, frames);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	sm::spriteatlas_handle_t cspriteatlas_manager::load_sync(stringview_t name, const cspriteatlas& other)
-	{
-		return load_of_sync<spriteatlas_handle_t>(name.data(), other);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::spriteatlas_handle_t> cspriteatlas_manager::load_async(stringview_t name,
-		unsigned w, unsigned h, const vector_t<string_t>& names, const vec2_t& frames)
-	{
-		return load_of_async<spriteatlas_handle_t>(name.data(), w, h, names, frames);
-	}
-
-	//------------------------------------------------------------------------------------------------------------------------
-	core::cfuture_type<sm::spriteatlas_handle_t> cspriteatlas_manager::load_async(stringview_t name, const cspriteatlas& other)
-	{
-		return load_of_async<spriteatlas_handle_t>(name.data(), other);
-	}
+	} //- resource
 
 } //- sm
 
 RTTR_REGISTRATION
 {
-	using namespace sm;
+	using namespace sm::resource;
+
+	//------------------------------------------------------------------------------------------------------------------------
+	rttr::cregistrator<detail::sspriteatlas>("sspriteatlas")
+		.prop("m_subtextures", &detail::sspriteatlas::m_subtextures)
+		.prop("m_texture_path", &detail::sspriteatlas::m_texture_path)
+		.prop("m_size", &detail::sspriteatlas::m_size)
+		;
 
 	//------------------------------------------------------------------------------------------------------------------------
 	rttr::registration::class_<cspriteatlas_manager>("cspriteatlas_manager")
