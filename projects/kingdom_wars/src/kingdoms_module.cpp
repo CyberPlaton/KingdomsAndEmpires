@@ -100,6 +100,8 @@ namespace kingdoms
 		auto r = compiler.compile(C_SOURCE);
 		auto out = compiler.emit();
 
+		log_info(fmt::format("Code: '{}'", out.data()));
+
 		return result;
 	}
 

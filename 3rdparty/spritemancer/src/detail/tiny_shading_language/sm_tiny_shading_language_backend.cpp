@@ -267,10 +267,14 @@ namespace sm
 			if (string_utils::compare(instruction.m_text, "include"))
 			{
 				m_ctx.consume(token_type_string, "Expected an include file path for '#include' directive!");
+
+				log_debug(fmt::format("Processing include '{}'", string.m_text.data()));
 			}
 			else if (string_utils::compare(instruction.m_text, "pragma"))
 			{
 				m_ctx.consume(token_type_string, "Expected a supported pragma instruction for '#pragma' directive!");
+
+				log_debug(fmt::format("Processing pragma '{}'", string.m_text.data()));
 			}
 		}
 
@@ -284,7 +288,10 @@ namespace sm
 			m_ctx.consume(token_type_identifier, "");
 
 			//- Name of the function
-			const auto function_name = m_emitter->emit_function_name(identifier_token.m_text);
+			if (const auto function_name = m_emitter->emit_function_name(identifier_token.m_text); function_name.empty())
+			{
+				log_error(fmt::format("Emitter '{}' failed to emit function '{}'", m_emitter->emitter_name(), identifier_token.m_text.data()));
+			}
 
 			//- Emit the function return type and function name
 			//- FIXME: to get the return type we have to lookahead and retrieve the type set after '->', and we have to do it here

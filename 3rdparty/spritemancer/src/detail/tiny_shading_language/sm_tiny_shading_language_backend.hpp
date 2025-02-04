@@ -23,6 +23,8 @@ namespace sm
 		class itiny_shader_emitter
 		{
 		public:
+			virtual stringview_t emitter_name() const = 0;
+
 			//- Given a function name, translate it to target shader language name, if empty
 			//- the compiler assumes the function is not a built-in one but user defined
 			virtual string_t emit_function_name(const string_t&) = 0;
