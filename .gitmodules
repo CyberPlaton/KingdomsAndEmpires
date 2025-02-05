@@ -23,3 +23,6 @@
 [submodule "3rdparty/tracy/tracy"]
 	path = 3rdparty/tracy/tracy
 	url = https://github.com/CyberPlaton/tracy.git
+[submodule "3rdparty/tsl/tsl"]
+	path = 3rdparty/tsl/tsl
+	url = https://github.com/CyberPlaton/tsl.git
